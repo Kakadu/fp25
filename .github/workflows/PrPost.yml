@@ -9,7 +9,7 @@ on:
       - completed
 
 env:
-  OPAMROOT: /home/user/.opam
+  OPAMROOT: /home/opam/.opam
   OPAMCONFIRMLEVEL: unsafe-yes
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
     if: ${{( github.event.workflow_run.event == 'pull_request') && (github.event.workflow_run.conclusion == 'success') }}
     runs-on: ubuntu-latest
     container:
-      image: kakadu18/ocaml:fp2024
+      image: kakadu18/ocaml:comp25
     permissions:
       pull-requests: write
 
@@ -82,13 +82,13 @@ jobs:
       - name: Deploy found lints
         uses: peaceiris/actions-gh-pages@v4
         with:
-          personal_token: ${{ secrets.FP2024_UPLOAD_LINTS }}
+          personal_token: ${{ secrets.UPLOAD_LINTS_TOKEN }}
           # used only to publish in local repo
           publish_dir: ./lints
           external_repository: Kakadu/fp2021-ci-artifacts
           publish_branch: master
           keep_files: true
-          destination_dir: 2024fp/${{ env.LANG_NAME }}/
+          destination_dir: 2025comp/${{ env.LANG_NAME }}/
           # generate new token
           # https://github.com/settings/tokens
           # put it here
@@ -208,20 +208,11 @@ jobs:
     if: ${{( github.event.workflow_run.event == 'pull_request') && (github.event.workflow_run.conclusion == 'success') }}
     runs-on: ubuntu-latest
     permissions:
-      # An attempt to workaround 'Resource not accessible by integration'
-      # while adding a comment
       pull-requests: write
-    container:
-      image: kakadu18/ocaml:fp2024  # At the moment OCaml is not required (July 2024)
 
     steps:
       - name: Print
         run: env | sort
-
-      # - name: List installed OPAM packages
-      #   run: opam list
-
-      # - run: opam exec -- ocamlopt --version
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -238,23 +229,22 @@ jobs:
       - run: |
           echo "LANG_NAME=$(cat _docs/projectname.txt)" >> $GITHUB_ENV
           echo "PR_NUMBER=$(cat _docs/PR_number.txt)" >> $GITHUB_ENV
-      - run: |
-          echo "${{ env.LANG_NAME }}"
-          echo "${{ env.PR_NUMBER }}"
+      - name: Lang is ${{ env.LANG_NAME }}, PR is ${{ env.PR_NUMBER }}
+        run: echo
          # LANG_NAME is required for uploading docs.
          # PR_NUMBER -- for adding a comment
 
       - name: Deploy documentation for ${{ env.LANG_NAME }}
         uses: peaceiris/actions-gh-pages@v4
         with:
-          personal_token: ${{ secrets.FP2024_UPLOAD_LINTS }}
+          github_token: ${{ secrets.UPLOAD_LINTS_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./_docs/_html
           destination_dir: docs/
           enable_jekyll: false
           keep_files: true
           commit_message: >
-            Deploying documentation for ${{ env.LANG_NAME }}: https://kakadu.github.io/${{ github.event.repository.name }}/docs/${{ env.LANG_NAME }}
+            Deploying documentation for ${{ env.LANG_NAME }}: https://kakadu.github.io/${{ github.event.repository.name }}/docs/${{ env.LANG_NAME }} [skip ci]
           user_name: '${{ github.event.repository.name }}[bot]'
           user_email: '${{ github.event.repository.name }}[bot]@users.noreply.github.com'
 
@@ -302,7 +292,7 @@ jobs:
       #       -repo ${{ github.event.repository.name }}
 
       - uses: mshick/add-pr-comment@v2
-        name: Add comment about uploaded docs
+        name: Add comment about uploaded docs to PR '${{ env.PR_NUMBER }}'
         with:
           message-path: text.md
           message-id: docs-uploaded
@@ -336,26 +326,27 @@ jobs:
 
       - run: echo "${{ env.LANG_NAME }}"
 
-      - run: exit 1
+      - name: Check '${{ env.LANG_NAME }}' is not empty
         if: ${{ env.LANG_NAME == '' }}
+        run: exit 1
 
       - name: Deploy coverage
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.FP2024_UPLOAD_LINTS }}
+          github_token: ${{ secrets.UPLOAD_LINTS_TOKEN }}
           publish_dir: ./_coverage
           publish_branch: gh-pages
           enable_jekyll: false
           keep_files: true
           destination_dir: cov/${{ env.LANG_NAME }}
           commit_message: >
-            Deploying coverage for ${{ env.LANG_NAME }}: https://kakadu.github.io/${{ github.event.repository.name }}/cov/${{ env.LANG_NAME }}
+            Deploying coverage for ${{ env.LANG_NAME }}: https://kakadu.github.io/${{ github.event.repository.name }}/cov/${{ env.LANG_NAME }} [skip ci]
           user_name: '${{ github.event.repository.name }}[bot]'
           user_email: '${{ github.event.repository.name }}[bot]@users.noreply.github.com'
           # generate new token
           # https://github.com/settings/tokens
           # put it here
-          # https://github.com/Kakadu/fp2024/settings/secrets/actions/new
+          # https://github.com/Kakadu/comp24/settings/secrets/actions/new
 
   ###################################################################################################
   process_clones:
@@ -370,6 +361,7 @@ jobs:
         with:
           workflow: PR.yml
           name: jscpd_report
+          allow_forks: true
 
       - run: |
           echo "PR_NUMBER=$(cat PR_number.txt)" >> $GITHUB_ENV

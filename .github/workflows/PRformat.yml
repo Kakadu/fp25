@@ -6,14 +6,14 @@ on:
       - 'master'
 
 env:
-  OPAMROOT: /home/user/.opam
+  OPAMROOT: /home/opam/.opam
   OPAMCONFIRMLEVEL: unsafe-yes
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: kakadu18/ocaml:fp2024
+      image: kakadu18/ocaml:comp25
 
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,6 +25,8 @@ jobs:
         with:
           fetch-depth: 0
 
+      - run: sudo apt update
+
       - name: List installed OPAM packages
         run: opam list
 
@@ -35,10 +37,15 @@ jobs:
       ############# Detecting and compiling fp2024
       # Smart link about setting environment variables
       # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
-      - name: Detect latest changes
+      - name: Detect latest changes in ${{ github.event.repository.name }}
+        working-directory: .github
         run: |
-          opam exec -- ocaml .github/detect_latest_pr.ml -v "pull/${{ steps.branch-name.outputs.ref_branch }}" -repo ${{ github.event.repository.name }} >> $GITHUB_ENV
-          echo "${{ env.latest }}"
+          printf '%s\n%s\n' '#require "str,unix";;' "$(cat detect_latest_pr.ml)" > detect_latest_pr.ml
+          printf '%s\n%s\n' '#use "topfind";;' "$(cat detect_latest_pr.ml)" > detect_latest_pr.ml
+          (cd .. && opam exec -- ocaml .github/detect_latest_pr.ml -master -repo ${{ github.event.repository.name }} -template Lambda) >> $GITHUB_ENV
+
+      - name: Detected directory -- ${{ env.latest }}
+        run: echo ${{ env.latest }}
 
       - name: Naive linting
         run: |
@@ -52,15 +59,17 @@ jobs:
 #          echo "PROPERLY_FORMATTED=y" >> $GITHUB_ENV
 #          cd ${{ env.latest }} && opam exec -- dune build @fmt --profile=release || echo "PROPERLY_FORMATTED=n" >> $GITHUB_ENV
 
-      # TODO: Do we really don't need to install dependencies???
-      #- name: Installing dependencies
-      #  run: cd ${{ env.latest }} && opam install . --deps-only --with-test --with-doc
+      - name: Installing dependencies for ${{ env.latest }}...
+        run: |
+          opam update
+          cd ./${{ env.latest }}
+          opam install . --depext-only --with-test --with-doc
+          opam install . --deps-only --with-test --with-doc
 
       - name: Checking ocamlformat
         run: |
           cd ${{ env.latest }}
           opam exec -- dune build @fmt --profile=release
-
 
       # TODO: onfail post a comment how to fix it
 
