@@ -77,6 +77,9 @@ Call by value doesn't reduce under abstraction
 For 3! we use noral order reduction
   $ cat lam_fac3.txt
   (((λ f . ((λ x . (f (x x))) (λ x . (f (x x))))) (λ s . (λ n . ((((λ n . ((n (λ x . (λ x . (λ y . y)))) (λ x . (λ y . x)))) n) (λ f . (λ x . (f x)))) (((λ x . (λ y . (λ z . (x (y z))))) (s ((λ n . (λ f . (λ x . (((n (λ g . (λ h . (h (g f))))) (λ u . x)) (λ u . u))))) n))) n))))) (λ f . (λ x . (f (f (f x))))))
-  $ ../bin/REPL.exe -no   < lam_fac3.txt
+  $ ../bin/REPL.exe -no -c 200  < lam_fac3.txt
+  50 beta-reductions left
   Evaluated result: (λ z x -> (z (z (z (z (z (z x)))))))
-  Number of beta-reduction has reached a limit: -50
+  $ ../bin/REPL.exe -ao <<EOF
+  > (\x. x x)(\x. x x)
+  [1]

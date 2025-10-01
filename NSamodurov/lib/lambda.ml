@@ -52,10 +52,13 @@ type strat =
   }
 
 let apply_strat st count ast =
-  match ast with
-  | Var name -> st.on_var st count name
-  | Abs (x, b) -> st.on_abs st count x b
-  | App (l, r) -> st.on_app st count l r
+  if count = 0
+  then exit 1
+  else (
+    match ast with
+    | Var name -> st.on_var st count name
+    | Abs (x, b) -> st.on_abs st count x b
+    | App (l, r) -> st.on_app st count l r)
 ;;
 
 let without_strat =
