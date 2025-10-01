@@ -140,7 +140,7 @@ let () =
     in
     let result, c = Lambda.apply_strat stra !reduction_max ast in
     if c < 0
-    then Stdlib.Format.eprintf "Number of beta-reduction has reached a limit: %d" c
+    then Stdlib.Format.eprintf "Number of beta-reduction has reached a limit"
     else Stdlib.Format.printf "%d beta-reductions left\n" c;
     result)
 ;;

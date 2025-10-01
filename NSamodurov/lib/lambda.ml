@@ -51,21 +51,19 @@ type strat =
   ; on_app : strat -> counter -> string Ast.t -> string Ast.t -> result
   }
 
-let apply_strat st count ast =
-  if count = 0
-  then exit 1
-  else (
-    match ast with
-    | Var name -> st.on_var st count name
-    | Abs (x, b) -> st.on_abs st count x b
-    | App (l, r) -> st.on_app st count l r)
-;;
-
 let without_strat =
   let on_var _ c n = var n, c - 1 in
   let on_abs _ c n m = abs n m, c - 1 in
   let on_app _ c n m = app n m, c - 1 in
   { on_var; on_abs; on_app }
+;;
+
+let apply_strat st count ast =
+  let st = if count = 0 then without_strat else st in
+  match ast with
+  | Var name -> st.on_var st count name
+  | Abs (x, b) -> st.on_abs st count x b
+  | App (l, r) -> st.on_app st count l r
 ;;
 
 let cbn_strat =

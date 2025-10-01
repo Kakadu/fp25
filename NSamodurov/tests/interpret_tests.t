@@ -82,4 +82,5 @@ For 3! we use noral order reduction
   Evaluated result: (λ z x -> (z (z (z (z (z (z x)))))))
   $ ../bin/REPL.exe -ao <<EOF
   > (\x. x x)(\x. x x)
-  [1]
+  Evaluated result: ((λ x . (x x)) (λ x . (x x)))
+  Number of beta-reduction has reached a limit
