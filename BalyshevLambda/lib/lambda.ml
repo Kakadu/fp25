@@ -182,17 +182,27 @@ let apply_limited_strat strat limited_expr =
 ;;
 
 let limited_strat_template eval =
+  let rec loop = function
+    | Over e -> over e
+    | NotOver (e, lim) ->
+      (match eval (not_over e lim) with
+       | Over e -> over e
+       | NotOver (e', lim') ->
+         if lim = lim' (* to avoid getting stuck *)
+         then not_over e' lim'
+         else loop (not_over e' lim'))
+  in
   let on_app _ = function
     | Over (f, x) -> over (app f x)
-    | NotOver ((f, x), lim) -> eval (not_over (app f x) lim)
+    | NotOver ((f, x), lim) -> loop (not_over (app f x) lim)
   in
   let on_abs _ = function
     | Over (x, b) -> over (abs x b)
-    | NotOver ((x, b), lim) -> eval (not_over (abs x b) lim)
+    | NotOver ((x, b), lim) -> loop (not_over (abs x b) lim)
   in
   let on_var _ = function
     | Over x -> over (var x)
-    | NotOver (x, lim) -> eval (not_over (var x) lim)
+    | NotOver (x, lim) -> loop (not_over (var x) lim)
   in
   { on_var; on_abs; on_app }
 ;;
