@@ -46,27 +46,9 @@ val one : string Ast.t
 val two : string Ast.t
 val three : string Ast.t
 
-(* my garbage *)
+(*  *)
 
 val ao_small_step_strat : strat
-
-(*
-   type 'a limited_t =
-  | Over of 'a
-  | NotOver of 'a * int
-
-type limited_strat =
-  { on_var : limited_strat -> Ast.name limited_t -> string Ast.t limited_t
-  ; on_abs :
-      limited_strat -> (Ast.name * string Ast.t) limited_t -> string Ast.t limited_t
-  ; on_app :
-      limited_strat -> (string Ast.t * string Ast.t) limited_t -> string Ast.t limited_t
-  }
-
-val apply_limited_strat
-  :  limited_strat
-  -> Ast.name Ast.t limited_t
-  -> Ast.name Ast.t limited_t *)
 
 type 'a limited_t =
   | Over of 'a
