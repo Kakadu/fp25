@@ -86,9 +86,6 @@ let%expect_test _ =
   eval_cbn_limited "(λx.x x) (λx.x x)" 100 |> pp_limited;
   [%expect
     {|
-    Evaluated! Reductions left: 99
-    Result: (App (
-                                              (Abs (x, (App ((Var x), (Var x))))),
-                                              (Abs (x, (App ((Var x), (Var x)))))
-                                              )) |}]
+    Partial: (App ((Abs (x, (App ((Var x), (Var x))))),
+                (Abs (x, (App ((Var x), (Var x))))))) |}]
 ;;
