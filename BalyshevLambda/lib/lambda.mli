@@ -50,19 +50,24 @@ val three : string Ast.t
 
 val ao_small_step_strat : strat
 
-type 'a limited_t =
-  | Over of 'a
-  | NotOver of 'a * int
-
-type limited_expr = Ast.name Ast.t limited_t
+type limit =
+  | Limited of int
+  | Unlimited
+  | Exhausted
 
 type limited_strat =
-  { on_var : limited_strat -> Ast.name limited_t -> limited_expr
-  ; on_abs : limited_strat -> (Ast.name * string Ast.t) limited_t -> limited_expr
-  ; on_app : limited_strat -> (string Ast.t * string Ast.t) limited_t -> limited_expr
+  { on_var : limited_strat -> Ast.name -> limit -> Ast.name Ast.t * limit
+  ; on_abs :
+      limited_strat -> Ast.name -> Ast.name Ast.t -> limit -> Ast.name Ast.t * limit
+  ; on_app :
+      limited_strat -> Ast.name Ast.t -> Ast.name Ast.t -> limit -> Ast.name Ast.t * limit
   }
+
+val apply_limited_strat
+  :  limited_strat
+  -> Ast.name Ast.t
+  -> limit
+  -> Ast.name Ast.t * limit
 
 val ao_limited : limited_strat
 val cbn_limited : limited_strat
-val apply_limited_strat : limited_strat -> limited_expr -> limited_expr
-val set_lim : 'a -> int -> 'a limited_t

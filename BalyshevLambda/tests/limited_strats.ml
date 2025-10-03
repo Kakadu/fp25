@@ -4,15 +4,19 @@ open Lambda_lib
 
 let parse_optimistically str = Result.get_ok (Parser.parse str)
 
-let pp_limited = function
-  | Lambda.Over expr -> Format.printf "Partial: %a" Printast.pp_named expr
-  | Lambda.NotOver (expr, lim) ->
+let pp_limited (expr, lim) =
+  match lim with
+  | Lambda.Exhausted -> Format.printf "Partial: %a" Printast.pp_named expr
+  | Lambda.Limited lim ->
     Format.printf "Evaluated! Reductions left: %d\nResult: %a" lim Printast.pp_named expr
+  | Lambda.Unlimited -> Format.printf "Evaluated!\nResult: %a" Printast.pp_named expr
 ;;
 
 let eval_ao_limited input lim =
-  let limited = Lambda.set_lim (parse_optimistically input) lim in
-  Lambda.apply_limited_strat Lambda.ao_limited limited
+  Lambda.apply_limited_strat
+    Lambda.ao_limited
+    (parse_optimistically input)
+    (Lambda.Limited lim)
 ;;
 
 let%expect_test _ =
@@ -48,8 +52,10 @@ let%expect_test _ =
 ;;
 
 let eval_cbn_limited input lim =
-  let limited = Lambda.set_lim (parse_optimistically input) lim in
-  Lambda.apply_limited_strat Lambda.cbn_limited limited
+  Lambda.apply_limited_strat
+    Lambda.cbn_limited
+    (parse_optimistically input)
+    (Lambda.Limited lim)
 ;;
 
 let%expect_test _ =
@@ -86,6 +92,9 @@ let%expect_test _ =
   eval_cbn_limited "(λx.x x) (λx.x x)" 100 |> pp_limited;
   [%expect
     {|
-    Partial: (App ((Abs (x, (App ((Var x), (Var x))))),
-                (Abs (x, (App ((Var x), (Var x))))))) |}]
+    Evaluated! Reductions left: 99
+    Result: (App (
+                                              (Abs (x, (App ((Var x), (Var x))))),
+                                              (Abs (x, (App ((Var x), (Var x)))))
+                                              )) |}]
 ;;

@@ -72,6 +72,18 @@ let cbn_strat =
 
 let under_abstraction st x b = abs x (apply_strat st b)
 
+(* Call-by-Value Reduction to Weak Normal Form *)
+let cbv_strat =
+  let on_app st f arg =
+    match apply_strat st f with
+    | Abs (x, e) ->
+      let arg2 = apply_strat st arg in
+      apply_strat st @@ subst x ~by:arg2 e
+    | f2 -> App (f2, apply_strat st arg)
+  in
+  { without_strat with on_app }
+;;
+
 (* Normal Order Reduction to Normal Form
    Application function reduced as CBN first
    + Reduce under abstractions *)
@@ -85,18 +97,6 @@ let nor_strat =
       App (f2, arg2)
   in
   { without_strat with on_app; on_abs = under_abstraction }
-;;
-
-(* Call-by-Value Reduction to Weak Normal Form *)
-let cbv_strat =
-  let on_app st f arg =
-    match apply_strat st f with
-    | Abs (x, e) ->
-      let arg2 = apply_strat st arg in
-      apply_strat st @@ subst x ~by:arg2 e
-    | f2 -> App (f2, apply_strat st arg)
-  in
-  { without_strat with on_app }
 ;;
 
 (* Applicative Order Reduction to Normal Form
@@ -156,96 +156,60 @@ let ao_small_step_strat =
   { on_var; on_abs; on_app }
 ;;
 
-type 'a limited_t =
-  | Over of 'a
-  | NotOver of 'a * int
-
-type limited_expr = Ast.name Ast.t limited_t
+type limit =
+  | Limited of int
+  | Unlimited
+  | Exhausted
 
 type limited_strat =
-  { on_var : limited_strat -> Ast.name limited_t -> limited_expr
-  ; on_abs : limited_strat -> (Ast.name * string Ast.t) limited_t -> limited_expr
-  ; on_app : limited_strat -> (string Ast.t * string Ast.t) limited_t -> limited_expr
+  { on_var : limited_strat -> Ast.name -> limit -> name Ast.t * limit
+  ; on_abs : limited_strat -> Ast.name -> name Ast.t -> limit -> name Ast.t * limit
+  ; on_app : limited_strat -> name Ast.t -> name Ast.t -> limit -> name Ast.t * limit
   }
 
-let over x = Over x
-let not_over x lim = NotOver (x, lim)
+let limited expr lim = expr, Limited lim
+let unlimited expr = expr, Unlimited
+let exhausted expr = expr, Exhausted
 
-let apply_limited_strat strat limited_expr =
-  match limited_expr with
-  | Over expr -> over expr
-  | NotOver (expr, lim) ->
+let apply_limited_strat strat expr = function
+  | Exhausted -> exhausted expr
+  | lim ->
     (match expr with
-     | Var x -> strat.on_var strat (not_over x lim)
-     | Abs (x, b) -> strat.on_abs strat (not_over (x, b) lim)
-     | App (f, x) -> strat.on_app strat (not_over (f, x) lim))
-;;
-
-let limited_strat_template eval =
-  let rec loop = function
-    | Over e -> over e
-    | NotOver (e, lim) ->
-      (match eval (not_over e lim) with
-       | Over e -> over e
-       | NotOver (e', lim') ->
-         if lim = lim' (* to avoid getting stuck *)
-         then not_over e' lim'
-         else loop (not_over e' lim'))
-  in
-  let on_app _ = function
-    | Over (f, x) -> over (app f x)
-    | NotOver ((f, x), lim) -> loop (not_over (app f x) lim)
-  in
-  let on_abs _ = function
-    | Over (x, b) -> over (abs x b)
-    | NotOver ((x, b), lim) -> loop (not_over (abs x b) lim)
-  in
-  let on_var _ = function
-    | Over x -> over (var x)
-    | NotOver (x, lim) -> loop (not_over (var x) lim)
-  in
-  { on_var; on_abs; on_app }
+     | Var x -> strat.on_var strat x lim
+     | Abs (x, b) -> strat.on_abs strat x b lim
+     | App (f, x) -> strat.on_app strat f x lim)
 ;;
 
 let ao_limited =
-  let rec eval = function
-    | Over expr -> over expr
-    | NotOver (expr, lim) ->
-      (match expr with
-       | Var _ as l -> not_over l lim
-       | Abs (x, b) ->
-         (match eval (not_over b lim) with
-          | Over b -> over (abs x b)
-          | NotOver (b, lim) -> not_over (abs x b) lim)
-       | App (f, arg) ->
-         (match eval (not_over f lim) with
-          | Over f -> over (app f arg)
-          | NotOver (Abs (x, b), lim) ->
-            (match eval (not_over arg lim) with
-             | Over arg -> over (app f arg)
-             | NotOver (arg, lim) ->
-               let exp = subst x ~by:arg b in
-               if lim < 1 then over (app (abs x b) arg) else not_over exp (lim - 1))
-          | NotOver (f, lim) -> not_over (app f arg) lim))
+  let on_var _ x lim = var x, lim in
+  let on_abs st x b lim =
+    let b', lim' = apply_limited_strat st b lim in
+    abs x b', lim'
   in
-  limited_strat_template eval
+  let on_app st f arg lim =
+    match apply_limited_strat st f lim with
+    | Abs (x, b), lim ->
+      (match apply_limited_strat st arg lim with
+       | arg, Exhausted -> app (Abs (x, b)) arg, Exhausted
+       | arg, Limited lim ->
+         if lim < 1
+         then exhausted (app (abs x b) arg)
+         else limited (subst x ~by:arg b) (lim - 1)
+       | arg, Unlimited -> unlimited (subst x ~by:arg b))
+    | f, lim -> app f arg, lim
+  in
+  { on_app; on_var; on_abs }
 ;;
 
 let cbn_limited =
-  let rec eval = function
-    | Over expr -> over expr
-    | NotOver (expr, lim) ->
-      (match expr with
-       | (Var _ | Abs _) as e -> not_over e lim
-       | App (f, arg) ->
-         (match eval (not_over f lim) with
-          | Over f -> over (app f arg)
-          | NotOver (Abs (x, b), lim) ->
-            let exp = subst x ~by:arg b in
-            if lim < 1 then over (app (abs x b) arg) else not_over exp (lim - 1)
-          | NotOver (f, lim) -> NotOver (app f arg, lim)))
+  let on_var _ x lim = var x, lim in
+  let on_abs _ x b lim = abs x b, lim in
+  let on_app st f arg lim =
+    match apply_limited_strat st f lim with
+    | Abs (x, b), Limited lim when lim > 0 -> limited (subst x ~by:arg b) (lim - 1)
+    | Abs (x, b), Limited _ -> exhausted (app (abs x b) arg)
+    | Abs (x, b), Unlimited -> unlimited (subst x ~by:arg b)
+    | f, lim -> app f arg, lim
   in
-  limited_strat_template eval
+  { on_var; on_abs; on_app }
 ;;
-
-let set_lim expr lim = if lim < 1 then failwith "invalid value" else NotOver (expr, lim)
