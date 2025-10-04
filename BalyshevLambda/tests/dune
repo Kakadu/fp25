@@ -29,13 +29,3 @@
   lam_3x2.txt
   lam_fac3.txt
   ../bin/REPL.exe))
-
-(library
- (name limited_strats)
- (libraries lambda_lib ppx_expect)
- (modules limited_strats)
- (preprocess
-  (pps ppx_expect))
- (instrumentation
-  (backend bisect_ppx))
- (inline_tests))

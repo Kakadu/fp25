@@ -74,64 +74,70 @@ For 3! we use noral order reduction
   Result: (λ z x -> (z (z (z (z (z (z x)))))))
 
 tests for limited reductions
-cbn under abstraction
+
+various strategies under abstraction
   $ ../bin/REPL.exe -cbn -lim 1 <<EOF
   > \x. (\y.y) z
   Evaluated! Reductions left: 1.
   Result: (λ _ . ((λ y . y) z))
 
-cbn on application
-  $ ../bin/REPL.exe -cbn -lim 2 <<EOF
-  > (\x.f x) ((\y.y) a)
-  Evaluated! Reductions left: 1.
-  Result: (f ((λ y . y) a))
-
-cbv under abstraction
   $ ../bin/REPL.exe -cbv -lim 1 <<EOF
   > \x. (\y.y) z
   Evaluated! Reductions left: 1.
   Result: (λ _ . ((λ y . y) z))
 
-cbv on application
-  $ ../bin/REPL.exe -cbv -lim 1 <<EOF
-  > (\x.x) ((\y.y) z)
-  Partial evaluated.
-  Result: ((λ x . x) z)
-
-ao under abstraction
   $ ../bin/REPL.exe -ao -lim 1 <<EOF
   > \x. (\y.y) z
   Evaluated! Reductions left: 0.
   Result: (λ _ . z)
 
-ao on application
+  $ ../bin/REPL.exe -no -lim 1 <<EOF
+  > \x. (\y.y) z
+  Evaluated! Reductions left: 0.
+  Result: (λ _ . z)
+
+various strategies on redex as application argument
+  $ ../bin/REPL.exe -cbn -lim 1 <<EOF
+  > (\x.x) ((\y.y) z)
+  Partial evaluated.
+  Result: ((λ y . y) z)
+
   $ ../bin/REPL.exe -cbv -lim 1 <<EOF
   > (\x.x) ((\y.y) z)
   Partial evaluated.
   Result: ((λ x . x) z)
 
-  $ ../bin/REPL.exe -ao -lim 2 <<EOF
-  > (\x.f x) ((\y.y) a)
-  Evaluated! Reductions left: 0.
-  Result: (f a)
-
   $ ../bin/REPL.exe -ao -lim 1 <<EOF
-  > \x. (\y.y) z
+  > (\x.x) ((\y.y) z)
+  Partial evaluated.
+  Result: ((λ x . x) z)
+
+  $ ../bin/REPL.exe -no -lim 1 <<EOF
+  > (\x.x) ((\y.y) z)
+  Partial evaluated.
+  Result: ((λ y . y) z)
+
+  $ ../bin/REPL.exe -cbn -lim 1 <<EOF
+  > f ((\x.x) y)
+  Evaluated! Reductions left: 1.
+  Result: (f ((λ x . x) y))
+
+  $ ../bin/REPL.exe -cbv -lim 1 <<EOF
+  > f ((\x.x) y)
   Evaluated! Reductions left: 0.
-  Result: (λ _ . z)
+  Result: (f y)
 
   $ ../bin/REPL.exe -ao -lim 1 <<EOF
   > f ((\x.x) y)
   Evaluated! Reductions left: 0.
   Result: (f y)
 
-cbn on Omega combinator
-  $ ../bin/REPL.exe -cbn -lim 10 <<EOF
-  > (\x.x x) (\y.y y)
-  Partial evaluated.
-  Result: ((λ y . (y y)) (λ y . (y y)))
+  $ ../bin/REPL.exe -no -lim 1 <<EOF
+  > f ((\x.x) y)
+  Evaluated! Reductions left: 0.
+  Result: (f y)
 
-various strategies of frst which ignores Omega
+various strategies of frst which ignores Omega combinator
   $ ../bin/REPL.exe -cbn -lim 10 <<EOF
   > (\x.\y.x) a ((\x.x x) (\y.y y))
   Evaluated! Reductions left: 8.
@@ -146,3 +152,57 @@ various strategies of frst which ignores Omega
   > (\x.\y.x) a ((\x.x x) (\y.y y))
   Partial evaluated.
   Result: ((λ _ . a) ((λ y . (y y)) (λ y . (y y))))
+
+  $ ../bin/REPL.exe -no -lim 10 <<EOF
+  > (\x.\y.x) a ((\x.x x) (\y.y y))
+  Evaluated! Reductions left: 8.
+  Result: a
+
+lam_*.txt
+  $ ../bin/REPL.exe -cbn < lam_one.txt
+  Evaluated!
+  Result: 1
+
+  $ ../bin/REPL.exe -cbv < lam_one.txt
+  Evaluated!
+  Result: 1
+
+  $ ../bin/REPL.exe -ao < lam_one.txt
+  Evaluated!
+  Result: 1
+
+  $ ../bin/REPL.exe -no < lam_one.txt
+  Evaluated!
+  Result: 1
+
+  $ ../bin/REPL.exe -cbn < lam_1+1.txt
+  Evaluated!
+  Result: (λ n f x -> ((1 1) (f (n (f x)))))
+
+  $ ../bin/REPL.exe -cbv < lam_1+1.txt
+  Evaluated!
+  Result: 1
+
+  $ ../bin/REPL.exe -ao < lam_1+1.txt
+  Evaluated!
+  Result: 1
+
+  $ ../bin/REPL.exe -no < lam_1+1.txt
+  Evaluated!
+  Result: (λ n f x _x -> ((f (n (f x))) _x))
+
+  $ ../bin/REPL.exe -cbn < lam_fac3.txt
+  Evaluated!
+  Result: (λ z . ((((λ x . ((λ s n -> ((((λ n . ((n (λ _ _ y -> y)) ⊤)) n) 1) (((λ x y z -> (x (y z))) (s ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) n))) n))) (x x))) (λ x . ((λ s n -> ((((λ n . ((n (λ _ _ y -> y)) ⊤)) n) 1) (((λ x y z -> (x (y z))) (s ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) n))) n))) (x x)))) ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) (λ f x -> (f (f (f x)))))) ((λ f x -> (f (f (f x)))) z)))
+
+  $ ../bin/REPL.exe -no < lam_fac3.txt
+  Evaluated!
+  Result: (λ z x -> (z (z (z (z (z (z x)))))))
+
+  $ ../bin/REPL.exe -ao -lim 10 < lam_fac3.txt
+  Partial evaluated.
+  Result: (((λ f . (f (f (f (f (f (f (f (f (f (f ((λ x . (f (x x))) (λ x . (f (x x))))))))))))))) (λ s n -> ((((λ n . ((n (λ _ _ y -> y)) ⊤)) n) 1) (((λ x y z -> (x (y z))) (s ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) n))) n)))) (λ f x -> (f (f (f x)))))
+
+  $ ../bin/REPL.exe -cbv -lim 10 < lam_fac3.txt
+  Partial evaluated.
+  Result: (((λ s n -> ((((λ n . ((n (λ _ _ y -> y)) ⊤)) n) 1) (((λ x y z -> (x (y z))) (s ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) n))) n))) ((λ s n -> ((((λ n . ((n (λ _ _ y -> y)) ⊤)) n) 1) (((λ x y z -> (x (y z))) (s ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) n))) n))) ((λ s n -> ((((λ n . ((n (λ _ _ y -> y)) ⊤)) n) 1) (((λ x y z -> (x (y z))) (s ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) n))) n))) ((λ s n -> ((((λ n . ((n (λ _ _ y -> y)) ⊤)) n) 1) (((λ x y z -> (x (y z))) (s ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) n))) n))) ((λ s n -> ((((λ n . ((n (λ _ _ y -> y)) ⊤)) n) 1) (((λ x y z -> (x (y z))) (s ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) n))) n))) ((λ s n -> ((((λ n . ((n (λ _ _ y -> y)) ⊤)) n) 1) (((λ x y z -> (x (y z))) (s ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) n))) n))) ((λ s n -> ((((λ n . ((n (λ _ _ y -> y)) ⊤)) n) 1) (((λ x y z -> (x (y z))) (s ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) n))) n))) ((λ s n -> ((((λ n . ((n (λ _ _ y -> y)) ⊤)) n) 1) (((λ x y z -> (x (y z))) (s ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) n))) n))) ((λ s n -> ((((λ n . ((n (λ _ _ y -> y)) ⊤)) n) 1) (((λ x y z -> (x (y z))) (s ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) n))) n))) ((λ x . ((λ s n -> ((((λ n . ((n (λ _ _ y -> y)) ⊤)) n) 1) (((λ x y z -> (x (y z))) (s ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) n))) n))) (x x))) (λ x . ((λ s n -> ((((λ n . ((n (λ _ _ y -> y)) ⊤)) n) 1) (((λ x y z -> (x (y z))) (s ((λ n f x -> (((n (λ g h -> (h (g f)))) (λ _ . x)) (λ u . u))) n))) n))) (x x))))))))))))) (λ f x -> (f (f (f x)))))
