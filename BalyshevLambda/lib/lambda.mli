@@ -13,22 +13,6 @@
 
 val subst : string -> by:string Ast.t -> string Ast.t -> string Ast.t
 
-type strat =
-  { on_var : strat -> Ast.name -> string Ast.t
-  ; on_abs : strat -> Ast.name -> string Ast.t -> string Ast.t
-  ; on_app : strat -> string Ast.t -> string Ast.t -> string Ast.t
-  }
-
-val apply_strat : strat -> string Ast.t -> string Ast.t
-val without_strat : strat
-
-(** Predefined strategies *)
-
-val cbn_strat : strat
-val nor_strat : strat
-val cbv_strat : strat
-val ao_strat : strat
-
 (** Example lambda expressions *)
 
 val a : string Ast.t
@@ -46,30 +30,23 @@ val one : string Ast.t
 val two : string Ast.t
 val three : string Ast.t
 
-(*  *)
-
-val ao_small_step_strat : strat
-
 type limit =
   | Limited of int
   | Unlimited
   | Exhausted
 
-type limited_strat =
-  { on_var : limited_strat -> Ast.name -> limit -> Ast.name Ast.t * limit
-  ; on_abs :
-      limited_strat -> Ast.name -> Ast.name Ast.t -> limit -> Ast.name Ast.t * limit
-  ; on_app :
-      limited_strat -> Ast.name Ast.t -> Ast.name Ast.t -> limit -> Ast.name Ast.t * limit
+type strat =
+  { on_var : strat -> Ast.name -> limit -> Ast.name Ast.t * limit
+  ; on_abs : strat -> Ast.name -> Ast.name Ast.t -> limit -> Ast.name Ast.t * limit
+  ; on_app : strat -> Ast.name Ast.t -> Ast.name Ast.t -> limit -> Ast.name Ast.t * limit
   }
 
-val apply_limited_strat
-  :  limited_strat
-  -> Ast.name Ast.t
-  -> limit
-  -> Ast.name Ast.t * limit
+(*  *)
 
-val ao_limited : limited_strat
-val cbn_limited : limited_strat
-val cbv_limited : limited_strat
-val no_limited : limited_strat
+val ao_small_step_strat : strat
+val apply_limited_strat : strat -> Ast.name Ast.t -> limit -> Ast.name Ast.t * limit
+val ao_strat : strat
+val cbn_strat : strat
+val cbv_strat : strat
+val no_strat : strat
+val without_strat : strat

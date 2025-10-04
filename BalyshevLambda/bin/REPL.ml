@@ -31,7 +31,7 @@ type opts =
 
 let big_step_evaluator = function
   | AO -> Lambda.ao_strat
-  | NO -> Lambda.nor_strat
+  | NO -> Lambda.no_strat
   | CBN -> Lambda.cbn_strat
   | CBV -> Lambda.cbv_strat
 ;;
@@ -39,13 +39,6 @@ let big_step_evaluator = function
 let small_step_evaluator = function
   | AO -> Lambda.ao_small_step_strat
   | _ -> failwith "not implemented"
-;;
-
-let limited_evaluator = function
-  | AO -> Lambda.ao_limited
-  | CBN -> Lambda.cbn_limited
-  | CBV -> Lambda.cbv_limited
-  | NO -> Lambda.no_limited
 ;;
 
 let run_single dump_parsetree stop_after eval =
@@ -60,15 +53,14 @@ let run_single dump_parsetree stop_after eval =
      | SA_never ->
        let rez, lim = eval ast in
        (match lim with
-        | Lambda.Unlimited ->
-          Format.printf "Evaluated!\nResult: %a\n%!" Pprintast.pp_hum rez
+        | Lambda.Unlimited -> Format.printf "Evaluated!\nResult: %a\n%!" Pprintast.pp rez
         | Lambda.Exhausted ->
-          Format.printf "Partial evaluated.\nResult: %a\n%!" Pprintast.pp_hum rez
+          Format.printf "Partial evaluated.\nResult: %a\n%!" Pprintast.pp rez
         | Lambda.Limited lim ->
           Format.printf
             "Evaluated! Reductions left: %d.\nResult: %a\n%!"
             lim
-            Pprintast.pp_hum
+            Pprintast.pp
             rez))
 ;;
 
@@ -88,7 +80,10 @@ let () =
     let _, stra = opts.mode in
     opts.mode <- step, stra
   in
-  let pick_limit n = opts.limit <- (if n < 0 then failwith "einval" else Limited n) in
+  let pick_limit n =
+    opts.limit
+    <- (if n < 0 then failwith "Limit should be not negative integer" else Limited n)
+  in
   let () =
     let open Stdlib.Arg in
     parse
@@ -121,8 +116,8 @@ let () =
   run_single opts.dump_parsetree opts.stop_after (fun ast ->
     let stra =
       match opts.mode with
-      | _, stra -> limited_evaluator stra
+      | Big_step, stra -> big_step_evaluator stra
+      | Small_step, stra -> small_step_evaluator stra
     in
-    let limit = opts.limit in
-    Lambda.apply_limited_strat stra ast limit)
+    Lambda.apply_limited_strat stra ast opts.limit)
 ;;
