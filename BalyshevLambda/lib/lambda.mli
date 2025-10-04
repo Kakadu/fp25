@@ -71,3 +71,5 @@ val apply_limited_strat
 
 val ao_limited : limited_strat
 val cbn_limited : limited_strat
+val cbv_limited : limited_strat
+val no_limited : limited_strat

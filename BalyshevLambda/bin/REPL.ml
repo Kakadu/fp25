@@ -45,7 +45,7 @@ let limited_evaluator = function
   | AO -> Lambda.ao_limited
   | CBN -> Lambda.cbn_limited
   | CBV -> Lambda.cbv_limited
-  | NO -> Lambda.nor_limited
+  | NO -> Lambda.no_limited
 ;;
 
 let run_single dump_parsetree stop_after eval =
@@ -61,9 +61,9 @@ let run_single dump_parsetree stop_after eval =
        let rez, lim = eval ast in
        (match lim with
         | Lambda.Unlimited ->
-          Format.printf "Evaluated result: %a\n%!" Pprintast.pp_hum rez
+          Format.printf "Evaluated!\nResult: %a\n%!" Pprintast.pp_hum rez
         | Lambda.Exhausted ->
-          Format.printf "Partial evaluated. Result: %a\n%!" Pprintast.pp_hum rez
+          Format.printf "Partial evaluated.\nResult: %a\n%!" Pprintast.pp_hum rez
         | Lambda.Limited lim ->
           Format.printf
             "Evaluated! Reductions left: %d.\nResult: %a\n%!"

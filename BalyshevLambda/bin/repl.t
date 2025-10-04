@@ -1,6 +1,7 @@
 
   $ ./REPL.exe -help
   Read-Eval-Print-Loop for Utyped Lambda Calculus
+    -lim Reductions limit
     -cbv Call-by-value strategy
     -cbn Call-by-name strategy
     -no Normal Order strategy
