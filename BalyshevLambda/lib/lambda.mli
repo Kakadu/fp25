@@ -44,7 +44,7 @@ type strat =
 (*  *)
 
 val ao_small_step_strat : strat
-val apply_limited_strat : strat -> Ast.name Ast.t -> limit -> Ast.name Ast.t * limit
+val apply_strat : strat -> Ast.name Ast.t -> limit -> Ast.name Ast.t * limit
 val ao_strat : strat
 val cbn_strat : strat
 val cbv_strat : strat

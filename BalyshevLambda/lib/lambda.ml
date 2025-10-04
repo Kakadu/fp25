@@ -63,7 +63,7 @@ let limited expr lim = expr, Limited lim
 let unlimited expr = expr, Unlimited
 let exhausted expr = expr, Exhausted
 
-let apply_limited_strat strat expr lim =
+let apply_strat strat expr lim =
   match expr, lim with
   | _, Exhausted -> exhausted expr
   | Var x, lim -> strat.on_var strat x lim
@@ -72,7 +72,7 @@ let apply_limited_strat strat expr lim =
 ;;
 
 let under_abstraction st x b lim =
-  let b', lim' = apply_limited_strat st b lim in
+  let b', lim' = apply_strat st b lim in
   abs x b', lim'
 ;;
 
@@ -85,10 +85,10 @@ let without_strat =
 
 let cbn_strat =
   let on_app st f arg lim =
-    match apply_limited_strat st f lim with
-    | Abs (x, b), Unlimited -> apply_limited_strat st (subst x ~by:arg b) Unlimited
+    match apply_strat st f lim with
+    | Abs (x, b), Unlimited -> apply_strat st (subst x ~by:arg b) Unlimited
     | Abs (x, b), Limited lim when lim > 0 ->
-      apply_limited_strat st (subst x ~by:arg b) (Limited (lim - 1))
+      apply_strat st (subst x ~by:arg b) (Limited (lim - 1))
     | Abs (x, b), _ -> exhausted (app (abs x b) arg)
     | f, lim -> app f arg, lim
   in
@@ -97,16 +97,16 @@ let cbn_strat =
 
 let cbv_strat =
   let on_app st f arg lim =
-    match apply_limited_strat st f lim with
+    match apply_strat st f lim with
     | Abs (x, b), lim ->
-      (match apply_limited_strat st arg lim with
-       | arg, Unlimited -> apply_limited_strat st (subst x ~by:arg b) Unlimited
+      (match apply_strat st arg lim with
+       | arg, Unlimited -> apply_strat st (subst x ~by:arg b) Unlimited
        | arg, Limited lim when lim > 0 ->
          let e, lim = limited (subst x ~by:arg b) (lim - 1) in
-         apply_limited_strat st e lim
+         apply_strat st e lim
        | arg, _ -> exhausted (app (abs x b) arg))
     | f, lim ->
-      let arg, lim = apply_limited_strat st arg lim in
+      let arg, lim = apply_strat st arg lim in
       app f arg, lim
   in
   { without_strat with on_app }
@@ -114,17 +114,17 @@ let cbv_strat =
 
 let no_strat =
   let on_app st f arg lim =
-    let f, lim = apply_limited_strat cbn_strat f lim in
+    let f, lim = apply_strat cbn_strat f lim in
     match f with
     | Abs (x, b) ->
       (match lim with
-       | Unlimited -> apply_limited_strat st (subst x ~by:arg b) Unlimited
+       | Unlimited -> apply_strat st (subst x ~by:arg b) Unlimited
        | Limited lim when lim > 0 ->
-         apply_limited_strat st (subst x ~by:arg b) (Limited (lim - 1))
+         apply_strat st (subst x ~by:arg b) (Limited (lim - 1))
        | _ -> exhausted (app (abs x b) arg))
     | f ->
-      let f, lim = apply_limited_strat st f lim in
-      let arg, lim = apply_limited_strat st arg lim in
+      let f, lim = apply_strat st f lim in
+      let arg, lim = apply_strat st arg lim in
       app f arg, lim
   in
   { without_strat with on_app; on_abs = under_abstraction }

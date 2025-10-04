@@ -36,9 +36,17 @@ let big_step_evaluator = function
   | CBV -> Lambda.cbv_strat
 ;;
 
-let small_step_evaluator = function
-  | AO -> Lambda.ao_small_step_strat
-  | _ -> failwith "not implemented"
+let small_step_evaluator st =
+  let st = big_step_evaluator st in
+  let rec helper expr =
+    let expr, lim = Lambda.apply_strat st expr (Lambda.Limited 1) in
+    Format.printf " -- %a\n%!" Pprintast.pp_hum expr;
+    if lim = Lambda.Exhausted then helper expr else expr
+  in
+  let on_app _ f arg _ = helper (Ast.App (f, arg)), Lambda.Unlimited in
+  let on_abs _ f x _ = helper (Ast.Abs (f, x)), Lambda.Unlimited in
+  let on_var _ x _ = helper (Ast.Var x), Lambda.Unlimited in
+  { Lambda.on_var; on_abs; on_app }
 ;;
 
 let run_single dump_parsetree stop_after eval =
@@ -119,5 +127,5 @@ let () =
       | Big_step, stra -> big_step_evaluator stra
       | Small_step, stra -> small_step_evaluator stra
     in
-    Lambda.apply_limited_strat stra ast opts.limit)
+    Lambda.apply_strat stra ast opts.limit)
 ;;
