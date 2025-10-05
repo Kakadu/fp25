@@ -13,7 +13,9 @@
   lam_1+1.txt
   lam_2x1.txt
   lam_3x2.txt
-  lam_fac3.txt)
+  lam_3x6.txt
+  lam_fac3.txt
+  lam_fac6.txt)
  (mode
   (promote (until-clean)))
  (action
@@ -27,5 +29,7 @@
   lam_1+1.txt
   lam_2x1.txt
   lam_3x2.txt
+  lam_3x6.txt
   lam_fac3.txt
+  lam_fac6.txt
   ../bin/REPL.exe))

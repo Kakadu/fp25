@@ -15,6 +15,7 @@ let zero = abs "g" @@ abs "y" @@ Var "y"
 let one = abs "f" @@ abs "x" @@ app f (Var "x")
 let two = abs "f" @@ abs "x" @@ app f (app f x)
 let three = abs "f" @@ abs "x" @@ app f (app f (app f x))
+let six = abs "f" @@ abs "x" @@ app f (app f (app f (app f (app f (app f x)))))
 let plus = abs "m" @@ abs "n" @@ abs "f" @@ abs "x" @@ app m @@ app f @@ app n @@ app f x
 let mul = abs "x" @@ abs "y" @@ abs "z" @@ app x (app y z)
 let true_ = abs "x" @@ abs "y" @@ Var "x"
@@ -41,6 +42,7 @@ let () = out_term "lam_one.txt" one
 let () = out_term "lam_1+1.txt" (app plus @@ app one one)
 let () = out_term "lam_2x1.txt" (app (app mul two) one)
 let () = out_term "lam_3x2.txt" (app (app mul three) two)
+let () = out_term "lam_3x6.txt" (app (app mul three) six)
 
 (** Definition for normal order *)
 module _ = struct
@@ -58,4 +60,5 @@ module _ = struct
   ;;
 
   let () = out_term "lam_fac3.txt" @@ app (app ygrek fact) three
+  let () = out_term "lam_fac6.txt" @@ app (app ygrek fact) six
 end
