@@ -145,32 +145,3 @@ let zero = abs "f" @@ abs "x" x
 let one = abs "f" @@ abs "x" @@ app f x
 let two = abs "f" @@ abs "x" @@ app f (app f x)
 let three = abs "f" @@ abs "x" @@ app f (app f (app f x))
-
-let ao_small_step_strat =
-  let rec helper = function
-    | Var _ as l -> fin l
-    | Abs (x, b) ->
-      (match helper b with
-       | WIP b2 -> wip (abs x b2)
-       | Done b2 -> fin (abs x b2))
-    | App (f, arg) ->
-      (match helper f with
-       | WIP f2 -> wip (app f2 arg)
-       | Done (Abs (x, body)) ->
-         (match helper arg with
-          | Done arg -> wip (subst x ~by:arg body)
-          | WIP arg -> wip (app f arg))
-       | Done f2 -> fin (App (f2, arg)))
-  in
-  let rec loop t =
-    match helper t with
-    | Done x -> x, Unlimited
-    | WIP x ->
-      Format.printf " -- %a\n%!" Pprintast.pp_hum x;
-      loop x
-  in
-  let on_app _ f arg _ = loop (app f arg) in
-  let on_abs _ f x _ = loop (abs f x) in
-  let on_var _ x _ = loop (var x) in
-  { on_var; on_abs; on_app }
-;;
