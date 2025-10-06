@@ -83,8 +83,6 @@ For 3! we use noral order reduction
   Result: (λ z . (λ x . (z (z (z (z (z (z x))))))))
 
 tests for limited reductions
-
-various strategies under abstraction
   $ ../bin/REPL.exe -cbn -lim 1 <<EOF
   > \x. (\y.y) z
   Evaluated! Reductions left: 1.
@@ -220,8 +218,6 @@ lam_*.txt
   Evaluated! Reductions left: 191.
   Result: (λ z . (λ x . (z (z (z (z (z (z (z (z (z (z (z (z (z (z (z (z (z (z x))))))))))))))))))))
 
-some arithmetics
-
 (2 + 1) * 2
   $ ../bin/REPL.exe -ao <<EOF
   > (λm.λn.λf.m (n f)) ((λm.λn.λf.λx.m f (n f x)) (λf.λx.f (f x)) (λf.λx.f x)) (λf.λx.f (f x))
@@ -245,6 +241,33 @@ some arithmetics
   Result: (λ f . (λ x . (f (f (f (f (f (f (f (f (f (f (f (f (f (f x))))))))))))))))
 
 small step evaluation
+
+  $ ../bin/REPL.exe -cbn -small <<EOF
+  > (λx.x) ((λy.y) (λz.z))
+   -- ((λ y . y) (λ z . z))
+   -- (λ z . z)
+  Evaluated!
+  Result: (λ z . z)
+
+  $ ../bin/REPL.exe -cbv -small <<EOF
+  > (λx.x) ((λy.y) (λz.z))
+   -- ((λ x . x) (λ z . z))
+   -- (λ z . z)
+  Evaluated!
+  Result: (λ z . z)
+
+  $ ../bin/REPL.exe -cbv -small <<EOF
+  > (λx.(λy.y) x)
+   -- (λ x . ((λ y . y) x))
+  Evaluated!
+  Result: (λ x . ((λ y . y) x))
+
+  $ ../bin/REPL.exe -ao -small <<EOF
+  > (λx.(λy.y) x)
+   -- (λ x . x)
+  Evaluated!
+  Result: (λ x . x)
+
   $ ../bin/REPL.exe -ao -small < lam_3x2.txt
    -- ((λ y z -> ((λ f x -> (f (f (f x)))) (y z))) 2)
    -- ((λ y z x -> ((y z) ((y z) ((y z) x)))) 2)
