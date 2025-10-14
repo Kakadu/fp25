@@ -8,10 +8,13 @@ type binop =
   | Mul (** * *)
   | Div (** / *)
   | Eq (** = *)
+  | Neq (** <> *)
   | Lt (** < *)
   | Gt (** > *)
   | Le (** <= *)
   | Ge (** >= *)
+  | And (** && *)
+  | Or (** || *)
 [@@deriving show { with_path = false }]
 
 (** Unary operators *)
