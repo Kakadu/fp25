@@ -1,0 +1,19 @@
+(library
+ (name MiniML)
+ (public_name MiniML.lib)
+ (modules Ast Interpreter Parser)
+ (libraries base angstrom str)
+ (preprocess
+  (pps ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx)))
+
+(library
+ (name tests)
+ (modules tests)
+ (libraries MiniML)
+ (preprocess
+  (pps ppx_expect ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx))
+ (inline_tests))
