@@ -2,72 +2,72 @@ open MiniML
 
 let run_expr str =
   match Parser.parse_expression str with
-  | Ok ast -> Ast.show_expression ast |> print_endline
+  | Ok ast -> Ast.show_expression ast |> Format.printf "parsed: %s"
   | Error err -> err |> print_endline
 ;;
 
 let%expect_test _ =
   run_expr "123";
-  [%expect {| 123 |}]
+  [%expect {| parsed: 123 |}]
 ;;
 
 let%expect_test _ =
   run_expr "1 + 2 + 3";
   [%expect
     {|
-    1 + 2 + 3 |}]
+    parsed: ((1 + 2) + 3) |}]
 ;;
 
 let%expect_test _ =
   run_expr "1 + 2 * 3";
   [%expect
     {|
-    1 + 2 * 3 |}]
+    parsed: (1 + (2 * 3)) |}]
 ;;
 
 let%expect_test _ =
   run_expr "(1, 2, 3)";
-  [%expect {| (1, 2, 3) |}]
-;;
-
-let%expect_test _ =
-  run_expr "(1 + 2, 3)";
-  [%expect
-    {|
-    (1 + 2, 3) |}]
+  [%expect {| parsed: (1, 2, 3) |}]
 ;;
 
 let%expect_test _ =
   run_expr "1, 2, 3";
-  [%expect {| (1, 2, 3) |}]
+  [%expect {| parsed: (1, 2, 3) |}]
 ;;
 
 let%expect_test _ =
   run_expr "1 + 2, 3 + 4";
   [%expect
     {|
-    (1 + 2, 3 + 4) |}]
+    parsed: ((1 + 2), (3 + 4)) |}]
+;;
+
+let%expect_test _ =
+  run_expr "(1 + 2, 3 + 4)";
+  [%expect
+    {|
+    parsed: ((1 + 2), (3 + 4)) |}]
 ;;
 
 let%expect_test _ =
   run_expr "a :: b :: c :: d";
   [%expect
     {|
-    b :: c :: d :: a |}]
+    parsed: (a :: (b :: (c :: d))) |}]
 ;;
 
 let%expect_test _ =
   run_expr "a :: b = c :: d";
   [%expect
     {|
-    b :: a = d :: c |}]
+    parsed: ((a :: b) = (c :: d)) |}]
 ;;
 
 let%expect_test _ =
-  run_expr "a * b < 1 + 2 / 3";
+  run_expr "a * b >= 1 + 2 / 3";
   [%expect
     {|
-    a * b < 1 + 2 / 3 |}]
+    parsed: ((a * b) >= (1 + (2 / 3))) |}]
 ;;
 
 (* *)
@@ -88,5 +88,10 @@ let%expect_test _ =
 
 let%expect_test _ =
   parse_eval_print "(1 + 2)";
-  [%expect {| parsing failed : : no more choices |}]
+  [%expect {| evaluated : 3 |}]
+;;
+
+let%expect_test _ =
+  parse_eval_print "(1 + 2, 2, 3 - 2)";
+  [%expect {| evaluated : (3, 2, 1) |}]
 ;;

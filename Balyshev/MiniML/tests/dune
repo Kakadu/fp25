@@ -1,0 +1,7 @@
+(executable
+ (name REPL)
+ (modules REPL)
+ (libraries stdio MiniML))
+
+(cram
+ (deps REPL.exe))
