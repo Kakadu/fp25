@@ -7,16 +7,15 @@
 open Ast
 
 type value =
-  | VConst of const
+  | VConstant of constant
   | VTuple of value * value * value list
   | VFun of rec_flag * pattern * expression * environment
-  | VOption of value option
-  | VPrintInt
+  | VConstruct of string * value option
 
 and error =
   [ `Is_not_a_function of string
   | `Unbound_value of string
-  | `Type_mismatch of expression
+  | `Type_mismatch
   | `Division_by_zero
   ]
 
