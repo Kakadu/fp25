@@ -4,7 +4,7 @@ type rec_flag =
 
 type 'a list1 = 'a * 'a list
 
-type const =
+type constant =
   | CUnit
   | CInt of int
   | CBool of bool
@@ -16,7 +16,7 @@ and pattern =
   | PConstruct of string * pattern option
 
 type expression =
-  | EConst of const
+  | EConstant of constant
   | EVar of string
   | ETuple of expression * expression * expression list
   | EBinop of binop * expression * expression
