@@ -16,7 +16,7 @@
 
 (package
  (name MiniML)
- (synopsis "mini ml impementation")
+ (synopsis "mini ml implementation")
  (description "implementation of a subset of OCaml")
  (documentation "https://kakadu.github.io/fp25/docs/Lambda")
  (version 0.1)
@@ -34,7 +34,4 @@
   (ocamlformat
    (and
     :build
-    (= "0.26.2")))
-  ; base
-  ; After adding dependencies to 'dune' files add the same dependecies here too
-  ))
+    (= "0.26.2")))))
