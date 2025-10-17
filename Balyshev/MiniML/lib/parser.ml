@@ -148,16 +148,23 @@ let left_chain op init_t item_t =
   <*> many1 (ws *> item_t)
 ;;
 
-let right_chain op init_t item_t =
-  return (fun init items -> List.fold_right (fun a b -> EBinop (op, a, b)) items init)
-  <*> ws *> init_t
-  <*> many1 (ws *> item_t)
+let right_chain op first_t item_t =
+  let rec helper items acc =
+    match items with
+    | [] -> acc
+    | x :: xs -> helper xs (EBinop (op, x, acc))
+  in
+  let* first = ws *> first_t in
+  let* rest = many1 (ws *> item_t) in
+  match List.rev (first :: rest) with
+  | x :: xs -> return (helper xs x)
+  | _ -> fail "unreachable"
 ;;
 
 let cmp d =
   ws
-  *> fix (fun _self ->
-    parens (d.expr d)
+  *> fix (fun self ->
+    parens self
     <|> left_chain Ne (d.cons d) (string "<>" *> ws *> d.cons d)
     <|> left_chain Le (d.cons d) (string "<=" *> ws *> d.cons d)
     <|> left_chain Ge (d.cons d) (string ">=" *> ws *> d.cons d)
@@ -170,8 +177,7 @@ let cmp d =
 let cons d =
   ws
   *> fix (fun _self ->
-    fail ""
-    <|> parens (d.expr d)
+    parens (d.expr d)
     <|> right_chain Cons (d.add_sub d) (string "::" *> ws *> d.add_sub d)
     <|> d.add_sub d)
 ;;
@@ -197,41 +203,56 @@ let mul_div d =
 let expr_basic d =
   ws
   *> fix (fun _self ->
-    fail ""
-    <|> parens (d.expr d)
-    <|> string "()" *> return (EConst CUnit)
+    parens (d.expr d)
+    <|> string "()" *> return (EConstant CUnit)
     <|> (var_name >>| fun v -> EVar v)
-    <|> (take_while1 is_digit >>| fun chs -> EConst (CInt (int_of_string chs)))
+    <|> (take_while1 is_digit >>| fun chs -> EConstant (CInt (int_of_string chs)))
     <|> string "[]" *> return enil
     <|> (char '['
          *> ws
-         *>
-         let* first = d.expr d in
-         (let* rest = many (ws *> char ';' *> d.expr d) in
-          return (econs first (List.fold_right econs rest enil)))
+         *> (return (fun frst rest -> econs frst (List.fold_right econs rest enil))
+             <*> d.expr d
+             <*> many (ws *> char ';' *> ws *> d.expr d))
          <* ws
          <* char ']')
-    <|> let* name = ws *> constructor_name in
-        (let* patt = ws *> d.expr_basic d in
-         return (EConstruct (name, Some patt)))
-        <|> return (EConstruct (name, None)))
+    <|> (let* name = ws *> constructor_name in
+         (let* patt = ws *> d.expr_basic d in
+          return (EConstruct (name, Some patt)))
+         <|> return (EConstruct (name, None)))
+    <|> string "let" (** [ let x = .. in .. ]  *)
+        *> ws
+        *> (return (fun rec_flag patt expr body -> ELet (rec_flag, patt, expr, body))
+            <*> ((string "rec" *> return Recursive) <|> return NonRecursive)
+            <*> ws *> pattern
+            <*> (ws *> char '=' *> ws *> d.expr d <* ws <* string "in")
+            <*> ws *> d.expr d))
 ;;
 
 let expr_tuple d =
   ws
   *> fix (fun _self ->
-    return (fun a b xs -> ETuple (a, b, xs))
-    <*> (d.cons d <* ws)
-    <*> (char ',' *> d.cons d <* ws)
-    <*> many (char ',' *> d.cons d <* ws))
+    fail ""
+    <|> parens (d.expr d)
+    <|> (return (fun a b xs -> ETuple (a, b, xs))
+         <*> (d.cons d <* ws)
+         <*> (char ',' *> d.cons d <* ws)
+         <*> many (char ',' *> d.cons d <* ws)))
 ;;
 
 let expression : expression t =
-  let expr =
-    fun d ->
-    choice [ d.expr d; d.expr_tuple d; d.cmp d; d.cons d; d.add_sub d; d.mul_div d ]
+  let expr d =
+    ws
+    *> fix (fun _self ->
+      fail ""
+      <|> parens (d.expr d)
+      <|> d.expr_tuple d
+      <|> d.cmp d
+      <|> d.cons d
+      <|> d.add_sub d
+      <|> d.mul_div d
+      <|> d.expr_basic d)
   in
-  expr { expr = expr_tuple; cons; cmp; expr_tuple; expr_basic; add_sub; mul_div }
+  expr { expr; cons; cmp; expr_tuple; expr_basic; add_sub; mul_div }
 ;;
 
 let parse_expression text = parse_string ~consume:All (expression <* end_of_input) text
