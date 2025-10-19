@@ -1,9 +1,9 @@
 (library
- (name parser)
+ (name tests)
  (package ShaehmitovShamil)
- (libraries base angstrom ast)
+ (libraries base parser ast)
  (inline_tests)
  (instrumentation
   (backend bisect_ppx))
  (preprocess
-  (pps ppx_expect)))
+  (pps ppx_expect ppx_inline_test)))
