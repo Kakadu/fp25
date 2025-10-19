@@ -134,6 +134,7 @@ let pattern : pattern t =
 
 type dispatch_expr =
   { expr_basic : dispatch_expr -> expression t
+  ; expr_app : dispatch_expr -> expression t
   ; expr_tuple : dispatch_expr -> expression t
   ; expr : dispatch_expr -> expression t
   ; add_sub : dispatch_expr -> expression t
@@ -148,11 +149,11 @@ let left_chain op init_t item_t =
   <*> many1 (ws *> item_t)
 ;;
 
-let right_chain op first_t item_t =
+let right_chain f first_t item_t =
   let rec helper items acc =
     match items with
     | [] -> acc
-    | x :: xs -> helper xs (EBinop (op, x, acc))
+    | x :: xs -> helper xs (f x acc)
   in
   let* first = ws *> first_t in
   let* rest = many1 (ws *> item_t) in
@@ -163,8 +164,8 @@ let right_chain op first_t item_t =
 
 let cmp d =
   ws
-  *> fix (fun self ->
-    parens self
+  *> fix (fun _self ->
+    fail ""
     <|> left_chain Ne (d.cons d) (string "<>" *> ws *> d.cons d)
     <|> left_chain Le (d.cons d) (string "<=" *> ws *> d.cons d)
     <|> left_chain Ge (d.cons d) (string ">=" *> ws *> d.cons d)
@@ -177,16 +178,14 @@ let cmp d =
 let cons d =
   ws
   *> fix (fun _self ->
-    parens (d.expr d)
-    <|> right_chain Cons (d.add_sub d) (string "::" *> ws *> d.add_sub d)
-    <|> d.add_sub d)
+    let cons hd tl = EBinop (Cons, hd, tl) in
+    right_chain cons (d.add_sub d) (string "::" *> ws *> d.add_sub d) <|> d.add_sub d)
 ;;
 
 let add_sub d =
   ws
   *> fix (fun _self ->
-    parens (d.expr d)
-    <|> left_chain Add (d.mul_div d) (char '+' *> ws *> d.mul_div d)
+    left_chain Add (d.mul_div d) (char '+' *> ws *> d.mul_div d)
     <|> left_chain Sub (d.mul_div d) (char '-' *> ws *> d.mul_div d)
     <|> d.mul_div d)
 ;;
@@ -194,10 +193,17 @@ let add_sub d =
 let mul_div d =
   ws
   *> fix (fun _self ->
-    parens (d.expr d)
-    <|> left_chain Mul (d.expr_basic d) (char '*' *> ws *> d.mul_div d)
-    <|> left_chain Div (d.expr_basic d) (char '/' *> ws *> d.mul_div d)
-    <|> d.expr_basic d)
+    left_chain Mul (d.expr_app d) (char '*' *> ws *> d.expr_app d)
+    <|> left_chain Div (d.expr_app d) (char '/' *> ws *> d.expr_app d)
+    <|> d.expr_app d)
+;;
+
+let expr_app d =
+  many (ws *> d.expr_basic d)
+  >>= function
+  | [] -> fail "not an expr_app or expr_basic"
+  | x :: [] -> return x
+  | f :: xs -> List.fold_left (fun f x -> EApp (f, x)) f xs |> return
 ;;
 
 let expr_basic d =
@@ -219,10 +225,13 @@ let expr_basic d =
          (let* patt = ws *> d.expr_basic d in
           return (EConstruct (name, Some patt)))
          <|> return (EConstruct (name, None)))
-    <|> string "let" (** [ let x = .. in .. ]  *)
+    <|> (return (fun patts expr -> List.fold_right (fun p e -> EFun (p, e)) patts expr)
+         <*> string "fun" *> many (ws *> pattern)
+         <*> ws *> string "->" *> ws *> d.expr d)
+    <|> string "let"
         *> ws
         *> (return (fun rec_flag patt expr body -> ELet (rec_flag, patt, expr, body))
-            <*> ((string "rec" *> return Recursive) <|> return NonRecursive)
+            <*> (string "rec" *> return Recursive <|> return NonRecursive)
             <*> ws *> pattern
             <*> (ws *> char '=' *> ws *> d.expr d <* ws <* string "in")
             <*> ws *> d.expr d))
@@ -232,7 +241,6 @@ let expr_tuple d =
   ws
   *> fix (fun _self ->
     fail ""
-    <|> parens (d.expr d)
     <|> (return (fun a b xs -> ETuple (a, b, xs))
          <*> (d.cons d <* ws)
          <*> (char ',' *> d.cons d <* ws)
@@ -250,9 +258,10 @@ let expression : expression t =
       <|> d.cons d
       <|> d.add_sub d
       <|> d.mul_div d
+      <|> d.expr_app d
       <|> d.expr_basic d)
   in
-  expr { expr; cons; cmp; expr_tuple; expr_basic; add_sub; mul_div }
+  expr { expr; expr_app; cons; cmp; expr_tuple; expr_basic; add_sub; mul_div }
 ;;
 
 let parse_expression text = parse_string ~consume:All (expression <* end_of_input) text
