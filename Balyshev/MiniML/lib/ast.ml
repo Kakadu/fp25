@@ -96,6 +96,8 @@ let rec show_expression = function
       (show_pattern patt)
       (show_expression expr)
       (show_expression body)
+  | EApp (f, x) -> sprintf "%s %s" (show_expression f) (show_expression x)
+  | EFun (p, e) -> sprintf "fun %s -> %s" (show_pattern p) (show_expression e)
   | _ -> failwith "not implemented"
 ;;
 
