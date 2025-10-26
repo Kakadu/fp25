@@ -44,5 +44,20 @@ type value_binding = rec_flag * pattern * expression
 type structure_item = SValue of value_binding
 type structure = structure_item list1
 
+val show_constant : constant -> string
+val pp_constant : Format.formatter -> constant -> unit
 val show_expression : expression -> string
 val pp_expression : Format.formatter -> expression -> unit
+val show_pattern : pattern -> string
+val pp_pattern : Format.formatter -> pattern -> unit
+
+type ty =
+  | TUnit
+  | TInt
+  | TBool
+  | TVar of string
+  | TArrow of ty * ty
+  | TProd of ty * ty * ty list
+
+val show_ty : ty -> string
+val pp_ty : Format.formatter -> ty -> unit
