@@ -32,6 +32,8 @@ let is_keyword = function
   | "type"
   | "and"
   | "of"
+  | "true"
+  | "false"
   | "_" -> true
   | _ -> false
 ;;
@@ -39,7 +41,7 @@ let is_keyword = function
 let name_fabric regexp error_message =
   let* chs = ws *> take_while1 is_char_valid_for_name in
   if is_keyword chs
-  then fail "unexpected keyword"
+  then fail (Printf.sprintf "unexpected keyword: %s" chs)
   else if Str.string_match (Str.regexp regexp) chs 0
   then return chs
   else fail error_message
@@ -134,13 +136,14 @@ let pattern : pattern t =
 
 type dispatch_expr =
   { expr_basic : dispatch_expr -> expression t
-  ; expr_app : dispatch_expr -> expression t
+  ; expr_long : dispatch_expr -> expression t
   ; expr_tuple : dispatch_expr -> expression t
   ; expr : dispatch_expr -> expression t
   ; add_sub : dispatch_expr -> expression t
   ; mul_div : dispatch_expr -> expression t
   ; cons : dispatch_expr -> expression t
   ; cmp : dispatch_expr -> expression t
+  ; expr_top : dispatch_expr -> expression t
   }
 
 let left_chain op init_t item_t =
@@ -193,23 +196,29 @@ let add_sub d =
 let mul_div d =
   ws
   *> fix (fun _self ->
-    left_chain Mul (d.expr_app d) (char '*' *> ws *> d.expr_app d)
-    <|> left_chain Div (d.expr_app d) (char '/' *> ws *> d.expr_app d)
-    <|> d.expr_app d)
+    left_chain Mul (d.expr_long d) (char '*' *> ws *> d.expr_long d)
+    <|> left_chain Div (d.expr_long d) (char '/' *> ws *> d.expr_long d)
+    <|> d.expr_long d)
 ;;
 
-let expr_app d =
-  many (ws *> d.expr_basic d)
-  >>= function
-  | [] -> fail "not an expr_app or expr_basic"
-  | x :: [] -> return x
-  | f :: xs -> List.fold_left (fun f x -> EApp (f, x)) f xs |> return
+let expr_long d =
+  ws
+  *> fix (fun _self ->
+    fail ""
+    <|> (many (ws *> d.expr_basic d)
+         >>= function
+         | [] -> fail "not an expr_long or expr_basic"
+         | x :: [] -> return x
+         | f :: xs -> List.fold_left (fun f x -> EApp (f, x)) f xs |> return))
 ;;
 
 let expr_basic d =
   ws
   *> fix (fun _self ->
     parens (d.expr d)
+    <|> string "()" *> return (EConstant CUnit)
+    <|> string "true" *> return (EConstant (CBool true))
+    <|> string "false" *> return (EConstant (CBool false))
     <|> string "()" *> return (EConstant CUnit)
     <|> (var_name >>| fun v -> EVar v)
     <|> (take_while1 is_digit >>| fun chs -> EConstant (CInt (int_of_string chs)))
@@ -221,10 +230,29 @@ let expr_basic d =
              <*> many (ws *> char ';' *> ws *> d.expr d))
          <* ws
          <* char ']')
-    <|> (let* name = ws *> constructor_name in
-         (let* patt = ws *> d.expr_basic d in
-          return (EConstruct (name, Some patt)))
-         <|> return (EConstruct (name, None)))
+    <|> (return (fun name arg -> EConstruct (name, arg))
+         <*> ws *> constructor_name
+         <*> (ws *> d.expr_basic d >>| Option.some <|> return None)))
+;;
+
+let expr_tuple d =
+  ws
+  *> fix (fun _self ->
+    fail ""
+    <|> (return (fun a b xs -> ETuple (a, b, xs))
+         <*> (d.expr_top d <|> d.cons d)
+         <*> (char ',' *> (d.expr_top d <|> d.cons d) <* ws)
+         <*> many (char ',' *> (d.expr_top d <|> d.cons d) <* ws)))
+;;
+
+let expr_top d =
+  ws
+  *> fix (fun _self ->
+    fail ""
+    <|> (return (fun cond expr_then expr_else -> EIf (cond, expr_then, expr_else))
+         <*> ws *> string "if" *> ws *> d.expr d
+         <*> ws *> string "then" *> ws *> d.expr d
+         <*> ws *> string "else" *> ws *> d.expr d)
     <|> (return (fun patts expr -> List.fold_right (fun p e -> EFun (p, e)) patts expr)
          <*> string "fun" *> many (ws *> pattern)
          <*> ws *> string "->" *> ws *> d.expr d)
@@ -237,31 +265,22 @@ let expr_basic d =
             <*> ws *> d.expr d))
 ;;
 
-let expr_tuple d =
-  ws
-  *> fix (fun _self ->
-    fail ""
-    <|> (return (fun a b xs -> ETuple (a, b, xs))
-         <*> (d.cons d <* ws)
-         <*> (char ',' *> d.cons d <* ws)
-         <*> many (char ',' *> d.cons d <* ws)))
-;;
-
 let expression : expression t =
   let expr d =
     ws
     *> fix (fun _self ->
-      fail ""
+      d.expr_top d
       <|> parens (d.expr d)
       <|> d.expr_tuple d
       <|> d.cmp d
       <|> d.cons d
       <|> d.add_sub d
       <|> d.mul_div d
-      <|> d.expr_app d
+      <|> d.expr_long d
       <|> d.expr_basic d)
   in
-  expr { expr; expr_app; cons; cmp; expr_tuple; expr_basic; add_sub; mul_div }
+  expr { expr; expr_long; cons; cmp; expr_tuple; expr_basic; add_sub; mul_div; expr_top }
 ;;
 
 let parse_expression text = parse_string ~consume:All (expression <* end_of_input) text
+let parse_pattern text = parse_string ~consume:All (pattern <* end_of_input) text
