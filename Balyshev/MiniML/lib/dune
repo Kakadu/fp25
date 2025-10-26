@@ -1,7 +1,10 @@
 (library
  (name MiniML)
  (public_name MiniML.lib)
- (modules Ast Interpreter Parser)
+ (modules Ast Monads Parser Interpreter Inferencer)
+ (modes native byte)
+ (flags
+  (:standard -g))
  (libraries base angstrom str)
  (preprocess
   (pps ppx_deriving.show))

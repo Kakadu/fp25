@@ -4,6 +4,8 @@
 
 (cram enable)
 
+(map_workspace_root false)
+
 (license "LGPL-3.0-or-later WITH OCaml-LGPL-linking-exception")
 
 (authors "Balyshev Artem <github.com/psiblvdegod>")

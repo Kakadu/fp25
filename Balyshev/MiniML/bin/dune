@@ -2,9 +2,9 @@
  (name REPL)
  (public_name REPL)
  (modules REPL)
- (libraries MiniML)
+ (libraries MiniML stdio)
+ (modes native byte)
+ (flags
+  (:standard -g))
  (instrumentation
   (backend bisect_ppx)))
-
-(cram
- (deps ./REPL.exe %{bin:REPL}))

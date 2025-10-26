@@ -1,4 +1,6 @@
-  $ cat << EOF | ./REPL.exe -help
+  $ INTERPETER="../bin/REPL.exe"
+
+  $ cat << EOF | $INTERPETER -help
   REPL
     -expr 	parse expression
     -patt 	parse pattern

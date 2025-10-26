@@ -1,5 +1,6 @@
 open Base
 open MiniML
+module Eval = Interpreter.Eval (Monads.RESULT_MONAD)
 
 type ty =
   | Expr
@@ -18,12 +19,10 @@ let run_expr ~mode ~dump text =
     (match mode with
      | Parse -> Format.printf "parsed: %a\n" Ast.pp_expression ast
      | Eval ->
-       (match Interpreter.eval_expr ast with
+       (match Eval.eval_expr ast with
         | Error err -> Format.printf "interpreter error: %a\n" Interpreter.pp_error err
         | Ok value -> Format.printf "evaluated: %a\n" Interpreter.pp_value value))
 ;;
-
-[@@@ocaml.warning "-69"]
 
 type opts =
   { mutable ty : ty
@@ -46,10 +45,8 @@ let () =
     ]
     (fun _ -> assert false)
     "REPL";
-  let s = Stdio.In_channel.(input_all stdin) |> String.rstrip in
-  Format.printf "%S\n%!" s;
   (match opts.ty with
    | Expr -> run_expr ~mode:opts.mode ~dump:opts.dump_ast
    | _ -> failwith "")
-    s
+    (Stdio.In_channel.(input_all stdin) |> String.rstrip)
 ;;
