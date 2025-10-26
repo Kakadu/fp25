@@ -9,21 +9,24 @@ open Ast
 type value =
   | VConstant of constant
   | VTuple of value * value * value list
-  | VFun of rec_flag * pattern * expression * environment
+  | VFun of pattern * expression * environment
   | VConstruct of string * value option
 
 and error =
-  [ `Is_not_a_function of string
+  [ `Is_not_a_function of expression
   | `Unbound_value of string
-  | `Type_mismatch
+  | `Type_mismatch of string
   | `Division_by_zero
+  | `Not_implemented of string
   ]
 
 and environment = (string, value, Base.String.comparator_witness) Base.Map.t
 
-val init_env : (string, value, Base.String.comparator_witness) Base.Map.t
-val eval_expr : expression -> (value, error) result
 val show_value : value -> string
-val show_error : error -> string
 val pp_value : Format.formatter -> value -> unit
+val show_error : error -> string
 val pp_error : Format.formatter -> error -> unit
+
+module Eval (M : Monads.MONAD_FAIL) : sig
+  val eval_expr : Ast.expression -> (value, error) M.t
+end
