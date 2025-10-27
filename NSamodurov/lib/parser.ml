@@ -12,10 +12,27 @@ let is_space = function
 
 let spaces = skip_while is_space
 
-let varname =
+let alpha =
   satisfy (function
-    | 'a' .. 'z' -> true
-    | _ -> false)
+      | 'a' .. 'z' -> true
+      | 'A' .. 'Z' -> true
+      | _ -> false)
+;;
+
+let digit =
+    satisfy (function
+      | '0' .. '9' -> true
+      | _ -> false)
+;;
+
+let string_of_char_list =
+  fun list ->
+  let buf = Buffer.create 1024 in
+  List.iter (Buffer.add_char buf) list;
+  Buffer.contents buf
+
+let varname =
+  alpha >>= fun h -> many (alpha <|> digit <|> (char '_')) >>= fun tl -> return @@ string_of_char_list (h::tl)
 ;;
 
 let conde = function
@@ -39,12 +56,12 @@ let parse_lam =
     fix (fun _ ->
       conde
         [ char '(' *> pack.apps pack <* char ')' <?> "Parentheses expected"
-        ; ((string "λ" <|> string "\\") *> spaces *> varname
-           <* spaces
-           <* (return () <* char '.' <|> string "->" *> return ())
-           >>= fun var ->
-           pack.apps pack >>= fun b -> return (Ast.Abs (String.make 1 var, b)))
-        ; (varname <* spaces >>= fun c -> return (Ast.Var (String.make 1 c)))
+        ; ((string "fun") *> many1 (spaces *> varname) <*
+           spaces <* (string "->") *> return ()
+           >>= fun list ->
+           pack.apps pack >>= fun b ->
+           return (List.fold_right (fun x acc -> Ast.Abs (x, acc)) list b))
+        ; (varname <* spaces >>= fun c -> return (Ast.Var c))
         ])
   in
   let apps pack =
