@@ -9,13 +9,13 @@ let token p = p <* whitespace
 
 (**Constatnts*)
 let parse_integer =
-  token (take_while1 Char.is_digit) >>| fun digits -> Int (Int.of_string digits)
+  token (take_while1 Char.is_digit) >>| fun digits -> Const (CInt (Int.of_string digits))
 ;;
 
 let parse_boolean =
   choice
-    [ (token (string "true") >>| fun _ -> Bool true)
-    ; (token (string "false") >>| fun _ -> Bool false)
+    [ (token (string "true") >>| fun _ -> Const (CBool true))
+    ; (token (string "false") >>| fun _ -> Const (CBool false))
     ]
 ;;
 
@@ -29,7 +29,21 @@ let is_name_char = function
   | _ -> false
 ;;
 
-let keywords = [ "let"; "rec"; "in"; "if"; "then"; "else"; "fun"; "true"; "false" ]
+let keywords =
+  [ "let"
+  ; "rec"
+  ; "in"
+  ; "if"
+  ; "then"
+  ; "else"
+  ; "fun"
+  ; "true"
+  ; "false"
+  ; "match"
+  ; "with"
+  ; "not"
+  ]
+;;
 
 let parse_name =
   let* first = satisfy is_name_start in
@@ -70,7 +84,39 @@ let kw_if = keyword "if"
 let kw_then = keyword "then"
 let kw_else = keyword "else"
 let kw_fun = keyword "fun"
+let kw_match = keyword "match"
+let kw_with = keyword "with"
+
+(** Helper to parse binary operations *)
 let parse_binary_op parsed_bin_op e1 e2 = BinOp (parsed_bin_op, e1, e2)
+
+(** Patterns *)
+let parse_pattern =
+  fix (fun parse_pattern ->
+    choice
+      [ (let* first = satisfy is_name_start in
+         let* rest = take_while is_name_char in
+         let* _ = whitespace in
+         let name = String.of_char first ^ rest in
+         if List.mem keywords name ~equal:String.equal || String.equal name "_"
+         then fail ("keyword " ^ name ^ " cannot be an identifier")
+         else return (PVar name))
+      ; (token (char '_') >>| fun _ -> PAny)
+      ; (parens (sep_by (token (char ',')) parse_pattern) >>| fun ps -> PTuple ps)
+      ])
+;;
+
+let parse_match expr =
+  let* _ = kw_match in
+  let* matched_expr = expr in
+  let* _ = kw_with in
+  let* cases =
+    sep_by
+      (token (char '|'))
+      (lift2 (fun pat expr -> pat, expr) parse_pattern (token (string "->") *> expr))
+  in
+  return (Match (matched_expr, cases))
+;;
 
 let parse_unary_op parsed_un_op =
   return (fun e ->
@@ -91,13 +137,10 @@ let parse_if expr =
 
 let parse_lambda expr =
   let* _ = kw_fun in
-  let* param = parse_name in
+  let* params = many1 parse_pattern in
   let* _ = token (string "->") in
   let* body = expr in
-  return
-    (match param with
-     | Var name -> Fun (name, body)
-     | _ -> failwith "impossible: parse_name always returns Var")
+  return (FunExpr (params, body))
 ;;
 
 let parse_app atom =
@@ -111,28 +154,25 @@ let parse_app atom =
 
 let parse_let expr =
   let* is_rec = kw_let *> option false (kw_rec *> return true) in
-  let* name = parse_name in
-  let* params = many parse_name in
+  let* pat = parse_pattern in
+  let* params = many parse_pattern in
   let* _ = token (char '=') in
   let* value = expr in
   let* _ = kw_in in
   let* body = expr in
-  match name with
-  | Var fname ->
-    let value_with_lambdas =
-      List.fold_right
-        ~f:(fun param acc ->
-          match param with
-          | Var pname -> Fun (pname, acc)
-          | _ -> failwith "impossible")
-        ~init:value
-        params
-    in
-    return
-      (if is_rec
-       then LetRec (fname, value_with_lambdas, body)
-       else Let (fname, value_with_lambdas, body))
-  | _ -> fail "expected variable name in let"
+  let value_with_lambdas = if List.is_empty params then value else FunExpr (params, value) in
+  return
+    (if is_rec
+     then Let (Rec, pat, value_with_lambdas, body)
+     else Let (NonRec, pat, value_with_lambdas, body))
+;;
+
+let parse_tuple expr =
+  parens (sep_by (token (char ',')) expr)
+  >>| fun es ->
+  match es with
+  | [ e ] -> e (* (e) -> e *)
+  | es -> Tuple es (* (e1, e2) -> Tuple [e1; e2] *)
 ;;
 
 let parse_operators base_parser =
@@ -165,13 +205,22 @@ let parse_operators base_parser =
 
 let parse_expr =
   fix (fun parse_expr ->
-    let atom = choice [ parens parse_expr; parse_integer; parse_boolean; parse_name ] in
+    let atom =
+      choice
+        [ parens parse_expr
+        ; parse_tuple parse_expr
+        ; parse_integer
+        ; parse_boolean
+        ; parse_name
+        ]
+    in
     let application = parse_app atom in
     let expr_with_ops = parse_operators application in
     choice
       [ parse_if parse_expr
       ; parse_lambda parse_expr
       ; parse_let parse_expr
+      ; parse_match parse_expr
       ; expr_with_ops
       ])
 ;;
@@ -182,4 +231,22 @@ let parse s =
   match Angstrom.parse_string ~consume:All parse_program s with
   | Ok result -> Ok result
   | Error msg -> Error msg
+;;
+
+let parse_binding expr =
+  let* is_rec = kw_let *> option false (kw_rec *> return true) in
+  let* pat = parse_pattern in
+  let* params = many parse_pattern in
+  let* _ = token (char '=') in
+  let* value = expr in
+  let value_with_lambdas = if List.is_empty params then value else FunExpr (params, value) in
+  return ((if is_rec then Rec else NonRec), pat, value_with_lambdas)
+;;
+
+let parse_program_item expr =
+  choice [ (parse_binding expr >>| fun e -> Value e); (expr >>| fun e -> Expr e) ]
+;;
+
+let parse_program1 expr =
+  sep_by (token (string ";;")) (parse_program_item expr) <* end_of_input
 ;;

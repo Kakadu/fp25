@@ -17,6 +17,22 @@ type binop =
   | Or (** || *)
 [@@deriving show { with_path = false }]
 
+type constant =
+  | CInt of int
+  | CBool of bool
+[@@deriving show { with_path = false }]
+
+type pattern =
+  | PVar of name
+  | PAny
+  | PTuple of pattern list (** Tuple of patterns, e.g. (x, y) *)
+[@@deriving show { with_path = false }]
+
+type rec_flag =
+  | NonRec
+  | Rec
+[@@deriving show { with_path = false }]
+
 (** Unary operators *)
 type unop =
   | Neg (** - *)
@@ -25,21 +41,34 @@ type unop =
 
 (** Expressions in the AST *)
 type expr =
-  | Int of int (** Integer literal, e.g. `123` *)
-  | Bool of bool (** Boolean literal, e.g. `true` *)
+  | Const of constant (** Constant, e.g. integer or boolean *)
   | Var of name (** Variable, e.g. `x` *)
   | BinOp of binop * expr * expr (** Binary operation, e.g. `e1 + e2` *)
   | UnOp of unop * expr (** Unary operation, e.g. `-e` or `not e` *)
   | If of expr * expr * expr (** Conditional expression, e.g. `if e1 then e2 else e3` *)
-  | Let of name * expr * expr (** Local binding, e.g. `let x = e1 in e2` *)
-  | LetRec of name * expr * expr (** Recursive binding, e.g. `let rec f = e1 in e2` *)
-  | Fun of name * expr (** Abstraction (function), e.g. `fun x -> e` *)
+  | Let of rec_flag * pattern * expr * expr (** Local binding, e.g. `let x = e1 in e2` *)
+  | FunExpr of pattern list* expr (** Abstraction (function), e.g. `fun x -> e` *)
   | App of expr * expr (** Function application, e.g. `f x` *)
+  | Match of expr * (pattern * expr) list (** Pattern matching, e.g. `match e with ...` *)
+  | Tuple of expr list (** Tuple of expressions, e.g. (e1, e2) *)
 [@@deriving show { with_path = false }]
 
+type binding = rec_flag * pattern * expr
+type structure_item = Value of binding | Expr of expr
+type program = structure_item list
+
+let rec pretty_print_pattern = function
+  | PVar s -> s
+  | PTuple ps -> "(" ^ String.concat ", " (List.map pretty_print_pattern ps) ^ ")"
+  | PAny -> "_"
+;;
+
+
+
+
 let rec pretty_print_expr = function
-  | Int i -> string_of_int i
-  | Bool b -> string_of_bool b
+  | Const (CInt i) -> string_of_int i
+  | Const (CBool b) -> string_of_bool b
   | Var s -> s
   | UnOp (op, e) ->
     let op_str =
@@ -73,10 +102,40 @@ let rec pretty_print_expr = function
     ^ " else "
     ^ pretty_print_expr f
     ^ ")"
-  | Fun (param, body) -> "(fun " ^ param ^ " -> " ^ pretty_print_expr body ^ ")"
+  | FunExpr (param, body) ->
+    "(fun " ^ String.concat " " (List.map pretty_print_pattern param) ^ " -> " ^ pretty_print_expr body ^ ")"
   | App (f, arg) -> "(" ^ pretty_print_expr f ^ " " ^ pretty_print_expr arg ^ ")"
-  | Let (v, e1, e2) ->
-    "(let " ^ v ^ " = " ^ pretty_print_expr e1 ^ " in " ^ pretty_print_expr e2 ^ ")"
-  | LetRec (v, e1, e2) ->
-    "(let rec " ^ v ^ " = " ^ pretty_print_expr e1 ^ " in " ^ pretty_print_expr e2 ^ ")"
+  | Let (NonRec, p, e1, e2) ->
+    "(let "
+    ^ pretty_print_pattern p
+    ^ " = "
+    ^ pretty_print_expr e1
+    ^ " in "
+    ^ pretty_print_expr e2
+    ^ ")"
+  | Let (Rec, p, e1, e2) ->
+    "(let rec "
+    ^ pretty_print_pattern p
+    ^ " = "
+    ^ pretty_print_expr e1
+    ^ " in "
+    ^ pretty_print_expr e2
+    ^ ")"
+  | Match (e, cases) ->
+    let case_str (p, body) = pretty_print_pattern p ^ " -> " ^ pretty_print_expr body in
+    "(match "
+    ^ pretty_print_expr e
+    ^ " with "
+    ^ String.concat " | " (List.map case_str cases)
+    ^ ")"
+  | Tuple es -> "(" ^ String.concat ", " (List.map pretty_print_expr es) ^ ")"
+;;
+
+let rec pretty_print_program_item = function
+  | Value (NonRec, p, e) -> "let " ^ pretty_print_pattern p ^ " = " ^ pretty_print_expr e
+  | Value (Rec, p, e) -> "let rec " ^ pretty_print_pattern p ^ " = " ^ pretty_print_expr e
+  | Expr e -> pretty_print_expr e
+;;
+
+let pretty_print_program p = String.concat ";;\n" (List.map pretty_print_program_item p) ^ ";;\n"
 ;;
