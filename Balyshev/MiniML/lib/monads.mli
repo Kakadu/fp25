@@ -9,3 +9,18 @@ module type MONAD_FAIL = sig
 end
 
 module RESULT_MONAD : MONAD_FAIL with type ('ok, 'err) t = ('ok, 'err) Result.t
+
+module type STATE_MONAD = sig
+  type ('ok, 'err) t = int -> (int * 'ok, 'err) Result.t
+
+  val fresh_int : (int, 'err) t
+  val fresh_str : (string, 'err) t
+  val return : 'ok -> ('ok, 'err) t
+  val fail : 'err -> ('ok, 'err) t
+  val run : ('ok, 'err) t -> (int * 'ok, 'err) Result.t
+  val ( >>= ) : ('a, 'e) t -> ('a -> ('b, 'e) t) -> ('b, 'e) t
+  val ( let* ) : ('a, 'e) t -> ('a -> ('b, 'e) t) -> ('b, 'e) t
+  val ( <*> ) : ('a -> 'b, 'e) t -> ('a, 'e) t -> ('b, 'e) t
+end
+
+module State : STATE_MONAD with type ('ok, 'err) t = int -> (int * 'ok, 'err) Result.t
