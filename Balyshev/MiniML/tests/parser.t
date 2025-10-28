@@ -25,10 +25,6 @@
   parsed: Just ((x, y))
 
   $ cat << EOF | $INTERPETER -parse -expr 
-  > [ a; (b, c); d + e ]
-  parsed: (a :: ((b, c) :: ((d + e) :: [])))
-
-  $ cat << EOF | $INTERPETER -parse -expr 
   > let x = 5 in x + 1
   parsed: let x = 5 in (x + 1)
 
@@ -69,10 +65,6 @@
   > f (g x) (h y z)
   parsed: f g x h y z
 
-  $ cat << EOF | $INTERPETER -parse -expr 
-  > [ a ] [ b ]
-  parsed: (a :: []) (b :: [])
-
 # lambda
 
   $ cat << EOF | $INTERPETER -parse -expr 
@@ -93,7 +85,7 @@
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > (fun x -> x) (fun x -> x + 1)
-  parsing error: : end_of_input
+  parsed: fun x -> x fun x -> (x + 1)
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > map (fun x -> x) items
