@@ -1,6 +1,7 @@
 open Base
 open MiniML
 module Eval = Interpreter.Eval (Monads.RESULT_MONAD)
+module Infer = Inferencer.Infer (Monads.State)
 
 type ty =
   | Expr
@@ -10,6 +11,7 @@ type ty =
 type mode =
   | Parse
   | Eval
+  | Infer
 
 let run_expr ~mode ~dump text =
   match Parser.parse_expression text with
@@ -21,7 +23,11 @@ let run_expr ~mode ~dump text =
      | Eval ->
        (match Eval.eval_expr ast with
         | Error err -> Format.printf "interpreter error: %a\n" Interpreter.pp_error err
-        | Ok value -> Format.printf "evaluated: %a\n" Interpreter.pp_value value))
+        | Ok value -> Format.printf "evaluated: %a\n" Interpreter.pp_value value)
+     | Infer ->
+       (match Infer.expression ast with
+        | Error err -> Format.printf "inferencer error: %a\n" Inferencer.pp_error err
+        | Ok ty -> Format.printf "inferred: %a" Ast.pp_ty ty))
 ;;
 
 type opts =
@@ -41,6 +47,7 @@ let () =
     ; "-stru", arg_type Stru, "\tparse structure"
     ; "-parse", arg_mode Parse, "\tparser"
     ; "-eval", arg_mode Eval, "\tinterpreter"
+    ; "-infer", arg_mode Infer, "\tinferencer"
     ; "-dump-ast", arg_dump_ast true, "\tdump ast"
     ]
     (fun _ -> assert false)

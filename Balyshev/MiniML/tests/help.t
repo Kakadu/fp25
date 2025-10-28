@@ -7,6 +7,7 @@
     -stru 	parse structure
     -parse 	parser
     -eval 	interpreter
+    -infer 	inferencer
     -dump-ast 	dump ast
     -help  Display this list of options
     --help  Display this list of options
