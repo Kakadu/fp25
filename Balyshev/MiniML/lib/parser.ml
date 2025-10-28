@@ -169,20 +169,23 @@ let cmp d =
   ws
   *> fix (fun _self ->
     fail ""
-    <|> left_chain Ne (d.cons d) (string "<>" *> ws *> d.cons d)
-    <|> left_chain Le (d.cons d) (string "<=" *> ws *> d.cons d)
-    <|> left_chain Ge (d.cons d) (string ">=" *> ws *> d.cons d)
-    <|> left_chain Lt (d.cons d) (char '<' *> ws *> d.cons d)
-    <|> left_chain Gt (d.cons d) (char '>' *> ws *> d.cons d)
-    <|> left_chain Eq (d.cons d) (char '=' *> ws *> d.cons d)
-    <|> d.cons d)
+    <|> left_chain Ne (d.add_sub d) (string "<>" *> ws *> d.add_sub d)
+    <|> left_chain Le (d.add_sub d) (string "<=" *> ws *> d.add_sub d)
+    <|> left_chain Ge (d.add_sub d) (string ">=" *> ws *> d.add_sub d)
+    <|> left_chain Lt (d.add_sub d) (char '<' *> ws *> d.add_sub d)
+    <|> left_chain Gt (d.add_sub d) (char '>' *> ws *> d.add_sub d)
+    <|> left_chain Eq (d.add_sub d) (char '=' *> ws *> d.add_sub d)
+    <|> d.add_sub d)
 ;;
 
 let cons d =
   ws
   *> fix (fun _self ->
-    let cons hd tl = EBinop (Cons, hd, tl) in
-    right_chain cons (d.add_sub d) (string "::" *> ws *> d.add_sub d) <|> d.add_sub d)
+    right_chain
+      (fun hd tl -> EBinop (Cons, hd, tl))
+      (d.add_sub d)
+      (string "::" *> ws *> d.add_sub d)
+    <|> d.add_sub d)
 ;;
 
 let add_sub d =
@@ -204,12 +207,11 @@ let mul_div d =
 let expr_long d =
   ws
   *> fix (fun _self ->
-    fail ""
-    <|> (many (ws *> d.expr_basic d)
-         >>= function
-         | [] -> fail "not an expr_long or expr_basic"
-         | x :: [] -> return x
-         | f :: xs -> List.fold_left (fun f x -> EApp (f, x)) f xs |> return))
+    many (ws *> d.expr_basic d)
+    >>= function
+    | [] -> fail "not an expr_long or expr_basic"
+    | x :: [] -> return x
+    | f :: xs -> List.fold_left (fun f x -> EApp (f, x)) f xs |> return)
 ;;
 
 let expr_basic d =
@@ -240,9 +242,9 @@ let expr_tuple d =
   *> fix (fun _self ->
     fail ""
     <|> (return (fun a b xs -> ETuple (a, b, xs))
-         <*> (d.expr_top d <|> d.cons d)
-         <*> (char ',' *> (d.expr_top d <|> d.cons d) <* ws)
-         <*> many (char ',' *> (d.expr_top d <|> d.cons d) <* ws)))
+         <*> (d.expr_top d <|> d.cmp d)
+         <*> (char ',' *> (d.expr_top d <|> d.cmp d) <* ws)
+         <*> many (char ',' *> (d.expr_top d <|> d.cmp d) <* ws)))
 ;;
 
 let expr_top d =
@@ -270,10 +272,9 @@ let expression : expression t =
     ws
     *> fix (fun _self ->
       d.expr_top d
-      <|> parens (d.expr d)
       <|> d.expr_tuple d
       <|> d.cmp d
-      <|> d.cons d
+      (* <|> d.cons d *)
       <|> d.add_sub d
       <|> d.mul_div d
       <|> d.expr_long d
