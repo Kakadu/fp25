@@ -84,10 +84,10 @@ type dispatch_patt =
   ; patt : dispatch_patt -> pattern t
   }
 
-let pnil = PConstruct ("Nil", None)
-let enil = EConstruct ("Nil", None)
-let pcons hd tl = PConstruct ("Cons", Some (PTuple (hd, tl, [])))
-let econs hd tl = EConstruct ("Cons", Some (ETuple (hd, tl, [])))
+let pnil = PConstruct ("[]", None)
+let enil = EConstruct ("[]", None)
+let pcons hd tl = PConstruct ("::", Some (PTuple (hd, tl, [])))
+let econs hd tl = EConstruct ("::", Some (ETuple (hd, tl, [])))
 
 let patt_basic d =
   ws
@@ -134,154 +134,134 @@ let pattern : pattern t =
   patt { patt; patt_basic; patt_cons; patt_tuple }
 ;;
 
-type dispatch_expr =
-  { expr_basic : dispatch_expr -> expression t
-  ; expr_long : dispatch_expr -> expression t
-  ; expr_tuple : dispatch_expr -> expression t
-  ; expr : dispatch_expr -> expression t
-  ; add_sub : dispatch_expr -> expression t
-  ; mul_div : dispatch_expr -> expression t
-  ; cons : dispatch_expr -> expression t
-  ; cmp : dispatch_expr -> expression t
-  ; expr_top : dispatch_expr -> expression t
-  }
+let parse_pattern text = parse_string ~consume:All (pattern <* end_of_input) text
 
-let left_chain op init_t item_t =
+let expr_ite expr =
+  return (fun cond expr_then expr_else -> EIf (cond, expr_then, expr_else))
+  <*> ws *> string "if" *> ws *> expr
+  <*> ws *> string "then" *> ws *> expr
+  <*> ws *> string "else" *> ws *> expr
+;;
+
+let expr_fun expr =
+  return (fun patts expr -> List.fold_right (fun p e -> EFun (p, e)) patts expr)
+  <*> ws *> string "fun" *> many1 (ws *> pattern)
+  <*> ws *> string "->" *> ws *> expr
+;;
+
+let match_first_case expr =
+  return (fun p e -> p, e)
+  <*> ws *> (char '|' <|> return '|') *> ws *> pattern
+  <*> ws *> string "->" *> ws *> expr
+;;
+
+let match_case expr =
+  return (fun p e -> p, e)
+  <*> ws *> char '|' *> ws *> pattern
+  <*> ws *> string "->" *> ws *> expr
+;;
+
+let expr_match expr =
+  return (fun subject case cases -> EMatch (subject, (case, cases)))
+  <*> ws *> string "match" *> ws *> expr
+  <*> ws *> string "with" *> ws *> match_first_case expr
+  <*> many (match_case expr)
+;;
+
+let rec_flag = ws *> (string "rec" *> return Recursive <|> return NonRecursive)
+
+let expr_let expr =
+  return (fun rec_flag patt expr body -> ELet (rec_flag, patt, expr, body))
+  <*> ws *> string "let" *> rec_flag
+  <*> ws *> pattern
+  <*> ws *> char '=' *> ws *> expr
+  <*> ws *> string "in" *> ws *> expr
+;;
+
+let expr_complex expr =
+  fix (fun self ->
+    fail ""
+    <|> expr_match self
+    <|> expr_ite self
+    <|> expr_let self
+    <|> expr_fun self
+    <|> expr)
+;;
+
+let expr_atom =
+  fail ""
+  <|> string "()" *> return (EConstant CUnit)
+  <|> string "true" *> return (EConstant (CBool true))
+  <|> string "false" *> return (EConstant (CBool false))
+  <|> char '[' *> ws *> char ']' *> return enil
+  <|> (take_while1 is_digit >>| fun chs -> EConstant (CInt (int_of_string chs)))
+  <|> (var_name >>| fun v -> EVar v)
+;;
+
+let expr_list expr =
+  char '['
+  *> ws
+  *> (return (fun frst rest -> econs frst (List.fold_right econs rest enil))
+      <*> expr
+      <*> many (ws *> char ';' *> ws *> expr))
+  <* ws
+  <* char ']'
+;;
+
+let constant_constructor = ws *> constructor_name >>| fun name -> EConstruct (name, None)
+
+let constructor expr =
+  return (fun name arg -> EConstruct (name, arg))
+  <*> ws *> constructor_name
+  <*> (ws *> (expr <|> constant_constructor) >>| Option.some <|> return None)
+;;
+
+let expr_long expr =
+  ws *> many (ws *> expr)
+  >>= function
+  | [] -> fail "not an expr_long nor an expr_basic"
+  | x :: [] -> return x
+  | f :: xs -> List.fold_left (fun f x -> EApp (f, x)) f xs |> return
+;;
+
+let expr_tuple expr =
+  return (fun a b xs -> ETuple (a, b, xs))
+  <*> expr
+  <*> (char ',' *> expr <* ws)
+  <*> many (char ',' *> expr <* ws)
+;;
+
+let left_chain expr op sep =
   return (fun init items -> List.fold_left (fun a b -> EBinop (op, a, b)) init items)
-  <*> ws *> init_t
-  <*> many1 (ws *> item_t)
+  <*> ws *> expr
+  <*> many1 (ws *> string sep *> ws *> expr)
 ;;
 
-let right_chain f first_t item_t =
-  let rec helper items acc =
-    match items with
-    | [] -> acc
-    | x :: xs -> helper xs (f x acc)
-  in
-  let* first = ws *> first_t in
-  let* rest = many1 (ws *> item_t) in
-  match List.rev (first :: rest) with
-  | x :: xs -> return (helper xs x)
-  | _ -> fail "unreachable"
+let cmp expr =
+  fail ""
+  <|> left_chain expr Ne "<>"
+  <|> left_chain expr Ne "<="
+  <|> left_chain expr Ge ">="
+  <|> left_chain expr Lt "<"
+  <|> left_chain expr Gt ">"
+  <|> left_chain expr Eq "="
 ;;
 
-let cmp d =
+let add_sub expr = left_chain expr Add "+" <|> left_chain expr Sub "-"
+let mul_div expr = left_chain expr Mul "*" <|> left_chain expr Div "/"
+
+let fold_alter ~cases ~init =
+  Base.List.fold cases ~init ~f:(fun acc expr -> expr acc <|> acc)
+;;
+
+let expr_binop expr = fold_alter ~init:expr ~cases:[ mul_div; add_sub; cmp ]
+
+let expression =
   ws
-  *> fix (fun _self ->
-    fail ""
-    <|> left_chain Ne (d.add_sub d) (string "<>" *> ws *> d.add_sub d)
-    <|> left_chain Le (d.add_sub d) (string "<=" *> ws *> d.add_sub d)
-    <|> left_chain Ge (d.add_sub d) (string ">=" *> ws *> d.add_sub d)
-    <|> left_chain Lt (d.add_sub d) (char '<' *> ws *> d.add_sub d)
-    <|> left_chain Gt (d.add_sub d) (char '>' *> ws *> d.add_sub d)
-    <|> left_chain Eq (d.add_sub d) (char '=' *> ws *> d.add_sub d)
-    <|> d.add_sub d)
-;;
-
-let cons d =
-  ws
-  *> fix (fun _self ->
-    right_chain
-      (fun hd tl -> EBinop (Cons, hd, tl))
-      (d.add_sub d)
-      (string "::" *> ws *> d.add_sub d)
-    <|> d.add_sub d)
-;;
-
-let add_sub d =
-  ws
-  *> fix (fun _self ->
-    left_chain Add (d.mul_div d) (char '+' *> ws *> d.mul_div d)
-    <|> left_chain Sub (d.mul_div d) (char '-' *> ws *> d.mul_div d)
-    <|> d.mul_div d)
-;;
-
-let mul_div d =
-  ws
-  *> fix (fun _self ->
-    left_chain Mul (d.expr_long d) (char '*' *> ws *> d.expr_long d)
-    <|> left_chain Div (d.expr_long d) (char '/' *> ws *> d.expr_long d)
-    <|> d.expr_long d)
-;;
-
-let expr_long d =
-  ws
-  *> fix (fun _self ->
-    many (ws *> d.expr_basic d)
-    >>= function
-    | [] -> fail "not an expr_long or expr_basic"
-    | x :: [] -> return x
-    | f :: xs -> List.fold_left (fun f x -> EApp (f, x)) f xs |> return)
-;;
-
-let expr_basic d =
-  ws
-  *> fix (fun _self ->
-    parens (d.expr d)
-    <|> string "()" *> return (EConstant CUnit)
-    <|> string "true" *> return (EConstant (CBool true))
-    <|> string "false" *> return (EConstant (CBool false))
-    <|> string "()" *> return (EConstant CUnit)
-    <|> (var_name >>| fun v -> EVar v)
-    <|> (take_while1 is_digit >>| fun chs -> EConstant (CInt (int_of_string chs)))
-    <|> string "[]" *> return enil
-    <|> (char '['
-         *> ws
-         *> (return (fun frst rest -> econs frst (List.fold_right econs rest enil))
-             <*> d.expr d
-             <*> many (ws *> char ';' *> ws *> d.expr d))
-         <* ws
-         <* char ']')
-    <|> (return (fun name arg -> EConstruct (name, arg))
-         <*> ws *> constructor_name
-         <*> (ws *> d.expr_basic d >>| Option.some <|> return None)))
-;;
-
-let expr_tuple d =
-  ws
-  *> fix (fun _self ->
-    fail ""
-    <|> (return (fun a b xs -> ETuple (a, b, xs))
-         <*> (d.expr_top d <|> d.cmp d)
-         <*> (char ',' *> (d.expr_top d <|> d.cmp d) <* ws)
-         <*> many (char ',' *> (d.expr_top d <|> d.cmp d) <* ws)))
-;;
-
-let expr_top d =
-  ws
-  *> fix (fun _self ->
-    fail ""
-    <|> (return (fun cond expr_then expr_else -> EIf (cond, expr_then, expr_else))
-         <*> ws *> string "if" *> ws *> d.expr d
-         <*> ws *> string "then" *> ws *> d.expr d
-         <*> ws *> string "else" *> ws *> d.expr d)
-    <|> (return (fun patts expr -> List.fold_right (fun p e -> EFun (p, e)) patts expr)
-         <*> string "fun" *> many (ws *> pattern)
-         <*> ws *> string "->" *> ws *> d.expr d)
-    <|> string "let"
-        *> ws
-        *> (return (fun rec_flag patt expr body -> ELet (rec_flag, patt, expr, body))
-            <*> (string "rec" *> return Recursive <|> return NonRecursive)
-            <*> ws *> pattern
-            <*> (ws *> char '=' *> ws *> d.expr d <* ws <* string "in")
-            <*> ws *> d.expr d))
-;;
-
-let expression : expression t =
-  let expr d =
-    ws
-    *> fix (fun _self ->
-      d.expr_top d
-      <|> d.expr_tuple d
-      <|> d.cmp d
-      (* <|> d.cons d *)
-      <|> d.add_sub d
-      <|> d.mul_div d
-      <|> d.expr_long d
-      <|> d.expr_basic d)
-  in
-  expr { expr; expr_long; cons; cmp; expr_tuple; expr_basic; add_sub; mul_div; expr_top }
+  *> fix (fun self ->
+    fold_alter
+      ~init:(expr_atom <|> parens self <|> expr_list self)
+      ~cases:[ expr_long; constructor; expr_binop; expr_complex; expr_tuple ])
 ;;
 
 let parse_expression text = parse_string ~consume:All (expression <* end_of_input) text
-let parse_pattern text = parse_string ~consume:All (pattern <* end_of_input) text
