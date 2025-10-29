@@ -65,10 +65,26 @@ let show_tuple show_item (a, b, xs) =
   |> sprintf "@[(%s)@]"
 ;;
 
+open Base
+
 let rec show_pattern = function
   | PAny -> sprintf "_"
   | PVar name -> sprintf "%s" name
   | PTuple (a, b, xs) -> show_tuple show_pattern (a, b, xs)
+  | PConstruct ("[]", None) -> "[]"
+  | PConstruct ("::", Some (PTuple (head, tail, []))) ->
+    let rec helper acc = function
+      | PConstruct ("::", Some (PTuple (hd, tl, []))) -> helper (hd :: acc) tl
+      | PConstruct ("[]", None) ->
+        sprintf
+          "@[[ %s ]@]"
+          (String.concat ~sep:"; " (List.map ~f:show_pattern (head :: List.rev acc)))
+      | _ as exp ->
+        String.concat
+          ~sep:" :: "
+          (List.map ~f:show_pattern (head :: List.rev (exp :: acc)))
+    in
+    helper [] tail
   | PConstruct (name, None) -> sprintf "%s" name
   | PConstruct (name, Some arg) -> sprintf "@[%s (%s)@]" name (show_pattern arg)
 ;;
@@ -93,15 +109,26 @@ let rec show_expression = function
       (string_of_binop binop)
       (show_expression right)
   | ETuple (a, b, xs) -> show_tuple show_expression (a, b, xs)
-  | EConstruct ("Cons", Some (ETuple (a, b, []))) ->
-    sprintf "@[(%s :: %s)@]" (show_expression a) (show_expression b)
-  | EConstruct ("Nil", None) -> sprintf "[]"
+  | EConstruct ("::", Some (ETuple (head, tail, []))) ->
+    let rec helper acc = function
+      | EConstruct ("::", Some (ETuple (hd, tl, []))) -> helper (hd :: acc) tl
+      | EConstruct ("[]", None) ->
+        sprintf
+          "@[[ %s ]@]"
+          (String.concat ~sep:"; " (List.map ~f:show_expression (head :: List.rev acc)))
+      | _ as exp ->
+        String.concat
+          ~sep:" :: "
+          (List.map ~f:show_expression (head :: List.rev (exp :: acc)))
+    in
+    helper [] tail
+  | EConstruct ("[]", None) -> sprintf "[]"
   | EConstruct (name, None) -> sprintf "%s" name
   | EConstruct (name, Some arg) -> sprintf "@[%s (%s)@]" name (show_expression arg)
   | ELet (rec_flag, patt, expr, body) ->
     sprintf
       "let%s%s = %s in %s"
-      (if rec_flag = Recursive then " rec " else " ")
+      (if rec_flag == Recursive then " rec " else " ")
       (show_pattern patt)
       (show_expression expr)
       (show_expression body)
@@ -113,10 +140,15 @@ let rec show_expression = function
       (show_expression i)
       (show_expression t)
       (show_expression e)
-  | _ -> failwith "not implemented"
+  | EMatch (e, (pe, pes)) ->
+    let show_case (p, e) = sprintf "| %s -> %s" (show_pattern p) (show_expression e) in
+    sprintf
+      "(match %s with@ %s)"
+      (show_expression e)
+      (Base.String.concat ~sep:(sprintf "@ ") (Base.List.map ~f:show_case (pe :: pes)))
 ;;
 
-let pp_expression ppf expr = Format.fprintf ppf "%s" (show_expression expr)
+let pp_expression ppf expr = Format.fprintf ppf "@[%s@]" (show_expression expr)
 
 type ty =
   | TUnit

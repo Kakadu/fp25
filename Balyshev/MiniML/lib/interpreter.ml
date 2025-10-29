@@ -33,9 +33,18 @@ and show_value = function
     Stdlib.List.map (fun x -> show_value x) (a :: b :: xs)
     |> String.concat ~sep:", "
     |> sprintf "@[(%s)@]"
-  | VConstruct ("Cons", Some (VTuple (a, b, []))) ->
-    sprintf "@[(%s :: %s)@]" (show_value a) (show_value b)
-  | VConstruct ("Nil", None) -> sprintf "[]"
+  | VConstruct ("::", Some (VTuple (head, tail, []))) ->
+    let rec helper acc = function
+      | VConstruct ("::", Some (VTuple (hd, tl, []))) -> helper (hd :: acc) tl
+      | VConstruct ("[]", None) ->
+        sprintf
+          "@[[ %s ]@]"
+          (String.concat ~sep:"; " (List.map ~f:show_value (head :: List.rev acc)))
+      | _ as exp ->
+        String.concat ~sep:" :: " (List.map ~f:show_value (head :: List.rev (exp :: acc)))
+    in
+    helper [] tail
+  | VConstruct ("[]", None) -> sprintf "[]"
   | VConstruct (name, None) -> sprintf "%s" name
   | VConstruct (name, Some arg) -> sprintf "@[%s (%s)@]" name (show_value arg)
   | VFun (patt, expr, _) ->
