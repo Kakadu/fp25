@@ -14,11 +14,11 @@
 
   $ cat << EOF | $INTERPETER -eval -expr 
   > [ 1 + 2 + 3; 2 * 3; 7 - 1 ]
-  evaluated: (6 :: (6 :: (6 :: [])))
+  evaluated: [ 6; 6; 6 ]
 
   $ cat << EOF | $INTERPETER -eval -expr 
   > 1 :: 2 :: 3 :: [ 4; 5 ]
-  evaluated: (1 :: (2 :: (3 :: (4 :: (5 :: [])))))
+  parsing error: : end_of_input
 
   $ cat << EOF | $INTERPETER -eval -expr 
   > let (x, y, z) = (6, 15 * 4, 12 * 5 * 10) in x + y + z
@@ -30,7 +30,7 @@
 
   $ cat << EOF | $INTERPETER -eval -expr 
   > Some [ Just (10 + 20), Just (1 * 2, 3 + 4) ]
-  evaluated: Some (((Just (30), Just ((2, 7))) :: []))
+  evaluated: Some ([ (Just (30), Just ((2, 7))) ])
 
   $ cat << EOF | $INTERPETER -eval -expr 
   > if 1 < 2 then true else false

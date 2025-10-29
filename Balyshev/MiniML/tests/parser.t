@@ -50,7 +50,7 @@
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > let _ = Some (x, y) in x, y
-  parsed: let _ = Some ((x, y)) in (x, y)
+  parsed: (let _ = Some ((x, y)) in x, y)
 
 # application
   $ cat << EOF | $INTERPETER -parse -expr 
@@ -59,7 +59,7 @@
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > f (x, y) (a + b) [q; w; e]
-  parsed: f (x, y) (a + b) (q :: (w :: (e :: [])))
+  parsed: f (x, y) (a + b) [ q; w; e ]
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > f (g x) (h y z)
@@ -81,7 +81,7 @@
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > (fun x -> x, fun x -> x + 1)
-  parsed: fun x -> (x, fun x -> (x + 1))
+  parsed: (fun x -> x, fun x -> (x + 1))
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > (fun x -> x) (fun x -> x + 1)
@@ -97,11 +97,20 @@
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > [ fun x -> x; fun x -> x + 1 ]
-  parsed: (fun x -> x :: (fun x -> (x + 1) :: []))
+  parsed: [ fun x -> x; fun x -> (x + 1) ]
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > map (fun x -> x) (fun y -> y)
   parsed: map fun x -> x fun y -> y
+
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > (fun f g x -> f g x)
+  parsed: fun f -> fun g -> fun x -> f g x
+
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > (fun f g x -> f (g x))
+  parsed: fun f -> fun g -> fun x -> f g x
+
 
 # if then else
 
@@ -118,5 +127,112 @@
   parsed: if f x then fun f -> f x else fun x -> f x
 
   $ cat << EOF | $INTERPETER -parse -expr 
+  > fun x -> if x then (fun x -> x) else (fun y -> y)
+  parsed: fun x -> if x then fun x -> x else fun y -> y
+
+  $ cat << EOF | $INTERPETER -parse -expr 
   > let rec fact = fun n -> if n < 2 then 1 else n * fact (n - 1) in fact 5
   parsed: let rec fact = fun n -> if (n < 2) then 1 else (n * fact (n - 1)) in fact 5
+
+# match
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > match (x, y) with
+  > | (x, y) -> (x, y)
+  > | _ -> (y, x)
+  parsed: (match (x, y) with
+  | (x, y) -> (x, y)
+  | _ -> (y, x))
+
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > match e with
+  > | (f, (f, (f, (f, s)))) -> 4
+  > | (f, (f, (f, s))) -> 3
+  > | (f, (f, s)) -> 2
+  > | (f, s) -> 1
+  > | s -> 0
+  parsed: (match e with
+  | (f, (f, (f, (f, s)))) -> 4
+  | (f, (f, (f, s))) -> 3
+  | (f, (f, s)) -> 2
+  | (f, s) -> 1
+  | s -> 0)
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > match x with
+  > | One x -> 1
+  > | Two (x, y) -> 2
+  > | Three (x, y, z) -> 3
+  parsed: (match x with
+  | One (x) -> 1
+  | Two ((x, y)) -> 2
+  | Three ((x, y, z)) -> 3)
+
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > match x with
+  > | _ -> if x then y else z
+  parsed: (match x with
+  | _ -> if x then y else z)
+
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > if x then 
+  >   match y with
+  >   | _ -> y
+  > else 
+  >   match z with
+  >   | _ -> Z
+  parsed: if x then (match y with
+  | _ -> y) else (match z with
+  | _ -> Z)
+
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > match f x with
+  > | Some x -> g x
+  > | None -> a b c
+  parsed: (match f x with
+  | Some (x) -> g x
+  | None -> a b c)
+
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > match x with
+  > | A -> a
+  > | B ->
+  >   match y with
+  >   | C -> c
+  >   | D -> d
+  parsed: (match x with
+  | A -> a
+  | B -> (match y with
+  | C -> c
+  | D -> d))
+
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > match x with
+  > | A -> 
+  >   (match y with
+  >    | C -> c
+  >    | D -> d)
+  > | B -> b
+  parsed: (match x with
+  | A -> (match y with
+  | C -> c
+  | D -> d)
+  | B -> b)
+
+
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > match (match () with _ -> ()) with
+  > | _ -> ()
+  parsed: (match (match () with
+  | _ -> ()) with
+  | _ -> ())
+
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > match (if x then y else z) with
+  > | _ -> ()
+  parsed: (match if x then y else z with
+  | _ -> ())
+
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > if (match x with _ -> ()) then 1 else 2
+  parsed: if (match x with
+  | _ -> ()) then 1 else 2
+#

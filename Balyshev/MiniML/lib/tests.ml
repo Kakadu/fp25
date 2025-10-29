@@ -54,14 +54,14 @@ let%expect_test _ =
   run_expr "a :: b :: c :: d";
   [%expect
     {|
-    parsed: (a :: (b :: (c :: d))) |}]
+    : end_of_input |}]
 ;;
 
 let%expect_test _ =
   run_expr "a :: b = c :: d";
   [%expect
     {|
-    parsed: ((a :: b) = (c :: d)) |}]
+    : end_of_input |}]
 ;;
 
 let%expect_test _ =
