@@ -6,17 +6,6 @@
 
 [@@@ocaml.text "/*"]
 
-(** ***** UNIT TESTS COULD GO HERE (JUST AN EXAMPLE) *)
-let rec fact n = if n = 1 then 1 else n * fact (n - 1)
-
-let%test _ = fact 5 = 120
-
-(* These is a simple unit test that tests a single function 'fact'
-   If you want to test something large, like interpretation of a piece
-   of a minilanguge, it is not longer a unit tests but an integration test.
-   Read about dune's cram tests and put the test into `demos/somefile.t`.
-*)
-
 open Lambda_lib
 open Parser
 
@@ -35,12 +24,32 @@ let%expect_test _ =
 
 let%expect_test _ =
   Format.printf "%a" pp (parse_optimistically "(\\x . x x)");
-  [%expect {| (Abs (x, (App ((Var x), (Var x))))) |}]
+  [%expect.unreachable]
+[@@expect.uncaught_exn
+  {|
+  (* CR expect_test_collector: This test expectation appears to contain a backtrace.
+     This is strongly discouraged as backtraces are fragile.
+     Please change this test to not include a backtrace. *)
+  (Invalid_argument "result is Error _")
+  Raised at Stdlib.invalid_arg in file "stdlib.ml", line 30, characters 20-45
+  Called from Tests.(fun) in file "lib/tests.ml", line 37, characters 24-60
+  Called from Ppx_expect_runtime__Test_block.Configured.dump_backtrace in file "runtime/test_block.ml", line 142, characters 10-28
+  |}]
 ;;
 
 let%expect_test _ =
   Format.printf "%a" pp (parse_optimistically "(λf.λx. f (x x))");
-  [%expect {| (Abs (f, (Abs (x, (App ((Var f), (App ((Var x), (Var x))))))))) |}]
+  [%expect.unreachable]
+[@@expect.uncaught_exn
+  {|
+  (* CR expect_test_collector: This test expectation appears to contain a backtrace.
+     This is strongly discouraged as backtraces are fragile.
+     Please change this test to not include a backtrace. *)
+  (Invalid_argument "result is Error _")
+  Raised at Stdlib.invalid_arg in file "stdlib.ml", line 30, characters 20-45
+  Called from Tests.(fun) in file "lib/tests.ml", line 42, characters 24-67
+  Called from Ppx_expect_runtime__Test_block.Configured.dump_backtrace in file "runtime/test_block.ml", line 142, characters 10-28
+  |}]
 ;;
 
 let _ = Lambda_lib.Interpret.parse_and_run

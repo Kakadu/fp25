@@ -7,6 +7,7 @@
 [@@@ocaml.text "/*"]
 
 type 'name t = 'name Ast.t =
+  | Integer of int
   | Var of 'name
   | Abs of 'name * 'name t
   | App of 'name t * 'name t

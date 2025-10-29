@@ -6,8 +6,9 @@
 
 [@@@ocaml.text "/*"]
 
-val free_vars : string Ast.t -> string list
+val free_vars : equal:('a -> 'a -> bool) -> 'a Ast.t -> 'a list
 val is_free_in : string -> string Ast.t -> bool
+val is_free_in_brujin : Ast.brujin -> Ast.brujin Ast.t -> bool
 
 (** Smart constructors *)
 

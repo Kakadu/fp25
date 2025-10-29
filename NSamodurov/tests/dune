@@ -5,6 +5,14 @@
  (instrumentation
   (backend bisect_ppx)))
 
+(library
+ (name parser_tests)
+ (modules parser_tests)
+ (libraries lambda_lib ppx_show.runtime)
+ (preprocess
+  (pps ppx_show ppx_expect))
+ (inline_tests))
+
 (rule
  (deps ./gen_tests.exe)
  (targets

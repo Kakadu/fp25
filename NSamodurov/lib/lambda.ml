@@ -37,7 +37,8 @@ let subst x ~by:v =
     | App (l, r) -> app (helper l) (helper r)
     | Abs (y, b) when String.equal y x -> abs y b
     | Abs (y, t) when is_free_in y v ->
-      let frees = free_vars v @ free_vars t in
+      let equal = String.equal in
+      let frees = free_vars ~equal v @ free_vars ~equal t in
       let w = next_name y frees in
       helper (abs w (replace_name y ~by:w t))
     | Abs (y, b) -> abs y (helper b)

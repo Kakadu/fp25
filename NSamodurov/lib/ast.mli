@@ -6,14 +6,18 @@
 
 [@@@ocaml.text "/*"]
 
+(** AST type *)
+type 'a t =
+  | Integer of int (** Integer [a]*)
+  | Var of 'a (** Variable: string, De brujin index [x] *)
+  (* | Let of 'a * 'a t * 'a t (\** Let expression [let x = e1 in e2]*\) *)
+  | Abs of 'a * 'a t (** Abstraction [λx.e] *)
+  | App of 'a t * 'a t (** Abstraction [N M] *)
+
+(** Type used for de Brujin nameless notation *)
+type brujin =
+  | Index of int
+  | Blank
+
+(** Type used for standard notation *)
 type name = string
-
-(** The main type for our AST (дерева абстрактного синтаксиса) *)
-type 'name t =
-  | Var of 'name (** Variable [x] *)
-  | Abs of 'name * 'name t (** Abstraction [λx.t] *)
-  | App of 'name t * 'name t
-
-(* Application [f g ] *)
-(** In type definition above the 3rd constructor is intentionally without documentation
-    to test linter *)

@@ -11,3 +11,9 @@ val pp : Format.formatter -> string Ast.t -> unit
 
 (** Print in fancy human-readable form *)
 val pp_hum : Format.formatter -> string Ast.t -> unit
+
+(** Prints de Brujin notation. Verbose printing. Usable for paring *)
+val pp_brujin : Format.formatter -> Ast.brujin Ast.t -> unit
+
+(** Print de Brujin notation in compact way *)
+val pp_brujin_compact : Format.formatter -> Ast.brujin Ast.t -> unit
