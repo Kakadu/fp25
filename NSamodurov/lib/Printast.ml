@@ -8,6 +8,7 @@
 
 type 'name t = 'name Ast.t =
   | Integer of int
+  | Bop of Ast.op * 'name t * 'name t
   | Var of 'name
   | Abs of 'name * 'name t
   | App of 'name t * 'name t

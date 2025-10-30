@@ -44,12 +44,11 @@ module Env : StateMonad = struct
   let write : 's -> ('s, unit) t = fun x _ -> x, ()
 end
 
-let is_space = function
-  | ' ' | '\t' | '\n' | '\r' -> true
-  | _ -> false
+let ws =
+  skip_while (function
+    | ' ' | '\t' | '\n' | '\r' -> true
+    | _ -> false)
 ;;
-
-let spaces = skip_while is_space
 
 let alpha =
   satisfy (function
@@ -71,10 +70,24 @@ let string_of_char_list =
   Buffer.contents buf
 ;;
 
+let int_of_char_list = fun x -> string_of_char_list x |> int_of_string
+
 let varname =
   alpha
   >>= fun h ->
   many (alpha <|> digit <|> char '_') >>= fun tl -> return @@ string_of_char_list (h :: tl)
+;;
+
+let sign_of_char = function
+  | '+' -> Plus
+  | '-' -> Minus
+  | '*' -> Asterisk
+  | '/' -> Slash
+  | c -> Ast.Other c
+;;
+
+let number =
+  digit >>= fun h -> many digit >>= fun tl -> return @@ int_of_char_list (h :: tl)
 ;;
 
 let conde = function
@@ -93,22 +106,60 @@ let pp_error ppf = function
   | `Parsing_error s -> Format.fprintf ppf "%s" s
 ;;
 
+let parens = fun p -> char '(' *> p <* char ')'
+let to_left_assoc s h tl = List.fold_left (fun acc x -> Bop (s, acc, x)) h tl
+let multi_sum h tl = to_left_assoc Plus h tl
+let multi_prod h tl = to_left_assoc Asterisk h tl
+let int c = Integer c
+
+let prio expr table =
+  let length = Array.length table in
+  let rec helper level =
+    if level >= length
+    then expr
+    else (
+      let xs = table.(level) in
+      return (List.fold_left (fun acc (op, r) -> op acc r))
+      <*> helper (level + 1)
+      <*> many
+          @@ conde
+          @@ List.map
+               (fun (op, f) -> op *> helper (level + 1) >>= fun r -> return (f, r))
+               xs)
+  in
+  helper 0
+;;
+
+let expr =
+  let small_expr = number >>| int in
+  prio
+    small_expr
+    [| [ (ws *> char '+' <* ws, fun a b -> Bop (Plus, a, b))
+       ; (ws *> char '-' <* ws, fun a b -> Bop (Minus, a, b))
+       ]
+     ; [ (ws *> char '*' <* ws, fun a b -> Bop (Asterisk, a, b))
+       ; (ws *> char '/' <* ws, fun a b -> Bop (Slash, a, b))
+       ]
+    |]
+;;
+
 let parse_lam =
   let single pack =
     fix (fun _ ->
       conde
-        [ char '(' *> pack.apps pack <* char ')' <?> "Parentheses expected"
-        ; (string "fun" *> many1 (spaces *> varname)
-           <* spaces
+        [ parens (pack.apps pack) <?> "Parentheses expected"
+        ; (string "fun" *> many1 (ws *> varname)
+           <* ws
            <* string "->" *> return ()
            >>= fun list ->
            pack.apps pack
            >>= fun b -> return (List.fold_right (fun x acc -> Ast.Abs (x, acc)) list b))
-        ; (varname <* spaces >>= fun c -> return (Ast.Var c))
+        ; (varname <* ws >>= fun v -> return (Ast.Var v))
+        ; (expr <* ws >>= fun ast -> return ast)
         ])
   in
   let apps pack =
-    many1 (spaces *> pack.single pack <* spaces)
+    many1 (ws *> pack.single pack <* ws)
     >>= function
     | [] -> fail "bad syntax"
     | x :: xs -> return @@ List.fold_left (fun l r -> Ast.App (l, r)) x xs
@@ -116,12 +167,16 @@ let parse_lam =
   { single; apps }
 ;;
 
-let to_brujin (expr : string Ast.t) =
+let to_brujin expr =
   let open Env in
   let open Env.Syntax in
   let rec helper =
     fun bound -> function
       | Integer x -> return (Integer x)
+      | Bop (s, a, b) ->
+        let* a = helper bound a in
+        let* b = helper bound b in
+        return (Bop (s, a, b))
       | Abs (x, e) ->
         let* map = read in
         if SMap.mem x map

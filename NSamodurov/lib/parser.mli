@@ -13,6 +13,8 @@ val pp_error : Format.formatter -> [< `Parsing_error of string ] -> unit
 (** Main entry of parser *)
 val parse : string -> (Ast.name Ast.t, [> error ]) result
 
+val to_brujin : string Ast.t -> Ast.brujin Ast.t
+
 type dispatch =
   { apps : dispatch -> Ast.name Ast.t Angstrom.t
   ; single : dispatch -> Ast.name Ast.t Angstrom.t

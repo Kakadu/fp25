@@ -26,6 +26,11 @@ let pp_brujin ?(compact = true) =
     | Var (Index i) -> Format.fprintf fmt "i%d" i
     | App (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | Integer i -> Format.fprintf fmt "%d" i
+    | Bop (Plus, a, b) -> Format.fprintf fmt "(%a + %a)" pp a pp b
+    | Bop (Minus, a, b) -> Format.fprintf fmt "(%a - %a)" pp a pp b
+    | Bop (Asterisk, a, b) -> Format.fprintf fmt "(%a * %a)" pp a pp b
+    | Bop (Slash, a, b) -> Format.fprintf fmt "(%a / %a)" pp a pp b
+    | Bop (Other s, a, b) -> Format.fprintf fmt "(%a %c %a)" pp a s pp b
     (* | Abs (x, Abs (y, Var z)) when x = z && y <> z && compact -> *)
     (*   if compact then Format.fprintf fmt "⊤" *)
     (* | Abs (x, Abs (y, Var z)) when y = z && x <> z && compact -> Format.fprintf fmt "⊥" *)
@@ -84,6 +89,11 @@ let pp ?(compact = true) =
     (*   Format.fprintf fmt "1" *)
     (* | Abs (f, Abs (x, App (Var g, App (Var h, Var z)))) *)
     (*   when x = z && x <> f && g = f && h = g && compact -> Format.fprintf fmt "2" *)
+    | Bop (Plus, a, b) -> Format.fprintf fmt "%a + %a" pp a pp b
+    | Bop (Minus, a, b) -> Format.fprintf fmt "%a - %a" pp a pp b
+    | Bop (Asterisk, a, b) -> Format.fprintf fmt "%a * %a" pp a pp b
+    | Bop (Slash, a, b) -> Format.fprintf fmt "%a / %a" pp a pp b
+    | Bop (Other s, a, b) -> Format.fprintf fmt "%a %c %a" pp a s pp b
     | Abs (v1, Abs (v2, Abs (v3, Abs (v4, t)))) when compact ->
       Format.fprintf
         fmt

@@ -18,6 +18,7 @@ let free_vars ~equal =
     | Integer _ -> []
     | Abs (s, l) -> acc @ list_remove ~equal s (helper [] l)
     | App (l, r) -> helper (helper acc r) l
+    | Bop (_, a, b) -> helper (helper acc a) b
   in
   helper []
 ;;
