@@ -170,11 +170,17 @@ let expr_match expr =
 
 let rec_flag = ws *> (string "rec" *> return Recursive <|> return NonRecursive)
 
+let expr_binding expr =
+  let* patt = ws *> pattern in
+  let* expr = ws *> char '=' *> ws *> expr in
+  return (patt, expr)
+;;
+
 let expr_let expr =
-  return (fun rec_flag patt expr body -> ELet (rec_flag, patt, expr, body))
+  return (fun rec_flag vb vbs body -> ELet (rec_flag, (vb, vbs), body))
   <*> ws *> string "let" *> rec_flag
-  <*> ws *> pattern
-  <*> ws *> char '=' *> ws *> expr
+  <*> ws *> expr_binding expr
+  <*> many (ws *> string "and" *> expr_binding expr)
   <*> ws *> string "in" *> ws *> expr
 ;;
 
@@ -242,9 +248,9 @@ let cmp expr =
   <|> left_chain expr Ne "<>"
   <|> left_chain expr Ne "<="
   <|> left_chain expr Ge ">="
+  <|> left_chain expr Eq "=="
   <|> left_chain expr Lt "<"
   <|> left_chain expr Gt ">"
-  <|> left_chain expr Eq "="
 ;;
 
 let add_sub expr = left_chain expr Add "+" <|> left_chain expr Sub "-"
