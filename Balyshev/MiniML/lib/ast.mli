@@ -20,7 +20,7 @@ type expression =
   | EVar of string
   | ETuple of expression * expression * expression list
   | EBinop of binop * expression * expression
-  | ELet of rec_flag * pattern * expression * expression
+  | ELet of rec_flag * (pattern * expression) list1 * expression
   | EFun of pattern * expression
   | EIf of expression * expression * expression
   | EApp of expression * expression
@@ -40,7 +40,7 @@ and binop =
   | Lt
   | Gt
 
-type value_binding = rec_flag * pattern * expression
+type value_binding = rec_flag * (pattern * expression) list1
 type structure_item = SValue of value_binding
 type structure = structure_item list1
 

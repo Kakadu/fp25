@@ -20,7 +20,7 @@ type expression =
   | EVar of string
   | ETuple of expression * expression * expression list
   | EBinop of binop * expression * expression
-  | ELet of rec_flag * pattern * expression * expression
+  | ELet of rec_flag * (pattern * expression) list1 * expression
   | EFun of pattern * expression
   | EIf of expression * expression * expression
   | EApp of expression * expression
@@ -40,7 +40,7 @@ and binop =
   | Lt
   | Gt
 
-type value_binding = rec_flag * pattern * expression
+type value_binding = rec_flag * (pattern * expression) list1
 type structure_item = SValue of value_binding
 type structure = structure_item list1
 
@@ -125,12 +125,14 @@ let rec show_expression = function
   | EConstruct ("[]", None) -> sprintf "[]"
   | EConstruct (name, None) -> sprintf "%s" name
   | EConstruct (name, Some arg) -> sprintf "@[%s (%s)@]" name (show_expression arg)
-  | ELet (rec_flag, patt, expr, body) ->
+  | ELet (rec_flag, (vb, vbs), body) ->
+    let show_vb p e = sprintf "%s = %s " (show_pattern p) (show_expression e) in
     sprintf
-      "let%s%s = %s in %s"
+      "let%s%sin %s"
       (if rec_flag == Recursive then " rec " else " ")
-      (show_pattern patt)
-      (show_expression expr)
+      (Base.String.concat
+         ~sep:"and "
+         (List.map (vb :: vbs) ~f:(fun (p, e) -> show_vb p e)))
       (show_expression body)
   | EApp (f, x) -> sprintf "%s %s" (show_expression f) (show_expression x)
   | EFun (p, e) -> sprintf "fun %s -> %s" (show_pattern p) (show_expression e)
