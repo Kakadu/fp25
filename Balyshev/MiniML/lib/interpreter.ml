@@ -156,9 +156,13 @@ end = struct
     | EConstruct (name, Some arg) ->
       let* arg = eval_expression env arg in
       return (VConstruct (name, Some arg))
-    | ELet (NonRecursive, patt, expr, body) ->
-      let* value = eval_expression env expr in
-      let* env' = bind_to_env env eval_expression patt value in
+    | ELet (NonRecursive, (pe, pes), body) ->
+      let helper env (patt, expr) =
+        let* env = env in
+        let* value = eval_expression env expr in
+        bind_to_env env eval_expression patt value
+      in
+      let* env' = List.fold (pe :: pes) ~f:helper ~init:(return env) in
       eval_expression env' body
     | EApp (f, arg) ->
       let* arg' = eval_expression env arg in
@@ -175,7 +179,7 @@ end = struct
        | VConstant (CBool true) -> eval_expression env expr_then
        | VConstant (CBool false) -> eval_expression env expr_else
        | _ -> fail (`Type_mismatch "boolean expr expected"))
-    | ELet (Recursive, _, _, _) -> fail (`Not_implemented "let rec in eval_expr")
+    | ELet (Recursive, _, _) -> fail (`Not_implemented "let rec in eval_expr")
     | EMatch _ -> fail (`Not_implemented "match with in eval_expr")
   ;;
 
