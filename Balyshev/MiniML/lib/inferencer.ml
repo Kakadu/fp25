@@ -88,6 +88,14 @@ module Substitution (M : Monads.STATE_MONAD) = struct
       let* sub = acc in
       extend sub key data)
 
+  and compose_list subs =
+    List.fold
+      subs
+      ~f:(fun acc sub1 ->
+        let* sub2 = acc in
+        compose sub1 sub2)
+      ~init:(return empty)
+
   and extend sub name ty =
     if occurs_in name ty
     then fail (Occurs_check (name, ty))
@@ -169,12 +177,25 @@ module Infer (M : Monads.STATE_MONAD) = struct
 
   let fresh_tvar = fresh_str >>= fun name -> return (TVar name)
 
-  let pattern env = function
+  let rec pattern env = function
+    | PAny ->
+      let* ty = fresh_tvar in
+      return (env, ty)
     | PVar name ->
       let* ty = fresh_tvar in
       let scheme = Scheme (VarSet.empty, ty) in
       let env' = Environment.extend env name scheme in
       return (env', ty)
+    | PTuple (p1, p2, ps) ->
+      let helper acc patt =
+        let* env, tys = acc in
+        let* env, ty = pattern env patt in
+        return (env, ty :: tys)
+      in
+      let* env, ty1 = pattern env p1 in
+      let* env, ty2 = pattern env p2 in
+      let* env, tys = List.fold ps ~init:(return (env, [])) ~f:helper in
+      return (env, TProd (ty1, ty2, tys))
     | _ -> fail (Not_implemented "pattern")
   ;;
 
@@ -235,10 +256,29 @@ module Infer (M : Monads.STATE_MONAD) = struct
     | EFun (p, e) ->
       let* env, ty1 = pattern env p in
       let* sub, ty2 = expression env e in
-      let* ty1' = Substitution.apply sub ty1 in
-      let* ty2' = Substitution.apply sub ty2 in
-      let ty = TArrow (ty1', ty2') in
+      let ty12 = TArrow (ty1, ty2) in
+      let* ty = Substitution.apply sub ty12 in
       return (sub, ty)
+    | EIf (cond, expr_then, expr_else) ->
+      let* sub1, ty1 = expression env cond in
+      let* sub2 = Substitution.unify ty1 TBool in
+      let* sub3, ty2 = expression env expr_then in
+      let* sub4, ty3 = expression env expr_else in
+      let* sub5 = Substitution.unify ty2 ty3 in
+      let* sub = Substitution.compose_list [ sub1; sub2; sub3; sub4; sub5 ] in
+      let* ty = Substitution.apply sub ty2 in
+      return (sub, ty)
+    | ELet (NonRecursive, (vb, vbs), body) ->
+      let helper env (patt, expr) =
+        let* env = env in
+        let* env, ty1 = pattern env patt in
+        let* sub1, ty2 = expression env expr in
+        let* sub2 = Substitution.unify ty1 ty2 in
+        let* sub = Substitution.compose sub1 sub2 in
+        Environment.apply sub env
+      in
+      let* env = List.fold (vb :: vbs) ~f:helper ~init:(return env) in
+      expression env body
     | _ -> fail (Not_implemented "expression")
   ;;
 
