@@ -236,3 +236,21 @@
   parsed: if (match x with
   | _ -> ()) then 1 else 2
 #
+
+# value binding chains
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > let x = 1 and y = 2 in x + y
+  parsed: let x = 1 and y = 2 in (x + y)
+
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > let (x, y) = (1, 2) and (z, w) = (3, 4) in x, y, z, w
+  parsed: (let (x, y) = (1, 2) and (z, w) = (3, 4) in x, y, z, w)
+
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > let _ = 1 and x = 2 and (a, b) = 3 in 0
+  parsed: let _ = 1 and x = 2 and (a, b) = 3 in 0
+
+  $ cat << EOF | $INTERPETER -parse -expr 
+  > let Some x = 1 and [ x; y ] = 2 and z :: w = 3 in 0
+  parsed: let Some (x) = 1 and [ x; y ] = 2 and z :: w = 3 in 0
+#
