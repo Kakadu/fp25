@@ -42,7 +42,7 @@
 
   $ cat << EOF | $INTERPETER -eval -expr 
   > let is_zero = fun x -> if x = 0 then true else false in is_zero 1
-  evaluated: false
+  parsing error: : char '['
 
   $ cat << EOF | $INTERPETER -eval -expr 
   > let x = 5 in let y = 10 in x + y
@@ -59,3 +59,30 @@
   > let apply = fun f x -> f x in
   >   apply (fun x -> x * 6) (100 + 11)
   evaluated: 666
+
+# value binding chains
+  $ cat << EOF | $INTERPETER -eval -expr 
+  > let x = 1 and y = 2 in x + y
+  evaluated: 3
+
+  $ cat << EOF | $INTERPETER -eval -expr 
+  > let Some x = Some 1 and (y, z) = (2, 3) in [ x; y; z ]
+  evaluated: [ 1; 2; 3 ]
+
+  $ cat << EOF | $INTERPETER -eval -expr 
+  > let x = (let y = 1 and z = 2 in y + z) in x + 3
+  evaluated: 6
+
+  $ cat << EOF | $INTERPETER -eval -expr 
+  > (fun x -> let y = x + 1 in y) 5
+  evaluated: 6
+#
+
+# unsorted
+  $ cat << EOF | $INTERPETER -eval -expr 
+  > let ite = fun c e1 e2 -> if c then e1 else e2 in
+  > let first = ite true
+  > and second = ite false
+  > in (first 1 2) + (second 3 4)
+  evaluated: 5
+#
