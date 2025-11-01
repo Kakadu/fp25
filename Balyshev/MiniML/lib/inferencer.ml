@@ -8,7 +8,7 @@ type error =
   | Unbound_value of string
 
 let show_error = function
-  | Not_implemented name -> Format.sprintf "not implemented: %s" name
+  | Not_implemented f -> Format.sprintf "not implemented: %s" f
   | Occurs_check (name, ty) -> Format.sprintf "%s occurs in %s" name (show_ty ty)
   | Unification_failed (a, b) ->
     Format.sprintf "unification of %s and %s failed" (show_ty a) (show_ty b)
@@ -83,18 +83,8 @@ module Substitution (M : Monads.STATE_MONAD) = struct
       compose sub1 sub2
     | _ -> fail (Unification_failed (ty1, ty2))
 
-  and compose sub1 sub2 =
-    Map.fold sub2 ~init:(return sub1) ~f:(fun ~key ~data acc ->
-      let* sub = acc in
-      extend sub key data)
-
-  and compose_list subs =
-    List.fold
-      subs
-      ~f:(fun acc sub1 ->
-        let* sub2 = acc in
-        compose sub1 sub2)
-      ~init:(return empty)
+  and compose sub1 sub2 = fold_bind_map sub2 ~init:sub1 ~f:extend
+  and compose_list subs = fold_bind_list subs ~init:empty ~f:compose
 
   and extend sub name ty =
     if occurs_in name ty
@@ -279,6 +269,31 @@ module Infer (M : Monads.STATE_MONAD) = struct
       in
       let* env = List.fold (vb :: vbs) ~f:helper ~init:(return env) in
       expression env body
+    | EMatch (expr, ((p1, e1), cases)) ->
+      let helper acc (patt, expr) =
+        let* sub_acc, ty_patt_acc, ty_expr_acc = acc in
+        let* env, ty_patt = pattern env patt in
+        let* sub_expr, ty_expr = expression env expr in
+        let* sub_unified_expr = Substitution.unify ty_expr_acc ty_expr in
+        let* sub_unified_patt = Substitution.unify ty_patt_acc ty_patt in
+        let* sub =
+          Substitution.compose_list
+            [ sub_acc; sub_expr; sub_unified_expr; sub_unified_patt ]
+        in
+        let* ty_patt = Substitution.apply sub ty_patt in
+        let* ty_expr = Substitution.apply sub ty_expr in
+        return (sub, ty_patt, ty_expr)
+      in
+      let* sub_expr, ty_expr = expression env expr in
+      let* env1, ty_p1 = pattern env p1 in
+      let* sub1, ty_e1 = expression env1 e1 in
+      let* sub_cases, ty_patt_cases, ty_expr_cases =
+        List.fold ~f:helper ~init:(return (sub1, ty_p1, ty_e1)) cases
+      in
+      let* sub_unified = Substitution.unify ty_expr ty_patt_cases in
+      let* sub = Substitution.compose_list [ sub_expr; sub_cases; sub_unified ] in
+      let* ty = Substitution.apply sub ty_expr_cases in
+      return (sub, ty)
     | _ -> fail (Not_implemented "expression")
   ;;
 
