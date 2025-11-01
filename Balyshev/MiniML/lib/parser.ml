@@ -194,6 +194,15 @@ let expr_complex expr =
     <|> expr)
 ;;
 
+(** parses [ fun x -> x, fun y -> y ] as [ fun x -> (x, fun y -> y) ] *)
+(** parses [ let x = x in x, y ] as [ let x = x in (x, y) ] *)
+let expr_tuple expr =
+  return (fun a b xs -> ETuple (a, b, xs))
+  <*> expr_complex expr
+  <*> (char ',' *> expr_complex expr <* ws)
+  <*> many (char ',' *> expr_complex expr <* ws)
+;;
+
 let expr_atom =
   fail ""
   <|> string "()" *> return (EConstant CUnit)
@@ -230,13 +239,6 @@ let expr_long expr =
   | f :: xs -> List.fold_left (fun f x -> EApp (f, x)) f xs |> return
 ;;
 
-let expr_tuple expr =
-  return (fun a b xs -> ETuple (a, b, xs))
-  <*> expr
-  <*> (char ',' *> expr <* ws)
-  <*> many (char ',' *> expr <* ws)
-;;
-
 let left_chain expr op sep =
   return (fun init items -> List.fold_left (fun a b -> EBinop (op, a, b)) init items)
   <*> ws *> expr
@@ -267,7 +269,7 @@ let expression =
   *> fix (fun self ->
     fold_alter
       ~init:(expr_atom <|> parens self <|> expr_list self)
-      ~cases:[ expr_long; constructor; expr_binop; expr_complex; expr_tuple ])
+      ~cases:[ expr_long; constructor; expr_binop; expr_tuple; expr_complex ])
 ;;
 
 let parse_expression text = parse_string ~consume:All (expression <* end_of_input) text
