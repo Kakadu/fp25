@@ -21,6 +21,13 @@ module type STATE_MONAD = sig
   val ( >>= ) : ('a, 'e) t -> ('a -> ('b, 'e) t) -> ('b, 'e) t
   val ( let* ) : ('a, 'e) t -> ('a -> ('b, 'e) t) -> ('b, 'e) t
   val ( <*> ) : ('a -> 'b, 'e) t -> ('a, 'e) t -> ('b, 'e) t
+  val fold_bind_list : 'a list -> init:'b -> f:('a -> 'b -> ('b, 'c) t) -> ('b, 'c) t
+
+  val fold_bind_map
+    :  ('a, 'b, 'c) Base.Map.t
+    -> init:'d
+    -> f:('d -> 'a -> 'b -> ('d, 'e) t)
+    -> ('d, 'e) t
 end
 
 module State : STATE_MONAD with type ('ok, 'err) t = int -> (int * 'ok, 'err) Result.t

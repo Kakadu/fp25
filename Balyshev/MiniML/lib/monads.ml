@@ -35,6 +35,13 @@ module type STATE_MONAD = sig
   val ( >>= ) : ('a, 'e) t -> ('a -> ('b, 'e) t) -> ('b, 'e) t
   val ( let* ) : ('a, 'e) t -> ('a -> ('b, 'e) t) -> ('b, 'e) t
   val ( <*> ) : ('a -> 'b, 'e) t -> ('a, 'e) t -> ('b, 'e) t
+  val fold_bind_list : 'a list -> init:'b -> f:('a -> 'b -> ('b, 'c) t) -> ('b, 'c) t
+
+  val fold_bind_map
+    :  ('a, 'b, 'c) Base.Map.t
+    -> init:'d
+    -> f:('d -> 'a -> 'b -> ('d, 'e) t)
+    -> ('d, 'e) t
 end
 
 module State : STATE_MONAD with type ('ok, 'err) t = int -> (int * 'ok, 'err) Result.t =
@@ -42,7 +49,7 @@ struct
   type ('ok, 'err) t = int -> (int * 'ok, 'err) Result.t
 
   let fresh_int = fun s -> Ok (s + 1, s)
-  let fresh_str = fun s -> Ok (s + 1, "'gen_" ^ Int.to_string s)
+  let fresh_str = fun s -> Ok (s + 1, "'ty" ^ Int.to_string s)
   let return x = fun s -> Ok (s, x)
   let fail msg = fun _ -> Error msg
   let run m = m 0
@@ -56,4 +63,19 @@ struct
 
   let ( let* ) = ( >>= )
   let ( <*> ) mf mx = mf >>= fun f -> mx >>= fun x -> return (f x)
+
+  let fold_bind_list items ~init ~f =
+    Base.List.fold
+      items
+      ~f:(fun acc item ->
+        let* acc = acc in
+        f item acc)
+      ~init:(return init)
+  ;;
+
+  let fold_bind_map items ~init ~f =
+    Base.Map.fold items ~init:(return init) ~f:(fun ~key ~data acc ->
+      let* acc = acc in
+      f acc key data)
+  ;;
 end
