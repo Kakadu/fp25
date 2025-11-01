@@ -29,12 +29,12 @@ let is_keyword = function
   | "else"
   | "match"
   | "with"
-  | "type"
   | "and"
-  | "of"
   | "true"
   | "false"
-  | "_" -> true
+  | "_"
+  | "type"
+  | "of" -> true
   | _ -> false
 ;;
 
@@ -134,8 +134,6 @@ let pattern : pattern t =
   patt { patt; patt_basic; patt_cons; patt_tuple }
 ;;
 
-let parse_pattern text = parse_string ~consume:All (pattern <* end_of_input) text
-
 let expr_ite expr =
   return (fun cond expr_then expr_else -> EIf (cond, expr_then, expr_else))
   <*> ws *> string "if" *> ws *> expr
@@ -213,14 +211,14 @@ let expr_atom =
   <|> (var_name >>| fun v -> EVar v)
 ;;
 
+let brackets p = ws *> char '[' *> p <* ws <* char ']'
+
 let expr_list expr =
-  char '['
-  *> ws
-  *> (return (fun frst rest -> econs frst (List.fold_right econs rest enil))
+  
+  brackets (return (fun frst rest -> econs frst (List.fold_right econs rest enil))
       <*> expr
       <*> many (ws *> char ';' *> ws *> expr))
-  <* ws
-  <* char ']'
+  
 ;;
 
 let constant_constructor = ws *> constructor_name >>| fun name -> EConstruct (name, None)
@@ -273,3 +271,112 @@ let expression =
 ;;
 
 let parse_expression text = parse_string ~consume:All (expression <* end_of_input) text
+
+let type_param_tuple =
+  ws *> char '(' *> ws *> sep_by (ws *> char ',') (ws *> type_param_name)
+  >>= function
+  | frst :: scnd :: rest -> return (frst :: scnd :: rest) <* ws *> char ')'
+  | _ -> fail "tuple of param names expected"
+;;
+
+let type_param_tuple = parens (sep_by (ws *> char ',') (ws *> type_param_name))
+;;
+
+let core_type_var = ws *> (type_name <|> type_param_name >>| fun name -> CTVar name)
+
+let core_type_arrow core_type =
+  fix (fun self ->
+    let* operand = ws *> core_type in
+    ws *> string "->" *> ws *> self
+    >>| (fun operand2 -> CTArrow (operand, operand2))
+    <|> return operand)
+;;
+
+let core_type_tuple core_type =
+  let* first = ws *> core_type in
+  many (ws *> char '*' *> ws *> core_type)
+  >>= function
+  | [] -> return first
+  | second :: rest -> return (CTTuple (first, second, rest))
+;;
+
+let core_type =
+  ws
+  *> fix (fun self ->
+    let prims =
+      fail ""
+      <|> (type_name >>| fun v -> CTConstr (v, []))
+      <|> (type_param_name >>| fun v -> CTConstr (v, []))
+    in
+    let prims =
+      (let* arg = prims in
+       let* name = ws *> type_name in
+       return (CTConstr (name, [ arg ])))
+      <|> prims
+    in
+    let self = parens self <|> prims in
+    let self = core_type_tuple self <|> self in
+    let self = core_type_arrow self <|> self in
+    (let* ct = char '(' *> ws *> self in
+     let* cts = many (ws *> char ',' *> self) in
+     let* name = ws *> char ')' *> type_name in
+     return (CTConstr (name, ct :: cts)))
+    <|> self)
+;;
+
+let type_params =
+  ws
+  *> (type_param_name
+      >>| (fun param -> [ param ])
+      <|> parens (type_param_name >>| fun param -> [ param ])
+      <|> type_param_tuple
+      <|> return [])
+;;
+
+let type_kind_variants =
+  let parse_variant =
+    let* name = ws *> char '|' *> ws *> constructor_name in
+    (let* ct = ws *> string "of" *> ws *> core_type in
+     return (name, Some ct))
+    <|> return (name, None)
+  in
+  many parse_variant
+  >>= function
+  | var :: vars -> return (KVariants (var, vars))
+  | _ -> fail "is not variants"
+;;
+
+let type_kind_abstract = ws *> core_type >>| fun x -> KAbstract (Some x)
+
+let type_kind = ws *> (type_kind_variants <|> type_kind_abstract)
+
+let type_body =
+  let* params = ws *> type_params in
+  let* name = ws *> type_name in
+  let* kind = ws *> char '=' *> ws *> type_kind in
+  return { typedef_params = params; typedef_name = name; typedef_kind = kind }
+;;
+
+let type_declaration =
+  return (fun td tds -> SType (td, tds))
+  <*> ws *> string "type" *> ws *> type_body
+  <*> many (ws *> string "and" *> type_body)
+;;
+
+let value_binding =
+  return (fun rec_flag vb vbs -> SValue (rec_flag, (vb, vbs)))
+  <*> ws *> string "let" *> rec_flag
+  <*> ws *> expr_binding expression
+  <*> many (ws *> string "and" *> expr_binding expression)
+;;
+
+let structure =
+  return (fun item items -> item, items)
+  <*> (type_declaration <|> value_binding)
+  <*> many (type_declaration <|> value_binding)
+
+let parse_structure text = parse_string ~consume:All (structure <* end_of_input) text
+
+(* testing stuff *)
+let parse_pattern text = parse_string ~consume:All (pattern <* end_of_input) text
+let parse_core_type text = parse_string ~consume:All (core_type <* end_of_input) text
