@@ -217,7 +217,6 @@
   | D -> d)
   | B -> b)
 
-
   $ cat << EOF | $INTERPETER -parse -expr 
   > match (match () with _ -> ()) with
   > | _ -> ()
@@ -253,4 +252,180 @@
   $ cat << EOF | $INTERPETER -parse -expr 
   > let Some x = 1 and [ x; y ] = 2 and z :: w = 3 in 0
   parsed: let Some (x) = 1 and [ x; y ] = 2 and z :: w = 3 in 0
+#
+
+# core_type
+  $ cat << EOF | $INTERPETER -parse -core-type
+  > int
+  parsed: int
+
+  $ cat << EOF | $INTERPETER -parse -core-type
+  > (int)
+  parsed: int
+
+  $ cat << EOF | $INTERPETER -parse -core-type
+  > 'a
+  parsed: 'a
+
+  $ cat << EOF | $INTERPETER -parse -core-type
+  > ('a)
+  parsed: 'a
+
+  $ cat << EOF | $INTERPETER -parse -core-type
+  > 'a * 'b
+  parsed: ('a * 'b)
+
+  $ cat << EOF | $INTERPETER -parse -core-type
+  > 'a -> 'b
+  parsed: ('a -> 'b)
+
+  $ cat << EOF | $INTERPETER -parse -core-type
+  > ('a -> 'b) * ('b -> 'a)
+  parsed: (('a -> 'b) * ('b -> 'a))
+
+  $ cat << EOF | $INTERPETER -parse -core-type
+  > int list
+  parsed: (int) list
+
+  $ cat << EOF | $INTERPETER -parse -core-type
+  > ('a) list
+  parsed: ('a) list
+
+  $ cat << EOF | $INTERPETER -parse -core-type
+  > ('a * 'b) list
+  parsed: (('a * 'b)) list
+
+  $ cat << EOF | $INTERPETER -parse -core-type
+  > ('a -> 'b -> 'c) list
+  parsed: (('a -> ('b -> 'c))) list
+
+  $ cat << EOF | $INTERPETER -parse -core-type
+  > ('a, 'b) list
+  parsed: ('a, 'b) list
+
+  $ cat << EOF | $INTERPETER -parse -core-type
+  > ('a -> 'b, 'c * 'd) list
+  parsed: (('a -> 'b), ('c * 'd)) list
+#
+
+# type declaration
+  $ cat << EOF | $INTERPETER -parse -stru
+  > type t = int
+  parsed: type t =
+            int
+          
+  $ cat << EOF | $INTERPETER -parse -stru
+  > type 'a my_list = 'a list
+  parsed: type 'a my_list =
+            ('a) list
+          
+
+  $ cat << EOF | $INTERPETER -parse -stru
+  > type ('a, 'b) pair = 'a * 'b
+  parsed: type ('a, 'b) pair =
+            ('a * 'b)
+          
+
+  $ cat << EOF | $INTERPETER -parse -stru
+  > type ('a, 'b) arrow = 'a -> 'b
+  parsed: type ('a, 'b) arrow =
+            ('a -> 'b)
+          
+#
+
+# something more complex
+  $ cat << EOF | $INTERPETER -parse -stru
+  > type 'a option =
+  > | Some of 'a
+  > | None
+  parsed: type 'a option =
+            | Some of 'a
+            | None
+            
+          
+
+  $ cat << EOF | $INTERPETER -parse -stru
+  > type 'a list =
+  > | Nil
+  > | Cons of 'a * 'a list
+  parsed: type 'a list =
+            | Nil
+            | Cons of ('a * ('a) list)
+            
+          
+
+  $ cat << EOF | $INTERPETER -parse -stru
+  > type ('a, 'b) qwe =
+  > | Asd of 'a -> ('a -> 'b) -> 'b
+  > | Zxc of ('a -> 'a) * ('a -> 'a) * 'a
+  parsed: type ('a, 'b) qwe =
+            | Asd of ('a -> (('a -> 'b) -> 'b))
+            | Zxc of (('a -> 'a) * ('a -> 'a) * 'a)
+            
+          
+#
+
+# "and" chains
+  $ cat << EOF | $INTERPETER -parse -stru
+  > type a = int
+  > and b = bool
+  > and c = char
+  parsed: type a =
+            int
+          and b =
+            bool
+          and c =
+            char
+          
+
+  $ cat << EOF | $INTERPETER -parse -stru
+  > type 'a box =
+  > | Box of 'a
+  > 
+  > and 't maybe =
+  > | Just of 't
+  > | Nothing
+  > 
+  > and name = string
+  parsed: type 'a box =
+            | Box of 'a
+            
+          and 't maybe =
+            | Just of 't
+            | Nothing
+            
+          and name =
+            string
+          
+
+# unsorted
+  $ cat << EOF | $INTERPETER -parse -stru
+  > type foo = 'a * 'b * 'c -> 'd * 'e -> 'f
+  parsed: type foo =
+            (('a * 'b * 'c) -> (('d * 'e) -> 'f))
+          
+
+  $ cat << EOF | $INTERPETER -parse -stru
+  > type foo = (int -> int)
+  parsed: type foo =
+            (int -> int)
+          
+
+  $ cat << EOF | $INTERPETER -parse -stru
+  > type foo = (a -> b) * (c -> d)
+  parsed: type foo =
+            ((a -> b) * (c -> d))
+          
+
+  $ cat << EOF | $INTERPETER -parse -stru
+  > type foo = (a * b) * (c * d)
+  parsed: type foo =
+            ((a * b) * (c * d))
+          
+
+  $ cat << EOF | $INTERPETER -parse -stru
+  > type foo = (a -> b) -> (c -> d)
+  parsed: type foo =
+            ((a -> b) -> (c -> d))
+          
 #
