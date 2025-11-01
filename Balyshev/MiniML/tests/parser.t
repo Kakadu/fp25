@@ -50,7 +50,7 @@
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > let _ = Some (x, y) in x, y
-  parsed: (let _ = Some ((x, y)) in x, y)
+  parsed: let _ = Some ((x, y)) in (x, y)
 
 # application
   $ cat << EOF | $INTERPETER -parse -expr 
@@ -81,7 +81,7 @@
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > (fun x -> x, fun x -> x + 1)
-  parsed: (fun x -> x, fun x -> (x + 1))
+  parsed: fun x -> (x, fun x -> (x + 1))
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > (fun x -> x) (fun x -> x + 1)
@@ -244,7 +244,7 @@
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > let (x, y) = (1, 2) and (z, w) = (3, 4) in x, y, z, w
-  parsed: (let (x, y) = (1, 2) and (z, w) = (3, 4) in x, y, z, w)
+  parsed: let (x, y) = (1, 2) and (z, w) = (3, 4) in (x, y, z, w)
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > let _ = 1 and x = 2 and (a, b) = 3 in 0
