@@ -1,0 +1,4 @@
+(executable
+ (public_name miniML)
+ (name main)
+ (libraries miniML))
