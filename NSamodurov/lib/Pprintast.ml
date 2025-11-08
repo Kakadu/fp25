@@ -12,62 +12,26 @@ open Ast
 open Utils
 
 let pp_brujin ?(compact = true) =
-  let open Format in
-  let mangle t fmt x =
-    if is_free_in_brujin x t || not compact
-    then (
-      match x with
-      | Index i -> fprintf fmt "%d" i
-      | Blank -> ())
-    else fprintf fmt "_"
-  in
+  (* let open Format in *)
+  (* let mangle t fmt x = *)
+  (*   if is_free_in_brujin x t || not compact *)
+  (*   then ( *)
+  (*     match x with *)
+  (*     | Index i -> fprintf fmt "%d" i *)
+  (*     | Blank -> ()) *)
+  (*   else fprintf fmt "_" *)
+  (* in *)
   let rec pp fmt = function
-    | Var Blank -> ()
-    | Var (Index i) -> Format.fprintf fmt "i%d" i
-    | App (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
-    | Integer i -> Format.fprintf fmt "%d" i
-    | Bop (Plus, a, b) -> Format.fprintf fmt "(%a + %a)" pp a pp b
-    | Bop (Minus, a, b) -> Format.fprintf fmt "(%a - %a)" pp a pp b
-    | Bop (Asterisk, a, b) -> Format.fprintf fmt "(%a * %a)" pp a pp b
-    | Bop (Slash, a, b) -> Format.fprintf fmt "(%a / %a)" pp a pp b
-    | Bop (Other s, a, b) -> Format.fprintf fmt "(%a %c %a)" pp a s pp b
-    (* | Abs (x, Abs (y, Var z)) when x = z && y <> z && compact -> *)
-    (*   if compact then Format.fprintf fmt "⊤" *)
-    (* | Abs (x, Abs (y, Var z)) when y = z && x <> z && compact -> Format.fprintf fmt "⊥" *)
-    (* | Abs (f, Abs (x, Var z)) when x = z && x <> f && compact -> Format.fprintf fmt "0" *)
-    (* | Abs (f, Abs (x, App (Var g, Var z))) when x = z && x <> f && g = f && compact -> *)
-    (*   Format.fprintf fmt "1" *)
-    (* | Abs (f, Abs (x, App (Var g, App (Var h, Var z)))) *)
-    (*   when x = z && x <> f && g = f && h = g && compact -> Format.fprintf fmt "2" *)
-    | Abs (v1, Abs (v2, Abs (v3, Abs (v4, t)))) when compact ->
-      Format.fprintf
-        fmt
-        "(λ %a %a %a %a -> %a)"
-        (mangle t)
-        v1
-        (mangle t)
-        v2
-        (mangle t)
-        v3
-        (mangle t)
-        v4
-        pp
-        t
-    | Abs (v1, Abs (v2, Abs (v3, t))) when compact ->
-      Format.fprintf
-        fmt
-        "(λ %a %a %a -> %a)"
-        (mangle t)
-        v1
-        (mangle t)
-        v2
-        (mangle t)
-        v3
-        pp
-        t
-    | Abs (v1, Abs (v2, t)) when compact ->
-      Format.fprintf fmt "(λ %a %a -> %a)" (mangle t) v1 (mangle t) v2 pp t
-    | Abs (x, t) -> Format.fprintf fmt "(λ %a . %a)" (mangle t) x pp t
+    | EVar Blank -> ()
+    | EVar (Index i) -> Format.fprintf fmt "i%d" i
+    | EApp (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
+    | EConst (Int i) -> Format.fprintf fmt "%d" i
+    | EBop (Plus, a, b) -> Format.fprintf fmt "(%a + %a)" pp a pp b
+    | EBop (Minus, a, b) -> Format.fprintf fmt "(%a - %a)" pp a pp b
+    | EBop (Asterisk, a, b) -> Format.fprintf fmt "(%a * %a)" pp a pp b
+    | EBop (Slash, a, b) -> Format.fprintf fmt "(%a / %a)" pp a pp b
+    | EBop (Other s, a, b) -> Format.fprintf fmt "(%a %c %a)" pp a s pp b
+    | EAbs (_, t) -> Format.fprintf fmt "(λ . %a)" pp t
   in
   pp
 ;;
@@ -78,9 +42,9 @@ let pp ?(compact = true) =
     if is_free_in x t || not compact then fprintf fmt "%s" x else fprintf fmt "_"
   in
   let rec pp fmt = function
-    | Var s -> Format.fprintf fmt "%s" s
-    | App (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
-    | Integer i -> Format.fprintf fmt "%d" i
+    | EVar s -> Format.fprintf fmt "%s" s
+    | EApp (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
+    | EConst (Int i) -> Format.fprintf fmt "%d" i
     (* | Abs (x, Abs (y, Var z)) when x = z && y <> z && compact -> *)
     (*   if compact then Format.fprintf fmt "⊤" *)
     (* | Abs (x, Abs (y, Var z)) when y = z && x <> z && compact -> Format.fprintf fmt "⊥" *)
@@ -89,12 +53,12 @@ let pp ?(compact = true) =
     (*   Format.fprintf fmt "1" *)
     (* | Abs (f, Abs (x, App (Var g, App (Var h, Var z)))) *)
     (*   when x = z && x <> f && g = f && h = g && compact -> Format.fprintf fmt "2" *)
-    | Bop (Plus, a, b) -> Format.fprintf fmt "%a + %a" pp a pp b
-    | Bop (Minus, a, b) -> Format.fprintf fmt "%a - %a" pp a pp b
-    | Bop (Asterisk, a, b) -> Format.fprintf fmt "%a * %a" pp a pp b
-    | Bop (Slash, a, b) -> Format.fprintf fmt "%a / %a" pp a pp b
-    | Bop (Other s, a, b) -> Format.fprintf fmt "%a %c %a" pp a s pp b
-    | Abs (v1, Abs (v2, Abs (v3, Abs (v4, t)))) when compact ->
+    | EBop (Plus, a, b) -> Format.fprintf fmt "%a + %a" pp a pp b
+    | EBop (Minus, a, b) -> Format.fprintf fmt "%a - %a" pp a pp b
+    | EBop (Asterisk, a, b) -> Format.fprintf fmt "%a * %a" pp a pp b
+    | EBop (Slash, a, b) -> Format.fprintf fmt "%a / %a" pp a pp b
+    | EBop (Other s, a, b) -> Format.fprintf fmt "%a %c %a" pp a s pp b
+    | EAbs (v1, EAbs (v2, EAbs (v3, EAbs (v4, t)))) when compact ->
       Format.fprintf
         fmt
         "(λ %a %a %a %a -> %a)"
@@ -108,7 +72,7 @@ let pp ?(compact = true) =
         v4
         pp
         t
-    | Abs (v1, Abs (v2, Abs (v3, t))) when compact ->
+    | EAbs (v1, EAbs (v2, EAbs (v3, t))) when compact ->
       Format.fprintf
         fmt
         "(λ %a %a %a -> %a)"
@@ -120,9 +84,9 @@ let pp ?(compact = true) =
         v3
         pp
         t
-    | Abs (v1, Abs (v2, t)) when compact ->
+    | EAbs (v1, EAbs (v2, t)) when compact ->
       Format.fprintf fmt "(λ %a %a -> %a)" (mangle t) v1 (mangle t) v2 pp t
-    | Abs (x, t) -> Format.fprintf fmt "(λ %a . %a)" (mangle t) x pp t
+    | EAbs (x, t) -> Format.fprintf fmt "(λ %a . %a)" (mangle t) x pp t
   in
   pp
 ;;

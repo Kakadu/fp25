@@ -7,11 +7,12 @@
 [@@@ocaml.text "/*"]
 
 type 'name t = 'name Ast.t =
-  | Integer of int
-  | Bop of Ast.op * 'name t * 'name t
-  | Var of 'name
-  | Abs of 'name * 'name t
-  | App of 'name t * 'name t
+  | EConst of Ast.const
+  | EBop of Ast.op * 'name t * 'name t
+  | EVar of 'name
+  | ELet of Ast.let_flag * 'name * 'name t * 'name t
+  | EAbs of 'name * 'name t
+  | EApp of 'name t * 'name t
 [@@deriving show { with_path = false }]
 
 let pp_named = pp Format.pp_print_string

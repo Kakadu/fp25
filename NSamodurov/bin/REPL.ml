@@ -21,19 +21,19 @@ include struct
 
   let ao_small_step_strat =
     let rec helper = function
-      | Var _ as l -> fin l
-      | Abs (x, b) ->
+      | EVar _ as l -> fin l
+      | EAbs (x, b) ->
         (match helper b with
          | WIP b2 -> wip (abs x b2)
          | Done b2 -> fin (abs x b2))
-      | App (f, arg) ->
+      | EApp (f, arg) ->
         (match helper f with
          | WIP f2 -> wip (app f2 arg)
-         | Done (Abs (x, body)) ->
+         | Done (EAbs (x, body)) ->
            (match helper arg with
             | Done arg -> wip (Lambda.subst x ~by:arg body)
             | WIP arg -> wip (app f arg))
-         | Done f2 -> fin (App (f2, arg)))
+         | Done f2 -> fin (app f2 arg))
     in
     let rec loop cnt t =
       match helper t with
@@ -64,7 +64,8 @@ type stop_after =
   | SA_never
 
 type opts =
-  { mutable dump_parsetree : bool
+  { mutable reduction_max : int
+  ; mutable dump_parsetree : bool
   ; mutable mode : strategy_kind * strategy
   ; mutable stop_after : stop_after
   }
@@ -91,8 +92,13 @@ let run_single dump_parsetree stop_after eval =
 ;;
 
 let () =
-  let opts = { dump_parsetree = false; mode = Big_step, NO; stop_after = SA_never } in
-  let reduction_max = ref 100 in
+  let opts =
+    { reduction_max = 100
+    ; dump_parsetree = false
+    ; mode = Big_step, NO
+    ; stop_after = SA_never
+    }
+  in
   let pick_strategy stra () =
     let kind, _ = opts.mode in
     opts.mode <- kind, stra
@@ -101,7 +107,7 @@ let () =
     let _, stra = opts.mode in
     opts.mode <- step, stra
   in
-  let pick_counter n = reduction_max := n in
+  let pick_counter n = opts.reduction_max <- n in
   let () =
     let open Stdlib.Arg in
     parse
@@ -127,8 +133,8 @@ let () =
         , "" )
       ]
       (fun _ ->
-        Stdlib.Format.eprintf "Positioned arguments are not supported\n";
-        Stdlib.exit 1)
+         Stdlib.Format.eprintf "Positioned arguments are not supported\n";
+         Stdlib.exit 1)
       "Read-Eval-Print-Loop for Utyped Lambda Calculus"
   in
   run_single opts.dump_parsetree opts.stop_after (fun ast ->
@@ -138,7 +144,7 @@ let () =
       | Small_step, AO -> ao_small_step_strat
       | _ -> raise (Failure "Implement it yourself")
     in
-    let result, c = Lambda.apply_strat stra !reduction_max ast in
+    let result, c = Lambda.apply_strat stra opts.reduction_max ast in
     if c < 0
     then Stdlib.Format.eprintf "Number of beta-reduction has reached a limit"
     else Stdlib.Format.printf "%d beta-reductions left\n" c;

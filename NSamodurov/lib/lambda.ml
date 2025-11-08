@@ -10,17 +10,19 @@ type counter = int
 type result = string Ast.t * counter
 
 (* Smart constructors *)
-let var x = Var x
-let abs x y = Abs (x, y)
-let app x y = App (x, y)
+let var x = EVar x
+let abs x y = EAbs (x, y)
+let app x y = EApp (x, y)
 
+(* no longer needed? *)
+(* rework this file to accept brujin lambdas *)
 let replace_name x ~by =
   let rec helper = function
-    | Var y when String.equal x y -> Var by
-    | Var t -> Var t
-    | App (l, r) -> App (helper l, helper r)
-    | Abs (y, t) when String.equal x y -> Abs (by, helper t)
-    | Abs (z, t) -> Abs (z, helper t)
+    | EVar y when String.equal x y -> EVar by
+    | EVar t -> EVar t
+    | EApp (l, r) -> EApp (helper l, helper r)
+    | EAbs (y, t) when String.equal x y -> EAbs (by, helper t)
+    | EAbs (z, t) -> EAbs (z, helper t)
   in
   helper
 ;;
@@ -32,16 +34,16 @@ let rec next_name s old =
 (*  The call [subst x ~by:v e] means `[x/v]e` or `e[v -> x]` *)
 let subst x ~by:v =
   let rec helper = function
-    | Var y when String.equal y x -> v
-    | Var y -> Var y
-    | App (l, r) -> app (helper l) (helper r)
-    | Abs (y, b) when String.equal y x -> abs y b
-    | Abs (y, t) when is_free_in y v ->
+    | EVar y when String.equal y x -> v
+    | EVar y -> EVar y
+    | EApp (l, r) -> app (helper l) (helper r)
+    | EAbs (y, b) when String.equal y x -> abs y b
+    | EAbs (y, t) when is_free_in y v ->
       let equal = String.equal in
       let frees = free_vars ~equal v @ free_vars ~equal t in
       let w = next_name y frees in
       helper (abs w (replace_name y ~by:w t))
-    | Abs (y, b) -> abs y (helper b)
+    | EAbs (y, b) -> abs y (helper b)
   in
   helper
 ;;
@@ -62,16 +64,16 @@ let without_strat =
 let apply_strat st count ast =
   let st = if count = 0 then without_strat else st in
   match ast with
-  | Var name -> st.on_var st count name
-  | Abs (x, b) -> st.on_abs st count x b
-  | App (l, r) -> st.on_app st count l r
+  | EVar name -> st.on_var st count name
+  | EAbs (x, b) -> st.on_abs st count x b
+  | EApp (l, r) -> st.on_app st count l r
 ;;
 
 let cbn_strat =
   let on_app st cnt f arg =
     match apply_strat st cnt f with
-    | Abs (x, e), cnt -> apply_strat st cnt (subst x ~by:arg e)
-    | f2, cnt -> App (f2, arg), cnt
+    | EAbs (x, e), cnt -> apply_strat st cnt (subst x ~by:arg e)
+    | f2, cnt -> app f2 arg, cnt
   in
   { without_strat with on_app }
 ;;
@@ -87,11 +89,11 @@ let under_abstraction st cnt x b =
 let nor_strat =
   let on_app st cnt f arg =
     match apply_strat cbn_strat cnt f with
-    | Abs (x, e), cnt -> apply_strat st cnt @@ subst x ~by:arg e
+    | EAbs (x, e), cnt -> apply_strat st cnt @@ subst x ~by:arg e
     | f1, cnt ->
       let f2, cnt = apply_strat st cnt f1 in
       let arg2, cnt = apply_strat st cnt arg in
-      App (f2, arg2), cnt
+      app f2 arg2, cnt
   in
   { without_strat with on_app; on_abs = under_abstraction }
 ;;
@@ -100,12 +102,12 @@ let nor_strat =
 let cbv_strat =
   let on_app st cnt f arg =
     match apply_strat st cnt f with
-    | Abs (x, e), cnt ->
+    | EAbs (x, e), cnt ->
       let arg2, cnt = apply_strat st cnt arg in
       apply_strat st cnt @@ subst x ~by:arg2 e
     | f2, cnt ->
       let b, cnt = apply_strat st cnt arg in
-      App (f2, b), cnt
+      app f2 b, cnt
   in
   { without_strat with on_app }
 ;;
