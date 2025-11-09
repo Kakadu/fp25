@@ -24,16 +24,16 @@ include struct
       | EVar _ as l -> fin l
       | EAbs (x, b) ->
         (match helper b with
-         | WIP b2 -> wip (abs x b2)
-         | Done b2 -> fin (abs x b2))
+         | WIP b2 -> wip (eabs x b2)
+         | Done b2 -> fin (eabs x b2))
       | EApp (f, arg) ->
         (match helper f with
-         | WIP f2 -> wip (app f2 arg)
+         | WIP f2 -> wip (eapp f2 arg)
          | Done (EAbs (x, body)) ->
            (match helper arg with
             | Done arg -> wip (Lambda.subst x ~by:arg body)
-            | WIP arg -> wip (app f arg))
-         | Done f2 -> fin (app f2 arg))
+            | WIP arg -> wip (eapp f arg))
+         | Done f2 -> fin (eapp f2 arg))
     in
     let rec loop cnt t =
       match helper t with
@@ -42,9 +42,9 @@ include struct
         Format.printf " -- %a\n%!" Pprintast.pp_hum x;
         loop (cnt - 1) x
     in
-    let on_app _ cnt f arg = loop cnt (app f arg) in
-    let on_abs _ cnt f x = loop cnt (abs f x) in
-    let on_var _ cnt x = loop cnt (var x) in
+    let on_app _ cnt f arg = loop cnt (eapp f arg) in
+    let on_abs _ cnt f x = loop cnt (eabs f x) in
+    let on_var _ cnt x = loop cnt (evar x) in
     { Lambda.on_var; on_abs; on_app }
   ;;
 end
