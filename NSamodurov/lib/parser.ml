@@ -180,7 +180,7 @@ let to_brujin expr =
            else (
              let i = Context.cardinal map in
              let* () = write (Context.extend v i map) in
-             return (evar (Index (i + List.length bound))))
+             return (evar (Index (i + List.length bound + reserved))))
          | Some i -> return (EVar (Index (i + reserved))))
       | EConst (Int x) -> return (int x)
       | ELet _ -> failwith "unimpl"
@@ -193,7 +193,7 @@ let to_brujin expr =
         else (
           let i = Context.cardinal map in
           let* () = write (Context.extend x i map) in
-          let* e = helper bound e in
+          let* e = helper (x :: bound) e in
           return (eabs Blank e))
       | EApp (e1, e2) ->
         let* b1 = helper bound e1 in

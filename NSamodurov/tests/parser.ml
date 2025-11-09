@@ -19,32 +19,38 @@ let parse_and_print str =
 
 let%expect_test "unbound" =
   parse_and_print "x y z";
-  [%expect {| ((i0 i1) i2) |}]
+  [%expect {| ((i20 i21) i22) |}]
 ;;
 
 let%expect_test "bound and unbound" =
   parse_and_print "w fun x -> x";
-  [%expect {| (i0 (λ . i1)) |}]
+  [%expect {| (i20 (λ . i20)) |}]
 ;;
 
 let%expect_test "true" =
   parse_and_print "fun x y -> x";
-  [%expect {| (λ . (λ . i0)) |}]
+  [%expect {| (λ . (λ . i21)) |}]
 ;;
 
 let%expect_test "false" =
   parse_and_print "fun x y -> y";
-  [%expect {| (λ . (λ . i1)) |}]
+  [%expect {| (λ . (λ . i20)) |}]
 ;;
 
 let%expect_test "omega comb" =
   parse_and_print "(fun x -> x x ) (fun x -> x x)";
-  [%expect {| ((λ . (i0 i0)) (λ . (i0 i0))) |}]
+  [%expect {| ((λ . (i20 i20)) (λ . (i20 i20))) |}]
 ;;
 
 let%expect_test "turing comb" =
   parse_and_print "(fun x y -> x y x) (fun x y -> x y x) ";
-  [%expect {| ((λ . (λ . ((i0 i1) i0))) (λ . (λ . ((i1 i0) i1)))) |}]
+  [%expect {| ((λ . (λ . ((i21 i20) i21))) (λ . (λ . ((i21 i20) i21)))) |}]
+;;
+
+let%expect_test "weird combinator" =
+  parse_and_print
+    "(fun x y -> x y x) (fun x y -> x y x) (fun x y -> x y x)(fun x y -> x y x)";
+  [%expect {| ((((λ . (λ . ((i21 i20) i21))) (λ . (λ . ((i21 i20) i21)))) (λ . (λ . ((i21 i20) i21)))) (λ . (λ . ((i21 i20) i21)))) |}]
 ;;
 
 let%expect_test "plus is left associative" =
