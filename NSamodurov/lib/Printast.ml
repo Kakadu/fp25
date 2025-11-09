@@ -8,7 +8,6 @@
 
 type 'name t = 'name Ast.t =
   | EConst of Ast.const
-  | EBop of Ast.op * 'name t * 'name t
   | EVar of 'name
   | ELet of Ast.let_flag * 'name * 'name t * 'name t
   | EAbs of 'name * 'name t

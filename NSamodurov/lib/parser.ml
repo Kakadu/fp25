@@ -4,7 +4,7 @@
 
 open Angstrom
 open Ast
-module SMap = Map.Make (String)
+open Monads
 
 let ws =
   skip_while (function
@@ -69,9 +69,11 @@ let pp_error ppf = function
 ;;
 
 let parens = fun p -> char '(' *> p <* char ')'
-let to_left_assoc s h tl = List.fold_left (fun acc x -> EBop (s, acc, x)) h tl
-let multi_sum h tl = to_left_assoc Plus h tl
-let multi_prod h tl = to_left_assoc Asterisk h tl
+
+(* let bop s a b = Abs                         *)
+let to_left_assoc s h tl = List.fold_left (fun acc x -> s acc x) h tl
+let multi_sum h tl = to_left_assoc add h tl
+let multi_prod h tl = to_left_assoc sub h tl
 let int c = EConst (Int c)
 
 let prio expr table =
@@ -96,12 +98,8 @@ let expr =
   let small_expr = number >>| int in
   prio
     small_expr
-    [| [ (ws *> char '+' <* ws, fun a b -> EBop (Plus, a, b))
-       ; (ws *> char '-' <* ws, fun a b -> EBop (Minus, a, b))
-       ]
-     ; [ (ws *> char '*' <* ws, fun a b -> EBop (Asterisk, a, b))
-       ; (ws *> char '/' <* ws, fun a b -> EBop (Slash, a, b))
-       ]
+    [| [ ws *> char '+' <* ws, add; ws *> char '-' <* ws, sub ]
+     ; [ ws *> char '*' <* ws, mul; ws *> char '/' <* ws, div ]
     |]
 ;;
 
@@ -136,45 +134,73 @@ let parse_lam =
   { single; apps }
 ;;
 
+(** Monad for de brujin global context  *)
+module Env : STATE_MONAD = struct
+  type ('s, 'a) t = 's -> 's * 'a
+
+  let return : 'a -> ('s, 'a) t = fun x s -> s, x
+
+  let bind : ('s, 'a) t -> ('a -> ('s, 'b) t) -> ('s, 'b) t =
+    fun m f st ->
+    let st, x = m st in
+    f x st
+  ;;
+
+  module Syntax = struct
+    let ( let* ) = bind
+    let ( >>= ) = bind
+  end
+
+  let read : ('s, 's) t = fun st -> st, st
+  let run : ('s, 'a) t -> 's -> 'a = fun f st -> snd (f st)
+  let write : 's -> ('s, unit) t = fun x _ -> x, ()
+end
+
+module Context = struct
+  include Map.Make (String)
+
+  let extend k v m = add k (v + reserved) m
+end
+
 let to_brujin expr =
-  let open Monads.Env in
-  let open Monads.Env.Syntax in
+  let open Env in
+  let open Env.Syntax in
   let rec helper =
     fun bound -> function
-      | EConst (Int x) -> return (int x)
-      | ELet _ -> failwith "unimpl"
-      | EBop (s, a, b) ->
-        let* a = helper bound a in
-        let* b = helper bound b in
-        return (EBop (s, a, b))
-      | EAbs (x, e) ->
-        let* map = read in
-        if SMap.mem x map
-        then
-          let* e = helper (x :: bound) e in
-          return (EAbs (Blank, e))
-        else (
-          let i = SMap.cardinal map in
-          let* () = write (SMap.add x i map) in
-          let* e = helper bound e in
-          return (EAbs (Blank, e)))
-      | EApp (e1, e2) ->
-        let* b1 = helper bound e1 in
-        let* b2 = helper bound e2 in
-        return (EApp (b1, b2))
+      | EVar "+" -> return plus
+      | EVar "-" -> return minus
+      | EVar "*" -> return asterisk
+      | EVar "/" -> return slash
       | EVar v ->
         let* map = read in
         (match List.find_index (String.equal v) bound with
          | None ->
-           if SMap.mem v map
-           then return (EVar (Index (SMap.find v map + List.length bound)))
+           if Context.mem v map
+           then return (evar (Index (Context.find v map + List.length bound)))
            else (
-             let i = SMap.cardinal map in
-             let* () = write (SMap.add v i map) in
-             return (EVar (Index (i + List.length bound))))
-         | Some i -> return (EVar (Index i)))
+             let i = Context.cardinal map in
+             let* () = write (Context.extend v i map) in
+             return (evar (Index (i + List.length bound))))
+         | Some i -> return (EVar (Index (i + reserved))))
+      | EConst (Int x) -> return (int x)
+      | ELet _ -> failwith "unimpl"
+      | EAbs (x, e) ->
+        let* map = read in
+        if Context.mem x map
+        then
+          let* e = helper (x :: bound) e in
+          return (eabs Blank e)
+        else (
+          let i = Context.cardinal map in
+          let* () = write (Context.extend x i map) in
+          let* e = helper bound e in
+          return (eabs Blank e))
+      | EApp (e1, e2) ->
+        let* b1 = helper bound e1 in
+        let* b2 = helper bound e2 in
+        return (eapp b1 b2)
   in
-  run (helper [] expr) SMap.empty
+  run (helper [] expr) Context.empty
 ;;
 
 let parse str =

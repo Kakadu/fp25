@@ -8,6 +8,7 @@
 
 open Base
 open Ast
+open Map
 
 (* TODO: use a set instead of list *)
 let list_remove x ~equal = List.filter ~f:(fun a -> not (equal a x))
@@ -17,9 +18,9 @@ let free_vars ~equal =
     | EVar s -> s :: acc
     | EConst _ -> []
     | ELet (_, _, e1, e2) -> helper (helper acc e1) e2
-    | EAbs (s, l) -> acc @ list_remove ~equal s (helper [] l)
+    | EAbs (v, l) -> acc @ list_remove ~equal v (helper [] l)
     | EApp (l, r) -> helper (helper acc r) l
-    | EBop (_, a, b) -> helper (helper acc a) b
+    (* | EBop (_, a, b) -> helper (helper acc a) b *)
   in
   helper []
 ;;
@@ -37,7 +38,3 @@ let is_free_in x term =
 (* let is_free_in_brujin x term = *)
 (*   List.mem (free_vars term ~equal:brujin_equal) x ~equal:brujin_equal *)
 (* ;; *)
-
-let var x = EVar x
-let abs x l = EAbs (x, l)
-let app l r = EApp (l, r)

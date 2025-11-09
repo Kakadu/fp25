@@ -11,7 +11,7 @@
 open Ast
 open Utils
 
-let pp_brujin ?(compact = true) =
+let pp_brujin (* ?(compact = true) *) =
   (* let open Format in *)
   (* let mangle t fmt x = *)
   (*   if is_free_in_brujin x t || not compact *)
@@ -23,15 +23,15 @@ let pp_brujin ?(compact = true) =
   (* in *)
   let rec pp fmt = function
     | EVar Blank -> ()
+    | EApp (EApp (EVar (Index 0), l), r) -> Format.fprintf fmt "(%a + %a)" pp l pp r
+    | EApp (EApp (EVar (Index 1), l), r) -> Format.fprintf fmt "(%a - %a)" pp l pp r
+    | EApp (EApp (EVar (Index 2), l), r) -> Format.fprintf fmt "(%a * %a)" pp l pp r
+    | EApp (EApp (EVar (Index 3), l), r) -> Format.fprintf fmt "(%a / %a)" pp l pp r
     | EVar (Index i) -> Format.fprintf fmt "i%d" i
     | EApp (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | EConst (Int i) -> Format.fprintf fmt "%d" i
-    | EBop (Plus, a, b) -> Format.fprintf fmt "(%a + %a)" pp a pp b
-    | EBop (Minus, a, b) -> Format.fprintf fmt "(%a - %a)" pp a pp b
-    | EBop (Asterisk, a, b) -> Format.fprintf fmt "(%a * %a)" pp a pp b
-    | EBop (Slash, a, b) -> Format.fprintf fmt "(%a / %a)" pp a pp b
-    | EBop (Other s, a, b) -> Format.fprintf fmt "(%a %c %a)" pp a s pp b
     | EAbs (_, t) -> Format.fprintf fmt "(λ . %a)" pp t
+    | ELet _ -> failwith "unimpl"
   in
   pp
 ;;
@@ -53,11 +53,11 @@ let pp ?(compact = true) =
     (*   Format.fprintf fmt "1" *)
     (* | Abs (f, Abs (x, App (Var g, App (Var h, Var z)))) *)
     (*   when x = z && x <> f && g = f && h = g && compact -> Format.fprintf fmt "2" *)
-    | EBop (Plus, a, b) -> Format.fprintf fmt "%a + %a" pp a pp b
-    | EBop (Minus, a, b) -> Format.fprintf fmt "%a - %a" pp a pp b
-    | EBop (Asterisk, a, b) -> Format.fprintf fmt "%a * %a" pp a pp b
-    | EBop (Slash, a, b) -> Format.fprintf fmt "%a / %a" pp a pp b
-    | EBop (Other s, a, b) -> Format.fprintf fmt "%a %c %a" pp a s pp b
+    (* | EBop (Plus, a, b) -> Format.fprintf fmt "%a + %a" pp a pp b *)
+    (* | EBop (Minus, a, b) -> Format.fprintf fmt "%a - %a" pp a pp b *)
+    (* | EBop (Asterisk, a, b) -> Format.fprintf fmt "%a * %a" pp a pp b *)
+    (* | EBop (Slash, a, b) -> Format.fprintf fmt "%a / %a" pp a pp b *)
+    (* | EBop (Other s, a, b) -> Format.fprintf fmt "%a %c %a" pp a s pp b *)
     | EAbs (v1, EAbs (v2, EAbs (v3, EAbs (v4, t)))) when compact ->
       Format.fprintf
         fmt
@@ -93,5 +93,5 @@ let pp ?(compact = true) =
 
 let pp_hum = pp ~compact:true
 let pp = pp ~compact:false
-let pp_brujin_compact = pp_brujin ~compact:true
-let pp_brujin = pp_brujin ~compact:false
+let pp_brujin_compact = pp_brujin (* ~compact:true *)
+let pp_brujin = pp_brujin (* ~compact:false *)
