@@ -22,7 +22,6 @@ let pp_brujin (* ?(compact = true) *) =
   (*   else fprintf fmt "_" *)
   (* in *)
   let rec pp fmt = function
-    | EVar Blank -> ()
     | EApp (EApp (EVar (Index 0), l), r) -> Format.fprintf fmt "(%a + %a)" pp l pp r
     | EApp (EApp (EVar (Index 1), l), r) -> Format.fprintf fmt "(%a - %a)" pp l pp r
     | EApp (EApp (EVar (Index 2), l), r) -> Format.fprintf fmt "(%a * %a)" pp l pp r

@@ -2,6 +2,7 @@ type ty =
   | TGround of string
   | TArrow of ty * ty
   | TVar of int (* | TTuple of ty * ty * ty list *)
+[@@deriving show { with_path = false }]
 
 let tground s = TGround s
 let tarrow a b = TArrow (a, b)
@@ -35,13 +36,13 @@ let rec occurs_in t = function
   | TVar _ as b -> b = t
 ;;
 
-let free_vars v =
+let fv =
   let rec helper set = function
     | TVar b -> ISet.add b set
     | TArrow (e1, e2) -> helper (helper set e1) e2
     | TGround _ -> set
   in
-  helper ISet.empty v
+  helper ISet.empty
 ;;
 
 type binder_set = ISet.t

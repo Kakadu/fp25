@@ -13,12 +13,10 @@ type term =
 
 type error =
   [ `UnifyError of ty * ty
+  | `UnboundVariable of int
   | `AbstractionExpected of ty
+  | `UsingReservedVariable of int
   ]
-
-module Context = struct
-  type t = context
-end
 
 (* Gamma *)
 module Scheme : sig
@@ -29,14 +27,25 @@ end = struct
   type t = scheme
 
   let mono t = ISet.empty, t
+  let fv (b, ty) = ISet.diff (Type.fv ty) b
 end
 
-module Result : FailMonad = struct
-  type ('a, 'b) t = ('b, 'a) Result.t
+module InferMonad : sig
+  include GENERAL_MONAD_2
 
-  let fail e = Result.Error e
-  let return a = Result.Ok a
-  let bind o f = Result.bind o f
+  val fail : 's -> ('s, 'a) t
+  val to_result : ('s, 'a) t -> ('a, 's) Result.t
+end = struct
+  type ('s, 'a) t = ('a, 's) Result.t
+
+  let fail = Result.error
+  let return = Result.ok
+  let bind = Result.bind
+
+  let to_result = function
+    | Ok _ as o -> o
+    | Error _ as e -> e
+  ;;
 
   module Syntax = struct
     let ( let* ) = bind
@@ -44,8 +53,23 @@ module Result : FailMonad = struct
   end
 end
 
-open Result
-open Result.Syntax
+open InferMonad
+open InferMonad.Syntax
+
+module Context = struct
+  include IMap
+
+  type t = scheme IMap.t
+
+  let empty = IMap.empty
+
+  let lookup =
+    fun k ctx ->
+    match IMap.find_opt k ctx with
+    | Some s -> return (snd s)
+    | None -> fail (`UnboundVariable k)
+  ;;
+end
 
 let rec unify e1 e2 =
   match e1, e2 with
@@ -59,27 +83,43 @@ let rec unify e1 e2 =
   | _ -> fail (`UnifyError (e1, e2))
 ;;
 
-let infer =
-  fun x ->
-  let rec helper = function
-    | EConst (Bool _) -> return tbool
-    | EConst (Int _) -> return tint
-    | EBop (_, e1, e2) ->
-      let* e1 = helper e1 in
-      let* e2 = helper e2 in
-      let* e1, e2 = unify e1 e2 in
-      return (tarrow e1 e2)
-    | EVar b -> failwith "not impl: lookup enviroment needed"
-    | ELet (_, v, e1, e2) -> failwith "not impl"
-    | EAbs (v, e2) -> failwith "not impl"
-    | EApp (e1, e2) ->
-      let* e1 = helper e1 in
-      let* e2 = helper e2 in
-      (match e1 with
-       | TArrow (l, r) ->
-         let* _ = unify l e2 in
-         return r
-       | _ -> fail (`AbstractionExpected e1))
+let infer env =
+  let rec helper =
+    fun env -> function
+      | EConst (Int _) -> return tint
+      | EVar (Index b) -> Context.lookup b env
+      | EVar Blank -> fail (`UsingReservedVariable (-1))
+      | ELet (NotRecursive, Index v, e1, e2) ->
+        let tv = tvar v in
+        let env = Context.add v (Scheme.mono tv) env in
+        failwith "need to implement generalize"
+      | ELet (Recursive, Index v, e1, e2) -> failwith "unimpl let"
+      | ELet (_, Blank, e1, e2) -> failwith "TODO: remove blanks"
+      | EAbs (Index v, e) ->
+        let tv = tvar v in
+        let env = Context.add v (Scheme.mono tv) env in
+        let* te = helper env e in
+        return (tarrow tv te)
+      | EAbs (Blank, e) -> failwith "unimpl abs"
+      | EApp (e1, e2) ->
+        let* e1 = helper env e1 in
+        let* e2 = helper env e2 in
+        (match e1 with
+         | TArrow (l, r) ->
+           let* _ = unify l e2 in
+           return r
+         | _ -> fail (`AbstractionExpected e1))
   in
-  return (helper x)
+  helper env
 ;;
+
+let default_env =
+  let arith_ty = tarrow tint (tarrow tint tint) in
+  Context.empty
+  |> Context.add 0 (Scheme.mono arith_ty)
+  |> Context.add 1 (Scheme.mono arith_ty)
+  |> Context.add 2 (Scheme.mono arith_ty)
+  |> Context.add 3 (Scheme.mono arith_ty)
+;;
+
+let w x = infer default_env x
