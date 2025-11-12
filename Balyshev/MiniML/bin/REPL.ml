@@ -1,6 +1,6 @@
 open Base
 open MiniML
-module Eval = Interpreter.Eval (Monads.RESULT_MONAD)
+module Eval = Interpreter.Eval (Monads.State)
 module Infer = Inferencer.Infer (Monads.State)
 
 type ty =
@@ -19,7 +19,7 @@ let run_expr ~mode text =
   | Error err -> Format.printf "parsing error: %s\n" err
   | Ok ast ->
     (match mode with
-     | Parse -> Format.printf "parsed: %a\n" Ast.pp_expression ast
+     | Parse -> Format.printf "parsed: %a\n" Parsetree.pp_expression ast
      | Eval ->
        (match Eval.eval_expr ast with
         | Error err -> Format.printf "interpreter error: %a\n" Interpreter.pp_error err
@@ -27,7 +27,7 @@ let run_expr ~mode text =
      | Infer ->
        (match Infer.expression ast with
         | Error err -> Format.printf "inferencer error: %a\n" Inferencer.pp_error err
-        | Ok ty -> Format.printf "inferred: %a" Ast.pp_ty ty))
+        | Ok ty -> Format.printf "inferred: %a" Typedtree.pp_ty ty))
 ;;
 
 let run_stru ~mode text =
@@ -35,7 +35,7 @@ let run_stru ~mode text =
   | Error err -> Format.printf "parsing error: %s\n" err
   | Ok ast ->
     (match mode with
-     | Parse -> Format.printf "parsed: %a\n" Ast.pp_structure ast
+     | Parse -> Format.printf "parsed: %a\n" Parsetree.pp_structure ast
      | _ -> failwith "not implemented")
 ;;
 
@@ -44,7 +44,7 @@ let run_patt ~mode text =
   | Error err -> Format.printf "parsing error: %s\n" err
   | Ok ast ->
     (match mode with
-     | Parse -> Format.printf "parsed: %a\n" Ast.pp_pattern ast
+     | Parse -> Format.printf "parsed: %a\n" Parsetree.pp_pattern ast
      | _ -> failwith "Not supported")
 ;;
 
@@ -53,7 +53,7 @@ let run_core_type ~mode text =
   | Error err -> Format.printf "parsing error: %s\n" err
   | Ok ast ->
     (match mode with
-     | Parse -> Format.printf "parsed: %a\n" Ast.pp_core_type ast
+     | Parse -> Format.printf "parsed: %a\n" Parsetree.pp_core_type ast
      | _ -> failwith "Not supported")
 ;;
 
