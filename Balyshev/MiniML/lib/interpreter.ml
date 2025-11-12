@@ -1,4 +1,4 @@
-open Ast
+open Parsetree
 open Base
 
 type value =
@@ -8,12 +8,11 @@ type value =
   | VConstruct of string * value option
 
 and error =
-  [ `Is_not_a_function of expression
-  | `Unbound_value of string
-  | `Type_mismatch of string
-  | `Division_by_zero
-  | `Not_implemented of string
-  ]
+  | Is_not_a_function of expression
+  | Unbound_value of string
+  | Type_mismatch of string
+  | Division_by_zero
+  | Not_implemented of string
 
 and environment = (string, value, Base.String.comparator_witness) Base.Map.t
 
@@ -48,25 +47,23 @@ and show_value = function
   | VConstruct (name, None) -> sprintf "%s" name
   | VConstruct (name, Some arg) -> sprintf "@[%s (%s)@]" name (show_value arg)
   | VFun (patt, expr, _) ->
-    sprintf "(%s -> %s)" (Ast.show_pattern patt) (Ast.show_expression expr)
+    sprintf "(%s -> %s)" (Parsetree.show_pattern patt) (Parsetree.show_expression expr)
 ;;
 
 let pp_value ppf value = fprintf ppf "%s" (show_value value)
 
 let show_error : error -> string = function
-  | `Is_not_a_function expr ->
+  | Is_not_a_function expr ->
     sprintf "| %s | is not a function, it can not be applied" (show_expression expr)
-  | `Unbound_value name -> sprintf "unbound value: %s" name
-  | `Type_mismatch msg -> sprintf "type mismatch: %s" msg
-  | `Division_by_zero -> sprintf "division by zero"
-  | `Not_implemented s -> sprintf "not implemented in <%s>" s
+  | Unbound_value name -> sprintf "unbound value: %s" name
+  | Type_mismatch msg -> sprintf "type mismatch: %s" msg
+  | Division_by_zero -> sprintf "division by zero"
+  | Not_implemented s -> sprintf "not implemented in <%s>" s
 ;;
 
 let pp_error ppf error = fprintf ppf "%s" (show_error error)
 
-module Eval (M : Monads.MONAD_FAIL) : sig
-  val eval_expr : Ast.expression -> (value, error) M.t
-end = struct
+module Eval (M : Monads.STATE_MONAD) = struct
   open M
 
   let init_env : (string, 'ok, Base.String.comparator_witness) Base.Map.t =
@@ -76,7 +73,7 @@ end = struct
   let from_env env key =
     match Map.find env key with
     | Some value -> return value
-    | None -> fail (`Unbound_value key)
+    | None -> fail (Unbound_value key)
   ;;
 
   let eval_binop op a b =
@@ -85,7 +82,7 @@ end = struct
     | Sub, VConstant (CInt a), VConstant (CInt b) -> return (VConstant (CInt (a - b)))
     | Mul, VConstant (CInt a), VConstant (CInt b) -> return (VConstant (CInt (a * b)))
     | Div, VConstant (CInt a), VConstant (CInt b) ->
-      if b = 0 then fail `Division_by_zero else return (VConstant (CInt (a / b)))
+      if b = 0 then fail Division_by_zero else return (VConstant (CInt (a / b)))
     | Lt, VConstant (CInt a), VConstant (CInt b) -> return (VConstant (CBool (a < b)))
     | Gt, VConstant (CInt a), VConstant (CInt b) -> return (VConstant (CBool (a > b)))
     | Le, VConstant (CInt a), VConstant (CInt b) -> return (VConstant (CBool (a <= b)))
@@ -99,8 +96,8 @@ end = struct
     | Cons, left, right -> return (VConstruct ("Cons", Some (VTuple (left, right, []))))
     | _ ->
       fail
-        (`Type_mismatch
-            (sprintf "incompatible values: %s, %s" (show_value a) (show_value b)))
+        (Type_mismatch
+           (sprintf "incompatible values: %s, %s" (show_value a) (show_value b)))
   ;;
 
   let eval_tuple env eval (a, b, xs) =
@@ -126,20 +123,20 @@ end = struct
        | VConstruct (name2, Some value) when String.equal name name2 ->
          bind_to_env env eval patt value
        | VConstruct (name2, _) ->
-         fail (`Type_mismatch (sprintf "different constructors: %s and %s" name name2))
-       | _ -> fail (`Type_mismatch (sprintf "constructor %s expected" name)))
+         fail (Type_mismatch (sprintf "different constructors: %s and %s" name name2))
+       | _ -> fail (Type_mismatch (sprintf "constructor %s expected" name)))
     | PTuple (p1, p2, ps), VTuple (v1, v2, vs) ->
       let rec helper env = function
         | [], [] -> return env
         | p :: ps, v :: vs ->
           let* env' = bind_to_env env eval p v in
           helper env' (ps, vs)
-        | _ -> fail (`Type_mismatch "different tuple arities")
+        | _ -> fail (Type_mismatch "different tuple arities")
       in
       helper env (p1 :: p2 :: ps, v1 :: v2 :: vs)
     | PConstruct (name, None), _ ->
-      fail (`Type_mismatch (sprintf "can not bind constant constructor: %s" name))
-    | _ -> fail (`Type_mismatch "value does not match pattern")
+      fail (Type_mismatch (sprintf "can not bind constant constructor: %s" name))
+    | _ -> fail (Type_mismatch "value does not match pattern")
   ;;
 
   let bind_name_to_env env name value = Base.Map.set env ~key:name ~data:value
@@ -171,17 +168,21 @@ end = struct
        | VFun (patt, body, closure) ->
          let* env = bind_to_env closure eval_expression patt arg' in
          eval_expression env body
-       | _ -> fail (`Is_not_a_function f))
+       | _ -> fail (Is_not_a_function f))
     | EFun (patt, expr) -> return (VFun (patt, expr, env))
     | EIf (cond, expr_then, expr_else) ->
       eval_expression env cond
       >>= (function
        | VConstant (CBool true) -> eval_expression env expr_then
        | VConstant (CBool false) -> eval_expression env expr_else
-       | _ -> fail (`Type_mismatch "boolean expr expected"))
-    | ELet (Recursive, _, _) -> fail (`Not_implemented "let rec in eval_expr")
-    | EMatch _ -> fail (`Not_implemented "match with in eval_expr")
+       | _ -> fail (Type_mismatch "boolean expr expected"))
+    | ELet (Recursive, _, _) -> fail (Not_implemented "let rec in eval_expr")
+    | EMatch _ -> fail (Not_implemented "match with in eval_expr")
   ;;
 
-  let eval_expr expr = eval_expression init_env expr
+  let eval_expr expr =
+    match M.run (eval_expression init_env expr) (return 0) with
+    | Ok (_state, value) -> Ok value
+    | Error err -> Error err
+  ;;
 end

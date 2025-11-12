@@ -4,7 +4,7 @@
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-open Ast
+open Parsetree
 
 type value =
   | VConstant of constant
@@ -13,12 +13,11 @@ type value =
   | VConstruct of string * value option
 
 and error =
-  [ `Is_not_a_function of expression
-  | `Unbound_value of string
-  | `Type_mismatch of string
-  | `Division_by_zero
-  | `Not_implemented of string
-  ]
+  | Is_not_a_function of expression
+  | Unbound_value of string
+  | Type_mismatch of string
+  | Division_by_zero
+  | Not_implemented of string
 
 and environment = (string, value, Base.String.comparator_witness) Base.Map.t
 
@@ -27,6 +26,6 @@ val pp_value : Format.formatter -> value -> unit
 val show_error : error -> string
 val pp_error : Format.formatter -> error -> unit
 
-module Eval (M : Monads.MONAD_FAIL) : sig
-  val eval_expr : Ast.expression -> (value, error) M.t
+module Eval (_ : Monads.STATE_MONAD) : sig
+  val eval_expr : Parsetree.expression -> (value, error) Result.t
 end
