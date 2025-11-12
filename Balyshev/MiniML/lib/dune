@@ -1,7 +1,7 @@
 (library
  (name MiniML)
  (public_name MiniML.lib)
- (modules Ast Monads Parser Interpreter Inferencer)
+ (modules Parsetree Typedtree Monads Parser Interpreter Ident Inferencer)
  (modes native byte)
  (flags
   (:standard -g))
@@ -10,13 +10,3 @@
   (pps ppx_deriving.show))
  (instrumentation
   (backend bisect_ppx)))
-
-(library
- (name tests)
- (modules tests)
- (libraries MiniML)
- (preprocess
-  (pps ppx_expect ppx_deriving.show))
- (instrumentation
-  (backend bisect_ppx))
- (inline_tests))
