@@ -1,5 +1,5 @@
 open Angstrom
-open Ast
+open Parsetree
 
 let ws =
   skip_while (function
@@ -192,13 +192,11 @@ let expr_complex expr =
     <|> expr)
 ;;
 
-(** parses [ fun x -> x, fun y -> y ] as [ fun x -> (x, fun y -> y) ] *)
-(** parses [ let x = x in x, y ] as [ let x = x in (x, y) ] *)
 let expr_tuple expr =
   return (fun a b xs -> ETuple (a, b, xs))
   <*> expr_complex expr
-  <*> (char ',' *> expr_complex expr <* ws)
-  <*> many (char ',' *> expr_complex expr <* ws)
+  <*> ws *> char ',' *> expr_complex expr
+  <*> many (ws *> char ',' *> expr_complex expr)
 ;;
 
 let expr_atom =
@@ -211,14 +209,13 @@ let expr_atom =
   <|> (var_name >>| fun v -> EVar v)
 ;;
 
-let brackets p = ws *> char '[' *> p <* ws <* char ']'
+let brackets p = ws *> char '[' *> ws *> p <* ws <* char ']'
 
 let expr_list expr =
-  
-  brackets (return (fun frst rest -> econs frst (List.fold_right econs rest enil))
-      <*> expr
-      <*> many (ws *> char ';' *> ws *> expr))
-  
+  brackets
+    (return (fun frst rest -> econs frst (List.fold_right econs rest enil))
+     <*> expr
+     <*> many (ws *> char ';' *> ws *> expr))
 ;;
 
 let constant_constructor = ws *> constructor_name >>| fun name -> EConstruct (name, None)
@@ -280,15 +277,13 @@ let type_param_tuple =
 ;;
 
 let type_param_tuple = parens (sep_by (ws *> char ',') (ws *> type_param_name))
-;;
-
-let core_type_var = ws *> (type_name <|> type_param_name >>| fun name -> CTVar name)
+let core_type_var = ws *> (type_name <|> type_param_name >>| fun name -> Pty_var name)
 
 let core_type_arrow core_type =
   fix (fun self ->
     let* operand = ws *> core_type in
     ws *> string "->" *> ws *> self
-    >>| (fun operand2 -> CTArrow (operand, operand2))
+    >>| (fun operand2 -> Pty_arrow (operand, operand2))
     <|> return operand)
 ;;
 
@@ -297,7 +292,7 @@ let core_type_tuple core_type =
   many (ws *> char '*' *> ws *> core_type)
   >>= function
   | [] -> return first
-  | second :: rest -> return (CTTuple (first, second, rest))
+  | second :: rest -> return (Pty_tuple (first, second, rest))
 ;;
 
 let core_type =
@@ -305,13 +300,13 @@ let core_type =
   *> fix (fun self ->
     let prims =
       fail ""
-      <|> (type_name >>| fun v -> CTConstr (v, []))
-      <|> (type_param_name >>| fun v -> CTConstr (v, []))
+      <|> (type_name >>| fun v -> Pty_constr (v, []))
+      <|> (type_param_name >>| fun v -> Pty_var v)
     in
     let prims =
       (let* arg = prims in
        let* name = ws *> type_name in
-       return (CTConstr (name, [ arg ])))
+       return (Pty_constr (name, [ arg ])))
       <|> prims
     in
     let self = parens self <|> prims in
@@ -320,7 +315,7 @@ let core_type =
     (let* ct = char '(' *> ws *> self in
      let* cts = many (ws *> char ',' *> self) in
      let* name = ws *> char ')' *> type_name in
-     return (CTConstr (name, ct :: cts)))
+     return (Pty_constr (name, ct :: cts)))
     <|> self)
 ;;
 
@@ -342,29 +337,28 @@ let type_kind_variants =
   in
   many parse_variant
   >>= function
-  | var :: vars -> return (KVariants (var, vars))
+  | var :: vars -> return (Pty_variants (var, vars))
   | _ -> fail "is not variants"
 ;;
 
-let type_kind_abstract = ws *> core_type >>| fun x -> KAbstract (Some x)
-
+let type_kind_abstract = ws *> core_type >>| fun x -> Pty_abstract (Some x)
 let type_kind = ws *> (type_kind_variants <|> type_kind_abstract)
 
 let type_body =
   let* params = ws *> type_params in
   let* name = ws *> type_name in
   let* kind = ws *> char '=' *> ws *> type_kind in
-  return { typedef_params = params; typedef_name = name; typedef_kind = kind }
+  return { pty_params = params; pty_name = name; pty_kind = kind }
 ;;
 
 let type_declaration =
-  return (fun td tds -> SType (td, tds))
+  return (fun td tds -> Pstr_type (td, tds))
   <*> ws *> string "type" *> ws *> type_body
   <*> many (ws *> string "and" *> type_body)
 ;;
 
 let value_binding =
-  return (fun rec_flag vb vbs -> SValue (rec_flag, (vb, vbs)))
+  return (fun rec_flag vb vbs -> Pstr_value (rec_flag, (vb, vbs)))
   <*> ws *> string "let" *> rec_flag
   <*> ws *> expr_binding expression
   <*> many (ws *> string "and" *> expr_binding expression)
@@ -374,6 +368,7 @@ let structure =
   return (fun item items -> item, items)
   <*> (type_declaration <|> value_binding)
   <*> many (type_declaration <|> value_binding)
+;;
 
 let parse_structure text = parse_string ~consume:All (structure <* end_of_input) text
 
