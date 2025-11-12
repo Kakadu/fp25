@@ -6,14 +6,35 @@
 
 [@@@ocaml.text "/*"]
 
-type name = string
+type constant = 
+  | CInt of int
+  | CBool of bool
+  | CUnit
 
-(** The main type for our AST (дерева абстрактного синтаксиса) *)
-type 'name t =
-  | Var of 'name (** Variable [x] *)
-  | Abs of 'name * 'name t (** Abstraction [λx.t] *)
-  | App of 'name t * 'name t
+type pattern =
+  | PVar of string
+  | PAny
 
-(* Application [f g ] *)
-(** In type definition above the 3rd constructor is intentionally without documentation
-    to test linter *)
+type rec_flag = 
+  | NonRec 
+  | Rec
+
+type binop = 
+  | Plus
+  | Minus 
+  | Asteriks
+  | Dash
+  | Equals
+  | MoreThan
+  | LessThan
+  | EqLess
+  | EqMore
+
+type expr =
+  | Constant of constant
+  | Var of string
+  | Let of rec_flag * pattern * expr * expr
+  | Fun of pattern * expr
+  | App of expr * expr
+  | Binop of binop * expr * expr
+  | Conditional of expr * expr * expr option 
