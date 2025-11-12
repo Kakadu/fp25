@@ -40,27 +40,28 @@ and binop =
   | Lt
   | Gt
 
-type value_binding = rec_flag * (pattern * expression) list1
+type value_binding = pattern * expression
 
 type type_declaration =
-  { typedef_params : string list (** ['a] is param in [type 'a list = ...]  *)
-  ; typedef_name : string (** [list] is name in [type 'a list = ...]  *)
-  ; typedef_kind : type_kind
+  { pty_params : string list (** ['a] is param in [type 'a list = ...]  *)
+  ; pty_name : string (** [list] is name in [type 'a list = ...]  *)
+  ; pty_kind : type_kind
   }
 
 and type_kind =
-  | KAbstract of core_type option (** [ type t ], [ type t = x ] *)
-  | KVariants of (string * core_type option) list1 (** [ type t = Some of int | None ]  *)
+  | Pty_abstract of core_type option (** [ type t ], [ type t = x ] *)
+  | Pty_variants of (string * core_type option) list1
+  (** [ type t = Some of int | None ]  *)
 
 and core_type =
-  | CTVar of string (** [ 'a, 'b ] are type variables in [ type ('a, 'b) ty = ... ] *)
-  | CTArrow of core_type * core_type (** ['a -> 'b] *)
-  | CTTuple of core_type * core_type * core_type list (** [ 'a * 'b * 'c ] *)
-  | CTConstr of string * core_type list (** [ int ], ['a option], [ ('a, 'b) list ] *)
+  | Pty_var of string (** [ 'a, 'b ] are type variables in [ type ('a, 'b) ty = ... ] *)
+  | Pty_arrow of core_type * core_type (** ['a -> 'b] *)
+  | Pty_tuple of core_type * core_type * core_type list (** [ 'a * 'b * 'c ] *)
+  | Pty_constr of string * core_type list (** [ int ], ['a option], [ ('a, 'b) list ] *)
 
 type structure_item =
-  | SValue of value_binding (** [ let x = ... ] *)
-  | SType of type_declaration list1 (** [ type x = ... ] *)
+  | Pstr_value of rec_flag * value_binding list1 (** [ let x = ... ] *)
+  | Pstr_type of type_declaration list1 (** [ type x = ... ] *)
 
 type structure = structure_item list1
 
@@ -72,17 +73,6 @@ val show_pattern : pattern -> string
 val pp_pattern : Format.formatter -> pattern -> unit
 val show_structure : structure -> string
 val pp_structure : Format.formatter -> structure -> unit
-
-type ty =
-  | TUnit
-  | TInt
-  | TBool
-  | TVar of string
-  | TArrow of ty * ty
-  | TProd of ty * ty * ty list
-
-val show_ty : ty -> string
-val pp_ty : Format.formatter -> ty -> unit
 
 (* testing stuff *)
 val pp_core_type : Format.formatter -> core_type -> unit
