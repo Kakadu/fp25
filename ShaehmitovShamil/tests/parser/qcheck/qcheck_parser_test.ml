@@ -3,7 +3,7 @@ open Parser
 open Ast
 open QCheck
 
-let rec gen_pattern size =
+let gen_pattern size =
   let open Gen in
   if size <= 0
   then
@@ -12,11 +12,9 @@ let rec gen_pattern size =
       ; return PAny
       ]
   else (
-    let sub_gen = gen_pattern (size / 2) in
     frequency
       [ 5, map (fun s -> PVar s) (string_size ~gen:(char_range 'a' 'z') (return 1))
       ; 2, return PAny
-      ; 3, map (fun ps -> PTuple ps) (list_size (int_range 2 4) sub_gen)
       ])
 ;;
 
@@ -24,17 +22,16 @@ let rec gen_expr size =
   let open Gen in
   let gen_var = map (fun s -> Var s) (string_size ~gen:(char_range 'a' 'z') (return 1)) in
   let gen_const_int = map (fun i -> Const (CInt i)) small_int in
-  let gen_const_bool = map (fun b -> Const (CBool b)) bool in
   if size <= 0
-  then oneof [ gen_var; gen_const_int; gen_const_bool ]
+  then oneof [ gen_var; gen_const_int ]
   else (
     let sub_gen = gen_expr (size / 2) in
     let sub_pat = gen_pattern (size / 2) in
-    let gen_unop = map2 (fun op e -> UnOp (op, e)) (oneofl [ Neg; Not ]) sub_gen in
+    let gen_unop = map2 (fun op e -> UnOp (op, e)) (oneofl [ Neg ]) sub_gen in
     let gen_binop =
       map3
         (fun op e1 e2 -> BinOp (op, e1, e2))
-        (oneofl [ Add; Sub; Mul; Div; Eq; Neq; Lt; Gt; Le; Ge; And; Or ])
+        (oneofl [ Add; Sub; Mul; Div ])
         sub_gen
         sub_gen
     in
@@ -48,17 +45,11 @@ let rec gen_expr size =
         sub_gen
         sub_gen
     in
-    let gen_fun = map2 (fun ps e -> FunExpr (ps, e)) (list_size (int_range 1 3) sub_pat) sub_gen in
-    let gen_match =
-      map2
-        (fun e cases -> Match (e, cases))
-        sub_gen
-        (list_size (int_range 1 3) (pair sub_pat sub_gen))
+    let gen_fun =
+      map2 (fun ps e -> FunExpr (ps, e)) (list_size (int_range 1 3) sub_pat) sub_gen
     in
-    let gen_tuple = map (fun es -> Tuple es) (list_size (int_range 2 4) sub_gen) in
     frequency
       [ 5, gen_const_int
-      ; 5, gen_const_bool
       ; 5, gen_var
       ; 3, gen_unop
       ; 3, gen_binop
@@ -66,16 +57,11 @@ let rec gen_expr size =
       ; 2, gen_app
       ; 2, gen_let
       ; 2, gen_fun
-      ; 2, gen_match
-      ; 2, gen_tuple
       ])
 ;;
 
-let rec shrink_pattern = function
+let shrink_pattern = function
   | PVar _ | PAny -> Iter.empty
-  | PTuple ps ->
-    let open Iter in
-    of_list ps <+> (shrink_pattern (List.hd_exn ps) >|= fun p' -> PTuple (p' :: List.tl_exn ps))
 ;;
 
 let rec shrink_expr = function
@@ -106,16 +92,7 @@ let rec shrink_expr = function
     <+> (shrink_expr e2 >|= fun e2' -> Let (NonRec, PVar "x", e1, e2'))
   | FunExpr (_, e) ->
     let open Iter in
-    return e <+> (shrink_expr e >|= fun e' -> FunExpr ([PVar "x"], e'))
-  | Match (e, cases) ->
-    let open Iter in
-    return e
-    <+> of_list (List.map ~f:snd cases)
-    <+> (shrink_expr e >|= fun e' -> Match (e', cases))
-    <+> if List.length cases > 1 then return (Match (e, List.tl_exn cases)) else empty
-  | Tuple es ->
-    let open Iter in
-    of_list es <+> (shrink_expr (List.hd_exn es) >|= fun e' -> Tuple (e' :: List.tl_exn es))
+    return e <+> (shrink_expr e >|= fun e' -> FunExpr ([ PVar "x" ], e'))
 ;;
 
 let arb_expr = make ~print:show_expr ~shrink:shrink_expr (Gen.sized gen_expr)
