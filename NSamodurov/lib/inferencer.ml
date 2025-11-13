@@ -16,7 +16,9 @@ type error =
   | `UnboundVariable of int
   | `AbstractionExpected of ty
   | `UsingReservedVariable of int
+  | `ReservedError
   ]
+[@@deriving show { with_path = false }]
 
 (* Gamma *)
 module Scheme : sig
@@ -88,19 +90,16 @@ let infer env =
     fun env -> function
       | EConst (Int _) -> return tint
       | EVar (Index b) -> Context.lookup b env
-      | EVar Blank -> fail (`UsingReservedVariable (-1))
       | ELet (NotRecursive, Index v, e1, e2) ->
         let tv = tvar v in
         let env = Context.add v (Scheme.mono tv) env in
         failwith "need to implement generalize"
       | ELet (Recursive, Index v, e1, e2) -> failwith "unimpl let"
-      | ELet (_, Blank, e1, e2) -> failwith "TODO: remove blanks"
       | EAbs (Index v, e) ->
         let tv = tvar v in
         let env = Context.add v (Scheme.mono tv) env in
         let* te = helper env e in
         return (tarrow tv te)
-      | EAbs (Blank, e) -> failwith "unimpl abs"
       | EApp (e1, e2) ->
         let* e1 = helper env e1 in
         let* e2 = helper env e2 in
@@ -113,13 +112,15 @@ let infer env =
   helper env
 ;;
 
-let default_env =
+let w : Ast.brujin Ast.t -> (error, Type.ty) InferMonad.t =
+  fun x ->
   let arith_ty = tarrow tint (tarrow tint tint) in
-  Context.empty
-  |> Context.add 0 (Scheme.mono arith_ty)
-  |> Context.add 1 (Scheme.mono arith_ty)
-  |> Context.add 2 (Scheme.mono arith_ty)
-  |> Context.add 3 (Scheme.mono arith_ty)
+  let env =
+    Context.empty
+    |> Context.add 0 (Scheme.mono arith_ty)
+    |> Context.add 1 (Scheme.mono arith_ty)
+    |> Context.add 2 (Scheme.mono arith_ty)
+    |> Context.add 3 (Scheme.mono arith_ty)
+  in
+  if Context.cardinal env < reserved then infer env x else fail `ReservedError
 ;;
-
-let w x = infer default_env x
