@@ -6,7 +6,7 @@
 
 [@@@ocaml.text "/*"]
 
-type constant = 
+type constant =
   | CInt of int
   | CBool of bool
   | CUnit
@@ -15,13 +15,13 @@ type pattern =
   | PVar of string
   | PAny
 
-type rec_flag = 
-  | NonRec 
+type rec_flag =
+  | NonRec
   | Rec
 
-type binop = 
+type binop =
   | Plus
-  | Minus 
+  | Minus
   | Asteriks
   | Dash
   | Equals
@@ -32,9 +32,16 @@ type binop =
 
 type expr =
   | Constant of constant
-  | Var of string
-  | Let of rec_flag * pattern * expr * expr
+  | Var of pattern
+  | Let of rec_flag * pattern * expr * expr option
   | Fun of pattern * expr
   | App of expr * expr
   | Binop of binop * expr * expr
-  | Conditional of expr * expr * expr option 
+  | Conditional of expr * expr * expr option
+
+(*TODO
+  - обрабатывать _ как отдельный случай
+  - распознавать переменные внутри выражений
+
+  - распознавать функции
+*)

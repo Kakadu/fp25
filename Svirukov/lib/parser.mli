@@ -10,7 +10,3 @@ type error = [ `Parsing_error of string ]
 
 (** Main entry of parser *)
 val parse : string -> (Ast.expr, error) result
-
-val printer: Ast.expr -> string
-
-

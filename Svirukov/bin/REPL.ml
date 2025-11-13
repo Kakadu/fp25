@@ -8,9 +8,9 @@
 
 open Lambda_lib
 
-let expression = "5 > 8 - 8"
-
+let expression = "(x+y)*(x-y)"
+    
 let () = 
 match Parser.parse expression with 
-| Ok expr -> Printf.printf "%s\n" (Parser.printer expr)
+| Ok expr -> Printf.printf "%s\n" (Print.printer expr)
 | Error _ -> Printf.printf "Error"
