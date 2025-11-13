@@ -6,7 +6,7 @@ let rec printer = function
     let line =
       match pat with
       | PAny -> "_"
-      | PVar name -> Printf.sprintf "%s" name
+      | PVar name -> Printf.sprintf "Var(%s)" name
     in
     line
   | Binop (op, left, right) ->
@@ -36,19 +36,28 @@ let rec printer = function
         Printf.sprintf "if (%s) then (%s) else (%s)" cond main alt
     in
     res
-  | Let (flag, PVar name, body, next) ->
+  | Let (flag, pat, body, next) ->
     let b = printer body in
     let res =
-      match next, flag with
-      | Some next, Rec ->
+      match next, flag, pat with
+      | Some next, Rec, PVar name ->
         let cont = printer next in
         Printf.sprintf "(let rec %s = %s in %s)" name b cont
-      | None, NonRec -> Printf.sprintf "(let rec %s = %s)" name b
-      | Some next, NonRec ->
+      | None, NonRec, PVar name -> Printf.sprintf "(let %s = %s)" name b
+      | Some next, NonRec, PVar name ->
         let cont = printer next in
         Printf.sprintf "(let %s = %s in %s)" name b cont
-      | None, Rec -> raise (Invalid_argument "No sense creating rec func without name")
+      | Some next, Rec, PAny ->
+        let cont = printer next in
+        Printf.sprintf "(let rec _ = %s in %s)" b cont
+      | None, NonRec, PAny -> Printf.sprintf "(let _ = %s)" b
+      | Some next, NonRec, PAny ->
+        let cont = printer next in
+        Printf.sprintf "(let _ = %s in %s)" b cont
+      | None, Rec, _ -> raise (Invalid_argument "No sense creating rec func without name")
     in
     res
+  | Fun (var, body) -> Printf.sprintf "Fun (%s, %s)" (printer (Var var)) (printer body)
+  | App (left, right) -> Printf.sprintf "App (%s, %s)" (printer left) (printer right)
   | _ -> "Can not parse them yet"
 ;;

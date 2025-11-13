@@ -38,10 +38,3 @@ type expr =
   | App of expr * expr
   | Binop of binop * expr * expr
   | Conditional of expr * expr * expr option
-
-(*TODO
-  - обрабатывать _ как отдельный случай
-  - распознавать переменные внутри выражений
-
-  - распознавать функции
-*)
