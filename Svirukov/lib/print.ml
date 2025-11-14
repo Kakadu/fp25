@@ -54,6 +54,7 @@ let rec printer = function
       | Some next, NonRec, PAny ->
         let cont = printer next in
         Printf.sprintf "(let _ = %s in %s)" b cont
+      | None, Rec, PVar name -> Printf.sprintf "(let rec %s = %s)" name b
       | None, Rec, _ -> raise (Invalid_argument "No sense creating rec func without name")
     in
     res

@@ -14,7 +14,7 @@ let with_error p =
 ;;
 
 let is_keyword = function
-  | "let" | "in" | "fun" | "true" | "false" | "rec" -> true
+  | "let" | "in" | "fun" | "true" | "false" | "rec" | "else" | "if" | "then" -> true
   | _ -> false
 ;;
 
@@ -50,12 +50,11 @@ let is_digit = function
 
 let variable_name =
   token (take_while1 varname)
-  >>| fun s ->
-  if is_keyword s
-  then raise (Invalid_argument "Keyword!!!")
-  else if String.for_all is_digit s
-  then raise (Invalid_argument "Varname can't be number")
-  else s
+  >>= fun s ->
+  match s with
+  | _ when is_keyword s -> fail "Cannot use keyword for varname"
+  | _ when String.for_all is_digit s -> fail "Cannot use number as varname"
+  | _ -> return s
 ;;
 
 let pattern = variable_name >>| fun s -> if s = "_" then PAny else PVar s
@@ -102,17 +101,33 @@ let cmp_op =
   | _ -> fail "Invalid comparison operator"
 ;;
 
+let rec build_curried_function args body =
+  match args with
+  | [] -> body
+  | arg :: rest_args -> Fun (arg, build_curried_function rest_args body)
+;;
+
 let expr =
   fix (fun expr ->
+    let anonymous_fun =
+      token (string "fun") *> many1 (token pattern)
+      <* token (string "->")
+      >>= fun args -> expr >>= fun body -> return (build_curried_function args body)
+    in
     let atom =
-      fix (fun atom ->
-        let app =
-          var
-          >>= fun func ->
-          many1 atom
-          >>| fun args -> List.fold_left (fun func arg -> App (func, arg)) func args
-        in
-        choice [ (number >>| fun n -> Constant (CInt n)); skip_parens expr; app; var ])
+      let app =
+        choice [ skip_parens anonymous_fun; var ]
+        >>= fun func ->
+        many1 (choice [ (number >>| fun n -> Constant (CInt n)); skip_parens expr; var ])
+        >>| fun args -> List.fold_left (fun func arg -> App (func, arg)) func args
+      in
+      choice
+        [ (number >>| fun n -> Constant (CInt n))
+        ; app
+        ; var
+        ; skip_parens expr
+        ; anonymous_fun
+        ]
     in
     let binopr =
       let mul_div =
@@ -154,11 +169,6 @@ let expr =
       >>= fun args ->
       token (char '=') *> expr
       >>= fun ex ->
-      let rec build_curried_function args body =
-        match args with
-        | [] -> body
-        | arg :: rest_args -> Fun (arg, build_curried_function rest_args body)
-      in
       let body = if args = [] then ex else build_curried_function args ex in
       option None (token (string "in") *> expr >>| fun cont -> Some cont)
       >>= fun skope -> return (Let (recurs, name, body, skope))
