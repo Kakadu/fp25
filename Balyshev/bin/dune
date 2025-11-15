@@ -1,6 +1,6 @@
 (executable
  (name REPL)
- (public_name REPL)
+ (public_name Balyshev.REPL)
  (modules REPL)
  (libraries MiniML stdio)
  (modes native byte)

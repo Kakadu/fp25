@@ -17,8 +17,8 @@
 (homepage "https://github.com/Kakadu/fp25")
 
 (package
- (name MiniML)
- (synopsis "mini ml implementation")
+ (name Balyshev)
+ (synopsis "MiniML")
  (description "implementation of a subset of OCaml")
  (documentation "https://kakadu.github.io/fp25/docs/Lambda")
  (version 0.1)

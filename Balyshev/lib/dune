@@ -1,6 +1,6 @@
 (library
  (name MiniML)
- (public_name MiniML.lib)
+ (public_name Balyshev.MiniML)
  (modules Parsetree Typedtree Monads Parser Interpreter Ident Inferencer)
  (modes native byte)
  (flags
