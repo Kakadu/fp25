@@ -1,16 +1,6 @@
-[@@@ocaml.text "/*"]
-
-(** Copyright 2021-2024, Kakadu and contributors *)
-
-(** SPDX-License-Identifier: LGPL-3.0-or-later *)
-
-[@@@ocaml.text "/*"]
-
-open Base
 open Ast
 
-(* TODO: use a set instead of list *)
-let list_remove x = List.filter ~f:(fun a -> not (String.equal a x))
+let list_remove x = Base.List.filter ~f:(fun a -> not (String.equal a x))
 
 let free_vars =
   let rec helper acc = function
@@ -21,14 +11,4 @@ let free_vars =
   helper []
 ;;
 
-let is_free_in x term = List.mem (free_vars term) x ~equal:String.equal
-let var x = Var x
-let abs x l = Abs (x, l)
-let app l r = App (l, r)
-
-(* TODO: rework this *)
-module type MONAD_FAIL = sig
-  include Base.Monad.S2
-
-  val fail : 'e -> ('a, 'e) t
-end
+let is_free_in x term = Base.List.mem (free_vars term) x ~equal:String.equal

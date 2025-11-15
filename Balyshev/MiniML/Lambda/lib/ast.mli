@@ -17,3 +17,7 @@ type 'name t =
 (* Application [f g ] *)
 (** In type definition above the 3rd constructor is intentionally without documentation
     to test linter *)
+
+val var : 'name -> 'name t
+val abs : 'name -> 'name t -> 'name t
+val app : 'name t -> 'name t -> 'name t
