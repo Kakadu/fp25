@@ -291,7 +291,7 @@ module TypeEnv (M : Monads.STATE_MONAD) = struct
         ~init:(return env)
     | PAny, _ -> return env
     (* TODO : DEFINETELY DOES NOT WORK *)
-    | PConstruct (name, patt_opt), Scheme (var_set, Tty_constr (param_tys, ident)) ->
+    | PConstruct (name, patt_opt), Scheme (var_set, Tty_constr (_param_tys, ident)) ->
       let* constr_entry, type_entry = find_constructor name env in
       if Ident.equal type_entry.tty_ident ident
       then (
