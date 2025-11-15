@@ -65,8 +65,12 @@ type structure_item =
 
 type structure = structure_item list1
 
+val show_tuple : ?sep:string -> ('a -> string) -> 'a * 'a * 'a list -> string
+val show_rec_flag : rec_flag -> string
 val show_constant : constant -> string
 val pp_constant : Format.formatter -> constant -> unit
+val show_binop : binop -> string
+val pp_binop : Format.formatter -> binop -> unit
 val show_expression : expression -> string
 val pp_expression : Format.formatter -> expression -> unit
 val show_pattern : pattern -> string

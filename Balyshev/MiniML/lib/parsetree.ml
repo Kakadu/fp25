@@ -65,7 +65,20 @@ type structure_item =
 
 type structure = structure_item list1
 
-let string_of_binop = function
+open Format
+open Base
+
+let show_tuple ?(sep = ", ") show_item (a, b, xs) =
+  String.concat ~sep (List.map ~f:(fun x -> show_item x) (a :: b :: xs))
+  |> sprintf "@[(%s)@]"
+;;
+
+let show_rec_flag = function
+  | Recursive -> " rec "
+  | NonRecursive -> " "
+;;
+
+let show_binop = function
   | Add -> "+"
   | Mul -> "*"
   | Sub -> "-"
@@ -79,13 +92,7 @@ let string_of_binop = function
   | Gt -> ">"
 ;;
 
-open Format
-
-let show_tuple ?(sep = ", ") show_item (a, b, xs) =
-  String.concat sep (List.map (fun x -> show_item x) (a :: b :: xs)) |> sprintf "@[(%s)@]"
-;;
-
-open Base
+let pp_binop ppf x = fprintf ppf "%s" (show_binop x)
 
 let rec show_pattern = function
   | PAny -> sprintf "_"
@@ -126,7 +133,7 @@ let rec show_expression = function
     sprintf
       "@[(%s %s %s)@]"
       (show_expression left)
-      (string_of_binop binop)
+      (show_binop binop)
       (show_expression right)
   | ETuple (a, b, xs) -> show_tuple show_expression (a, b, xs)
   | EConstruct ("::", Some (ETuple (head, tail, []))) ->
@@ -148,7 +155,7 @@ let rec show_expression = function
   | ELet (rec_flag, (vb, vbs), body) ->
     sprintf "%s in %s" (show_value_binding rec_flag vb vbs) (show_expression body)
   | EApp (f, x) -> sprintf "%s %s" (show_expression f) (show_expression x)
-  | EFun (p, e) -> sprintf "fun %s -> %s" (show_pattern p) (show_expression e)
+  | EFun (p, e) -> sprintf "(fun %s -> %s)" (show_pattern p) (show_expression e)
   | EIf (i, t, e) ->
     sprintf
       "if %s then %s else %s"
