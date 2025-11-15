@@ -9,7 +9,6 @@
 open Lambda_lib
 open Ast
 open Lambda
-open Utils
 
 let zero = abs "g" @@ abs "y" @@ Var "y"
 let one = abs "f" @@ abs "x" @@ app f (Var "x")

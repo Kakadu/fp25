@@ -32,4 +32,4 @@
   lam_3x6.txt
   lam_fac3.txt
   lam_fac6.txt
-  ../bin/REPL.exe))
+  ../bin/LambdaREPL.exe))
