@@ -81,7 +81,7 @@ let run_single dump_parsetree stop_after eval =
   let text = In_channel.(input_all stdin) |> String.trim in
   let ast = Parser.parse text in
   match ast with
-  | Error e -> Format.printf "Error: %a\n%!" Parser.pp_error e
+  | Error e -> Format.printf "Error: %a\n%!" Inferencer.pp_error e
   | Result.Ok ast ->
     if dump_parsetree then Format.printf "Parsed result: @[%a@]\n%!" Printast.pp_named ast;
     (match stop_after with

@@ -62,12 +62,6 @@ type dispatch =
   ; single : dispatch -> string Ast.t Angstrom.t
   }
 
-type error = [ `Parsing_error of string ]
-
-let pp_error ppf = function
-  | `Parsing_error s -> Format.fprintf ppf "%s" s
-;;
-
 let parens = fun p -> char '(' *> p <* char ')'
 
 (* let bop s a b = Abs                         *)

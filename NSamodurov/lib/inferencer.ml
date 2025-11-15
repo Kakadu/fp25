@@ -12,13 +12,23 @@ type term =
 [@@deriving show { with_path = false }]
 
 type error =
-  [ `UnifyError of ty * ty
+  [ `Parsing_error of string
+  | `UnifyError of ty * ty
   | `UnboundVariable of int
   | `AbstractionExpected of ty
   | `UsingReservedVariable of int
   | `ReservedError
   ]
 [@@deriving show { with_path = false }]
+
+let pp_error ppf = function
+  | `Parsing_error s -> Format.fprintf ppf "%s" s
+  | `UnifyError (a, b) -> Format.fprintf ppf "Unification error: %a %a" pp_ty a pp_ty b
+  | `UnboundVariable i -> Format.fprintf ppf "Unbound variable: %d" i
+  | `AbstractionExpected t -> Format.fprintf ppf "AbstractionExpected: %a" pp_ty t
+  | `UsingReservedVariable i -> Format.fprintf ppf "UsingReservedVariable: %d" i
+  | `ReservedError -> Format.fprintf ppf "Reserved variable limit exceeded"
+;;
 
 (* Gamma *)
 module Scheme : sig
@@ -36,18 +46,24 @@ module InferMonad : sig
   include GENERAL_MONAD_2
 
   val fail : 's -> ('s, 'a) t
-  val to_result : ('s, 'a) t -> ('a, 's) Result.t
+  val run : ('s, 'a) t -> ('a, 's) Result.t
 end = struct
-  type ('s, 'a) t = ('a, 's) Result.t
+  type ('s, 'a) t = int -> int * ('a, 's) Result.t
 
-  let fail = Result.error
-  let return = Result.ok
-  let bind = Result.bind
+  let fail e st = st, Result.error e
+  let return x st = st, Result.ok x
 
-  let to_result = function
-    | Ok _ as o -> o
-    | Error _ as e -> e
+  let bind =
+    fun o f st ->
+    let last, r = o st in
+    match r with
+    | Result.Error _ as e -> last, e
+    | Ok v -> (f v) last
   ;;
+
+  let fresh = fun st -> st + 1, Result.Ok st
+  let current = fun st -> st, Result.Ok st
+  let run m = snd (m 0)
 
   module Syntax = struct
     let ( let* ) = bind
@@ -90,10 +106,7 @@ let infer env =
     fun env -> function
       | EConst (Int _) -> return tint
       | EVar (Index b) -> Context.lookup b env
-      | ELet (NotRecursive, Index v, e1, e2) ->
-        let tv = tvar v in
-        let env = Context.add v (Scheme.mono tv) env in
-        failwith "need to implement generalize"
+      | ELet (NotRecursive, Index v, e1, e2) -> failwith "need to implement generalize"
       | ELet (Recursive, Index v, e1, e2) -> failwith "unimpl let"
       | EAbs (Index v, e) ->
         let tv = tvar v in
@@ -112,15 +125,15 @@ let infer env =
   helper env
 ;;
 
-let w : Ast.brujin Ast.t -> (error, Type.ty) InferMonad.t =
-  fun x ->
+let env : scheme IMap.t =
   let arith_ty = tarrow tint (tarrow tint tint) in
-  let env =
-    Context.empty
-    |> Context.add 0 (Scheme.mono arith_ty)
-    |> Context.add 1 (Scheme.mono arith_ty)
-    |> Context.add 2 (Scheme.mono arith_ty)
-    |> Context.add 3 (Scheme.mono arith_ty)
-  in
-  if Context.cardinal env < reserved then infer env x else fail `ReservedError
+  Context.empty
+  |> Context.add 0 (Scheme.mono arith_ty)
+  |> Context.add 1 (Scheme.mono arith_ty)
+  |> Context.add 2 (Scheme.mono arith_ty)
+  |> Context.add 3 (Scheme.mono arith_ty)
+;;
+
+let w : Ast.brujin Ast.t -> (error, Type.ty) InferMonad.t =
+  fun x -> if Context.cardinal env < reserved then infer env x else fail `ReservedError
 ;;
