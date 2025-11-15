@@ -36,7 +36,12 @@ let run_stru ~mode text =
   | Ok ast ->
     (match mode with
      | Parse -> Format.printf "parsed: %a\n" Parsetree.pp_structure ast
-     | _ -> failwith "not implemented")
+     | Infer ->
+       (match Infer.structure ast with
+        | Ok typed_stru ->
+          Format.printf "typed structure:@. %a" Typedtree.pp_structure typed_stru
+        | Error err -> Format.printf "inferencer error: %a" Inferencer.pp_error err)
+     | _ -> failwith "not implemented REPL.exe")
 ;;
 
 let run_patt ~mode text =
