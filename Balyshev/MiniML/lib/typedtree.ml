@@ -1,5 +1,5 @@
 open Base
-open Base.Printf
+open Base.Format
 
 type ty =
   | Tty_var of Ident.t
@@ -13,13 +13,14 @@ let show_tuple ?(sep = ", ") show_item (a, b, xs) =
 ;;
 
 let rec show_ty = function
-  | Tty_var ident -> ident.name
+  (* TODO?? : add flag to specify what to print *)
+  | Tty_var ident -> sprintf "'ty%d" ident.id
   | Tty_arrow (a, b) -> sprintf "(%s -> %s)" (show_ty a) (show_ty b)
   | Tty_prod (a, b, xs) -> show_tuple show_ty (a, b, xs)
   | Tty_constr ([], ident) -> sprintf "%s" ident.name
   | Tty_constr ([ ty ], ident) -> sprintf "%s %s" (show_ty ty) ident.name
   | Tty_constr (tys, ident) ->
-    sprintf "(%s) %s" ident.name (String.concat ~sep:", " (List.map ~f:show_ty tys))
+    sprintf "(%s) %s" (String.concat ~sep:", " (List.map ~f:show_ty tys)) ident.name
 ;;
 
 let pp_ty ppf ty = Format.fprintf ppf "%s" (show_ty ty)
@@ -28,42 +29,40 @@ module VarSet = struct
   include Stdlib.Set.Make (Ident)
 end
 
+let show_var_set_ids (var_set : VarSet.t) =
+  match VarSet.elements var_set with
+  | [] -> ""
+  | [ x ] -> sprintf "'ty%d" x.id
+  | x1 :: x2 :: xs ->
+    Parsetree.show_tuple (fun (ident : Ident.t) -> sprintf "'ty%d" ident.id) (x1, x2, xs)
+;;
+
+let show_var_set_names (var_set : VarSet.t) =
+  match VarSet.elements var_set with
+  | [] -> ""
+  | [ x ] -> x.name
+  | x1 :: x2 :: xs ->
+    Parsetree.show_tuple (fun (ident : Ident.t) -> ident.name) (x1, x2, xs)
+;;
+
 module Scheme = struct
   type t = Scheme of VarSet.t * ty
 end
 
-type pattern =
-  | Tpat_any
-  | Tpat_const of Parsetree.constant
-  | Tpat_var of Ident.t
-  | Tpat_tuple of pattern * pattern * pattern list
-  | Tpat_constr of string * Ident.t * pattern option
-
-type expr =
-  | TConst of Parsetree.constant
-  | TVar of Ident.t * ty
-  | TIf of expr * expr * expr * ty
-  | TFun of pattern * expr * ty
-  | TApp of expr * expr * ty
-  | TTuple of expr * expr * expr list * ty
-  | TLet of Parsetree.rec_flag * pattern * Scheme.t * expr * expr
-  | TMatch of expr * (pattern * expr) Parsetree.list1 * ty
-  | TConstruct of Ident.t * expr option * ty
-
 type value_binding =
   { tvb_flag : Parsetree.rec_flag
-  ; tvb_pat : pattern
-  ; tvb_body : expr
-  ; tvb_typ : Scheme.t
+  ; tvb_pat : Parsetree.pattern
+  ; tvb_body : Parsetree.expression
+  ; tvb_scheme : Scheme.t
   }
 
 type type_kind =
   | Tty_abstract of ty option
-  | Tty_variants of (string * ty option) list
+  | Tty_variants of (Ident.t * ty option) list
 
 type type_declaration =
   { tty_ident : Ident.t
-  ; tty_params : VarSet.t
+  ; tty_params : Ident.t list
   ; tty_kind : type_kind
   }
 
@@ -111,3 +110,50 @@ type structure_item =
   | Tstr_type of type_declaration
 
 type structure = (TypeEnv.t * structure_item) list
+
+open Format
+
+let show_structure_item = function
+  | Tstr_value { tvb_flag; tvb_pat; tvb_body; tvb_scheme } ->
+    let (Scheme.Scheme (_vs, ty)) = tvb_scheme in
+    sprintf
+      "let%s%s: %s = %s"
+      (Parsetree.show_rec_flag tvb_flag)
+      (Parsetree.show_pattern tvb_pat)
+      (show_ty ty)
+      (Parsetree.show_expression tvb_body)
+  | Tstr_type { tty_ident; tty_kind; tty_params } ->
+    let kind =
+      match tty_kind with
+      | Tty_abstract None -> "@ "
+      | Tty_abstract (Some ty) -> sprintf " = %s@ " (show_ty ty)
+      | Tty_variants variants ->
+        let show_variant ((ident : Ident.t), ty_opt) =
+          match ty_opt with
+          | None -> sprintf "| %s@ " ident.name
+          | Some ty -> sprintf "| %s of %s@ " ident.name (show_ty ty)
+        in
+        let s = Base.String.concat (Base.List.map ~f:show_variant variants) in
+        sprintf " =@ %s" s
+    in
+    let params =
+      match tty_params with
+      | [] -> " "
+      | [ x ] -> sprintf " 'ty%d " x.id
+      | x1 :: x2 :: xs ->
+        sprintf
+          " %s "
+          (show_tuple (fun (ident : Ident.t) -> sprintf "'ty%d" ident.id) (x1, x2, xs))
+    in
+    sprintf "type%s%s %s" params tty_ident.name kind
+;;
+
+let pp_structure_item ppf stru_item = fprintf ppf "%s" (show_structure_item stru_item)
+
+let pp_structure ppf (item1, items) =
+  pp_print_list
+    ~pp_sep:(fun ppf () -> fprintf ppf "@.;;@.@.")
+    pp_structure_item
+    ppf
+    (item1 :: items)
+;;

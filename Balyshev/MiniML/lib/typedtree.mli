@@ -4,13 +4,6 @@ type ty =
   | Tty_prod of ty * ty * ty list
   | Tty_constr of ty list * Ident.t
 
-type pattern =
-  | Tpat_any
-  | Tpat_const of Parsetree.constant
-  | Tpat_var of Ident.t
-  | Tpat_tuple of pattern * pattern * pattern list
-  | Tpat_constr of string * Ident.t * pattern option
-
 module VarSet : sig
   include module type of Set.Make (Ident)
 end
@@ -19,31 +12,20 @@ module Scheme : sig
   type t = Scheme of VarSet.t * ty
 end
 
-type expr =
-  | TConst of Parsetree.constant
-  | TVar of Ident.t * ty
-  | TIf of expr * expr * expr * ty
-  | TFun of pattern * expr * ty
-  | TApp of expr * expr * ty
-  | TTuple of expr * expr * expr list * ty
-  | TLet of Parsetree.rec_flag * pattern * Scheme.t * expr * expr
-  | TMatch of expr * (pattern * expr) Parsetree.list1 * ty
-  | TConstruct of Ident.t * expr option * ty
-
 type value_binding =
   { tvb_flag : Parsetree.rec_flag
-  ; tvb_pat : pattern
-  ; tvb_body : expr
-  ; tvb_typ : Scheme.t
+  ; tvb_pat : Parsetree.pattern
+  ; tvb_body : Parsetree.expression
+  ; tvb_scheme : Scheme.t
   }
 
 type type_kind =
   | Tty_abstract of ty option
-  | Tty_variants of (string * ty option) list
+  | Tty_variants of (Ident.t * ty option) list
 
 type type_declaration =
   { tty_ident : Ident.t
-  ; tty_params : VarSet.t
+  ; tty_params : Ident.t list
   ; tty_kind : type_kind
   }
 
@@ -75,3 +57,6 @@ type structure = (TypeEnv.t * structure_item) list
 
 val show_ty : ty -> string
 val pp_ty : Format.formatter -> ty -> unit
+val show_structure_item : structure_item -> string
+val pp_structure_item : Format.formatter -> structure_item -> unit
+val pp_structure : Format.formatter -> structure_item * structure_item list -> unit
