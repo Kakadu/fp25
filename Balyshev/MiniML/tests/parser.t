@@ -69,47 +69,47 @@
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > fun _ -> 42
-  parsed: fun _ -> 42
+  parsed: (fun _ -> 42)
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > fun (x, y) -> x
-  parsed: fun (x, y) -> x
+  parsed: (fun (x, y) -> x)
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > fun x y -> x + y
-  parsed: fun x -> fun y -> (x + y)
+  parsed: (fun x -> (fun y -> (x + y)))
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > (fun x -> x, fun x -> x + 1)
-  parsed: fun x -> (x, fun x -> (x + 1))
+  parsed: (fun x -> (x, (fun x -> (x + 1))))
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > (fun x -> x) (fun x -> x + 1)
-  parsed: fun x -> x fun x -> (x + 1)
+  parsed: (fun x -> x) (fun x -> (x + 1))
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > map (fun x -> x) items
-  parsed: map fun x -> x items
+  parsed: map (fun x -> x) items
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > fun x -> fun y -> y
-  parsed: fun x -> fun y -> y
+  parsed: (fun x -> (fun y -> y))
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > [ fun x -> x; fun x -> x + 1 ]
-  parsed: [ fun x -> x; fun x -> (x + 1) ]
+  parsed: [ (fun x -> x); (fun x -> (x + 1)) ]
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > map (fun x -> x) (fun y -> y)
-  parsed: map fun x -> x fun y -> y
+  parsed: map (fun x -> x) (fun y -> y)
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > (fun f g x -> f g x)
-  parsed: fun f -> fun g -> fun x -> f g x
+  parsed: (fun f -> (fun g -> (fun x -> f g x)))
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > (fun f g x -> f (g x))
-  parsed: fun f -> fun g -> fun x -> f g x
+  parsed: (fun f -> (fun g -> (fun x -> f g x)))
 
 
 # if then else
@@ -124,15 +124,15 @@
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > if (f x) then (fun f -> f x) else (fun x -> f x)
-  parsed: if f x then fun f -> f x else fun x -> f x
+  parsed: if f x then (fun f -> f x) else (fun x -> f x)
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > fun x -> if x then (fun x -> x) else (fun y -> y)
-  parsed: fun x -> if x then fun x -> x else fun y -> y
+  parsed: (fun x -> if x then (fun x -> x) else (fun y -> y))
 
   $ cat << EOF | $INTERPETER -parse -expr 
   > let rec fact = fun n -> if n < 2 then 1 else n * fact (n - 1) in fact 5
-  parsed: let rec fact = fun n -> if (n < 2) then 1 else (n * fact (n - 1)) in fact 5
+  parsed: let rec fact = (fun n -> if (n < 2) then 1 else (n * fact (n - 1))) in fact 5
 
 # match
   $ cat << EOF | $INTERPETER -parse -expr 
@@ -311,26 +311,22 @@
 # type declaration
   $ cat << EOF | $INTERPETER -parse -stru
   > type t = int
-  parsed: type t =
-            int
-          
+  parsed: type t = int
+  
   $ cat << EOF | $INTERPETER -parse -stru
   > type 'a my_list = 'a list
-  parsed: type 'a my_list =
-            ('a) list
-          
+  parsed: type 'a my_list = ('a) list
+  
 
   $ cat << EOF | $INTERPETER -parse -stru
   > type ('a, 'b) pair = 'a * 'b
-  parsed: type ('a, 'b) pair =
-            ('a * 'b)
-          
+  parsed: type ('a, 'b) pair = ('a * 'b)
+  
 
   $ cat << EOF | $INTERPETER -parse -stru
   > type ('a, 'b) arrow = 'a -> 'b
-  parsed: type ('a, 'b) arrow =
-            ('a -> 'b)
-          
+  parsed: type ('a, 'b) arrow = ('a -> 'b)
+  
 #
 
 # something more complex
@@ -338,31 +334,29 @@
   > type 'a option =
   > | Some of 'a
   > | None
-  parsed: type 'a option =
-            | Some of 'a
-            | None
-            
-          
+  parsed: type 'a option = | Some of 'a
+  | None
+  
+  
 
   $ cat << EOF | $INTERPETER -parse -stru
   > type 'a list =
   > | Nil
   > | Cons of 'a * 'a list
-  parsed: type 'a list =
-            | Nil
-            | Cons of ('a * ('a) list)
-            
-          
+  parsed: type 'a list = | Nil
+  | Cons of ('a * ('a) list)
+  
+  
 
   $ cat << EOF | $INTERPETER -parse -stru
   > type ('a, 'b) qwe =
   > | Asd of 'a -> ('a -> 'b) -> 'b
   > | Zxc of ('a -> 'a) * ('a -> 'a) * 'a
   parsed: type ('a, 'b) qwe =
-            | Asd of ('a -> (('a -> 'b) -> 'b))
-            | Zxc of (('a -> 'a) * ('a -> 'a) * 'a)
-            
-          
+  | Asd of ('a -> (('a -> 'b) -> 'b))
+  | Zxc of (('a -> 'a) * ('a -> 'a) * 'a)
+  
+  
 #
 
 # "and" chains
@@ -370,13 +364,10 @@
   > type a = int
   > and b = bool
   > and c = char
-  parsed: type a =
-            int
-          and b =
-            bool
-          and c =
-            char
-          
+  parsed: type a = int
+  and b = bool
+  and c = char
+  
 
   $ cat << EOF | $INTERPETER -parse -stru
   > type 'a box =
@@ -387,45 +378,37 @@
   > | Nothing
   > 
   > and name = string
-  parsed: type 'a box =
-            | Box of 'a
-            
-          and 't maybe =
-            | Just of 't
-            | Nothing
-            
-          and name =
-            string
-          
+  parsed: type 'a box = | Box of 'a
+  
+  and 't maybe = | Just of 't
+  | Nothing
+  
+  and name = string
+  
 
 # unsorted
   $ cat << EOF | $INTERPETER -parse -stru
   > type foo = 'a * 'b * 'c -> 'd * 'e -> 'f
-  parsed: type foo =
-            (('a * 'b * 'c) -> (('d * 'e) -> 'f))
-          
+  parsed: type foo = (('a * 'b * 'c) -> (('d * 'e) -> 'f))
+  
 
   $ cat << EOF | $INTERPETER -parse -stru
   > type foo = (int -> int)
-  parsed: type foo =
-            (int -> int)
-          
+  parsed: type foo = (int -> int)
+  
 
   $ cat << EOF | $INTERPETER -parse -stru
   > type foo = (a -> b) * (c -> d)
-  parsed: type foo =
-            ((a -> b) * (c -> d))
-          
+  parsed: type foo = ((a -> b) * (c -> d))
+  
 
   $ cat << EOF | $INTERPETER -parse -stru
   > type foo = (a * b) * (c * d)
-  parsed: type foo =
-            ((a * b) * (c * d))
-          
+  parsed: type foo = ((a * b) * (c * d))
+  
 
   $ cat << EOF | $INTERPETER -parse -stru
   > type foo = (a -> b) -> (c -> d)
-  parsed: type foo =
-            ((a -> b) -> (c -> d))
-          
+  parsed: type foo = ((a -> b) -> (c -> d))
+  
 #
