@@ -34,10 +34,23 @@ let string_of_char_list =
 
 let int_of_char_list = fun x -> string_of_char_list x |> int_of_string
 
+let conde = function
+  | [] -> fail "empty conde"
+  | h :: tl -> List.fold_left ( <|> ) h tl
+;;
+
+let keyword = function
+  | "let" | "in" -> true
+  | _ -> false
+;;
+
 let varname =
-  alpha
-  >>= fun h ->
-  many (alpha <|> digit <|> char '_') >>= fun tl -> return @@ string_of_char_list (h :: tl)
+  let* str =
+    let* h = alpha in
+    let* tl = many (alpha <|> digit <|> char '_') in
+    return @@ string_of_char_list (h :: tl)
+  in
+  if keyword str then fail "keyword" else return str
 ;;
 
 let sign_of_char = function
@@ -52,17 +65,12 @@ let number =
   digit >>= fun h -> many digit >>= fun tl -> return @@ int_of_char_list (h :: tl)
 ;;
 
-let conde = function
-  | [] -> fail "empty conde"
-  | h :: tl -> List.fold_left ( <|> ) h tl
-;;
-
 type dispatch =
   { apps : dispatch -> string Ast.t Angstrom.t
   ; single : dispatch -> string Ast.t Angstrom.t
   }
 
-let parens = fun p -> char '(' *> p <* char ')'
+let parens = fun p -> char '(' *> p <* char ')' <?> "Parentheses expected"
 
 (* let bop s a b = Abs                         *)
 let to_left_assoc s h tl = List.fold_left (fun acc x -> s acc x) h tl
@@ -101,8 +109,11 @@ let parse_lam =
   let single pack =
     fix (fun _ ->
       conde
-        [ parens (pack.apps pack) <?> "Parentheses expected"
+        [ parens (pack.apps pack)
         ; (string "let" *> ws *> varname
+           <* ws
+           <* string "="
+           <* ws
            >>= fun v ->
            ws *> pack.apps pack
            >>= fun e1 ->
@@ -177,7 +188,13 @@ let to_brujin expr =
              return (evar (Index (i + List.length bound + reserved))))
          | Some i -> return (EVar (Index (i + reserved))))
       | EConst (Int x) -> return (int x)
-      | ELet _ -> failwith "unimpl"
+      | ELet (flag, v, e1, e2) ->
+        let* map = read in
+        let i = Context.cardinal map in
+        let* () = write (Context.extend v i map) in
+        let* e1 = helper bound e1 in
+        let* e2 = helper bound e2 in
+        return (ELet (flag, Index i, e1, e2))
       | EAbs (x, e) ->
         let* map = read in
         if Context.mem x map

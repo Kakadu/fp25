@@ -30,7 +30,10 @@ let pp_brujin (* ?(compact = true) *) =
     | EApp (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | EConst (Int i) -> Format.fprintf fmt "%d" i
     | EAbs (_, t) -> Format.fprintf fmt "(λ . %a)" pp t
-    | ELet _ -> failwith "unimpl"
+    | ELet (NotRecursive, Index i, e1, e2) ->
+      Format.fprintf fmt "let i%d = %a in %a" i pp e1 pp e2
+    | ELet (Recursive, Index i, e1, e2) ->
+      Format.fprintf fmt "let rec i%d = %a in %a" i pp e1 pp e2
   in
   pp
 ;;

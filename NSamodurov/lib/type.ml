@@ -22,6 +22,7 @@ end
 
 module IMap = struct
   include Map.Make (Int)
+
   (* let pp ppf s = *)
   (*   Format.printf "<. "; *)
   (*   iter (fun x -> Format.fprintf ppf "%d" x) s; *)
@@ -30,12 +31,6 @@ module IMap = struct
 end
 [@@deriving show { with_path = false }]
 
-let rec occurs_in t = function
-  | TGround _ -> false
-  | TArrow (e1, e2) -> occurs_in t e1 || occurs_in t e2
-  | TVar _ as b -> b = t
-;;
-
 let fv =
   let rec helper set = function
     | TVar b -> ISet.add b set
@@ -43,6 +38,12 @@ let fv =
     | TGround _ -> set
   in
   helper ISet.empty
+;;
+
+let rec occurs_in t = function
+  | TGround _ -> false
+  | TArrow (e1, e2) -> occurs_in t e1 || occurs_in t e2
+  | TVar _ as b -> b = t
 ;;
 
 type binder_set = ISet.t

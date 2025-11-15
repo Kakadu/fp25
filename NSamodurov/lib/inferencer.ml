@@ -30,11 +30,11 @@ let pp_error ppf = function
   | `ReservedError -> Format.fprintf ppf "Reserved variable limit exceeded"
 ;;
 
-(* Gamma *)
 module Scheme : sig
   type t
 
   val mono : ty -> scheme
+  val fv : t -> binder_set
 end = struct
   type t = scheme
 
@@ -42,29 +42,54 @@ end = struct
   let fv (b, ty) = ISet.diff (Type.fv ty) b
 end
 
+module Subst : sig
+  type t
+
+  val empty : t
+  val remove : int -> t -> t
+  val apply : t -> ty -> ty
+end = struct
+  type t = ty IMap.t
+
+  let empty = IMap.empty
+  let remove = IMap.remove
+
+  let apply map =
+    let rec helper = function
+      | TArrow (e1, e2) -> TArrow (helper e1, helper e2)
+      | TGround _ as tg -> tg
+      | TVar n ->
+        (match IMap.find_opt n map with
+         | Some x -> x
+         | None -> TVar n)
+    in
+    helper
+  ;;
+end
+
 module InferMonad : sig
   include GENERAL_MONAD_2
 
   val fail : 's -> ('s, 'a) t
-  val run : ('s, 'a) t -> ('a, 's) Result.t
+  val run : ('s, 'a) t -> (Subst.t * 'a, 's) Result.t
   val fresh : ('s, int) t
 end = struct
-  type ('s, 'a) t = int -> int * ('a, 's) Result.t
+  type ('s, 'a) t = Subst.t * int -> int * (Subst.t * 'a, 's) Result.t
 
-  let fail e st = st, Result.error e
-  let return x st = st, Result.ok x
+  let fail e (_, st) = st, Result.error e
+  let return x (sub, st) = st, Result.ok (sub, x)
 
   let bind =
     fun o f st ->
     let last, r = o st in
     match r with
     | Result.Error _ as e -> last, e
-    | Ok v -> (f v) last
+    | Ok (sub, v) -> (f v) (sub, last)
   ;;
 
-  let fresh = fun st -> st + 1, Result.Ok st
-  let current = fun st -> st, Result.Ok st
-  let run m = snd (m 0)
+  let fresh = fun (sub, st) -> st + 1, Result.ok (sub, st)
+  let current = fun (sub, st) -> st, Result.ok (sub, st)
+  let run m = snd (m (Subst.empty, 0))
 
   module Syntax = struct
     let ( let* ) = bind
@@ -81,6 +106,7 @@ module Context = struct
   type t = scheme IMap.t
 
   let empty = IMap.empty
+  let fv = fun m -> fold (fun _ a acc -> ISet.union acc (fst a)) m ISet.empty
 
   let lookup =
     fun k ctx ->
@@ -89,6 +115,12 @@ module Context = struct
     | None -> fail (`UnboundVariable k)
   ;;
 end
+
+let gen =
+  fun env ty ->
+  let free = ISet.diff (Type.fv ty) (Context.fv env) in
+  free, ty
+;;
 
 let rec unify e1 e2 =
   match e1, e2 with
@@ -109,8 +141,21 @@ let infer env =
       | EVar (Index b) when b >= reserved ->
         Context.lookup (reserved + height - 1 - b) env
       | EVar (Index b) -> Context.lookup b env
-      | ELet (NotRecursive, Index v, e1, e2) -> failwith "need to implement generalize"
-      | ELet (Recursive, Index v, e1, e2) -> failwith "unimpl let"
+      | ELet (NotRecursive, Index v, e1, e2) ->
+        let* t1 = helper env height e1 in
+        let t2 = gen env t1 in
+        let env = Context.add v t2 env in
+        let* t3 = helper env (height + 1) e2 in
+        return t3
+      | ELet (Recursive, Index v, e1, e2) ->
+        let* fresh = fresh in
+        let tv = tvar fresh in
+        let env = Context.add v (Scheme.mono tv) env in
+        let* t1 = helper env height e1 in
+        let* _ = unify tv t1 in
+        let t2 = gen env tv in
+        let* t2 = helper (Context.add v t2 env) height e2 in
+        return t2
       | EAbs (Index v, e) ->
         let* fresh = fresh in
         let tv = tvar fresh in
