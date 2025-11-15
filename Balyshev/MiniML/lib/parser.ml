@@ -169,9 +169,16 @@ let expr_match expr =
 let rec_flag = ws *> (string "rec" *> return Recursive <|> return NonRecursive)
 
 let expr_binding expr =
-  let* patt = ws *> pattern in
+  let* patterns = many (ws *> pattern) in
   let* expr = ws *> char '=' *> ws *> expr in
-  return (patt, expr)
+  match patterns with
+  | [] -> fail "not an expr_binding"
+  | p :: ps ->
+    let rec desugar acc = function
+      | [] -> acc
+      | p :: ps -> desugar (EFun (p, acc)) ps
+    in
+    return (p, desugar expr (List.rev ps))
 ;;
 
 let expr_let expr =
@@ -240,18 +247,18 @@ let left_chain expr op sep =
   <*> many1 (ws *> string sep *> ws *> expr)
 ;;
 
-let cmp expr =
-  fail ""
-  <|> left_chain expr Ne "<>"
-  <|> left_chain expr Ne "<="
-  <|> left_chain expr Ge ">="
-  <|> left_chain expr Eq "=="
-  <|> left_chain expr Lt "<"
-  <|> left_chain expr Gt ">"
+let left_chain_choice expr op_sep_ls =
+  let make_parser acc (op, sep) = left_chain expr op sep :: acc in
+  let parsers = Base.List.fold ~f:make_parser op_sep_ls ~init:[] in
+  choice parsers
 ;;
 
-let add_sub expr = left_chain expr Add "+" <|> left_chain expr Sub "-"
-let mul_div expr = left_chain expr Mul "*" <|> left_chain expr Div "/"
+let cmp expr =
+  left_chain_choice expr [ Ne, "<>"; Le, "<="; Ge, ">="; Eq, "=="; Lt, "<"; Gt, ">" ]
+;;
+
+let add_sub expr = left_chain_choice expr [ Add, "+"; Sub, "-" ]
+let mul_div expr = left_chain_choice expr [ Mul, "*"; Div, "/" ]
 
 let fold_alter ~cases ~init =
   Base.List.fold cases ~init ~f:(fun acc expr -> expr acc <|> acc)
