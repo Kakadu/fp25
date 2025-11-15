@@ -1,5 +1,5 @@
 
-  $ ./REPL.exe -help
+  $ ./LambdaREPL.exe -help
   Read-Eval-Print-Loop for Utyped Lambda Calculus
     -lim Reductions limit
     -cbv Call-by-value strategy
