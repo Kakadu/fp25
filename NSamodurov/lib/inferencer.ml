@@ -47,6 +47,7 @@ module InferMonad : sig
 
   val fail : 's -> ('s, 'a) t
   val run : ('s, 'a) t -> ('a, 's) Result.t
+  val fresh : ('s, int) t
 end = struct
   type ('s, 'a) t = int -> int * ('a, 's) Result.t
 
@@ -103,26 +104,31 @@ let rec unify e1 e2 =
 
 let infer env =
   let rec helper =
-    fun env -> function
+    fun env height -> function
       | EConst (Int _) -> return tint
+      | EVar (Index b) when b >= reserved ->
+        Context.lookup (reserved + height - 1 - b) env
       | EVar (Index b) -> Context.lookup b env
       | ELet (NotRecursive, Index v, e1, e2) -> failwith "need to implement generalize"
       | ELet (Recursive, Index v, e1, e2) -> failwith "unimpl let"
       | EAbs (Index v, e) ->
-        let tv = tvar v in
+        let* fresh = fresh in
+        let tv = tvar fresh in
+        (* Format.printf "index: %d\n" v; *)
+        (* List.iter (fun (k, v) -> Format.printf "%d\n" k) (Context.to_list env); *)
         let env = Context.add v (Scheme.mono tv) env in
-        let* te = helper env e in
+        let* te = helper env (height + 1) e in
         return (tarrow tv te)
       | EApp (e1, e2) ->
-        let* e1 = helper env e1 in
-        let* e2 = helper env e2 in
+        let* e1 = helper env height e1 in
+        let* e2 = helper env height e2 in
         (match e1 with
          | TArrow (l, r) ->
            let* _ = unify l e2 in
            return r
          | _ -> fail (`AbstractionExpected e1))
   in
-  helper env
+  helper env 0
 ;;
 
 let env : scheme IMap.t =
