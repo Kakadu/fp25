@@ -10,7 +10,6 @@ open Lambda_lib
 
 include struct
   open Ast
-  open Utils
 
   type 'a status =
     | Done of 'a

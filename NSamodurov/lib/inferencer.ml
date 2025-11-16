@@ -1,7 +1,6 @@
 open Type
 open Ast
 open Monads
-(* 135 ml implementation:  tapl *)
 
 type term =
   | TInt of int
@@ -13,6 +12,7 @@ type term =
 
 type error =
   [ `Parsing_error of string
+  | `Occurs_check of ty * ty
   | `UnifyError of ty * ty
   | `UnboundVariable of int
   | `AbstractionExpected of ty
@@ -23,6 +23,7 @@ type error =
 
 let pp_error ppf = function
   | `Parsing_error s -> Format.fprintf ppf "%s" s
+  | `Occurs_check (a, b) -> Format.fprintf ppf "Occurs error: %a %a" pp_ty a pp_ty b
   | `UnifyError (a, b) -> Format.fprintf ppf "Unification error: %a %a" pp_ty a pp_ty b
   | `UnboundVariable i -> Format.fprintf ppf "Unbound variable: %d" i
   | `AbstractionExpected t -> Format.fprintf ppf "AbstractionExpected: %a" pp_ty t
@@ -48,11 +49,13 @@ module Subst : sig
   val empty : t
   val remove : int -> t -> t
   val apply : t -> ty -> ty
+  val extend : t -> int -> ty -> t
 end = struct
   type t = ty IMap.t
 
   let empty = IMap.empty
   let remove = IMap.remove
+  let extend m i ty = IMap.add i ty m
 
   let apply map =
     let rec helper = function
@@ -73,6 +76,8 @@ module InferMonad : sig
   val fail : 's -> ('s, 'a) t
   val run : ('s, 'a) t -> (Subst.t * 'a, 's) Result.t
   val fresh : ('s, int) t
+  val subst : ('s, Subst.t) t
+  val extend : int -> ty -> ('s, unit) t
 end = struct
   type ('s, 'a) t = Subst.t * int -> int * (Subst.t * 'a, 's) Result.t
 
@@ -88,8 +93,9 @@ end = struct
   ;;
 
   let fresh = fun (sub, st) -> st + 1, Result.ok (sub, st)
-  let current = fun (sub, st) -> st, Result.ok (sub, st)
+  let subst = fun (sub, st) -> st, Result.ok (sub, sub)
   let run m = snd (m (Subst.empty, reserved))
+  let extend = fun i ty (sub, st) -> st, Result.ok (Subst.extend sub i ty, ())
 
   module Syntax = struct
     let ( let* ) = bind
@@ -122,16 +128,30 @@ let gen =
   free, ty
 ;;
 
-let rec unify e1 e2 =
-  match e1, e2 with
-  | TGround g1, TGround g2 when g1 = g2 -> return (e1, e2)
-  | TVar b1, TVar b2 when b1 = b2 -> return (e1, e2)
-  | TGround _, TGround _ -> fail (`UnifyError (e1, e2))
+let walk =
+  fun ty ->
+  let* sub = subst in
+  let ty = Subst.apply sub ty in
+  return ty
+;;
+
+let rec unify t1 t2 =
+  match t1, t2 with
+  | TGround g1, TGround g2 when g1 = g2 -> return ()
+  | TVar b1, TVar b2 when b1 = b2 -> return ()
+  | TVar _, _ when Type.occurs_in t1 t2 -> fail (`Occurs_check (t1, t2))
+  | TVar v, _ ->
+    let* () = extend v t2 in
+    return ()
+  | _, TVar v ->
+    let* () = extend v t1 in
+    return ()
   | TArrow (l1, l2), TArrow (r1, r2) ->
-    let* l1, r1 = unify l1 r1 in
-    let* l2, r2 = unify l2 r2 in
-    return (tarrow l1 r1, tarrow l2 r2)
-  | _ -> fail (`UnifyError (e1, e2))
+    let* _ = unify l1 r1 in
+    let* _ = unify l2 r2 in
+    return ()
+  | TGround _, TGround _ -> fail (`UnifyError (t1, t2))
+  | _ -> fail (`UnifyError (t1, t2))
 ;;
 
 let infer env =
@@ -146,7 +166,7 @@ let infer env =
         let t2 = gen env t1 in
         let env = Context.add v t2 env in
         let* t3 = helper env (height + 1) e2 in
-        return t3
+        walk t3
       | ELet (Recursive, Index v, e1, e2) ->
         let* fresh = fresh in
         let tv = tvar fresh in
@@ -155,21 +175,21 @@ let infer env =
         let* _ = unify tv t1 in
         let t2 = gen env tv in
         let* t2 = helper (Context.add v t2 env) (height + 1) e2 in
-        return t2
+        walk t2
       | EAbs (Index v, e) ->
         let* fresh = fresh in
         let tv = tvar fresh in
         (* List.iter (fun (k, v) -> Format.printf "%d\n" k) (Context.to_list env); *)
         let env = Context.add v (Scheme.mono tv) env in
         let* te = helper env (height + 1) e in
-        return (tarrow tv te)
+        walk (tarrow tv te)
       | EApp (e1, e2) ->
         let* e1 = helper env height e1 in
         let* e2 = helper env height e2 in
         (match e1 with
          | TArrow (l, r) ->
            let* _ = unify l e2 in
-           return r
+           walk r
          | _ -> fail (`AbstractionExpected e1))
   in
   helper env reserved
