@@ -15,13 +15,12 @@ end
 module State : STATE_MONAD = struct
   type ('s, 'ok, 'err) t = 's -> ('s * 'ok, 'err) Result.t
 
-  let get = fun s -> Ok (s, s)
-  let put new_s = fun _ -> Ok (new_s, ())
-  let return x = fun s -> Ok (s, x)
-  let fail msg = fun _ -> Error msg
+  let get s = Ok (s, s)
+  let put new_s _ = Ok (new_s, ())
+  let return x s = Ok (s, x)
+  let fail msg _ = Error msg
 
-  let ( >>= ) (m : ('s, 'a, 'e) t) (f : 'a -> ('s, 'b, 'e) t) : ('s, 'b, 'e) t =
-    fun s ->
+  let ( >>= ) m f s =
     match m s with
     | Error e -> Error e
     | Ok (s', v) -> f v s'
@@ -29,6 +28,6 @@ module State : STATE_MONAD = struct
 
   let ( let* ) = ( >>= )
   let ( <*> ) mf mx = mf >>= fun f -> mx >>= fun x -> return (f x)
-  let fresh_int = fun s -> Ok (s + 1, s)
+  let fresh_int s = Ok (s + 1, s)
   let run m s = m s
 end

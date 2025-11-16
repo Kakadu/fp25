@@ -300,7 +300,6 @@ module TypeEnv (M : Monads.STATE_MONAD) = struct
         | Some actual_patt, Some expected_ty ->
           extend env actual_patt (Scheme (var_set, expected_ty))
         | _ -> fail (Constructor_arity_mismatch name))
-      (* TODO : change message *)
       else fail Type_mismatch
     | _ -> fail (Not_implemented "extend")
   ;;
@@ -562,9 +561,8 @@ module Infer (M : Monads.STATE_MONAD) = struct
   ;;
 
   let check_params_uniqueness pty_name pty_params =
-    if
-      List.length pty_params
-      <> List.length (Base.List.dedup_and_sort pty_params ~compare:String.compare)
+    if List.length (Base.List.dedup_and_sort pty_params ~compare:String.compare)
+       <> List.length pty_params
     then fail (Type_param_duplicates pty_name)
     else return ()
   ;;
@@ -586,7 +584,6 @@ module Infer (M : Monads.STATE_MONAD) = struct
       let env =
         TypeEnv.add_type { tty_kind = Tty_abstract None; tty_params; tty_ident } env
       in
-      (* --- *)
       let infer_variant acc (name, core_type_opt) =
         let* env, acc = acc in
         let* fresh = gen_fresh_int in

@@ -43,15 +43,15 @@ and binop =
 type value_binding = pattern * expression
 
 type type_declaration =
-  { pty_params : string list (** ['a] is param in [type 'a list = ...]  *)
-  ; pty_name : string (** [list] is name in [type 'a list = ...]  *)
+  { pty_params : string list (** ['a] is param in [type 'a list = ...] *)
+  ; pty_name : string (** [list] is name in [type 'a list = ...] *)
   ; pty_kind : type_kind
   }
 
 and type_kind =
   | Pty_abstract of core_type option (** [ type t ], [ type t = x ] *)
   | Pty_variants of (string * core_type option) list1
-  (** [ type t = Some of int | None ]  *)
+  (** [ type t = Some of int | None ] *)
 
 and core_type =
   | Pty_var of string (** [ 'a, 'b ] are type variables in [ type ('a, 'b) ty = ... ] *)

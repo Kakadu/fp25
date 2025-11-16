@@ -130,7 +130,7 @@ let patt_tuple d =
 ;;
 
 let pattern : pattern t =
-  let patt = fun d -> d.patt_tuple d <|> d.patt_cons d <|> d.patt_basic d in
+  let patt d = d.patt_tuple d <|> d.patt_cons d <|> d.patt_basic d in
   patt { patt; patt_basic; patt_cons; patt_tuple }
 ;;
 
