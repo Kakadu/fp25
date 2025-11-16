@@ -89,7 +89,7 @@ end = struct
 
   let fresh = fun (sub, st) -> st + 1, Result.ok (sub, st)
   let current = fun (sub, st) -> st, Result.ok (sub, st)
-  let run m = snd (m (Subst.empty, 0))
+  let run m = snd (m (Subst.empty, reserved))
 
   module Syntax = struct
     let ( let* ) = bind
@@ -139,7 +139,7 @@ let infer env =
     fun env height -> function
       | EConst (Int _) -> return tint
       | EVar (Index b) when b >= reserved ->
-        Context.lookup (reserved + height - 1 - b) env
+        Context.lookup (reserved + height - b - 1) env
       | EVar (Index b) -> Context.lookup b env
       | ELet (NotRecursive, Index v, e1, e2) ->
         let* t1 = helper env height e1 in
@@ -154,12 +154,11 @@ let infer env =
         let* t1 = helper env height e1 in
         let* _ = unify tv t1 in
         let t2 = gen env tv in
-        let* t2 = helper (Context.add v t2 env) height e2 in
+        let* t2 = helper (Context.add v t2 env) (height + 1) e2 in
         return t2
       | EAbs (Index v, e) ->
         let* fresh = fresh in
         let tv = tvar fresh in
-        (* Format.printf "index: %d\n" v; *)
         (* List.iter (fun (k, v) -> Format.printf "%d\n" k) (Context.to_list env); *)
         let env = Context.add v (Scheme.mono tv) env in
         let* te = helper env (height + 1) e in
@@ -173,7 +172,7 @@ let infer env =
            return r
          | _ -> fail (`AbstractionExpected e1))
   in
-  helper env 0
+  helper env reserved
 ;;
 
 let env : scheme IMap.t =
@@ -186,5 +185,5 @@ let env : scheme IMap.t =
 ;;
 
 let w : Ast.brujin Ast.t -> (error, Type.ty) InferMonad.t =
-  fun x -> if Context.cardinal env < reserved then infer env x else fail `ReservedError
+  fun x -> if Context.cardinal env != reserved then infer env x else fail `ReservedError
 ;;

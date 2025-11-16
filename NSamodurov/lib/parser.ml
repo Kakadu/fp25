@@ -194,18 +194,18 @@ let to_brujin expr =
         let* () = write (Context.extend v i map) in
         let* e1 = helper bound e1 in
         let* e2 = helper bound e2 in
-        return (ELet (flag, Index i, e1, e2))
+        return (ELet (flag, Index (i + reserved), e1, e2))
       | EAbs (x, e) ->
         let* map = read in
         if Context.mem x map
         then
           let* e = helper (x :: bound) e in
-          return (eabs (Index (List.length bound)) e)
+          return (eabs (Index (List.length bound + reserved)) e)
         else (
           let i = Context.cardinal map in
           let* () = write (Context.extend x i map) in
           let* e = helper (x :: bound) e in
-          return (eabs (Index (List.length bound)) e))
+          return (eabs (Index (List.length bound + reserved)) e))
       | EApp (e1, e2) ->
         let* b1 = helper bound e1 in
         let* b2 = helper bound e2 in
