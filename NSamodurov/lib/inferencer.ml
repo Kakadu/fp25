@@ -2,14 +2,6 @@ open Type
 open Ast
 open Monads
 
-type term =
-  | TInt of int
-  | TBool of bool
-  | TVar of int
-  | TAbs of term
-  | TApp of term * term
-[@@deriving show { with_path = false }]
-
 type error =
   [ `Parsing_error of string
   | `Occurs_check of ty * ty
@@ -43,6 +35,7 @@ end = struct
   let fv (b, ty) = ISet.diff (Type.fv ty) b
 end
 
+(* Triangular substituion *)
 module Subst : sig
   type t
 
@@ -150,7 +143,6 @@ let rec unify t1 t2 =
     let* _ = unify l1 r1 in
     let* _ = unify l2 r2 in
     return ()
-  | TGround _, TGround _ -> fail (`UnifyError (t1, t2))
   | _ -> fail (`UnifyError (t1, t2))
 ;;
 
@@ -204,6 +196,12 @@ let env : scheme IMap.t =
   |> Context.add 3 (Scheme.mono arith_ty)
 ;;
 
-let w : Ast.brujin Ast.t -> (error, Type.ty) InferMonad.t =
-  fun x -> if Context.cardinal env != reserved then infer env x else fail `ReservedError
+let w : Ast.brujin Ast.t -> (ty, error) Result.t =
+  let ( let* ) = Result.bind in
+  fun x ->
+    if Context.cardinal env <= reserved
+    then
+      let* _, t = run (infer env x) in
+      Result.ok t
+    else Result.Error `ReservedError
 ;;

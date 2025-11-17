@@ -1,0 +1,24 @@
+(library
+ (name parser)
+ (modules parser)
+ (libraries lambda_lib ppx_show.runtime)
+ (preprocess
+  (pps ppx_show ppx_expect))
+ (inline_tests))
+
+(library
+ (name infer)
+ (modules infer)
+ (libraries lambda_lib ppx_show.runtime)
+ (preprocess
+  (pps ppx_show ppx_expect))
+ (inline_tests))
+
+(library
+ (name compiler)
+ (modules compiler)
+ (libraries lambda_lib ppx_show.runtime)
+ (preprocess
+  (pps ppx_show ppx_expect))
+ (inline_tests))
+

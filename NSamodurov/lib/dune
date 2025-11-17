@@ -1,7 +1,7 @@
 (library
  (name lambda_lib)
  (public_name Lambda.Lib)
- (modules Ast Lambda Interpret Inferencer Parser Monads Type Printast Pprintast utils)
+ (modules Ast Lambda Interpret Inferencer Parser Monads Type Printast Pprintast utils Compiler)
  (libraries base angstrom stdune)
  (preprocess
   (pps ppx_deriving.show))
