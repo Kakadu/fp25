@@ -185,3 +185,105 @@ let%expect_test "recursive function with application" =
   [%expect
     {| (let rec fact = Fun (Var(n), if ((Var(n) = 0)) then (1) else ((Var(n) * App (Var(fact), (Var(n) - 1))))) in App (Var(fact), 5)) |}]
 ;;
+
+let%expect_test "right application" =
+  print_string (printer (parse "g (f (q 5))" |> Result.get_ok));
+  [%expect {|App (Var(g), App (Var(f), App (Var(q), 5)))|}]
+;;
+
+let%expect_test "nested if-then-else" =
+  print_string
+    (printer (parse "if 4>8 then if 7>9 then 7 else g 7 else g (k 4) 7" |> Result.get_ok));
+  [%expect
+    {| if ((4 > 8)) then (if ((7 > 9)) then (7) else (App (Var(g), 7))) else (App (App (Var(g), App (Var(k), 4)), 7)) |}]
+;;
+
+let%expect_test "test else if" =
+  print_string
+    (printer (parse "if 4>8 then g 7 4 h else if 7>9 then 7 else g 7" |> Result.get_ok));
+  [%expect
+    {| if ((4 > 8)) then (App (App (App (Var(g), 7), 4), Var(h))) else (if ((7 > 9)) then (7) else (App (Var(g), 7))) |}]
+;;
+
+(*--------------incorrect------------------
+  let%expect_test "let in application" =
+  assert (
+  match parse "(let r = 4) 5" with
+  | Ok _ -> false
+  | Error _ -> true)
+  ;;
+
+  let%expect_test "let inside let" =
+  assert (
+  match parse "let = (let r = 4 + 5) 5" with
+  | Ok _ -> false
+  | Error _ -> true)
+  ;;
+
+  let%expect_test "let inside if" =
+  assert (
+  match parse "if let x = 5 in x > 0 then 1 else 0" with
+  | Ok _ -> false
+  | Error _ -> true)
+  ;;
+
+  let%expect_test "double let" =
+  assert (
+  match parse "let r = let x u= u + 7 in let q =7" with
+  | Ok p ->
+  let _ = Printf.printf "%s\n" (printer p) in
+  false
+  | Error _ -> true)
+  ;;
+
+  (*apparently check, whether it is an expression or not, is something that should be done in interpreter*)
+  let%expect_test "if without else as app arg" =
+  assert (
+  match parse "r 5 (let f = 7 in 8)" with
+  | Ok p ->
+  let _ = Printf.printf "%s\n" (printer p) in
+  false
+  | Error _ -> true)
+  ;;
+
+  let%expect_test "let binding as app arg" =
+  assert (
+  match parse "r 5 (let r = 7)" with
+  | Ok p ->
+  let _ = Printf.printf "%s\n" (printer p) in
+  false
+  | Error _ -> true)
+  ;;
+  let _ =
+  let r = fun s a -> s*a in
+  r 5 (fun d -> d*d)
+
+  let%expect_test "lambda as app arg" =
+  assert (
+  match parse "r 5 (fun r -> r*r)" with
+  | Ok p ->
+  let _ = Printf.printf "%s\n" (printer p) in
+  false
+  | Error _ -> true)
+  ;;
+
+  let%expect_test "if in binop" =
+  assert (
+  match parse "5 + (fun r -> r*r)" with
+  | Ok p ->
+  let _ = Printf.printf "%s\n" (printer p) in
+  false
+  | Error _ -> true)
+  ;;
+
+  else is obligatory now*)
+(*how to deal with in after let - there is either in or ;;*)
+
+(*okay, i should allow /\ (above) and check, whether is is an
+  expression (return some value) inside interpreter
+  but let = ... in let = g ;; - not allowed!!!
+  /\
+  || ????
+  ||
+  \/
+  separate cases for expressions and statements?*)

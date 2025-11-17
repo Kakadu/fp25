@@ -2,7 +2,6 @@
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-(* TODO: implement parser here *)
 open Angstrom
 open Ast
 
@@ -109,18 +108,19 @@ let rec build_curried_function args body =
 
 let expr =
   fix (fun expr ->
-    let anonymous_fun =
-      token (string "fun") *> many1 (token pattern)
-      <* token (string "->")
-      >>= fun args -> expr >>= fun body -> return (build_curried_function args body)
-    in
     let atom =
+      let anonymous_fun =
+        token (string "fun") *> many1 (token pattern)
+        <* token (string "->")
+        >>= fun args -> expr >>= fun body -> return (build_curried_function args body)
+      in
       let app =
         choice [ skip_parens anonymous_fun; var ]
         >>= fun func ->
         many1 (choice [ (number >>| fun n -> Constant (CInt n)); skip_parens expr; var ])
         >>| fun args -> List.fold_left (fun func arg -> App (func, arg)) func args
       in
+      (*we want to have oppotunity to use if-then-else (since it is obligatory) as arg to app*)
       choice
         [ (number >>| fun n -> Constant (CInt n))
         ; app
@@ -156,9 +156,7 @@ let expr =
       token (string "then") *> expr
       >>= fun main ->
       option None (token (string "else") *> expr >>| fun alt -> Some alt)
-      >>= function
-      | Some alt -> return (Conditional (cond, main, Some alt))
-      | None -> return (Conditional (cond, main, None))
+      >>| fun alt -> Conditional (cond, main, alt)
     in
     let let_binding =
       token (string "let") *> option NonRec (token (string "rec") >>| fun _ -> Rec)
@@ -171,7 +169,13 @@ let expr =
       >>= fun ex ->
       let body = if args = [] then ex else build_curried_function args ex in
       option None (token (string "in") *> expr >>| fun cont -> Some cont)
-      >>= fun skope -> return (Let (recurs, name, body, skope))
+      >>= fun skope ->
+      match skope with
+      | Some next ->
+        (match next with
+         | Let (_, _, _, None) -> fail "Need an expression in rigth side of ="
+         | _ -> return (Let (recurs, name, body, Some next)))
+      | None -> return (Let (recurs, name, body, None))
     in
     choice [ let_binding; conditional; binopr ])
 ;;

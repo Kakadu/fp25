@@ -30,10 +30,8 @@ let rec printer = function
     let main = printer main in
     let res =
       match alt with
+      | Some ex -> Printf.sprintf "if (%s) then (%s) else (%s)" cond main (printer ex)
       | None -> Printf.sprintf "if (%s) then (%s)" cond main
-      | Some op ->
-        let alt = printer op in
-        Printf.sprintf "if (%s) then (%s) else (%s)" cond main alt
     in
     res
   | Let (flag, pat, body, next) ->
