@@ -12,6 +12,7 @@ type instr =
   | AppTerm
   | Dummy
   | Update
+  | Add
 
 val compile : Ast.brujin Ast.t -> instr list
 val pp_instr : Format.formatter -> instr -> unit

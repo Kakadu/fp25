@@ -35,12 +35,12 @@ let%expect_test "constant" =
 
 let%expect_test "function" =
   instruction_of_program "1 + 2";
-  [%expect {| PushMark;(Const 2);Push;(Const 1);Push;(Access 0);Apply; |}]
+  [%expect {| (Const 2);Push;(Const 1);Add; |}]
 ;;
 
 let%expect_test "function" =
   instruction_of_program "fun x -> (2 + 1)";
-  [%expect {| (Cur [(Const 1); Push; (Const 2); Push; (Access 0); AppTerm; Return]); |}]
+  [%expect {| (Cur [(Const 1); Push; (Const 2); Add; Return]); |}]
 ;;
 
 let%expect_test "identity" =

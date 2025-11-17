@@ -8,26 +8,44 @@
 
 (** Real monadic interpreter goes here *)
 
-type error = [ `UnknownVariable of string (** just for example *) ]
+open Parser
+open Inferencer
+open Monads
+open Compiler
 
-(* module Interpret (M : MONAD_FAIL) : sig *)
-(*   val run : _ Ast.t -> (int, [> error ]) M.t *)
-(* end = struct *)
-(*   let run _ = *)
-(*     (\* TODO: implement interpreter here *\) *)
-(*     if true then M.fail (`UnknownVariable "var") else failwith "not implemented" *)
-(*   ;; *)
-(* end *)
+type eval =
+  | Int of int
+  | Epsilon
+[@@deriving show { with_path = false }]
 
-(* let parse_and_run str = *)
-(*   let module I = Interpret (Base.Result) in *)
-(*   let rez = Base.Result.(Parser.parse str >>= I.run) in *)
-(*   match rez with *)
-(*   | Result.Ok n -> Printf.printf "Success: %d\n" n *)
-(*   | Result.Error #Parser.error -> *)
-(*     Format.eprintf "Parsing error\n%!"; *)
-(*     exit 1 *)
-(*   | Result.Error #error -> *)
-(*     Format.eprintf "Interpreter error\n%!"; *)
-(*     exit 1 *)
-(* ;; *)
+let interpret =
+  let rec helper acc env arg ret = function
+    | [] -> acc
+    | Const a :: Add :: tl ->
+      let b =
+        match acc with
+        | Epsilon -> failwith "error"
+        | Int i -> i
+      in
+      helper (Int (a + b)) env arg ret tl
+    | Const i :: tl -> helper (Int i) env arg ret tl
+    | Push :: tl -> helper acc env (acc :: arg) ret tl
+    | PushMark :: tl -> helper acc env (Epsilon :: arg) ret tl
+    | _ -> failwith "unimpl"
+  in
+  helper Epsilon [] [] []
+;;
+
+let parse_and_run str =
+  let helper str =
+    let ( let* ) = Result.bind in
+    let* ast = parse str in
+    let ast = to_brujin ast in
+    let _ = w ast in
+    let instr = compile ast in
+    Result.ok (interpret instr)
+  in
+  match helper str with
+  | Ok v -> Format.printf "Success: %a" pp_eval v
+  | Error e -> Format.printf "Error: %a" Inferencer.pp_error e
+;;
