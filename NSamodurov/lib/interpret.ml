@@ -10,7 +10,6 @@
 
 open Parser
 open Inferencer
-open Monads
 open Compiler
 
 type eval =

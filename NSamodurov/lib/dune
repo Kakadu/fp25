@@ -1,6 +1,6 @@
 (library
  (name lambda_lib)
- (public_name Lambda.Lib)
+ (public_name NSamodurov.Lib)
  (modules Ast Lambda Interpret Inferencer Parser Monads Type Printast Pprintast utils Compiler)
  (libraries base angstrom stdune)
  (preprocess
