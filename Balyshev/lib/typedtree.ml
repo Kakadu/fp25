@@ -16,7 +16,7 @@ let rec show_ty = function
   (* TODO?? : add flag to specify what to print *)
   | Tty_var ident -> sprintf "'ty%d" ident.id
   | Tty_arrow (a, b) -> sprintf "(%s -> %s)" (show_ty a) (show_ty b)
-  | Tty_prod (a, b, xs) -> show_tuple show_ty (a, b, xs)
+  | Tty_prod (a, b, xs) -> show_tuple ~sep:" * " show_ty (a, b, xs)
   | Tty_constr ([], ident) -> sprintf "%s" ident.name
   | Tty_constr ([ ty ], ident) -> sprintf "%s %s" (show_ty ty) ident.name
   | Tty_constr (tys, ident) ->
@@ -106,7 +106,7 @@ module TypeEnv = struct
 end
 
 type structure_item =
-  | Tstr_value of value_binding
+  | Tstr_value of value_binding Parsetree.list1
   | Tstr_type of type_declaration
 
 type structure = (TypeEnv.t * structure_item) list
@@ -114,14 +114,18 @@ type structure = (TypeEnv.t * structure_item) list
 open Format
 
 let show_structure_item = function
-  | Tstr_value { tvb_flag; tvb_pat; tvb_body; tvb_scheme } ->
-    let (Scheme.Scheme (_vs, ty)) = tvb_scheme in
-    sprintf
-      "let%s%s: %s = %s"
-      (Parsetree.show_rec_flag tvb_flag)
-      (Parsetree.show_pattern tvb_pat)
-      (show_ty ty)
-      (Parsetree.show_expression tvb_body)
+  | Tstr_value (vb, vbs) ->
+    let helper ~keyword { tvb_flag; tvb_pat; tvb_body; tvb_scheme } =
+      let (Scheme.Scheme (_vs, ty)) = tvb_scheme in
+      sprintf
+        "%s%s%s: %s = %s@." (* TODO : replace @. with ??? *)
+        keyword
+        (Parsetree.show_rec_flag tvb_flag)
+        (Parsetree.show_pattern tvb_pat)
+        (show_ty ty)
+        (Parsetree.show_expression tvb_body)
+    in
+    String.concat (helper ~keyword:"let" vb :: List.map ~f:(helper ~keyword:"and") vbs)
   | Tstr_type { tty_ident; tty_kind; tty_params } ->
     let kind =
       match tty_kind with
@@ -152,8 +156,21 @@ let pp_structure_item ppf stru_item = fprintf ppf "%s" (show_structure_item stru
 
 let pp_structure ppf (item1, items) =
   pp_print_list
-    ~pp_sep:(fun ppf () -> fprintf ppf "@.;;@.@.")
+    ~pp_sep:(fun ppf () -> fprintf ppf "@.")
     pp_structure_item
     ppf
     (item1 :: items)
 ;;
+
+(* debugging stuff *)
+
+let show_scheme (Scheme.Scheme (varset, ty)) =
+  sprintf
+    "∀ %s . %s"
+    (Base.String.concat
+       ~sep:" "
+       (Base.List.map ~f:Ident.show_ident (VarSet.elements varset)))
+    (show_ty ty)
+;;
+
+let pp_scheme ppf scheme = fprintf ppf "%s" (show_scheme scheme)

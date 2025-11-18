@@ -50,7 +50,7 @@ module TypeEnv : sig
 end
 
 type structure_item =
-  | Tstr_value of value_binding
+  | Tstr_value of value_binding Parsetree.list1
   | Tstr_type of type_declaration
 
 type structure = (TypeEnv.t * structure_item) list
@@ -60,3 +60,5 @@ val pp_ty : Format.formatter -> ty -> unit
 val show_structure_item : structure_item -> string
 val pp_structure_item : Format.formatter -> structure_item -> unit
 val pp_structure : Format.formatter -> structure_item * structure_item list -> unit
+val show_scheme : Scheme.t -> string
+val pp_scheme : Format.formatter -> Scheme.t -> unit
