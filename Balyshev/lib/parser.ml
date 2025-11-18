@@ -271,7 +271,7 @@ let expression =
   *> fix (fun self ->
     fold_alter
       ~init:(expr_atom <|> parens self <|> expr_list self)
-      ~cases:[ expr_long; constructor; expr_binop; expr_tuple; expr_complex ])
+      ~cases:[ constructor; expr_long; expr_binop; expr_tuple; expr_complex ])
 ;;
 
 let parse_expression text = parse_string ~consume:All (expression <* end_of_input) text

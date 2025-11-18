@@ -8,6 +8,7 @@ type ident = t
 let ident id name = { id; name }
 let equal (a : ident) (b : ident) = a.id = b.id
 let compare (a : ident) (b : ident) = Int.compare a.id b.id
+let show_ident ident = Format.sprintf "'ty%d" ident.id
 
 module Id_map = Stdlib.Map.Make (Int)
 module Name_map = Stdlib.Map.Make (String)
@@ -32,6 +33,14 @@ module Ident_map = struct
 
   let fold2 ~f_id ~f_name (left, right) ~init_id ~init_name =
     Id_map.fold f_id left init_id, Name_map.fold f_name right init_name
+  ;;
+
+  let pp ppf ~pp_data (left, _) =
+    Format.fprintf ppf "<< substitution: {@.";
+    Id_map.iter
+      (fun id data -> Format.fprintf ppf "  'ty%d -> %a@. " id pp_data data)
+      left;
+    Format.fprintf ppf "@.} >>@."
   ;;
 end
 

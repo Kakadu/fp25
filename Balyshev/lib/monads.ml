@@ -8,7 +8,6 @@ module type STATE_MONAD = sig
   val ( <*> ) : ('s, 'a -> 'b, 'e) t -> ('s, 'a, 'e) t -> ('s, 'b, 'e) t
   val get : ('s, 's, 'e) t
   val put : 's -> ('s, unit, 'e) t
-  val fresh_int : (int, int, 'err) t
   val run : ('s, 'ok, 'err) t -> 's -> ('s * 'ok, 'err) Result.t
 end
 
@@ -28,6 +27,5 @@ module State : STATE_MONAD = struct
 
   let ( let* ) = ( >>= )
   let ( <*> ) mf mx = mf >>= fun f -> mx >>= fun x -> return (f x)
-  let fresh_int s = Ok (s + 1, s)
   let run m s = m s
 end

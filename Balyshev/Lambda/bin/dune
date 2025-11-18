@@ -7,4 +7,4 @@
   (backend bisect_ppx)))
 
 (cram
- (deps ./LambdaREPL.exe %{bin:REPL}))
+ (deps ./LambdaREPL.exe %{bin:LambdaREPL}))
