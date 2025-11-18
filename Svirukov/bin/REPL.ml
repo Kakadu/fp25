@@ -7,19 +7,12 @@
 [@@@ocaml.text "/*"]
 
 open Lambda_lib
-
-let expression =
-  "let result =\n\
-  \  let sterter x = if x + (8 * 9) > 4 then x * 2 else x * 5 in\n\
-  \    let inner pp = sterter pp + 8 in\n\
-  \  inner 8"
-;;
+open Stdio
 
 let () =
   let expr =
-    match Parser.parse "let _ = 8" with
+    match Parser.parse (Stdio.In_channel.(input_all stdin) |> Base.String.rstrip) with
     | Ok expr ->
-      (*let _ = Printf.printf "%d\n" r in*)
       let _ = Printf.printf "%s\n" (Print.print_ast expr) in
       expr
     | Error (`Parsing_error msg) -> failwith msg

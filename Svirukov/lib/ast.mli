@@ -8,7 +8,6 @@
 
 type constant =
   | CInt of int
-  | CBool of bool
   | CUnit
 
 type pattern =

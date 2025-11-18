@@ -9,58 +9,27 @@ If you need to put sample program and use it both in your interpreter and preins
 you could put it into separate file. Thise will need stanza `(cram (deps demo_input.txt))`
 in the dune file
 
-  $ ../bin/REPL.exe -cbv -dparsetree <<EOF
-  > \f.x
-  (let _ = CInt(8))
-  Fatal error: exception Failure("unimlemented")
-  Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
-  Called from Lambda_lib__Interpret.run_interpret in file "lib/interpret.ml", line 127, characters 8-26
-  Called from Dune__exe__REPL in file "bin/REPL.ml", line 19, characters 8-36
-  [2]
+  $ ../bin/REPL.exe <<EOF
+  > 5 + 5
+  (CInt(5) + CInt(5))
+  CInt(10)
   $ ../bin/REPL.exe -dparsetree <<EOF
-  > garbage242
-  (let _ = CInt(8))
+  > let r x = x+x*8 in r 9
+  (let r = Fun (Var(x), (Var(x) + (Var(x) * CInt(8)))) in App (Var(r), CInt(9)))
   Fatal error: exception Failure("unimlemented")
   Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
-  Called from Lambda_lib__Interpret.run_interpret in file "lib/interpret.ml", line 127, characters 8-26
-  Called from Dune__exe__REPL in file "bin/REPL.ml", line 19, characters 8-36
+  Called from Lambda_lib__Interpret.eval in file "lib/interpret.ml", line 133, characters 16-29
+  Called from Lambda_lib__Interpret.run_interpret in file "lib/interpret.ml", line 189, characters 8-26
+  Called from Dune__exe__REPL in file "bin/REPL.ml", line 20, characters 8-36
   [2]
 
+  $ ../bin/REPL.exe <<EOF
+  > (fun s k -> s+k) 5 7
+  App (App (Fun (Var(s), Fun (Var(k), (Var(s) + Var(k)))), CInt(5)), CInt(7))
+  CInt(12)
 
+  $ ../bin/REPL.exe <<EOF
+  > let r = (fun s k -> s+k) 5 7 in let p = (fun s->s*2) ((fun k -> k*3) 10) in p/2 + r
+  (let r = App (App (Fun (Var(s), Fun (Var(k), (Var(s) + Var(k)))), CInt(5)), CInt(7)) in (let p = App (Fun (Var(s), (Var(s) * CInt(2))), App (Fun (Var(k), (Var(k) * CInt(3))), CInt(10))) in ((Var(p) / CInt(2)) + Var(r))))
+  CInt(42)
 
-  $ ../bin/REPL.exe -no -dparsetree <<EOF
-  > (\x.\y.x)(\u.u)((\x. x x)(\x.x x))
-  (let _ = CInt(8))
-  Fatal error: exception Failure("unimlemented")
-  Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
-  Called from Lambda_lib__Interpret.run_interpret in file "lib/interpret.ml", line 127, characters 8-26
-  Called from Dune__exe__REPL in file "bin/REPL.ml", line 19, characters 8-36
-  [2]
-Below we redirect contents of the file to the evaluator
-  $ ../bin/REPL.exe -dparsetree -stop-after parsing   < lam_1+1.txt
-  cannot open lam_1+1.txt: No such file
-  [2]
-
-  $ ../bin/REPL.exe -ao   < lam_1+1.txt
-  cannot open lam_1+1.txt: No such file
-  [2]
-  $ ../bin/REPL.exe -ao   < lam_2x1.txt
-  cannot open lam_2x1.txt: No such file
-  [2]
-Call by value doesn't reduce under abstraction
-  $ ../bin/REPL.exe -cbv   < lam_2x1.txt
-  cannot open lam_2x1.txt: No such file
-  [2]
-  $ ../bin/REPL.exe -ao -small   < lam_3x2.txt
-  cannot open lam_3x2.txt: No such file
-  [2]
-  $ ../bin/REPL.exe -ao   < lam_zero.txt
-  cannot open lam_zero.txt: No such file
-  [2]
-For 3! we use noral order reduction
-  $ cat lam_fac3.txt
-  cat: lam_fac3.txt: No such file or directory
-  [1]
-  $ ../bin/REPL.exe -no   < lam_fac3.txt
-  cannot open lam_fac3.txt: No such file
-  [2]

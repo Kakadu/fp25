@@ -68,4 +68,6 @@ let print_error = function
   | TypeError err -> err
   | DivisionByZero -> "Division by zero"
   | Unimplemented -> "Not implemented yet..."
+  | TooManyArgs -> "Too many args for function"
+  | ParttialApplication -> "Not enought args to calculate function"
 ;;

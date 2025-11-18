@@ -6,4 +6,30 @@
 
 [@@@ocaml.text "/*"]
 
-val parse_and_run : string -> unit
+open Ast
+
+type error =
+  | UnboundVariable of string
+  | TypeError of string
+  | DivisionByZero
+  | ParttialApplication
+  | TooManyArgs
+  | Unimplemented
+
+type value =
+  | VInt of int
+  | VClosure of pattern * expr
+  | VRecClosure of pattern * pattern * expr
+
+and env = (string, value, Base.String.comparator_witness) Base.Map.t
+
+module type MONAD = sig
+  type 'a t
+
+  val return : 'a -> 'a t
+  val fail : error -> 'a t
+  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
+  val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
+end
+
+val run_interpret : expr -> (expr, error) result
