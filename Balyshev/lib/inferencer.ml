@@ -8,12 +8,14 @@ type error =
   | Type_mismatch
   | Unbound_value of string
   | Type_was_not_declared of string
-  | Type_arity_mismatch of string (* TODO : change message *)
+  | Type_arity_mismatch of string
   | Unbound_type_variable of string
   | Type_param_duplicates of string
   | Unbound_constructor of string
   | Type_env_invariant_violation of string
   | Constructor_arity_mismatch of string
+  | Only_variables_on_the_left_of_let_rec
+  | Only_functions_on_the_right_of_let_rec
 
 let show_error = function
   | Not_implemented f -> Format.sprintf "not implemented: %s" f
@@ -29,31 +31,36 @@ let show_error = function
   | Type_param_duplicates name ->
     Format.sprintf "type param duplicates in declaration of type %s" name
   | Unbound_constructor name -> Format.sprintf "unbound constructor: %s" name
-  | Type_env_invariant_violation msg -> msg
+  | Type_env_invariant_violation msg ->
+    Format.sprintf "type environment invariant violation: %s" msg
   | Constructor_arity_mismatch name ->
     Format.sprintf "constructor arity mismatch: %s" name
+  | Only_variables_on_the_left_of_let_rec ->
+    "only variables are allowed as left-hand side of let rec"
+  | Only_functions_on_the_right_of_let_rec ->
+    "this kind of expression is not allowed as right-hand side of let rec"
 ;;
 
-let log msg = Format.printf "<< %s >>@ " msg
 let pp_error ppf err = Format.fprintf ppf "%s" (show_error err)
-
-type subsitution = ty Ident.Ident_map.t
+let _debug = ref false
 
 module State (M : Monads.STATE_MONAD) = struct
-  type t =
-    { cnt : int
-    ; sub : subsitution
-    }
+  type t = { cnt : int }
 
-  let init_state = { cnt = 0; sub = Ident.Ident_map.empty }
+  let empty_state = { cnt = 0 }
 
   open M
 
-  let gen_fresh_int =
+  let fresh_int =
     let* state = get in
     let rez = state.cnt in
-    let* () = put { state with cnt = state.cnt + 1 } in
+    let* () = put { cnt = state.cnt + 1 } in
     return rez
+  ;;
+
+  let fresh_tvar =
+    let* fresh_id = fresh_int in
+    return (Tty_var (Ident.ident fresh_id (Format.sprintf "'ty%d" fresh_id)))
   ;;
 end
 
@@ -75,571 +82,460 @@ module VarSet = struct
 end
 
 module Substitution (M : Monads.STATE_MONAD) = struct
-  open State (M)
-  open Ident
-  open Base
   open M
+  open Base
 
-  type t = subsitution
+  type t = (string, ty, String.comparator_witness) Map.t
 
-  let occurs_in ident = function
-    | Tty_var _ -> false
-    | ty ->
-      let rec helper = function
-        | Tty_constr (params, _) -> List.exists ~f:helper params
-        | Tty_var ident2 -> Ident.equal ident ident2
-        | Tty_prod (ty1, ty2, tys) -> List.exists ~f:helper (ty1 :: ty2 :: tys)
-        | Tty_arrow (ty1, ty2) -> helper ty1 || helper ty2
-      in
-      helper ty
+  let empty = Map.empty (module String)
+  let walk_opt sub name = Map.find sub name
+
+  let ident_equal (ident1 : Ident.t) (ident2 : Ident.t) =
+    String.equal ident1.name ident2.name
   ;;
 
-  let rec apply = function
-    | Tty_constr (params, name) ->
-      return (fun params -> Tty_constr (params, name)) <*> apply_fold params
-    | Tty_var ident ->
-      let* state = get in
-      (match Ident_map.find_by_id_opt ident.id state.sub with
-       | Some ty -> return ty
-       | None -> return (Tty_var ident))
-    | Tty_prod (ty1, ty2, tys) ->
-      return (fun ty1 ty2 tys -> Tty_prod (ty1, ty2, tys))
-      <*> apply ty1
-      <*> apply ty2
-      <*> apply_fold tys
-    | Tty_arrow (ty1, ty2) ->
-      return (fun ty1 ty2 -> Tty_arrow (ty1, ty2)) <*> apply ty1 <*> apply ty2
-
-  and apply_fold tys =
-    let* tys =
-      List.fold tys ~init:(return []) ~f:(fun acc ty ->
-        let* tys = acc in
-        let* ty' = apply ty in
-        return (ty' :: tys))
+  let occurs_in name ty =
+    let rec helper = function
+      | Tty_var ident -> String.equal name ident.name
+      | Tty_prod (ty1, ty2, tys) -> List.exists ~f:helper (ty1 :: ty2 :: tys)
+      | Tty_arrow (ty1, ty2) -> helper ty1 || helper ty2
+      | Tty_constr (tys, _ident) -> List.exists ~f:helper tys
     in
-    return (List.rev tys)
+    match ty with
+    | Tty_var _ -> false
+    | _ -> helper ty
   ;;
 
-  let rec unify ty1 ty2 =
-    let* ty1' = apply ty1 in
-    let* ty2' = apply ty2 in
-    match ty1', ty2' with
-    | Tty_constr (params1, ident1), Tty_constr (params2, ident2)
-      when Ident.equal ident1 ident2 && List.length params1 = List.length params2 ->
-      unify_lists params1 params2
-    | Tty_var ident1, Tty_var ident2 when Ident.equal ident1 ident2 -> return ()
-    | Tty_var ident, ty when occurs_in ident ty -> fail (Occurs_check (ty1', ty))
-    | ty, Tty_var ident when occurs_in ident ty -> fail (Occurs_check (ty2', ty))
+  let update sub name ty = Map.update sub name ~f:(fun _ -> ty)
+
+  let occurs_check name ty =
+    if occurs_in name ty then failwith "TODO : occurs check" else return ()
+  ;;
+
+  let rec extend sub name ty =
+    let* () = occurs_check name ty in
+    match walk_opt sub name with
+    | Some old_ty ->
+      let* sub2 = unify (apply sub ty) (apply sub old_ty) in
+      compose sub sub2
+    | None ->
+      let init = Map.singleton (module String) name (apply sub ty) in
+      let helper ~key ~data acc =
+        let* acc = acc in
+        return (update acc key (apply init data))
+      in
+      Map.fold sub ~init:(return init) ~f:helper
+
+  and apply sub = function
+    | Tty_var ident ->
+      (match walk_opt sub ident.name with
+       | Some ty -> apply sub ty
+       | None -> Tty_var ident)
+    | Tty_prod (ty1, ty2, tys) ->
+      Tty_prod (apply sub ty1, apply sub ty2, apply_many sub tys)
+    | Tty_arrow (ty1, ty2) -> Tty_arrow (apply sub ty1, apply sub ty2)
+    | Tty_constr (tys, ident) -> Tty_constr (apply_many sub tys, ident)
+
+  and apply_many sub tys = List.map tys ~f:(apply sub)
+
+  and unify ty1 ty2 =
+    match ty1, ty2 with
+    | Tty_var ident1, Tty_var ident2 when ident_equal ident1 ident2 -> return empty
+    | Tty_var ident, ty when occurs_in ident.name ty -> fail (Occurs_check (ty1, ty2))
+    | ty, Tty_var ident when occurs_in ident.name ty -> fail (Occurs_check (ty1, ty2))
     | Tty_var ident, ty | ty, Tty_var ident ->
-      let* ty' = apply ty in
-      let* state = get in
-      put { state with sub = Ident_map.add ident ty' state.sub }
+      return (Map.singleton (module String) ident.name ty)
     | Tty_prod (x1, x2, xs), Tty_prod (y1, y2, ys) when List.length xs = List.length ys ->
-      unify_lists (x1 :: x2 :: xs) (y1 :: y2 :: ys)
-    | Tty_arrow (a1, b1), Tty_arrow (a2, b2) ->
-      let* () = unify a1 a2 in
-      let* () = unify b1 b2 in
-      return ()
-    | _ -> fail (Unification_failed (ty1', ty2'))
+      unify_many_exn (x1 :: x2 :: xs) (y1 :: y2 :: ys)
+    | Tty_arrow (x1, x2), Tty_arrow (y1, y2) -> unify_many_exn [ x1; x2 ] [ y1; y2 ]
+    | Tty_constr (tys1, ident1), Tty_constr (tys2, ident2)
+      when ident_equal ident1 ident2 && List.length tys1 = List.length tys2 ->
+      unify_many_exn tys1 tys2
+    | _ -> fail (Unification_failed (ty1, ty2))
 
-  and unify_lists tys1 tys2 =
-    List.fold2_exn
-      ~f:(fun acc ty1 ty2 ->
-        let* () = acc in
-        unify ty1 ty2)
-      ~init:(return ())
-      tys1
-      tys2
+  and unify_many_exn tys1 tys2 =
+    let unify_m acc ty1 ty2 =
+      let* acc_sub = acc in
+      let* new_sub = unify (apply acc_sub ty1) (apply acc_sub ty2) in
+      compose acc_sub new_sub
+    in
+    List.fold2_exn ~init:(return empty) ~f:unify_m tys1 tys2
+
+  and compose sub1 sub2 =
+    let helper ~key ~data acc =
+      let* acc_sub = acc in
+      extend acc_sub key data
+    in
+    Map.fold ~init:(return sub1) ~f:helper sub2
+
+  and compose_many subs =
+    let helper acc sub =
+      let* acc_sub = acc in
+      compose acc_sub sub
+    in
+    List.fold ~init:(return empty) ~f:helper subs
   ;;
 
-  (* TODO : test it *)
-  let extend ident ty =
-    let* state = get in
-    put { state with sub = Ident.Ident_map.add ident ty state.sub }
-  ;;
+  let remove sub (ident : Ident.t) = Map.remove sub ident.name
 
-  let remove ident =
-    let* state = get in
-    put { state with sub = Ident.Ident_map.remove ident state.sub }
+  (* debugging stuff *)
+  let pp ppf (sub : t) =
+    Format.fprintf ppf "{ ";
+    Map.iteri sub ~f:(fun ~key ~data ->
+      Format.fprintf ppf "[ %s -> %s ]  " key (show_ty data));
+    Format.fprintf ppf " }"
   ;;
 end
 
 module Scheme (M : Monads.STATE_MONAD) = struct
-  module Substitution = Substitution (M)
-  open M
-  open State (M)
   include Typedtree.Scheme
+  module Substitution = Substitution (M)
 
-  (* TODO : REWRITE THIS IMPERATIVE PEACE OF **** *)
-  let apply (Scheme (var_set, ty)) =
-    let* state = get in
-    let sub = state.sub in
-    let cnt = state.cnt in
-    let helper ident acc =
-      let* () = acc in
-      Substitution.remove ident
-    in
-    let* () = VarSet.fold helper var_set (return ()) in
-    let* ty' = Substitution.apply ty in
-    let* () = put { cnt; sub } in
-    return (Scheme (var_set, ty'))
+  let free_vars (Scheme.Scheme (varset, ty)) = VarSet.diff (VarSet.free_vars ty) varset
+
+  let apply sub (Scheme.Scheme (bind_set, ty)) =
+    let new_sub = VarSet.fold (fun key sub -> Substitution.remove sub key) bind_set sub in
+    Scheme.Scheme (bind_set, Substitution.apply new_sub ty)
   ;;
-
-  let free_vars (Scheme.Scheme (var_set, ty)) = VarSet.diff var_set (VarSet.free_vars ty)
 end
 
 module TypeEnv (M : Monads.STATE_MONAD) = struct
-  include Typedtree.TypeEnv
-  module Substitution = Substitution (M)
-  module Scheme = Scheme (M)
-  module State = State (M)
-
-  type 's env = ('s, TypeEnv.t, error) M.t
-
   open M
+  open Base
+  module Scheme = Scheme (M)
+  module Substitution = Substitution (M)
 
-  let add_value_m name scheme (env : _ env) =
-    let* env = env in
-    let* id = fresh_int in
-    let ident = Ident.ident id name in
-    return (add_value ~ident scheme env)
+  type t =
+    { env_values : (string, Scheme.t, String.comparator_witness) Map.t
+    ; env_types : (string, type_declaration, String.comparator_witness) Map.t
+    ; env_constructors :
+        (string, TypeEnv.constructor_entry, String.comparator_witness) Map.t
+    }
+
+  let empty =
+    { env_values = Map.empty (module String)
+    ; env_types = Map.empty (module String)
+    ; env_constructors = Map.empty (module String)
+    }
   ;;
 
-  let add_type_m name tty_params tty_kind (env : _ env) =
-    let* env = env in
-    let* id = fresh_int in
-    let tty_ident = Ident.ident id name in
-    return (add_type { tty_ident; tty_params; tty_kind } env)
+  let update env key value =
+    { env with env_values = Map.update env.env_values key ~f:(fun _ -> value) }
   ;;
 
-  let get_arity = function
-    | None -> 0
-    | Some (Tty_prod (_, _, tys)) -> List.length tys + 2
-    | Some _ -> 1
+  let free_vars env =
+    Map.fold env.env_values ~init:VarSet.empty ~f:(fun ~key:_ ~data acc ->
+      VarSet.union acc (Scheme.free_vars data))
   ;;
 
-  let add_constructor_m name constr_arg_ty ~type_ident:constr_type_ident (env : _ env) =
-    let* env = env in
-    let* id = fresh_int in
-    let constr_ident = Ident.ident id name in
-    let constr_arity = get_arity constr_arg_ty in
-    let env =
-      add_constructor { constr_arg_ty; constr_type_ident; constr_ident; constr_arity } env
+  let apply (sub : Substitution.t) env =
+    { env with env_values = Map.map env.env_values ~f:(Scheme.apply sub) }
+  ;;
+
+  let find env = Map.find env.env_values
+
+  let rec extend env pat (Scheme.Scheme (varset, ty) as scheme) =
+    match pat, ty with
+    | PAny, _ -> return env
+    | PVar name, _ -> return (update env name scheme)
+    | PTuple (p1, p2, ps), Tty_prod (ty1, ty2, tys) when List.length ps == List.length tys
+      -> extend_many_exn env varset (p1 :: p2 :: ps) (ty1 :: ty2 :: tys)
+    | PConstruct _, _ -> failwith "not implemented"
+    | _ -> fail (Type_env_invariant_violation "scheme does not correspond pattern")
+
+  and extend_many_exn env varset patts tys =
+    let helper acc patt ty =
+      let* env = acc in
+      extend env patt (Scheme (varset, ty))
     in
-    return env
+    List.fold2_exn ~f:helper patts tys ~init:(return env)
   ;;
 
-  (* TODO : REWRITE THIS *)
+  let find_type_opt (ident : Ident.t) env = Map.find env.env_types ident.name
 
-  let unit_ident = Ident.ident 1000 "unit"
-  let int_ident = Ident.ident 1001 "int"
-  let bool_ident = Ident.ident 1002 "bool"
+  let check_type_not_declared td env =
+    match find_type_opt td.tty_ident env with
+    | Some _ -> failwith "type already declared in scope"
+    | None -> ()
+  ;;
+
+  let add_type td env =
+    let () = check_type_not_declared td env in
+    { env with env_types = Map.add_exn ~key:td.tty_ident.name ~data:td env.env_types }
+  ;;
+
+  let unit_ident = Ident.ident (-1) "unit"
+  let int_ident = Ident.ident (-2) "int"
+  let bool_ident = Ident.ident (-3) "bool"
   let ty_unit = Tty_constr ([], unit_ident)
   let ty_int = Tty_constr ([], int_ident)
   let ty_bool = Tty_constr ([], bool_ident)
 
   let base_types_env =
-    TypeEnv.empty
+    empty
     |> add_type { tty_kind = Tty_abstract None; tty_ident = unit_ident; tty_params = [] }
     |> add_type { tty_kind = Tty_abstract None; tty_ident = int_ident; tty_params = [] }
     |> add_type { tty_kind = Tty_abstract None; tty_ident = bool_ident; tty_params = [] }
   ;;
-
-  module Ident_map_m = Ident.Ident_map_m (M)
-
-  (* TODO : apply sub to types and constructors *)
-  let apply env =
-    let* env_values = Ident_map_m.fmapm ~f:Scheme.apply env.env_values in
-    return { env with env_values }
-  ;;
-
-  let free_vars env =
-    let helper _id scheme var_set = VarSet.union var_set (Scheme.free_vars scheme) in
-    Ident.Ident_map.fold_by_ids ~f:helper env.env_values ~init:VarSet.empty
-  ;;
-
-  let find_constructor name env =
-    match Ident.Ident_map.find_by_name_opt name env.env_constructors with
-    | None -> fail (Unbound_constructor name)
-    | Some constr_entry ->
-      let ty_ident = constr_entry.constr_type_ident in
-      (match Ident.Ident_map.find_by_id_opt ty_ident.id env.env_types with
-       | None ->
-         fail
-           (Type_env_invariant_violation
-              "constructor references a non-existent type ident")
-       | Some type_entry -> return (constr_entry, type_entry))
-  ;;
-
-  let rec extend env pattern (scheme : Scheme.t) =
-    match pattern, scheme with
-    | PVar name, scheme ->
-      let* fresh = State.gen_fresh_int in
-      let ident = Ident.ident fresh name in
-      let env = add_value ~ident scheme env in
-      return env
-    | PTuple (p1, p2, ps), Scheme (var_set, Tty_prod (ty1, ty2, tys))
-      when List.length ps = List.length tys ->
-      let helper acc p ty =
-        let* env = acc in
-        extend env p (Scheme (var_set, ty))
-      in
-      Base.List.fold2_exn
-        (p1 :: p2 :: ps)
-        (ty1 :: ty2 :: tys)
-        ~f:helper
-        ~init:(return env)
-    | PAny, _ -> return env
-    (* TODO : DEFINETELY DOES NOT WORK *)
-    | PConstruct (name, patt_opt), Scheme (var_set, Tty_constr (_param_tys, ident)) ->
-      let* constr_entry, type_entry = find_constructor name env in
-      if Ident.equal type_entry.tty_ident ident
-      then (
-        match patt_opt, constr_entry.constr_arg_ty with
-        | None, None -> return env
-        | Some actual_patt, Some expected_ty ->
-          extend env actual_patt (Scheme (var_set, expected_ty))
-        | _ -> fail (Constructor_arity_mismatch name))
-      else fail Type_mismatch
-    | _ -> fail (Not_implemented "extend")
-  ;;
 end
 
 module Infer (M : Monads.STATE_MONAD) = struct
-  module TypeEnv = TypeEnv (M)
-  module Substitution = Substitution (M)
-  module Scheme = Scheme (M)
-  module State = State
-  open State (M)
   open M
+  open Base
+  module Substitution = Substitution (M)
+  module State = State (M)
+  module Scheme = Scheme (M)
+  module TypeEnv = TypeEnv (M)
 
-  let fresh_tvar_gen =
-    let* state = get in
-    let ident = Ident.ident state.cnt ("'_" ^ string_of_int state.cnt) in
-    let* () = put { state with cnt = state.cnt + 1 } in
-    return (Tty_var ident)
+  let instantiate (Scheme.Scheme (bind_set, ty)) =
+    VarSet.fold
+      (fun ident ty ->
+        let* ty = ty in
+        let* fresh = State.fresh_tvar in
+        let sub = Map.singleton (module String) ident.name fresh in
+        return (Substitution.apply sub ty))
+      bind_set
+      (return ty)
   ;;
 
-  let instantiate (Scheme.Scheme (var_set, ty)) =
-    let helper ident ty =
-      let* ty = ty in
-      let* tvar = fresh_tvar_gen in
-      let* () = put init_state in
-      let* () = Substitution.extend ident tvar in
-      Substitution.apply ty
-    in
-    let* state = get in
-    let* ty = VarSet.fold helper var_set (return ty) in
-    let* () = put state in
-    return ty
-  ;;
-
-  let generalize env ty =
+  let generalize (env : TypeEnv.t) ty =
     Scheme.Scheme (VarSet.diff (VarSet.free_vars ty) (TypeEnv.free_vars env), ty)
-  ;;
-
-  let instantiate_constr_params pty_params =
-    let* tty_params =
-      Base.List.fold
-        ~f:(fun acc (ident : Ident.t) ->
-          let* tys = acc in
-          let* fresh = gen_fresh_int in
-          let ty = Tty_var (Ident.ident fresh (Format.sprintf "'ty%d" fresh)) in
-          let* () = Substitution.extend ident ty in
-          return (ty :: tys))
-        pty_params
-        ~init:(return [])
-    in
-    return (List.rev tty_params)
   ;;
 
   let rec pattern env = function
     | PAny ->
-      let* ty = fresh_tvar_gen in
+      let* ty = State.fresh_tvar in
       return (env, ty)
     | PVar name ->
-      let* state = get in
-      let ident = Ident.ident state.cnt name in
-      let* () = put { state with cnt = state.cnt + 1 } in
-      let ty = Tty_var ident in
-      let scheme = Typedtree.Scheme.Scheme (VarSet.empty, ty) in
-      let env' = TypeEnv.add_value ~ident scheme env in
-      return (env', ty)
+      let* fresh_type_var = State.fresh_tvar in
+      if !_debug then Format.printf "<< fresh generated for pattern { %s } >>@." name;
+      let env = TypeEnv.update env name (Scheme.Scheme (VarSet.empty, fresh_type_var)) in
+      return (env, fresh_type_var)
     | PTuple (p1, p2, ps) ->
-      let helper acc patt =
-        let* env, tys = acc in
-        let* env, ty = pattern env patt in
-        return (env, ty :: tys)
-      in
       let* env, ty1 = pattern env p1 in
       let* env, ty2 = pattern env p2 in
-      let* env, tys = Base.List.fold ps ~init:(return (env, [])) ~f:helper in
+      let* env, tys = pattern_many env ps in
       return (env, Tty_prod (ty1, ty2, tys))
-    (* TODO : check if params instantiation works correctly *)
-    (* TODO : TEST IT !!!! *)
-    | PConstruct (name, patt_opt) ->
-      let* constr_entry, type_entry = TypeEnv.find_constructor name env in
-      (match constr_entry.constr_arg_ty, patt_opt with
-       | None, None ->
-         let* tys = instantiate_constr_params type_entry.tty_params in
-         return (env, Tty_constr (tys, type_entry.tty_ident))
-       | Some expected_ty, Some actual_patt ->
-         let* env, actual_ty = pattern env actual_patt in
-         let* () = Substitution.unify expected_ty actual_ty in
-         let* param_tys = instantiate_constr_params type_entry.tty_params in
-         let ty = Tty_constr (param_tys, type_entry.tty_ident) in
-         let* ty = Substitution.apply ty in
-         return (env, ty)
-       | _ -> fail (Constructor_arity_mismatch name))
+    | _ -> fail (Not_implemented "constructor pattern")
+
+  and pattern_many env ps =
+    let helper acc patt =
+      let* env, tys = acc in
+      let* env, ty = pattern env patt in
+      return (env, ty :: tys)
+    in
+    let* env, tys = Base.List.fold ps ~init:(return (env, [])) ~f:helper in
+    return (env, List.rev tys)
   ;;
 
-  open TypeEnv
+  let constant = function
+    | CUnit -> return (Substitution.empty, TypeEnv.ty_unit)
+    | CInt _ -> return (Substitution.empty, TypeEnv.ty_int)
+    | CBool _ -> return (Substitution.empty, TypeEnv.ty_bool)
+  ;;
 
   let type_of_binop = function
-    | Add | Sub | Mul | Div -> return (ty_int, ty_int, ty_int)
-    | Eq | Ne | Le | Ge | Lt | Gt -> return (ty_bool, ty_int, ty_int)
+    | Add | Sub | Mul | Div -> return (TypeEnv.ty_int, TypeEnv.ty_int, TypeEnv.ty_int)
+    | Eq | Ne | Le | Ge | Lt | Gt ->
+      return (TypeEnv.ty_bool, TypeEnv.ty_int, TypeEnv.ty_int)
     | _ -> fail (Not_implemented "type of binop")
   ;;
 
-  let rec expression env = function
-    | EConstant CUnit -> return ty_unit
-    | EConstant (CBool _) -> return ty_bool
-    | EConstant (CInt _) -> return ty_int
-    | EVar name ->
-      (match Ident.Ident_map.find_by_name_opt name env.env_values with
-       | Some (Typedtree.Scheme.Scheme (_, ty)) -> return ty
-       | None -> fail (Unbound_value name))
-    | EBinop (op, e1, e2) ->
-      let* ty1 = expression env e1 in
-      let* ty2 = expression env e2 in
-      let* ty, left_ty, right_ty = type_of_binop op in
-      let* ty1' = Substitution.apply ty1 in
-      let* ty2' = Substitution.apply ty2 in
-      let* () = Substitution.unify ty1' left_ty in
-      let* () = Substitution.unify ty2' right_ty in
-      let* ty = Substitution.apply ty in
-      return ty
-    | ETuple (e1, e2, es) ->
-      let* ty1 = expression env e1 in
-      let* ty2 = expression env e2 in
-      let* tys =
-        Base.List.fold es ~init:(return []) ~f:(fun acc e ->
-          let* tys = acc in
-          let* ty = expression env e in
-          return (ty :: tys))
-      in
-      let* ty = Substitution.apply (Tty_prod (ty1, ty2, tys)) in
-      return ty
-    | EApp (e1, e2) ->
-      let* ty1 = expression env e1 in
-      let* ty2 = expression env e2 in
-      let* ty1' = Substitution.apply ty1 in
-      let* ty2' = Substitution.apply ty2 in
-      let* tv = fresh_tvar_gen in
-      let* () = Substitution.unify ty1' (Tty_arrow (ty2', tv)) in
-      let* ty = Substitution.apply tv in
-      return ty
-    | EFun (p, e) ->
-      let* env, ty1 = pattern env p in
-      let* ty2 = expression env e in
-      let ty12 = Tty_arrow (ty1, ty2) in
-      let* ty = Substitution.apply ty12 in
-      return ty
-    | EIf (cond, expr_then, expr_else) ->
-      let* ty1 = expression env cond in
-      let* () = Substitution.unify ty1 ty_bool in
-      let* ty2 = expression env expr_then in
-      let* ty3 = expression env expr_else in
-      let* () = Substitution.unify ty2 ty3 in
-      let* ty = Substitution.apply ty2 in
-      return ty
-    | ELet (NonRecursive, (vb, vbs), body) ->
-      let helper env (patt, expr) =
-        let* env = env in
-        let* env, ty1 = pattern env patt in
-        let* ty2 = expression env expr in
-        let* () = Substitution.unify ty1 ty2 in
-        TypeEnv.apply env
-      in
-      let* env = Base.List.fold (vb :: vbs) ~f:helper ~init:(return env) in
-      expression env body
-    | EMatch (subject, ((p1, e1), cases)) ->
-      let helper acc (patt, expr) =
-        let* ty_patt_acc, ty_expr_acc = acc in
-        let* env, ty_patt = pattern env patt in
-        let* ty_expr = expression env expr in
-        let* () = Substitution.unify ty_expr_acc ty_expr in
-        let* () = Substitution.unify ty_patt_acc ty_patt in
-        let* ty_patt = Substitution.apply ty_patt in
-        let* ty_expr = Substitution.apply ty_expr in
-        return (ty_patt, ty_expr)
-      in
-      let* subject_ty = expression env subject in
-      let* env1, ty_p1 = pattern env p1 in
-      let* ty_e1 = expression env1 e1 in
-      let* ty_patt_cases, ty_expr_cases =
-        Base.List.fold ~f:helper ~init:(return (ty_p1, ty_e1)) cases
-      in
-      let* () = Substitution.unify subject_ty ty_patt_cases in
-      let* ty = Substitution.apply ty_expr_cases in
-      return ty
-    | EConstruct (name, arg_opt) ->
-      let* constr_entry, type_declaration = TypeEnv.find_constructor name env in
-      let tty_params = type_declaration.tty_params in
-      let* tys = instantiate_constr_params tty_params in
-      let ty = Tty_constr (tys, type_declaration.tty_ident) in
-      (match constr_entry.constr_arg_ty, arg_opt with
-       | Some expected_arg_ty, Some arg ->
-         let* arg_ty = expression env arg in
-         let* () = Substitution.unify expected_arg_ty arg_ty in
-         let* ty = Substitution.apply ty in
-         return ty
-       | None, None -> return ty
-       | _ -> fail (Constructor_arity_mismatch name))
-    | _ -> fail (Not_implemented "infer expression")
+  let apply, unify, compose, compose_many =
+    Substitution.(apply, unify, compose, compose_many)
   ;;
 
-  let single_non_rec_vb env patt expr =
-    let* _env, patt_ty = pattern env patt in
-    let* expr_ty = expression env expr in
-    let* () = Substitution.unify patt_ty expr_ty in
-    let tvb_scheme = generalize env expr_ty in
-    let* env = TypeEnv.extend env patt tvb_scheme in
-    return (env, { tvb_flag = NonRecursive; tvb_pat = patt; tvb_body = expr; tvb_scheme })
+  let unify2 acc_env acc_sub ty1 ty2 =
+    let ty1 = apply acc_sub ty1 in
+    let ty2 = apply acc_sub ty2 in
+    if !_debug
+    then Format.printf "<< unify { %s } and { %s } >>@." (show_ty ty1) (show_ty ty2);
+    let* new_sub = unify ty1 ty2 in
+    let* sub = compose acc_sub new_sub in
+    if !_debug
+    then (
+      Format.printf "<< (unify) old sub: %a >>@." Substitution.pp acc_sub;
+      Format.printf "<< (unify) new sub: %a >>@." Substitution.pp sub);
+    return (TypeEnv.apply sub acc_env, sub)
   ;;
 
-  let init_params pty_params =
-    let helper acc name =
-      let* env, tty_params = acc in
-      let* fresh = gen_fresh_int in
-      let ident = Ident.ident fresh name in
-      let ty = Tty_var ident in
-      let env = Ident.Ident_map.add ident ty env in
-      return (env, ident :: tty_params)
-    in
-    let* env, tty_params =
-      Base.List.fold ~init:(return (Ident.Ident_map.empty, [])) ~f:helper pty_params
-    in
-    return (env, List.rev tty_params)
+  let constant = function
+    | CUnit -> TypeEnv.ty_unit
+    | CInt _ -> TypeEnv.ty_int
+    | CBool _ -> TypeEnv.ty_bool
   ;;
 
-  let rec infer_core_type env param_map = function
-    | Pty_var name ->
-      (match Ident.Ident_map.find_by_name_opt name param_map with
-       | None -> fail (Unbound_type_variable name)
-       | Some ty -> return ty)
-    | Pty_arrow (a, b) ->
-      return (fun a b -> Tty_arrow (a, b))
-      <*> infer_core_type env param_map a
-      <*> infer_core_type env param_map b
-    | Pty_tuple (a, b, xs) ->
-      return (fun a b xs -> Tty_prod (a, b, xs))
-      <*> infer_core_type env param_map a
-      <*> infer_core_type env param_map b
-      <*> fold_infer_core_type env param_map xs
-    | Pty_constr (name, args) ->
-      (match Ident.Ident_map.find_by_name_opt name env.env_types with
-       | None -> fail (Type_was_not_declared name)
-       | Some td ->
-         if List.length args <> List.length td.tty_params
-         then fail (Type_arity_mismatch name)
-         else
-           let* tys = fold_infer_core_type env param_map args in
-           return (Tty_constr (tys, td.tty_ident)))
-
-  and fold_infer_core_type env param_map items =
-    Base.List.fold (List.rev items) ~init:(return []) ~f:(fun acc item ->
-      let* acc = acc in
-      let* ty = infer_core_type env param_map item in
-      return (ty :: acc))
-
-  and infer_core_type_opt env param_map = function
-    | None -> return None
-    | Some core_type ->
-      let* ty = infer_core_type env param_map core_type in
-      return (Some ty)
-  ;;
-
-  let check_params_uniqueness pty_name pty_params =
-    if List.length (Base.List.dedup_and_sort pty_params ~compare:String.compare)
-       <> List.length pty_params
-    then fail (Type_param_duplicates pty_name)
-    else return ()
-  ;;
-
-  let single_td env { pty_name; pty_params; pty_kind } =
-    let* () = check_params_uniqueness pty_name pty_params in
-    let* params_map, tty_params = init_params pty_params in
-    let* fresh = gen_fresh_int in
-    let tty_ident = Ident.ident fresh pty_name in
-    match pty_kind with
-    | Pty_abstract core_type_opt ->
-      let* ty_opt = infer_core_type_opt env params_map core_type_opt in
-      let tty_kind = Tty_abstract ty_opt in
-      let td = { tty_kind; tty_ident; tty_params } in
-      let env = TypeEnv.add_type td env in
-      return (env, td)
-    | Pty_variants (v1, vs) ->
-      (* temporarily adds type to env to use it in recursive type declarations *)
-      let env =
-        TypeEnv.add_type { tty_kind = Tty_abstract None; tty_params; tty_ident } env
-      in
-      let infer_variant acc (name, core_type_opt) =
-        let* env, acc = acc in
-        let* fresh = gen_fresh_int in
-        let ident = Ident.ident fresh name in
-        let* ty_opt = infer_core_type_opt env params_map core_type_opt in
-        let constr =
-          { constr_arity = get_arity ty_opt
-          ; constr_arg_ty = ty_opt
-          ; constr_ident = ident
-          ; constr_type_ident = tty_ident
-          }
+  let rec expression acc_env acc_sub expr =
+    if !_debug
+    then
+      Format.printf
+        "<< expression called on { %s } with sub %a >>@."
+        (show_expression expr)
+        Substitution.pp
+        acc_sub;
+    let helper env sub = function
+      | EVar name ->
+        (match TypeEnv.find env name with
+         | Some scheme ->
+           let* ty = instantiate (Scheme.apply sub scheme) in
+           return (env, sub, ty)
+         | None -> fail (Unbound_value name))
+      | EConstant x -> return (env, sub, constant x)
+      | ETuple (e1, e2, es) ->
+        let* env, sub, ty1 = expression env sub e1 in
+        let* env, sub, ty2 = expression env sub e2 in
+        let* env, sub, tys = expression_many env sub es in
+        return (env, sub, Tty_prod (ty1, ty2, tys))
+      | EApp (e1, e2) ->
+        let* env, sub, ty1 = expression env sub e1 in
+        let* env, sub, ty2 = expression env sub e2 in
+        let* ty = State.fresh_tvar in
+        if !_debug then Format.printf "<< unify called from EApp >>@.";
+        let* env, sub = unify2 env sub ty1 (Tty_arrow (ty2, ty)) in
+        return (env, sub, ty)
+      | EFun (patt, expr) ->
+        let* patt_env, patt_ty = pattern env patt in
+        let* _env, sub, expr_ty = expression patt_env sub expr in
+        return (env, sub, Tty_arrow (patt_ty, expr_ty))
+      | EBinop (op, e1, e2) ->
+        let* env, sub, ty1 = expression env sub e1 in
+        let* env, sub, ty2 = expression env sub e2 in
+        let* ty, ty1_expected, ty2_expected = type_of_binop op in
+        if !_debug
+        then
+          Format.printf
+            "<< unify called from EBinop on { %s } and { %s } >>@."
+            (show_expression e1)
+            (show_ty ty1_expected);
+        let* env, sub = unify2 env sub ty1 ty1_expected in
+        if !_debug
+        then
+          Format.printf
+            "<< unify called from EBinop on { %s } and { %s } >>@."
+            (show_expression e2)
+            (show_ty ty2_expected);
+        let* env, sub = unify2 env sub ty2 ty2_expected in
+        return (env, sub, ty)
+      | EIf (expr_cond, expr_then, expr_else) ->
+        let* env, sub, ty_cond = expression env sub expr_cond in
+        if !_debug
+        then
+          Format.printf
+            "<< unify called from EIf on { %s } and { bool } >>@."
+            (show_expression expr_cond);
+        let* env, sub = unify2 env sub ty_cond TypeEnv.ty_bool in
+        let* env, sub, ty_then = expression env sub expr_then in
+        let* env, sub, ty_else = expression env sub expr_else in
+        if !_debug
+        then
+          Format.printf
+            "<< unify called from EIf on { %s } and { %s } >>@."
+            (show_expression expr_then)
+            (show_expression expr_else);
+        let* env, sub = unify2 env sub ty_then ty_else in
+        return (env, sub, ty_then)
+      | EMatch (subject, ((p1, e1), cases)) ->
+        let infer_case acc (patt, expr) =
+          let* env, sub, acc_patt_ty, acc_expr_ty = acc in
+          let* patt_env, patt_ty = pattern env patt in
+          let* env, sub = unify2 env sub acc_patt_ty patt_ty in
+          let* _env, sub, expr_ty = expression patt_env sub expr in
+          let* env, sub = unify2 env sub acc_expr_ty expr_ty in
+          return (env, sub, apply sub patt_ty, apply sub expr_ty)
         in
-        let env = TypeEnv.add_constructor constr env in
-        return (env, (ident, ty_opt) :: acc)
-      in
-      let* env, variants =
-        Base.List.fold ~init:(return (env, [])) ~f:infer_variant (v1 :: vs)
-      in
-      let tty_kind = Tty_variants (List.rev variants) in
-      let td = { tty_kind; tty_ident; tty_params } in
-      let env = TypeEnv.add_type td env in
-      return (env, td)
-  ;;
-
-  let structure_item env = function
-    | Pstr_value (NonRecursive, ((patt, expr), [])) ->
-      let* env, vb = single_non_rec_vb env patt expr in
-      return (env, Tstr_value vb)
-    | Pstr_type (td, []) ->
-      let* env, td = single_td env td in
-      return (env, Tstr_type td)
-    | _ -> fail (Not_implemented "structure item inferencer")
-  ;;
-
-  let structure env (item1, items) =
-    let* env, typed_item1 = structure_item env item1 in
-    let* _env, typed_items =
-      Base.List.fold
-        items
-        ~init:(return (env, []))
-        ~f:(fun acc item ->
-          let* env, items = acc in
-          let* env, new_item = structure_item env item in
-          return (env, new_item :: items))
+        let* env, sub, subject_ty = expression env sub subject in
+        let* p1_env, p1_ty = pattern env p1 in
+        let* env, sub = unify2 env sub subject_ty p1_ty in
+        let* _env, sub, e1_ty = expression p1_env sub e1 in
+        let* env, sub, _pty, ety =
+          List.fold ~f:infer_case ~init:(return (env, sub, p1_ty, e1_ty)) cases
+        in
+        return (env, sub, ety)
+      | ELet (NonRecursive, (vb1, vbs), body) ->
+        let helper acc (patt, expr) =
+          let* env, sub = acc in
+          let* env, sub, _scheme = value_binding env sub (patt, expr) in
+          return (env, sub)
+        in
+        let* inner_env, sub =
+          List.fold ~f:helper (vb1 :: vbs) ~init:(return (env, sub))
+        in
+        let* _env, sub, ty = expression inner_env sub body in
+        return (env, sub, ty)
+      | _ -> fail (Not_implemented "expression")
     in
-    return (typed_item1, List.rev typed_items)
+    let acc_env = TypeEnv.apply acc_sub acc_env in
+    let* expr_env, expr_sub, expr_ty = helper acc_env acc_sub expr in
+    let* sub = Substitution.compose acc_sub expr_sub in
+    let env = TypeEnv.apply sub expr_env in
+    let ty = Substitution.apply sub expr_ty in
+    return (env, sub, ty)
+
+  and expression_many env sub exprs =
+    let helper acc expr =
+      let* env, sub, tys = acc in
+      let* env, sub, ty = expression env sub expr in
+      return (env, sub, ty :: tys)
+    in
+    let* env, sub, tys = List.fold ~f:helper ~init:(return (env, sub, [])) exprs in
+    return (env, sub, List.rev (List.map ~f:(apply sub) tys))
+
+  and value_binding env sub (patt, expr) =
+    let* env, sub, expr_ty = expression env sub expr in
+    let scheme = generalize env expr_ty in
+    let* patt_env, patt_ty = pattern env patt in
+    let* env = TypeEnv.extend patt_env patt scheme in
+    let* env, sub = unify2 env sub patt_ty expr_ty in
+    return (env, sub, scheme)
   ;;
 
-  let expression ast =
-    match M.run (expression TypeEnv.empty ast) State.init_state with
+  let tstr_non_rec_value env ((patt1, expr1), vbs) =
+    let non_rec_vb patt expr scheme =
+      { tvb_flag = NonRecursive; tvb_pat = patt; tvb_body = expr; tvb_scheme = scheme }
+    in
+    let helper acc (patt, expr) =
+      let* acc_env, acc_sub, acc_items = acc in
+      let* env, sub, scheme = value_binding acc_env acc_sub (patt, expr) in
+      let new_item = non_rec_vb patt expr scheme in
+      return (env, sub, new_item :: acc_items)
+    in
+    let* env, sub, scheme1 = value_binding env Substitution.empty (patt1, expr1) in
+    let* env, _sub, stru_items = List.fold ~f:helper ~init:(return (env, sub, [])) vbs in
+    let stru_item1 = non_rec_vb patt1 expr1 scheme1 in
+    return (env, Tstr_value (stru_item1, List.rev stru_items))
+  ;;
+
+  let expression_main ast =
+    let* _env, _sub, ty = expression TypeEnv.empty Substitution.empty ast in
+    return ty
+  ;;
+
+  let expression ?(debug = false) ast =
+    _debug := debug;
+    match M.run (expression_main ast) State.empty_state with
     | Ok (_state, ty) -> Ok ty
     | Error e -> Error e
   ;;
 
-  let structure ast =
-    match M.run (structure TypeEnv.empty ast) State.init_state with
+  let structure_item env = function
+    | Pstr_value (NonRecursive, vbs) -> tstr_non_rec_value env vbs
+    | _ -> fail (Not_implemented "stru item")
+  ;;
+
+  let structure env (item, items) =
+    let helper acc item =
+      let* acc_env, acc_items = acc in
+      let* new_env, new_item = structure_item acc_env item in
+      return (new_env, new_item :: acc_items)
+    in
+    let* env, typed_item = structure_item env item in
+    let* _env, typed_items = List.fold ~f:helper ~init:(return (env, [])) items in
+    return (typed_item, List.rev typed_items)
+  ;;
+
+  let structure ?(debug = false) ast =
+    _debug := debug;
+    match M.run (structure TypeEnv.empty ast) State.empty_state with
     | Ok (_state, typed_stru) -> Ok typed_stru
     | Error e -> Error e
   ;;

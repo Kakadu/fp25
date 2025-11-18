@@ -11,14 +11,17 @@ type error =
   | Unbound_constructor of string
   | Type_env_invariant_violation of string
   | Constructor_arity_mismatch of string
+  | Only_variables_on_the_left_of_let_rec
+  | Only_functions_on_the_right_of_let_rec
 
 val show_error : error -> string
 val pp_error : Format.formatter -> error -> unit
 
 module Infer (_ : Monads.STATE_MONAD) : sig
-  val expression : Parsetree.expression -> (Typedtree.ty, error) Result.t
+  val expression : ?debug:bool -> Parsetree.expression -> (Typedtree.ty, error) result
 
   val structure
-    :  Parsetree.structure_item * Parsetree.structure_item list
+    :  ?debug:bool
+    -> Parsetree.structure_item * Parsetree.structure_item list
     -> (Typedtree.structure_item * Typedtree.structure_item list, error) result
 end
