@@ -165,7 +165,7 @@ let rec eval exp env =
       | App (left, arg) ->
         let* arg = eval arg env in
         (match arg with
-         | Constant (CInt _) -> form_args left (List.append list [ arg ])
+         | Constant (CInt _) -> form_args left (List.append [ arg ] list)
          | _ -> ResultM.fail TooManyArgs)
       | _ -> ResultM.return (list, expr)
     in
@@ -179,3 +179,5 @@ let run_interpret expr =
   | Ok exp -> Ok exp
   | Error er -> Error er
 ;;
+
+let r = 7 * 8
