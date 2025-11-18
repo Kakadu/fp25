@@ -6,7 +6,7 @@
 
   $ cat << EOF | $INTERPETER -infer -expr 
   > (1 + 2, 3 == 4, true)
-  inferred: (int, bool, bool)
+  inferred: (int * bool * bool)
 
   $ cat << EOF | $INTERPETER -infer -expr 
   > fun x -> x
@@ -34,7 +34,7 @@
 
   $ cat << EOF | $INTERPETER -infer -expr 
   > (fun f g x -> f x + g x)
-  inferred: (('ty2 -> 'ty3) -> (('ty2 -> int) -> ('ty2 -> int)))
+  inferred: (('ty2 -> int) -> (('ty2 -> int) -> ('ty2 -> int)))
 
   $ cat << EOF | $INTERPETER -infer -expr 
   > (fun x -> fun y -> x + y)
@@ -80,24 +80,16 @@
   inferred: int
 
   $ cat << EOF | $INTERPETER -infer -expr 
-  > let f = fun x -> x + 1 in f 0
+  > let bool_to_int x = if x then 1 else 0 in
+  > bool_to_int true
   inferred: int
 
   $ cat << EOF | $INTERPETER -infer -expr 
-  > let f = fun x -> x == 0 in f
-  inferred: (int -> bool)
-
-  $ cat << EOF | $INTERPETER -infer -expr 
-  > let f = fun x -> x == 0 in f 0
+  > let apply f x = f x in
+  > let is_zero x = x == 0 in
+  > let x = 0 in
+  > apply is_zero x
   inferred: bool
-
-  $ cat << EOF | $INTERPETER -infer -expr 
-  > let f = fun x -> if x then 1 else 0 in f
-  inferred: (bool -> int)
-
-  $ cat << EOF | $INTERPETER -infer -expr 
-  > let f = fun x -> if x then 1 else 0 in f true
-  inferred: int
 #
 
 # value binding chain
@@ -106,22 +98,10 @@
   inferred: int
 
   $ cat << EOF | $INTERPETER -infer -expr 
-  > let f = fun p x -> if p x then 1 else 0
-  > in f
-  inferred: (('ty2 -> bool) -> ('ty2 -> int))
-
-  $ cat << EOF | $INTERPETER -infer -expr 
-  > let f = fun p x -> if p x then 1 else 0
-  > and p = fun x -> x == 0
+  > let f p x = if p x then 1 else 0
+  > and p x = x < 0
   > in f p
   inferred: (int -> int)
-
-  $ cat << EOF | $INTERPETER -infer -expr 
-  > let f = fun p x -> if p x then 1 else 0
-  > and p = fun x -> x == 0
-  > and x = 0
-  > in f p x
-  inferred: int
 #
 
 # carrying
@@ -147,29 +127,24 @@
   > and second = ite false
   > in (first 1 2) + (second 3 4)
   inferred: int
+
+  $ cat << EOF | $INTERPETER -infer -expr 
+  > let pair a b p = if p then a else b in
+  > let first p = p true in
+  > let second p = p false in
+  > 
+  > let int_pair = pair 1 2 in
+  > let int_bool_pair = pair 1 true in
+  > 
+  > (first int_pair, second int_bool_pair)
+  inferencer error: unification of int and bool failed
 #
 
-# match with
+# match with should pass
   $ cat << EOF | $INTERPETER -infer -expr 
   > match 0 with
   > | x -> true
   inferred: bool
-
-  $ cat << EOF | $INTERPETER -infer -expr 
-  > match (1, 2) with
-  > | x -> x, 3
-  inferred: ((int, int), int)
-
-  $ cat << EOF | $INTERPETER -infer -expr 
-  > match (1, 2) with
-  > | (x, y) -> (1, 2)
-  inferred: (int, int)
-
-  $ cat << EOF | $INTERPETER -infer -expr 
-  > match 0 with
-  > | x -> true
-  > | y -> 1
-  inferencer error: unification of bool and int failed
 
   $ cat << EOF | $INTERPETER -infer -expr 
   > match 1 with
@@ -178,28 +153,78 @@
 
   $ cat << EOF | $INTERPETER -infer -expr 
   > match (1, 2) with
-  > | (a, b) -> a == b
+  > | x -> x, 3
+  inferred: ((int * int) * int)
+
+  $ cat << EOF | $INTERPETER -infer -expr 
+  > match (1, 2) with
+  > | (x, y) -> (1, 2)
+  > | x -> x
+  > | _ -> (3, 4)
+  inferred: (int * int)
+
+  $ cat << EOF | $INTERPETER -infer -expr 
+  > match (1, 2) with
+  > | (a, b) -> a < b
+  > | _ -> if true then true else true
+  > | _ -> true
   inferred: bool
 
   $ cat << EOF | $INTERPETER -infer -expr 
-  > match 1 with
-  > | x -> fun y -> x + y
+  > match 0 with
+  > | _ -> fun x -> x
+  > | _ -> fun x -> x + 1
   inferred: (int -> int)
+
+  $ cat << EOF | $INTERPETER -infer -expr
+  > match 1 with
+  > | x -> x == 0
+  > | _ -> true
+  inferred: bool
+
+  $ cat << EOF | $INTERPETER -infer -expr
+  > match (1, 2, 3) with
+  > | (a, b, c) -> a + b + c
+  > | _ -> 1
+  inferred: int
+
+  $ cat << EOF | $INTERPETER -infer -expr
+  > match (fun x -> x + 1) with
+  > | f -> f 1
+  > | _ -> 1
+  inferred: int
+
+  $ cat << EOF | $INTERPETER -infer -expr
+  > match ((fun x -> x + 1), (fun x -> x == 0)) with
+  > | (f, g) -> f 1, g 0
+  > | _ -> 1, true
+  inferred: (int * bool)
 #
 
 # matching should fail
+  $ cat << EOF | $INTERPETER -infer -expr 
+  > match 1 with
+  > | _ -> 1 
+  > | _ -> true
+  inferencer error: unification of int and bool failed
+
   $ cat << EOF | $INTERPETER -infer -expr 
   > match 0 with
   > | x -> if x then 1 else 0
   inferencer error: unification of int and bool failed
 
   $ cat << EOF | $INTERPETER -infer -expr 
+  > match 0 with
+  > | x -> true
+  > | y -> 1
+  inferencer error: unification of bool and int failed
+
+  $ cat << EOF | $INTERPETER -infer -expr 
   > match (1, 2, 3) with
   > | (a, b, c) -> 3
   > | (a, b) -> 2
   > | _ -> 1
-  > 
-  inferencer error: unification of ('ty0, 'ty1, 'ty2) and ('ty3, 'ty4) failed
+  inferencer error: unification of (int * int * int) and ('ty3 * 'ty4) failed
 
   $ cat << EOF | $INTERPETER -infer -expr 
   > match 0 with
@@ -214,7 +239,7 @@
   $ cat << EOF | $INTERPETER -infer -expr 
   > match true with
   > | (x, y) -> x + y
-  inferencer error: unification of bool and (int, int) failed
+  inferencer error: unification of bool and ('ty0 * 'ty1) failed
 
   $ cat << EOF | $INTERPETER -infer -expr 
   > match (1, true) with
@@ -238,9 +263,47 @@
   > | f -> fun y -> f (y + 1)
   > | f -> fun z -> f (z == 1)
   inferencer error: unification of int and bool failed
+
+  $ cat << EOF | $INTERPETER -infer -expr
+  > match 1 with
+  > | x -> x == 0
+  > | _ -> 1
+  inferencer error: unification of bool and int failed
+
+  $ cat << EOF | $INTERPETER -infer -expr
+  > match (1, 2, 3) with
+  > | (a, b) -> a + b
+  > | _ -> 1
+  inferencer error: unification of (int * int * int) and ('ty0 * 'ty1) failed
+
+  $ cat << EOF | $INTERPETER -infer -expr
+  > match (fun x -> x + 1) with
+  > | f -> f true
+  > | _ -> 1
+  inferencer error: unification of int and bool failed
+
+  $ cat << EOF | $INTERPETER -infer -expr
+  > match ((fun x -> x + 1), (fun x -> x == 0)) with
+  > | (f, g) -> f 1, g 0
+  > | _ -> 1, 1
+  inferencer error: unification of bool and int failed
 #
 
-# inferencer errors
+# occurs in
+  $ cat << EOF | $INTERPETER -infer -expr 
+  > fun x -> x x
+  inferencer error: 'ty0 occurs in ('ty0 -> 'ty1)
+
+  $ cat << EOF | $INTERPETER -infer -stru 
+  > let f = fun x -> x x
+  inferencer error: 'ty0 occurs in ('ty0 -> 'ty1)
+
+  $ cat << EOF | $INTERPETER -infer -expr 
+  > (fun f -> f f) (fun f -> f f)
+  inferencer error: 'ty0 occurs in ('ty0 -> 'ty1)
+#
+
+# should fail
   $ cat << EOF | $INTERPETER -infer -expr 
   > x + y
   inferencer error: unbound value: x
@@ -249,17 +312,19 @@
   > (1 == 2) + 3
   inferencer error: unification of bool and int failed
 
+
+
   $ cat << EOF | $INTERPETER -infer -expr 
-  > (fun x -> x x)
-  inferencer error: 'ty0 occurs in ('ty0 -> 'ty1)
+  > (fun x -> x + 1) true
+  inferencer error: unification of int and bool failed
 
   $ cat << EOF | $INTERPETER -infer -expr 
   > (fun x -> fun y -> x + y) 5 true
   inferencer error: unification of int and bool failed
 
   $ cat << EOF | $INTERPETER -infer -expr 
-  > (fun x -> fun y -> x + y) true false
-  inferencer error: unification of int and bool failed
+  > if true then 1 else (1, 2)
+  inferencer error: unification of int and (int * int) failed
 
   $ cat << EOF | $INTERPETER -infer -expr 
   > fun x -> if x then true else 0
@@ -270,174 +335,75 @@
   inferencer error: unification of bool and int failed
 
   $ cat << EOF | $INTERPETER -infer -expr 
-  > let x = 1 in x == true
-  inferencer error: unification of bool and int failed
+  > let x = (1, 2) in x == 1
+  inferencer error: unification of (int * int) and int failed
 
   $ cat << EOF | $INTERPETER -infer -expr 
   > let f x = x + 1 in f true
   inferencer error: unification of int and bool failed
 #
 
-# structure
-  $ cat << EOF | $INTERPETER -infer -stru 
-  > let x = 5
-  typed structure:
-   let x: int = 5
-
-  $ cat << EOF | $INTERPETER -infer -stru 
-  > let (x, y) = (1, true)
-  > 
-  > let (z, w) = (x, y)
-  typed structure:
-   let (x, y): (int, bool) = (1, true)
-  ;;
-  
-  let (z, w): (int, bool) = (x, y)
-
-  $ cat << EOF | $INTERPETER -infer -stru 
-  > let apply f x = f x
-  > 
-  > let y = apply (fun x -> x) 1
-  typed structure:
-   let apply: (('ty2 -> 'ty3) -> ('ty2 -> 'ty3)) = (fun f -> (fun x -> f x))
-  ;;
-  
-  let y: int = apply (fun x -> x) 1
-
-  $ cat << EOF | $INTERPETER -infer -stru 
-  > type 'a option =
-  > | Some of 'a
-  > | None
-  > 
-  > let x = Some 42
-  typed structure:
-   type 'ty0 option  =
-  | Some of 'ty0
-  | None
-  
-  ;;
-  
-  let x: int option = Some (42)
-
-  $ cat << EOF | $INTERPETER -infer -stru 
-  > type ('ok, 'err) result =
-  > | Ok of 'ok
-  > | Error of 'err
-  > 
-  > let ok = Ok 666
-  > let err = Error false
-  typed structure:
-   type ('ty0, 'ty1) result  =
-  | Ok of 'ty0
-  | Error of 'ty1
-  
-  ;;
-  
-  let ok: (int, 'ty7) result = Ok (666)
-  ;;
-  
-  let err: ('ty10, bool) result = Error (false)
-
-  $ cat << EOF | $INTERPETER -infer -stru 
-  > type 'a list =
-  > | Cons of 'a * 'a list 
-  > | Nil
-  > 
-  > let main =
-  >   match (Cons (1, Nil)) with
-  >   | Cons (x, Nil) -> x 
-  >   | Nil -> 0
-  typed structure:
-   type 'ty0 list  =
-  | Cons of ('ty0, 'ty0 list)
-  | Nil
-  
-  ;;
-  
-  let main: int = (match Cons ((1, Nil)) with
-  | Cons ((x, Nil)) -> x
-  | Nil -> 0)
-
-  $ cat << EOF | $INTERPETER -infer -stru 
-  > type ('ok, 'err) result =
-  > | Ok of 'ok
-  > | Error of 'err
-  > 
-  > let main =
-  >   match (Ok 1) with
-  >   | Ok x -> x 
-  >   | Error x -> if x then 1 else 0
-  typed structure:
-   type ('ty0, 'ty1) result  =
-  | Ok of 'ty0
-  | Error of 'ty1
-  
-  ;;
-  
-  let main: int = (match Ok (1) with
-  | Ok (x) -> x
-  | Error (x) -> if x then 1 else 0)
-
-  $ cat << EOF | $INTERPETER -infer -stru 
-  > type 'a option =
-  > | Some of 'a
-  > | None
-  > 
-  > let main =
-  >   match None with
-  >   | None -> 0
-  >   | Some x -> x
-  typed structure:
-   type 'ty0 option  =
-  | Some of 'ty0
-  | None
-  
-  ;;
-  
-  let main: int = (match None with
-  | None -> 0
-  | Some (x) -> x)
-#
-
 # let polymorphism
   $ cat << EOF | $INTERPETER -infer -stru 
   > let id x = x
+  > let a = id 1
+  > let b = id true
+  typed structure:
+  let id: ('ty0 -> 'ty0) = (fun x -> x)
+  
+  let a: int = id 1
+  
+  let b: bool = id true
+  $ cat << EOF | $INTERPETER -infer -expr 
+  > let id x = x in
+  > let a = id 1 in
+  > let b = id true in
+  > (a, b)
+  inferred: (int * bool)
+
+  $ cat << EOF | $INTERPETER -infer -expr 
+  > let swap (a, b) = (b, a) in
+  > swap (1, 2), swap (true, false)
+  inferred: ((int * int) * (bool * bool))
+
+  $ cat << EOF | $INTERPETER -infer -stru
+  > let twice f x = f (f x)
   > 
-  > let y = id 1
-  > let z = id true
-  inferencer error: unification of int and bool failed
+  > let inc x = x + 1
+  > let not x = if x then false else true
+  > 
+  > let two = twice inc 0
+  > let bool_id = twice not
+  typed structure:
+  let twice: (('ty3 -> 'ty3) -> ('ty3 -> 'ty3)) = (fun f -> (fun x -> f f x))
+  
+  let inc: (int -> int) = (fun x -> (x + 1))
+  
+  let not: (bool -> bool) = (fun x -> if x then false else true)
+  
+  let two: int = twice inc 0
+  
+  let bool_id: (bool -> bool) = twice not
 
   $ cat << EOF | $INTERPETER -infer -stru 
-  > type 'a list =
-  > | Cons of 'a * 'a list
-  > | Nil
+  > let apply f x = f x
+  > let inc = apply (fun x -> x + 1)
+  > let not = apply (fun x -> if x then false else true)
+  typed structure:
+  let apply: (('ty1 -> 'ty2) -> ('ty1 -> 'ty2)) = (fun f -> (fun x -> f x))
+  
+  let inc: (int -> int) = apply (fun x -> (x + 1))
+  
+  let not: (bool -> bool) = apply (fun x -> if x then false else true)
+
+  $ cat << EOF | $INTERPETER -infer -expr 
+  > let pair a b p = if p then a else b in
+  > let first p = p true in
+  > let second p = p false in
   > 
-  > let empty = Nil
+  > let int_pair = pair 1 2 in
+  > let int_bool_pair = pair false true in
   > 
-  > let int_ls = Cons (1, empty)
-  > let bool_ls = Cons (true, empty)
-  inferencer error: unification of bool and int failed
-#
-
-# unification on pattern matching should fail
-  $ cat << EOF | $INTERPETER -infer -expr 
-  > match 1 with
-  > | x -> if x then 1 else 0
-  inferencer error: unification of int and bool failed
-
-  $ cat << EOF | $INTERPETER -infer -expr 
-  > match (1, 2, 3) with
-  > | (a, b) -> a + b
-  inferencer error: unification of (int, int, int) and (int, int) failed
-
-  $ cat << EOF | $INTERPETER -infer -expr 
-  > match (1, 2, 3) with
-  > | (a, b) -> a + b
-  inferencer error: unification of (int, int, int) and (int, int) failed
-
-  $ cat << EOF | $INTERPETER -infer -expr 
-  > match 1 with
-  > | _ -> 1 
-  > | _ -> true
-  inferencer error: unification of int and bool failed
+  > (first int_pair, second int_bool_pair)
+  inferred: (int * bool)
 #

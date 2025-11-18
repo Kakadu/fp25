@@ -86,3 +86,9 @@
   > in (first 1 2) + (second 3 4)
   evaluated: 5
 #
+
+# recursiveness
+  $ cat << EOF | $INTERPETER -parse -stru
+  > let rec fact n = if n < 2 then 1 else n * fact (n - 1)
+  parsed: let rec fact = (fun n -> if (n < 2) then 1 else (n * fact (n - 1)))
+#

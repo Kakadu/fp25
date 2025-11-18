@@ -412,3 +412,13 @@
   parsed: type foo = ((a -> b) -> (c -> d))
   
 #
+
+# let rec
+  $ cat << EOF | $INTERPETER -parse -stru
+  > let rec fact n = if n < 2 then 1 else n * fact (n - 1)
+  parsed: let rec fact = (fun n -> if (n < 2) then 1 else (n * fact (n - 1)))
+
+  $ cat << EOF | $INTERPETER -parse -stru
+  > let rec fib n = if n < 2 then 1 else fib (n - 1) + fib (n - 2)
+  parsed: let rec fib = (fun n -> if (n < 2) then 1 else (fib (n - 1) + fib (n - 2)))
+#
