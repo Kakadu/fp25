@@ -169,13 +169,7 @@ let expr =
       >>= fun ex ->
       let body = if args = [] then ex else build_curried_function args ex in
       option None (token (string "in") *> expr >>| fun cont -> Some cont)
-      >>= fun skope ->
-      match skope with
-      | Some next ->
-        (match next with
-         | Let (_, _, _, None) -> fail "Need an expression in rigth side of ="
-         | _ -> return (Let (recurs, name, body, Some next)))
-      | None -> return (Let (recurs, name, body, None))
+      >>= fun skope -> return (Let (recurs, name, body, skope))
     in
     choice [ let_binding; conditional; binopr ])
 ;;

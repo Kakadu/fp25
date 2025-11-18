@@ -16,7 +16,15 @@ let expression =
 ;;
 
 let () =
-  match Parser.parse expression with
-  | Ok expr -> Printf.printf "%s\n" (Print.printer expr)
-  | Error (`Parsing_error msg) -> Printf.printf "Parse error: %s\n" msg
+  let expr =
+    match Parser.parse "let _ = 8" with
+    | Ok expr ->
+      (*let _ = Printf.printf "%d\n" r in*)
+      let _ = Printf.printf "%s\n" (Print.print_ast expr) in
+      expr
+    | Error (`Parsing_error msg) -> failwith msg
+  in
+  match Interpret.run_interpret expr with
+  | Ok expr -> Printf.printf "%s\n" (Print.print_ast expr)
+  | Error er -> Printf.printf "%s\n" (Print.print_error er)
 ;;
