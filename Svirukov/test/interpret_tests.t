@@ -14,14 +14,9 @@ in the dune file
   (CInt(5) + CInt(5))
   CInt(10)
   $ ../bin/REPL.exe -dparsetree <<EOF
-  > let r x = x+x*8 in r 9
-  (let r = Fun (Var(x), (Var(x) + (Var(x) * CInt(8)))) in App (Var(r), CInt(9)))
-  Fatal error: exception Failure("unimlemented")
-  Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
-  Called from Lambda_lib__Interpret.eval in file "lib/interpret.ml", line 133, characters 16-29
-  Called from Lambda_lib__Interpret.run_interpret in file "lib/interpret.ml", line 189, characters 8-26
-  Called from Dune__exe__REPL in file "bin/REPL.ml", line 20, characters 8-36
-  [2]
+  > let r x y= y+x*8 in r 9 
+  (let r = Fun (Var(x), Fun (Var(y), (Var(y) + (Var(x) * CInt(8))))) in App (Var(r), CInt(9)))
+  Fun (Var(y), (Var(y) + (CInt(9) * CInt(8))))
 
   $ ../bin/REPL.exe <<EOF
   > (fun s k -> s+k) 5 7
@@ -33,3 +28,12 @@ in the dune file
   (let r = App (App (Fun (Var(s), Fun (Var(k), (Var(s) + Var(k)))), CInt(5)), CInt(7)) in (let p = App (Fun (Var(s), (Var(s) * CInt(2))), App (Fun (Var(k), (Var(k) * CInt(3))), CInt(10))) in ((Var(p) / CInt(2)) + Var(r))))
   CInt(42)
 
+  $ ../bin/REPL.exe <<EOF
+  > let x = 7*8+9 in (fun x -> x+x) 5
+  (let x = ((CInt(7) * CInt(8)) + CInt(9)) in App (Fun (Var(x), (Var(x) + Var(x))), CInt(5)))
+  CInt(10)
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = 7 in let function a b = if x > 4 then x+b else a-b in function 0 1
+  (let x = CInt(7) in (let function = Fun (Var(a), Fun (Var(b), if ((Var(x) > CInt(4))) then ((Var(x) + Var(b))) else ((Var(a) - Var(b))))) in App (App (Var(function), CInt(0)), CInt(1))))
+  CInt(8)

@@ -88,13 +88,6 @@ let rec substitute expr varname value =
   | App (func, arg) -> App (substitute func varname value, substitute arg varname value)
 ;;
 
-let rec count_args expr n =
-  match expr with
-  | Fun (_, body) -> count_args body (n + 1)
-  | expr -> expr, n
-;;
-
-(* удобно при спуске к самой Fun делать список из вычисленных аргументов *)
 let rec eval exp env =
   match exp with
   | Constant CUnit -> ResultM.return (Constant CUnit)
@@ -153,7 +146,6 @@ let rec eval exp env =
   | App (_, _) ->
     let rec application core env args =
       match args, core with
-      | [], Fun (_, _) -> ResultM.fail ParttialApplication
       | [], expr -> eval expr env
       | arg :: tail, Fun (PVar name, body) ->
         let new_body = substitute body name arg in
@@ -170,8 +162,17 @@ let rec eval exp env =
       | _ -> ResultM.return (list, expr)
     in
     let* args, body = form_args exp [] in
-    application body env args
-  | _ -> failwith "unimlemented"
+    let* new_body =
+      match body with
+      | Var (PVar name) ->
+        let* binding = eval body env in
+        ResultM.return (substitute body name binding)
+      | Fun (_, _) -> ResultM.return body
+      | _ -> ResultM.fail (TypeError "Can only apply args to funcs")
+    in
+    application new_body env args
+  | Fun (pat, ex) -> ResultM.return (Fun (pat, ex))
+  | _ -> ResultM.fail Unimplemented
 ;;
 
 let run_interpret expr =
