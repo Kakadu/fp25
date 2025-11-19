@@ -7,6 +7,7 @@ val tground : string -> ty
 val tarrow : ty -> ty -> ty
 val tvar : int -> ty
 val tint : ty
+val tbool : ty
 
 module ISet : sig
   type elt = int

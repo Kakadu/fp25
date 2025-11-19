@@ -74,9 +74,24 @@ let%expect_test "let expression" =
   [%expect {| let i4 = 1 in i4 |}]
 ;;
 
+let%expect_test "let function" =
+  parse_and_print "let id x = x in 1 + 2 ";
+  [%expect {| let i4 = (λ . i4) in (1 + 2) |}]
+;;
+
 let%expect_test "let rec expression" =
   parse_and_print "let rec variable = x in y";
-  [%expect {| Error: : satisfy: 'l' |}]
+  [%expect {| let rec i4 = i5 in i6 |}]
+;;
+
+let%expect_test "if expression 1" =
+  parse_and_print "if pred then e1 else e2";
+  [%expect {| if (i4) then (i5) else (i6) |}]
+;;
+
+let%expect_test "fact" =
+  parse_and_print "let fact n = if n then n else n in fact 5";
+  [%expect {| if (i4) then (i5) else (i6) |}]
 ;;
 
 let%expect_test "arithmetic wtih non-numbers" =

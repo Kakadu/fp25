@@ -25,7 +25,10 @@ type let_flag =
 [@@deriving show { with_path = false }]
 
 (** Type used for let expression *)
-type const = Int of int [@@deriving show { with_path = false }]
+type const =
+  | Int of int
+  | Bool of bool
+[@@deriving show { with_path = false }]
 
 (** Type used for standard notation *)
 type name = string [@@deriving show { with_path = false }]
@@ -35,6 +38,7 @@ type 'a t =
   | EConst of const (** Integer [a]*)
   | EVar of 'a (** Variable: string, De brujin index [x] *)
   | ELet of let_flag * 'a * 'a t * 'a t (** Let expression [let x = e1 in e2]*)
+  | EIf of 'a t * 'a t * 'a t (** If expression [if pred then e1 else e2]*)
   | EAbs of 'a * 'a t (** Abstraction [λx.e] *)
   | EApp of 'a t * 'a t (** Abstraction [N M] *)
 

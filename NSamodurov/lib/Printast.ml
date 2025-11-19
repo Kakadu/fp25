@@ -10,6 +10,7 @@ type 'name t = 'name Ast.t =
   | EConst of Ast.const
   | EVar of 'name
   | ELet of Ast.let_flag * 'name * 'name t * 'name t
+  | EIf of 'name t * 'name t * 'name t
   | EAbs of 'name * 'name t
   | EApp of 'name t * 'name t
 [@@deriving show { with_path = false }]

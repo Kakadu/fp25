@@ -40,7 +40,7 @@ let conde = function
 ;;
 
 let keyword = function
-  | "let" | "in" -> true
+  | "let" | "in" | "if" | "then" | "else" -> true
   | _ -> false
 ;;
 
@@ -71,12 +71,11 @@ type dispatch =
   }
 
 let parens = fun p -> char '(' *> p <* char ')' <?> "Parentheses expected"
-
-(* let bop s a b = Abs                         *)
 let to_left_assoc s h tl = List.fold_left (fun acc x -> s acc x) h tl
 let multi_sum h tl = to_left_assoc add h tl
 let multi_prod h tl = to_left_assoc sub h tl
 let int c = EConst (Int c)
+let bool c = EConst (Bool c)
 
 let prio expr table =
   let length = Array.length table in
@@ -110,7 +109,13 @@ let parse_lam =
     fix (fun _ ->
       conde
         [ parens (pack.apps pack)
-        ; (string "let" *> ws *> varname
+        ; (string "if" *> ws *> pack.apps pack
+           >>= fun p ->
+           string "then" *> ws *> pack.apps pack
+           >>= fun e1 ->
+           string "else" *> ws *> pack.apps pack
+           >>= fun e2 -> return (Ast.EIf (p, e1, e2)))
+        ; (string "let rec" *> ws *> many1 (ws *> varname)
            <* ws
            <* string "="
            <* ws
@@ -118,8 +123,28 @@ let parse_lam =
            ws *> pack.apps pack
            >>= fun e1 ->
            ws *> string "in" *> ws *> pack.apps pack
-           >>= fun e2 -> return (Ast.ELet (Ast.NotRecursive, v, e1, e2)))
-          (* Not recursive be default is temp *)
+           >>= fun e2 ->
+           match v with
+           | [] -> fail "Should not happend"
+           | v :: [] -> return (Ast.ELet (Ast.Recursive, v, e1, e2))
+           | v :: args ->
+             let e1 = List.fold_right (fun x acc -> Ast.EAbs (x, acc)) args e1 in
+             return (Ast.ELet (Ast.Recursive, v, e1, e2)))
+        ; (string "let" *> ws *> many1 (ws *> varname)
+           <* ws
+           <* string "="
+           <* ws
+           >>= fun v ->
+           ws *> pack.apps pack
+           >>= fun e1 ->
+           ws *> string "in" *> ws *> pack.apps pack
+           >>= fun e2 ->
+           match v with
+           | [] -> fail "Should not happend"
+           | v :: [] -> return (Ast.ELet (Ast.NotRecursive, v, e1, e2))
+           | v :: args ->
+             let e1 = List.fold_right (fun x acc -> Ast.EAbs (x, acc)) args e1 in
+             return (Ast.ELet (Ast.NotRecursive, v, e1, e2)))
         ; (string "fun" *> many1 (ws *> varname)
            <* ws
            <* string "->" *> return ()
@@ -188,6 +213,7 @@ let to_brujin expr =
              return (evar (Index (i + List.length bound + reserved))))
          | Some i -> return (EVar (Index (i + reserved))))
       | EConst (Int x) -> return (int x)
+      | EConst (Bool x) -> return (bool x)
       | ELet (flag, v, e1, e2) ->
         let* map = read in
         let i = Context.cardinal map in
@@ -195,6 +221,11 @@ let to_brujin expr =
         let* e1 = helper bound e1 in
         let* e2 = helper bound e2 in
         return (ELet (flag, Index (i + reserved), e1, e2))
+      | EIf (pred, e1, e2) ->
+        let* pred = helper bound pred in
+        let* e1 = helper bound e1 in
+        let* e2 = helper bound e2 in
+        return (EIf (pred, e1, e2))
       | EAbs (x, e) ->
         let* map = read in
         if Context.mem x map
@@ -219,5 +250,5 @@ let parse str =
     Angstrom.parse_string (parse_lam.apps parse_lam) ~consume:Angstrom.Consume.All str
   with
   | Result.Ok x -> Result.Ok x
-  | Error er -> Result.Error (`Parsing_error er)
+  | Error er -> Result.Error (`ParsingError er)
 ;;

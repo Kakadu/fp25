@@ -1,13 +1,15 @@
 type ty =
-  | TGround of string
-  | TArrow of ty * ty
-  | TVar of int (* | TTuple of ty * ty * ty list *)
+  | TGround of string (** Primitive type [int, bool, float] *)
+  | TArrow of ty * ty (** Type of abstraction [t1 -> t2]  *)
+  | TVar of int (** Variable [v]  *)
+(* | TTuple of ty * ty * ty list *)
 [@@deriving show { with_path = false }]
 
 let tground s = TGround s
 let tarrow a b = TArrow (a, b)
 let tvar b = TVar b
 let tint = tground "int"
+let tbool = tground "bool"
 
 module ISet = struct
   include Set.Make (Int)
@@ -46,5 +48,5 @@ let rec occurs_in t = function
   | TVar _ as b -> b = t
 ;;
 
-type binder_set = ISet.t
-type scheme = binder_set * ty
+type binder_set = ISet.t (* A set of type variables under quatifier *)
+type scheme = binder_set * ty (* Used for let polymorphism *)

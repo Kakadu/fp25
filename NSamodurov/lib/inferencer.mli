@@ -1,6 +1,6 @@
 type error =
-  [ `Parsing_error of string
-  | `Occurs_check of Type.ty * Type.ty
+  [ `ParsingError of string
+  | `OccursCheck of Type.ty * Type.ty
   | `UnifyError of Type.ty * Type.ty
   | `UnboundVariable of int
   | `AbstractionExpected of Type.ty

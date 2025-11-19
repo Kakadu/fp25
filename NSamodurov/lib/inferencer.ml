@@ -3,8 +3,8 @@ open Ast
 open Monads
 
 type error =
-  [ `Parsing_error of string
-  | `Occurs_check of ty * ty
+  [ `ParsingError of string
+  | `OccursCheck of ty * ty
   | `UnifyError of ty * ty
   | `UnboundVariable of int
   | `AbstractionExpected of ty
@@ -15,8 +15,8 @@ type error =
 [@@deriving show { with_path = false }]
 
 let pp_error ppf = function
-  | `Parsing_error s -> Format.fprintf ppf "%s" s
-  | `Occurs_check (a, b) -> Format.fprintf ppf "Occurs error: %a %a" pp_ty a pp_ty b
+  | `ParsingError s -> Format.fprintf ppf "%s" s
+  | `OccursCheck (a, b) -> Format.fprintf ppf "Occurs error: %a %a" pp_ty a pp_ty b
   | `UnifyError (a, b) -> Format.fprintf ppf "Unification error: %a %a" pp_ty a pp_ty b
   | `UnboundVariable i -> Format.fprintf ppf "Unbound variable: %d" i
   | `AbstractionExpected t -> Format.fprintf ppf "AbstractionExpected: %a" pp_ty t
@@ -134,7 +134,7 @@ let rec unify t1 t2 =
   match t1, t2 with
   | TGround g1, TGround g2 when g1 = g2 -> return ()
   | TVar b1, TVar b2 when b1 = b2 -> return ()
-  | TVar _, _ when Type.occurs_in t1 t2 -> fail (`Occurs_check (t1, t2))
+  | TVar _, _ when Type.occurs_in t1 t2 -> fail (`OccursCheck (t1, t2))
   | TVar v, _ ->
     let* () = extend v t2 in
     return ()
@@ -152,6 +152,7 @@ let infer env =
   let rec helper =
     fun env height -> function
       | EConst (Int _) -> return tint
+      | EConst (Bool _) -> return tbool
       | EVar (Index b) when b >= reserved ->
         Context.lookup (reserved + height - b - 1) env
       | EVar (Index b) -> Context.lookup b env
@@ -170,6 +171,13 @@ let infer env =
         let t2 = gen env tv in
         let* t2 = helper (Context.add v t2 env) (height + 1) e2 in
         walk t2
+      | EIf (pred, e1, e2) ->
+        let* pred = helper env height pred in
+        let* _ = unify pred tbool in
+        let* e1 = helper env height e1 in
+        let* e2 = helper env height e2 in
+        let* _ = unify e1 e2 in
+        walk e1
       | EAbs (Index v, e) ->
         let* fresh = fresh in
         let tv = tvar fresh in

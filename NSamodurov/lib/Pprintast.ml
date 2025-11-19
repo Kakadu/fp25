@@ -12,23 +12,17 @@ open Ast
 open Utils
 
 let pp_brujin (* ?(compact = true) *) =
-  (* let open Format in *)
-  (* let mangle t fmt x = *)
-  (*   if is_free_in_brujin x t || not compact *)
-  (*   then ( *)
-  (*     match x with *)
-  (*     | Index i -> fprintf fmt "%d" i *)
-  (*     | Blank -> ()) *)
-  (*   else fprintf fmt "_" *)
-  (* in *)
   let rec pp fmt = function
     | EApp (EApp (EVar (Index 0), l), r) -> Format.fprintf fmt "(%a + %a)" pp l pp r
     | EApp (EApp (EVar (Index 1), l), r) -> Format.fprintf fmt "(%a - %a)" pp l pp r
     | EApp (EApp (EVar (Index 2), l), r) -> Format.fprintf fmt "(%a * %a)" pp l pp r
     | EApp (EApp (EVar (Index 3), l), r) -> Format.fprintf fmt "(%a / %a)" pp l pp r
+    | EIf (pred, e1, e2) ->
+      Format.fprintf fmt "if (%a) then (%a) else (%a)" pp pred pp e1 pp e2
     | EVar (Index i) -> Format.fprintf fmt "i%d" i
     | EApp (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | EConst (Int i) -> Format.fprintf fmt "%d" i
+    | EConst (Bool b) -> Format.fprintf fmt (if b then "true" else "false")
     | EAbs (_, t) -> Format.fprintf fmt "(λ . %a)" pp t
     | ELet (NotRecursive, Index i, e1, e2) ->
       Format.fprintf fmt "let i%d = %a in %a" i pp e1 pp e2
@@ -47,6 +41,12 @@ let pp ?(compact = true) =
     | EVar s -> Format.fprintf fmt "%s" s
     | EApp (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | EConst (Int i) -> Format.fprintf fmt "%d" i
+    | EIf (pred, e1, e2) -> Format.fprintf fmt "if %a then %a else %a" pp pred pp e1 pp e2
+    | EConst (Bool b) -> Format.fprintf fmt (if b then "true" else "false")
+    | ELet (NotRecursive, v, e1, e2) ->
+      Format.fprintf fmt "let %s = %a in %a" v pp e1 pp e2
+    | ELet (Recursive, v, e1, e2) ->
+      Format.fprintf fmt "let rec %s = %a in %a" v pp e1 pp e2
     (* | Abs (x, Abs (y, Var z)) when x = z && y <> z && compact -> *)
     (*   if compact then Format.fprintf fmt "⊤" *)
     (* | Abs (x, Abs (y, Var z)) when y = z && x <> z && compact -> Format.fprintf fmt "⊥" *)
