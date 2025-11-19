@@ -85,7 +85,7 @@ let%expect_test "factorial with rec" =
     (print_ast
        (parse "let rec fac n= if n = 1 then 1 else (fac (n-1)) * n" |> Result.get_ok));
   [%expect
-    {|(let rec fac = Fun (Var(n), if ((Var(n) = CInt(1))) then (CInt(1)) else ((App (Var(fac), App (Var(n), CInt(-1))) * Var(n)))))|}]
+    {| (let rec fac = Fun (Var(n), if ((Var(n) = CInt(1))) then (CInt(1)) else ((App (Var(fac), (Var(n) - CInt(1))) * Var(n))))) |}]
 ;;
 
 let%expect_test "some skope values" =
@@ -97,27 +97,27 @@ let%expect_test "some skope values" =
   in
   print_string (print_ast (parse expresion |> Result.get_ok));
   [%expect
-    {|(let result = (let sterter = Fun (Var(x), if (((Var(x) + (CInt(8) * CInt(9))) > CInt(4))) then ((Var(x) * CInt(2))) else ((Var(x) * CInt(5)))) in (let inner = Fun (Var(pp), (App (Var(sterter), Var(pp)) + CInt(8))) in App (Var(inner), CInt(8)))))|}]
+    {| (let result = (let sterter = Fun (Var(x), if (((Var(x) + (CInt(8) * CInt(9))) > CInt(4))) then ((Var(x) * CInt(2))) else ((Var(x) * CInt(5)))) in (let inner = Fun (Var(pp), (App (Var(sterter), Var(pp)) + CInt(8))) in App (Var(inner), CInt(8))))) |}]
 ;;
 
 let%expect_test "function annotation via fun" =
   print_string (print_ast (parse "let function = fun a -> a * a" |> Result.get_ok));
-  [%expect {|(let function = Fun (Var(a), (Var(a) * Var(a))))|}]
+  [%expect {| (let function = Fun (Var(a), (Var(a) * Var(a)))) |}]
 ;;
 
 let%expect_test "application with lambda" =
   print_string (print_ast (parse "let tmp = (fun a -> a * a) 5" |> Result.get_ok));
-  [%expect {|(let tmp = App (Fun (Var(a), (Var(a) * Var(a))), CInt(5)))|}]
+  [%expect {| (let tmp = App (Fun (Var(a), (Var(a) * Var(a))), CInt(5))) |}]
 ;;
 
 let%expect_test "unbounded lambda" =
   print_string (print_ast (parse "(fun a -> a * a)" |> Result.get_ok));
-  [%expect {|Fun (Var(a), (Var(a) * Var(a)))|}]
+  [%expect {| Fun (Var(a), (Var(a) * Var(a))) |}]
 ;;
 
 let%expect_test "simple application" =
   prerr_string (print_ast (parse "let _ = g 4 (f 5)" |> Result.get_ok));
-  [%expect {|(let _ = App (App (Var(g), CInt(4)), App (Var(f), CInt(5))))|}]
+  [%expect {| (let _ = App (App (Var(g), CInt(4)), App (Var(f), CInt(5)))) |}]
 ;;
 
 let%expect_test "nested let with application" =
@@ -189,7 +189,7 @@ let%expect_test "recursive function with application" =
 
 let%expect_test "right application" =
   print_string (print_ast (parse "g (f (q 5))" |> Result.get_ok));
-  [%expect {|App (Var(g), App (Var(f), App (Var(q), CInt(5))))|}]
+  [%expect {| App (Var(g), App (Var(f), App (Var(q), CInt(5)))) |}]
 ;;
 
 let%expect_test "nested if-then-else" =

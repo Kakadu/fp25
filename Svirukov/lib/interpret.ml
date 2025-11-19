@@ -4,7 +4,7 @@ open Base
 type value =
   | VInt of int
   | VClosure of pattern * expr
-  | VRecClosure of pattern * pattern * expr
+  | VRecClosure of pattern * expr
 
 and env = (string, value, Base.String.comparator_witness) Base.Map.t
 
@@ -97,7 +97,7 @@ let rec eval exp env =
     (match binding with
      | VInt n -> ResultM.return (Constant (CInt n))
      | VClosure (pat, body) -> ResultM.return (Fun (pat, body))
-     | VRecClosure (_, _, _) -> ResultM.fail Unimplemented)
+     | VRecClosure (pat, body) -> ResultM.return (Fun (pat, body)))
   | Binop (op, left, right) ->
     let* l =
       match eval left env with
@@ -121,7 +121,7 @@ let rec eval exp env =
      | LessThan -> ResultM.return (Constant (CInt (if l < r then 1 else 0)))
      | EqLess -> ResultM.return (Constant (CInt (if l <= r then 1 else 0)))
      | EqMore -> ResultM.return (Constant (CInt (if l >= r then 1 else 0))))
-  (*TODO: don't know rec yet and something's wrong with functional types*)
+  (*TODO: don't know rec yet*)
   | Let (NonRec, PVar name, body, cont) ->
     let* body = eval body env in
     let letval =
@@ -133,6 +133,21 @@ let rec eval exp env =
     let new_env = Env.add_val env name letval in
     (match cont with
      | Some exp -> eval exp new_env
+     | None -> ResultM.return (Constant CUnit))
+  | Let (Rec, PVar name, body, cont) ->
+    let* helper =
+      match body with
+      | Fun (PVar var, func) -> ResultM.return (Fun (PVar var, func))
+      | _ -> eval body env
+    in
+    let* new_env =
+      match helper with
+      | Fun (PVar var, func) ->
+        ResultM.return (Env.add_val env name (VRecClosure (PVar var, func)))
+      | _ -> ResultM.fail (TypeError "can put only vars and funcs in env")
+    in
+    (match cont with
+     | Some e -> eval e new_env
      | None -> ResultM.return (Constant CUnit))
   | Conditional (cond, ifbr, elsebr) ->
     let* cond = eval cond env in

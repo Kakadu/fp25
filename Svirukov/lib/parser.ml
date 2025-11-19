@@ -5,13 +5,6 @@
 open Angstrom
 open Ast
 
-let with_error p =
-  p
-  >>= function
-  | Ok result -> return result
-  | Error (`Parsing_error msg) -> fail msg
-;;
-
 let is_keyword = function
   | "let" | "in" | "fun" | "true" | "false" | "rec" | "else" | "if" | "then" -> true
   | _ -> false
@@ -22,7 +15,9 @@ let is_space = function
   | _ -> false
 ;;
 
+let skip_while1 p = satisfy p >>= fun c -> skip_while p >>| fun () -> c
 let skip_spaces = skip_while is_space
+let split_args = skip_while1 is_space
 
 let varname = function
   | 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' -> true
@@ -117,10 +112,11 @@ let expr =
       let app =
         choice [ skip_parens anonymous_fun; var ]
         >>= fun func ->
-        many1 (choice [ (number >>| fun n -> Constant (CInt n)); skip_parens expr; var ])
+        many1
+          (split_args
+           *> choice [ (number >>| fun n -> Constant (CInt n)); skip_parens expr; var ])
         >>| fun args -> List.fold_left (fun func arg -> App (func, arg)) func args
       in
-      (*we want to have oppotunity to use if-then-else (since it is obligatory) as arg to app*)
       choice
         [ (number >>| fun n -> Constant (CInt n))
         ; app
@@ -143,12 +139,9 @@ let expr =
         many (conde [ plus_op; minus_op ] >>= fun op -> mul_div >>| fun right -> op, right)
         >>| List.fold_left (fun left (op, right) -> Binop (op, left, right)) first
       in
-      let comparison =
-        add_sub
-        >>= fun left ->
-        option left (cmp_op >>= fun op -> add_sub >>| fun right -> Binop (op, left, right))
-      in
-      comparison
+      add_sub
+      >>= fun left ->
+      option left (cmp_op >>= fun op -> add_sub >>| fun right -> Binop (op, left, right))
     in
     let conditional =
       token (string "if") *> binopr

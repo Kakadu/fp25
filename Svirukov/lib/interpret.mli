@@ -19,7 +19,7 @@ type error =
 type value =
   | VInt of int
   | VClosure of pattern * expr
-  | VRecClosure of pattern * pattern * expr
+  | VRecClosure of pattern * expr
 
 and env = (string, value, Base.String.comparator_witness) Base.Map.t
 
