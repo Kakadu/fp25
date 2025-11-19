@@ -4,13 +4,7 @@ open Interpret
 let rec print_ast = function
   | Constant CUnit -> "CUnit"
   | Constant (CInt n) -> Printf.sprintf "CInt(%d)" n
-  | Var pat ->
-    let line =
-      match pat with
-      | PAny -> "Var(_)"
-      | PVar name -> Printf.sprintf "Var(%s)" name
-    in
-    line
+  | Var (PVar name) -> Printf.sprintf "Var(%s)" name
   | Binop (op, left, right) ->
     let l = print_ast left in
     let r = print_ast right in
@@ -47,15 +41,7 @@ let rec print_ast = function
       | Some next, NonRec, PVar name ->
         let cont = print_ast next in
         Printf.sprintf "(let %s = %s in %s)" name b cont
-      | Some next, Rec, PAny ->
-        let cont = print_ast next in
-        Printf.sprintf "(let rec _ = %s in %s)" b cont
-      | None, NonRec, PAny -> Printf.sprintf "(let _ = %s)" b
-      | Some next, NonRec, PAny ->
-        let cont = print_ast next in
-        Printf.sprintf "(let _ = %s in %s)" b cont
       | None, Rec, PVar name -> Printf.sprintf "(let rec %s = %s)" name b
-      | None, Rec, _ -> Printf.sprintf "(let rec _ = %s)" b
     in
     res
   | Fun (var, body) ->

@@ -10,9 +10,7 @@ type constant =
   | CInt of int
   | CUnit
 
-type pattern =
-  | PVar of string
-  | PAny
+type pattern = PVar of string
 
 type rec_flag =
   | NonRec

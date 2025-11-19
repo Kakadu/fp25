@@ -4,7 +4,6 @@ open Base
 type value =
   | VInt of int
   | VClosure of pattern * expr
-  | VRecClosure of pattern * expr
 
 and env = (string, value, Base.String.comparator_witness) Base.Map.t
 
@@ -42,20 +41,21 @@ end
 
 let ( let* ) = ResultM.( >>= )
 
-let ok_or_novar option err =
-  match option with
-  | Some v -> ResultM.return v
-  | None -> ResultM.fail err
-;;
-
 module Env : sig
   val find : env -> string -> value option
   val init : env
   val add_val : env -> string -> value -> env
+  val ok_or_novar : env -> string -> value ResultM.t
 end = struct
   let init = Map.empty (module String)
   let find env key = Map.find env key
   let add_val env key value = Map.set env ~key ~data:value
+
+  let ok_or_novar env name =
+    match find env name with
+    | Some v -> ResultM.return v
+    | None -> ResultM.fail (UnboundVariable name)
+  ;;
 end
 
 let rec substitute expr varname value =
@@ -93,24 +93,19 @@ let rec eval exp env =
   | Constant CUnit -> ResultM.return (Constant CUnit)
   | Constant (CInt n) -> ResultM.return (Constant (CInt n))
   | Var (PVar name) ->
-    let* binding = ok_or_novar (Env.find env name) (UnboundVariable name) in
+    let* binding = Env.ok_or_novar env name in
     (match binding with
      | VInt n -> ResultM.return (Constant (CInt n))
-     | VClosure (pat, body) -> ResultM.return (Fun (pat, body))
-     | VRecClosure (pat, body) -> ResultM.return (Fun (pat, body)))
+     | VClosure (pat, body) -> ResultM.return (Fun (pat, body)))
   | Binop (op, left, right) ->
-    let* l =
-      match eval left env with
+    let eval_binop expr =
+      match eval expr env with
       | Ok (Constant (CInt n)) -> ResultM.return n
       | Ok _ -> ResultM.fail (TypeError "Can do binop only with const int")
       | Error er -> ResultM.fail er
     in
-    let* r =
-      match eval right env with
-      | Ok (Constant (CInt n)) -> ResultM.return n
-      | Ok _ -> ResultM.fail (TypeError "Can do binop only with const int")
-      | Error er -> ResultM.fail er
-    in
+    let* l = eval_binop left in
+    let* r = eval_binop right in
     (match op with
      | Plus -> ResultM.return (Constant (CInt (l + r)))
      | Minus -> ResultM.return (Constant (CInt (l - r)))
@@ -121,29 +116,23 @@ let rec eval exp env =
      | LessThan -> ResultM.return (Constant (CInt (if l < r then 1 else 0)))
      | EqLess -> ResultM.return (Constant (CInt (if l <= r then 1 else 0)))
      | EqMore -> ResultM.return (Constant (CInt (if l >= r then 1 else 0))))
-  (*TODO: don't know rec yet*)
   | Let (NonRec, PVar name, body, cont) ->
     let* body = eval body env in
-    let letval =
+    let* letval =
       match body with
-      | Constant (CInt n) -> VInt n
-      | Fun (pat, inner) -> VClosure (pat, inner)
-      | _ -> failwith "can put only vars and funcs in env"
+      | Constant (CInt n) -> ResultM.return (VInt n)
+      | Fun (pat, inner) -> ResultM.return (VClosure (pat, inner))
+      | _ -> ResultM.fail (TypeError "can put only vars and funcs in env")
     in
     let new_env = Env.add_val env name letval in
     (match cont with
      | Some exp -> eval exp new_env
      | None -> ResultM.return (Constant CUnit))
   | Let (Rec, PVar name, body, cont) ->
-    let* helper =
-      match body with
-      | Fun (PVar var, func) -> ResultM.return (Fun (PVar var, func))
-      | _ -> eval body env
-    in
     let* new_env =
-      match helper with
+      match body with
       | Fun (PVar var, func) ->
-        ResultM.return (Env.add_val env name (VRecClosure (PVar var, func)))
+        ResultM.return (Env.add_val env name (VClosure (PVar var, func)))
       | _ -> ResultM.fail (TypeError "can put only vars and funcs in env")
     in
     (match cont with
@@ -187,7 +176,6 @@ let rec eval exp env =
     in
     application new_body env args
   | Fun (pat, ex) -> ResultM.return (Fun (pat, ex))
-  | _ -> ResultM.fail Unimplemented
 ;;
 
 let run_interpret expr =
@@ -195,5 +183,3 @@ let run_interpret expr =
   | Ok exp -> Ok exp
   | Error er -> Error er
 ;;
-
-let r = 7 * 8

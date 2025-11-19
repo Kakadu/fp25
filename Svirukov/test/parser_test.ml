@@ -116,8 +116,8 @@ let%expect_test "unbounded lambda" =
 ;;
 
 let%expect_test "simple application" =
-  prerr_string (print_ast (parse "let _ = g 4 (f 5)" |> Result.get_ok));
-  [%expect {| (let _ = App (App (Var(g), CInt(4)), App (Var(f), CInt(5)))) |}]
+  prerr_string (print_ast (parse "let k = g 4 (f 5)" |> Result.get_ok));
+  [%expect {| (let k = App (App (Var(g), CInt(4)), App (Var(f), CInt(5)))) |}]
 ;;
 
 let%expect_test "nested let with application" =

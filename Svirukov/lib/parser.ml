@@ -6,7 +6,7 @@ open Angstrom
 open Ast
 
 let is_keyword = function
-  | "let" | "in" | "fun" | "true" | "false" | "rec" | "else" | "if" | "then" -> true
+  | "let" | "in" | "fun" | "true" | "false" | "rec" | "else" | "if" | "then" | "_" -> true
   | _ -> false
 ;;
 
@@ -31,10 +31,6 @@ let conde = function
 
 type error = [ `Parsing_error of string ]
 
-let pp_error ppf = function
-  | `Parsing_error s -> Format.fprintf ppf "%s" s
-;;
-
 let token p = skip_spaces *> p
 
 let is_digit = function
@@ -51,8 +47,8 @@ let variable_name =
   | _ -> return s
 ;;
 
-let pattern = variable_name >>| fun s -> if s = "_" then PAny else PVar s
-let var = pattern >>| fun p -> Var p
+let var = variable_name >>| fun s -> PVar s
+let var_expr = var >>| fun p -> Var p
 let parse_bool = token (string "true") <|> token (string "false") >>| bool_of_string
 let skip_parens p = token (char '(') *> p <* token (char ')')
 
@@ -105,22 +101,23 @@ let expr =
   fix (fun expr ->
     let atom =
       let anonymous_fun =
-        token (string "fun") *> many1 (token pattern)
+        token (string "fun") *> many1 (token var)
         <* token (string "->")
         >>= fun args -> expr >>= fun body -> return (build_curried_function args body)
       in
       let app =
-        choice [ skip_parens anonymous_fun; var ]
+        choice [ skip_parens anonymous_fun; var_expr ]
         >>= fun func ->
         many1
           (split_args
-           *> choice [ (number >>| fun n -> Constant (CInt n)); skip_parens expr; var ])
+           *> choice
+                [ (number >>| fun n -> Constant (CInt n)); skip_parens expr; var_expr ])
         >>| fun args -> List.fold_left (fun func arg -> App (func, arg)) func args
       in
       choice
         [ (number >>| fun n -> Constant (CInt n))
         ; app
-        ; var
+        ; var_expr
         ; skip_parens expr
         ; anonymous_fun
         ]
@@ -154,9 +151,9 @@ let expr =
     let let_binding =
       token (string "let") *> option NonRec (token (string "rec") >>| fun _ -> Rec)
       >>= fun recurs ->
-      pattern
+      var
       >>= fun name ->
-      many pattern
+      many var
       >>= fun args ->
       token (char '=') *> expr
       >>= fun ex ->
