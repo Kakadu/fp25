@@ -6,6 +6,7 @@ type error =
   | `AbstractionExpected of Type.ty
   | `UsingReservedVariable of int
   | `ReservedError
+  | `InterpretError of string
   ]
 [@@deriving show { with_path = false }]
 

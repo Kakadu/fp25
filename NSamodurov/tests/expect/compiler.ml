@@ -25,7 +25,7 @@ let instruction_of_program str =
 
 let%expect_test "applicaiton1" =
   instruction_of_program "let x = 1 in x";
-  [%expect {| (Const 1);Let;(Access 4);EndLet; |}]
+  [%expect {| (Const 1);Let;(Access 0);EndLet; |}]
 ;;
 
 let%expect_test "constant" =
@@ -46,5 +46,14 @@ let%expect_test "function" =
 let%expect_test "identity" =
   instruction_of_program "let id = (fun x -> x) in id 1";
   [%expect
-    {| (Cur [(Access 4); Return]);Let;PushMark;(Const 1);Push;(Access 4);Apply;EndLet; |}]
+    {| (Cur [(Access 0); Return]);Let;PushMark;(Const 1);Push;(Access 0);Apply;EndLet; |}]
+;;
+
+let%expect_test "identity" =
+  instruction_of_program " let f = (fun x -> 5 + 2) in f 7";
+  [%expect
+    {|
+    (Cur [(Const 2); Push; (Const 5); Add; Return]);Let;PushMark;(Const 7);Push;(
+    Access 0);Apply;EndLet;
+    |}]
 ;;

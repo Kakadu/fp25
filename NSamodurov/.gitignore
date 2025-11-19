@@ -5,3 +5,4 @@ _coverage
 /esy.lock
 /.melange.eobjs
 *~
+.dir-locals.el

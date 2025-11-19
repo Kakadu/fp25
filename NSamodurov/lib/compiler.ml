@@ -24,7 +24,7 @@ let rec list_of_apps = function
 
 let compile =
   let rec helper_t acc = function
-    | EVar (Index i) -> Access i :: acc
+    | EVar (Index i) -> Access (i - reserved) :: acc
     | EApp (e1, e2) ->
       (match list_of_apps e1 with
        | EVar (Index 0) :: tl ->
@@ -40,7 +40,7 @@ let compile =
     | ELet (NotRecursive, _, a, b) -> helper_c (Let :: helper_t acc b) a
     | EConst (Int c) -> Const c :: acc
   and helper_c acc = function
-    | EVar (Index i) -> Access i :: acc
+    | EVar (Index i) -> Access (i - reserved) :: acc
     | EApp (e1, e2) ->
       (match list_of_apps e1 with
        | EVar (Index 0) :: tl ->

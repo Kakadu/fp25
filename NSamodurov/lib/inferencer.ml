@@ -10,6 +10,7 @@ type error =
   | `AbstractionExpected of ty
   | `UsingReservedVariable of int
   | `ReservedError
+  | `InterpretError of string
   ]
 [@@deriving show { with_path = false }]
 
@@ -21,6 +22,7 @@ let pp_error ppf = function
   | `AbstractionExpected t -> Format.fprintf ppf "AbstractionExpected: %a" pp_ty t
   | `UsingReservedVariable i -> Format.fprintf ppf "UsingReservedVariable: %d" i
   | `ReservedError -> Format.fprintf ppf "Reserved variable limit exceeded"
+  | `InterpretError s -> Format.fprintf ppf "Can't interpret: %s\n" s
 ;;
 
 module Scheme : sig

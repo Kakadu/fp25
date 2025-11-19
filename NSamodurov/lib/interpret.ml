@@ -9,28 +9,109 @@
 (** Real monadic interpreter goes here *)
 
 open Parser
-open Inferencer
 open Compiler
+open Monads
+open Inferencer
+
+module ErrorMonad : sig
+  include GENERAL_MONAD_2
+
+  val fail : 's -> ('s, 'a) t
+  val run : ('s, 'a) t -> ('a, 's) Result.t
+end = struct
+  type ('s, 'a) t = ('a, 's) Result.t
+
+  let fail = Result.error
+  let return = Result.ok
+  let bind = Result.bind
+  let run = Fun.id
+
+  module Syntax = struct
+    let ( let* ) = bind
+    let ( >>= ) = bind
+  end
+end
+
+open ErrorMonad
 
 type eval =
+  | Pair of instr list * eval list
   | Int of int
   | Epsilon
+  | DummyStack
 [@@deriving show { with_path = false }]
 
 let interpret =
   let rec helper acc env arg ret = function
-    | [] -> acc
-    | Const a :: Add :: tl ->
-      let b =
-        match acc with
-        | Epsilon -> failwith "error"
-        | Int i -> i
-      in
-      helper (Int (a + b)) env arg ret tl
-    | Const i :: tl -> helper (Int i) env arg ret tl
-    | Push :: tl -> helper acc env (acc :: arg) ret tl
-    | PushMark :: tl -> helper acc env (Epsilon :: arg) ret tl
-    | _ -> failwith "unimpl"
+    (* let rec helper acc env arg ret instr = *)
+    (*   Format.printf "acc: %a\n" pp_eval acc; *)
+    (*   Format.printf "env: "; *)
+    (*   List.iter (Format.printf "%a, " pp_eval) env; *)
+    (*   Format.printf "\n"; *)
+    (*   Format.printf "arg: "; *)
+    (*   List.iter (Format.printf "%a, " pp_eval) arg; *)
+    (*   Format.printf "\n"; *)
+    (*   Format.printf "ret: "; *)
+    (*   List.iter (Format.printf "%a, " pp_eval) ret; *)
+    (*   Format.printf "\n"; *)
+    (*   match instr with *)
+    | [] -> return acc
+    | Add :: instr ->
+      (match acc, arg with
+       | Int a, Int b :: arg -> helper (Int (a + b)) env arg ret instr
+       | _, [] -> fail (`InterpretError "Arg stack is empty in Add")
+       | _ -> fail (`InterpretError "Operand is not int"))
+    | Const i :: instr -> helper (Int i) env arg ret instr
+    (* Accesing local variable *)
+    | Access n :: instr ->
+      if n < 0
+      then fail (`InterpretError "Number is negative")
+      else (
+        match List.nth_opt env n with
+        | Some x -> helper x env arg ret instr
+        | None -> fail (`InterpretError "Can't access a variable"))
+    (* Applications *)
+    | AppTerm :: _ ->
+      (match acc, arg with
+       | Pair (instr2, env2), v :: arg -> helper acc (v :: env2) arg ret instr2
+       | Pair _, _ -> fail (`InterpretError "Argument stack is empty")
+       | _ -> fail (`InterpretError "Expected pair in AppTerm"))
+    | Apply :: instr ->
+      (match acc, arg with
+       | Pair (instr2, env2), v :: arg ->
+         helper acc (v :: env2) arg (Pair (instr, env) :: ret) instr2
+       | Pair _, [] -> fail (`InterpretError "Argument stack is empty in Apply")
+       | _, _ -> fail (`InterpretError "Expected pair in Apply"))
+    | Push :: instr -> helper acc env (acc :: arg) ret instr
+    | PushMark :: instr -> helper acc env (Epsilon :: arg) ret instr
+    (* Abstractions *)
+    | Cur l :: instr -> helper (Pair (l, env)) env arg ret instr
+    | Grab :: instr ->
+      (match arg, ret with
+       | Epsilon :: arg, Pair (instr2, env2) :: ret ->
+         helper (Pair (instr, env)) env2 arg ret instr2
+       | v :: arg, ret -> helper acc (v :: env) arg ret instr
+       | _, [] -> fail (`InterpretError "Return stack is empty")
+       | [], _ :: _ -> fail (`InterpretError "Argument stack is empty"))
+    | Return :: _ ->
+      (match acc, arg, ret with
+       | acc, Epsilon :: arg, Pair (instr2, env2) :: ret -> helper acc env2 arg ret instr2
+       | Pair (instr2, env2), v :: arg, ret -> helper acc (v :: env2) arg ret instr2
+       | _ -> fail (`InterpretError "Don't know what to do with Return"))
+    (* Local declarations *)
+    | Let :: instr -> helper acc (acc :: env) arg ret instr
+    | EndLet :: instr ->
+      (match env with
+       | [] -> fail (`InterpretError "Enviroment is empty")
+       | _ :: tl -> helper acc tl arg ret instr)
+    | Dummy :: instr -> helper acc (DummyStack :: env) arg ret instr
+    | Update :: instr ->
+      (match env with
+       | [] -> fail (`InterpretError "Enviroment is empty")
+       | v :: _ ->
+         let env = List.map (fun x -> if x = acc then v else x) env in
+         helper acc env arg ret instr)
+    | _ -> fail (`InterpretError "Don't know what to do")
   in
   helper Epsilon [] [] []
 ;;
@@ -40,11 +121,11 @@ let parse_and_run str =
     let ( let* ) = Result.bind in
     let* ast = parse str in
     let ast = to_brujin ast in
-    let _ = w ast in
+    let _ = Inferencer.w ast in
     let instr = compile ast in
-    Result.ok (interpret instr)
+    run (interpret instr)
   in
   match helper str with
   | Ok v -> Format.printf "Success: %a" pp_eval v
-  | Error e -> Format.printf "Error: %a" Inferencer.pp_error e
+  | Error e -> Format.printf "Error: %a" pp_error e
 ;;
