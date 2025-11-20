@@ -160,9 +160,7 @@ let rec eval exp env =
       match expr with
       | App (left, arg) ->
         let* arg = eval arg env in
-        (match arg with
-         | Constant (CInt _) -> form_args left (List.append [ arg ] list)
-         | _ -> ResultM.fail TooManyArgs)
+        form_args left (List.append [ arg ] list)
       | _ -> ResultM.return (list, expr)
     in
     let* args, body = form_args exp [] in
@@ -172,7 +170,7 @@ let rec eval exp env =
         let* binding = eval body env in
         ResultM.return (substitute body name binding)
       | Fun (_, _) -> ResultM.return body
-      | _ -> ResultM.fail (TypeError "Can only apply args to funcs")
+      | _ -> ResultM.fail (TypeError "can only apply args to funcs")
     in
     application new_body env args
   | Fun (pat, ex) -> ResultM.return (Fun (pat, ex))

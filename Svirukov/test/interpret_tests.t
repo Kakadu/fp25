@@ -11,44 +11,104 @@ in the dune file
 
   $ ../bin/REPL.exe <<EOF
   > 5 + 5
-  (CInt(5) + CInt(5))
-  CInt(10)
+  (5 + 5)
+  10
   $ ../bin/REPL.exe -dparsetree <<EOF
   > let r x y= y+x*8 in r 9 10
-  (let r = Fun (Var(x), Fun (Var(y), (Var(y) + (Var(x) * CInt(8))))) in App (App (Var(r), CInt(9)), CInt(10)))
-  CInt(82)
+  (let r = (fun x -> (fun y -> (y + (x * 8)))) in r 9 10)
+  82
 
   $ ../bin/REPL.exe <<EOF
   > (fun s k -> s+k) 5 7
-  App (App (Fun (Var(s), Fun (Var(k), (Var(s) + Var(k)))), CInt(5)), CInt(7))
-  CInt(12)
+  (fun s -> (fun k -> (s + k))) 5 7
+  12
 
   $ ../bin/REPL.exe <<EOF
   > let r = (fun s k -> s+k) 5 7 in let p = (fun s->s*2) ((fun k -> k*3) 10) in p/2 + r
-  (let r = App (App (Fun (Var(s), Fun (Var(k), (Var(s) + Var(k)))), CInt(5)), CInt(7)) in (let p = App (Fun (Var(s), (Var(s) * CInt(2))), App (Fun (Var(k), (Var(k) * CInt(3))), CInt(10))) in ((Var(p) / CInt(2)) + Var(r))))
-  CInt(42)
+  (let r = (fun s -> (fun k -> (s + k))) 5 7 in (let p = (fun s -> (s * 2)) (fun k -> (k * 3)) 10 in ((p / 2) + r)))
+  42
 
   $ ../bin/REPL.exe <<EOF
   > let x = 7*8+9 in (fun x -> x+x) 5
-  (let x = ((CInt(7) * CInt(8)) + CInt(9)) in App (Fun (Var(x), (Var(x) + Var(x))), CInt(5)))
-  CInt(10)
+  (let x = ((7 * 8) + 9) in (fun x -> (x + x)) 5)
+  10
 
   $ ../bin/REPL.exe <<EOF
   > let x = 7 in let function a b = if x > 4 then x+b else a-b in function 0 1
-  (let x = CInt(7) in (let function = Fun (Var(a), Fun (Var(b), if ((Var(x) > CInt(4))) then ((Var(x) + Var(b))) else ((Var(a) - Var(b))))) in App (App (Var(function), CInt(0)), CInt(1))))
-  CInt(8)
+  (let x = 7 in (let function = (fun a -> (fun b -> (if (x > 4) then (x + b) else (a - b)))) in function 0 1))
+  8
 
   $ ../bin/REPL.exe <<EOF
   > let x = 7 in let y = x in x+y+8
-  (let x = CInt(7) in (let y = Var(x) in ((Var(x) + Var(y)) + CInt(8))))
-  CInt(22)
+  (let x = 7 in (let y = x in ((x + y) + 8)))
+  22
 
   $ ../bin/REPL.exe <<EOF
-  > let rec fac n = if n < 1 then 1 else (fac (n-1)) * n in fac 63
-  (let rec fac = Fun (Var(n), if ((Var(n) < CInt(1))) then (CInt(1)) else ((App (Var(fac), (Var(n) - CInt(1))) * Var(n)))) in App (Var(fac), CInt(63)))
-  CInt(1585267068834414592)
+  > let rec fac n = if n < 1 then 1 else (fac (n-1)) * n in fac 5
+  (let rec fac = (fun n -> (if (n < 1) then 1 else (fac (n - 1) * n))) in fac 5)
+  120
 
   $ ../bin/REPL.exe <<EOF
   > let rec fib n = if n < 2 then 1 else (fib (n-1)) + (fib (n-2)) in fib 10
-  (let rec fib = Fun (Var(n), if ((Var(n) < CInt(2))) then (CInt(1)) else ((App (Var(fib), (Var(n) - CInt(1))) + App (Var(fib), (Var(n) - CInt(2)))))) in App (Var(fib), CInt(10)))
-  CInt(89)
+  (let rec fib = (fun n -> (if (n < 2) then 1 else (fib (n - 1) + fib (n - 2)))) in fib 10)
+  89
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = 5 in let r y x= x+y*2 in r x
+  (let x = 5 in (let r = (fun y -> (fun x -> (x + (y * 2)))) in r x))
+  (fun x -> (x + (5 * 2)))
+
+  $ ../bin/REPL.exe <<EOF
+  > let add x y = x + y in let add5 = add 5 in add5 3 + add5 2
+  (let add = (fun x -> (fun y -> (x + y))) in (let add5 = add 5 in (add5 3 + add5 2)))
+  15
+
+  $ ../bin/REPL.exe <<EOF
+  > let apply_twice f x = f (f x) in let inc x = x + 1 in apply_twice (inc 5) 7
+  (let apply_twice = (fun f -> (fun x -> f f x)) in (let inc = (fun x -> (x + 1)) in apply_twice inc 5 7))
+  can only apply args to funcs
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = -7 * -8 in let f y = x - y in f 1
+  (let x = (-7 * -8) in (let f = (fun y -> (x - y)) in f 1))
+  55
+
+  $ ../bin/REPL.exe <<EOF
+  > let f x = x * x in f 5 5
+  (let f = (fun x -> (x * x)) in f 5 5)
+  Too many args for function
+
+  $ ../bin/REPL.exe <<EOF
+  > if (let s = 5) then 5
+  (if (let s = 5) then 5)
+  not a number in cond evaluation
+
+  $ ../bin/REPL.exe <<EOF
+  > let r = 4*8 in if r < 0 then 8
+  (let r = (4 * 8) in (if (r < 0) then 8))
+  ()
+
+  $ ../bin/REPL.exe <<EOF
+  > let r a = a*a in r (let y = 7)
+  (let r = (fun a -> (a * a)) in r (let y = 7))
+  Can do binop only with const int
+
+  $ ../bin/REPL.exe <<EOF
+  > let t = let r = 8
+  (let t = (let r = 8))
+  can put only vars and funcs in env
+
+  $ ../bin/REPL.exe <<EOF
+  > let r = 5 in let rec f n k = if n > k then n + (f (n-1) k) else k in let y = if r > 0 then -1*r+5 else r-5 in f r y
+  (let r = 5 in (let rec f = (fun n -> (fun k -> (if (n > k) then (n + f (n - 1) k) else k))) in (let y = (if (r > 0) then ((-1 * r) + 5) else (r - 5)) in f r y)))
+  15
+
+  $ ../bin/REPL.exe <<EOF
+  > let x c = c*2 in x g
+  (let x = (fun c -> (c * 2)) in x g)
+  Unbound variable g
+
+  $ ../bin/REPL.exe <<EOF
+  > let x a b = a + b in let r t = t+t in x (r 10) 7
+  (let x = (fun a -> (fun b -> (a + b))) in (let r = (fun t -> (t + t)) in x r 10 7))
+  27

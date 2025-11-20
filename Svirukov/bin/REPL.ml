@@ -11,7 +11,7 @@ open Stdio
 
 let () =
   let expr =
-    match Parser.parse (Stdio.In_channel.(input_all stdin) |> Base.String.rstrip) with
+    match Parser.parse (In_channel.(input_all stdin) |> Base.String.rstrip) with
     | Ok expr ->
       let _ = Printf.printf "%s\n" (Print.print_ast expr) in
       expr

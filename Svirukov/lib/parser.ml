@@ -42,8 +42,8 @@ let variable_name =
   token (take_while1 varname)
   >>= fun s ->
   match s with
-  | _ when is_keyword s -> fail "Cannot use keyword for varname"
-  | _ when String.for_all is_digit s -> fail "Cannot use number as varname"
+  | _ when is_keyword s -> fail "cannot use keyword for varname"
+  | _ when String.for_all is_digit s -> fail "cannot use number as varname"
   | _ -> return s
 ;;
 
@@ -88,7 +88,7 @@ let cmp_op =
   | "=" -> return Equals
   | ">" -> return MoreThan
   | "<" -> return LessThan
-  | _ -> fail "Invalid comparison operator"
+  | _ -> fail "invalid comparison operator"
 ;;
 
 let rec build_curried_function args body =
