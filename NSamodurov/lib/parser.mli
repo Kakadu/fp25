@@ -12,7 +12,8 @@ val parse : string -> (Ast.name Ast.t, [> Inferencer.error ]) result
 val to_brujin : string Ast.t -> Ast.brujin Ast.t
 
 type dispatch =
-  { apps : dispatch -> Ast.name Ast.t Angstrom.t
+  { expr : dispatch -> Ast.name Ast.t Angstrom.t
+  ; apps : dispatch -> Ast.name Ast.t Angstrom.t
   ; single : dispatch -> Ast.name Ast.t Angstrom.t
   }
 

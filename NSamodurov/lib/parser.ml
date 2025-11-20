@@ -40,7 +40,7 @@ let conde = function
 ;;
 
 let keyword = function
-  | "let" | "in" | "if" | "then" | "else" -> true
+  | "let" | "in" | "if" | "then" | "else" | "->" | "fun" -> true
   | _ -> false
 ;;
 
@@ -66,7 +66,8 @@ let number =
 ;;
 
 type dispatch =
-  { apps : dispatch -> string Ast.t Angstrom.t
+  { expr : dispatch -> string Ast.t Angstrom.t
+  ; apps : dispatch -> string Ast.t Angstrom.t
   ; single : dispatch -> string Ast.t Angstrom.t
   }
 
@@ -74,6 +75,7 @@ let parens = fun p -> char '(' *> p <* char ')' <?> "Parentheses expected"
 let to_left_assoc s h tl = List.fold_left (fun acc x -> s acc x) h tl
 let multi_sum h tl = to_left_assoc add h tl
 let multi_prod h tl = to_left_assoc sub h tl
+let var v = EVar v
 let int c = EConst (Int c)
 let bool c = EConst (Bool c)
 
@@ -95,34 +97,34 @@ let prio expr table =
   helper 0
 ;;
 
-let expr =
-  let small_expr = number >>| int in
-  prio
-    small_expr
-    [| [ ws *> char '+' <* ws, add; ws *> char '-' <* ws, sub ]
-     ; [ ws *> char '*' <* ws, mul; ws *> char '/' <* ws, div ]
-    |]
-;;
-
 let parse_lam =
+  let expr pack =
+    prio
+      (pack.apps pack)
+      [| [ ws *> char '+' <* ws, add; ws *> char '-' <* ws, sub ]
+       ; [ ws *> char '*' <* ws, mul; ws *> char '/' <* ws, div ]
+      |]
+  in
   let single pack =
     fix (fun _ ->
       conde
-        [ parens (pack.apps pack)
-        ; (string "if" *> ws *> pack.apps pack
+        [ parens (pack.expr pack)
+        ; varname <* ws >>| var
+        ; number <* ws >>| int
+        ; (string "if" *> ws *> pack.expr pack
            >>= fun p ->
-           string "then" *> ws *> pack.apps pack
+           string "then" *> ws *> pack.expr pack
            >>= fun e1 ->
-           string "else" *> ws *> pack.apps pack
+           string "else" *> ws *> pack.expr pack
            >>= fun e2 -> return (Ast.EIf (p, e1, e2)))
         ; (string "let rec" *> ws *> many1 (ws *> varname)
            <* ws
            <* string "="
            <* ws
            >>= fun v ->
-           ws *> pack.apps pack
+           ws *> pack.expr pack
            >>= fun e1 ->
-           ws *> string "in" *> ws *> pack.apps pack
+           ws *> string "in" *> ws *> pack.expr pack
            >>= fun e2 ->
            match v with
            | [] -> fail "Should not happend"
@@ -135,9 +137,9 @@ let parse_lam =
            <* string "="
            <* ws
            >>= fun v ->
-           ws *> pack.apps pack
+           ws *> pack.expr pack
            >>= fun e1 ->
-           ws *> string "in" *> ws *> pack.apps pack
+           ws *> string "in" *> ws *> pack.expr pack
            >>= fun e2 ->
            match v with
            | [] -> fail "Should not happend"
@@ -145,23 +147,21 @@ let parse_lam =
            | v :: args ->
              let e1 = List.fold_right (fun x acc -> Ast.EAbs (x, acc)) args e1 in
              return (Ast.ELet (Ast.NotRecursive, v, e1, e2)))
-        ; (string "fun" *> many1 (ws *> varname)
-           <* ws
-           <* string "->" *> return ()
+          (* ; (string "fun" *> ws *> many1 (varname <* ws) *)
+          (*    >>= fun _ -> return @@ EConst (Int 1)) *)
+        ; (string "fun" *> ws *> many1 (varname <* ws)
            >>= fun list ->
-           pack.apps pack
+           string "->" *> pack.expr pack
            >>= fun b -> return (List.fold_right (fun x acc -> Ast.EAbs (x, acc)) list b))
-        ; (varname <* ws >>= fun v -> return (Ast.EVar v))
-        ; (expr <* ws >>= fun ast -> return ast)
         ])
   in
   let apps pack =
     many1 (ws *> pack.single pack <* ws)
     >>= function
     | [] -> fail "bad syntax"
-    | x :: xs -> return @@ List.fold_left (fun l r -> Ast.EApp (l, r)) x xs
+    | h :: tl -> return @@ List.fold_left (fun l r -> Ast.EApp (l, r)) h tl
   in
-  { single; apps }
+  { expr; apps; single }
 ;;
 
 (** Monad for de brujin global context  *)

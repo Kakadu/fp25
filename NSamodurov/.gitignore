@@ -6,3 +6,4 @@ _coverage
 /.melange.eobjs
 *~
 .dir-locals.el
+.projectile

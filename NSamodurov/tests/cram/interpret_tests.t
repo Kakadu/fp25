@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC0-1.0
   Success: (Int 1)
 
   $ ../../bin/REPL.exe << EOF
-  > 1 + 2
+  > (1 + 2)
   Success: (Int 3)
 
   $ ../../bin/REPL.exe << EOF
@@ -19,3 +19,4 @@ SPDX-License-Identifier: CC0-1.0
   $ ../../bin/REPL.exe << EOF
   > let f = (fun x -> 5 + 1) in f 1
   Success: (Int 6)
+

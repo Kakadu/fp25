@@ -33,8 +33,8 @@ let%expect_test "constant" =
   [%expect {| (Const 1); |}]
 ;;
 
-let%expect_test "function" =
-  instruction_of_program "1 + 2";
+let%expect_test "arith" =
+  instruction_of_program "(1 + 2)";
   [%expect {| (Const 2);Push;(Const 1);Add; |}]
 ;;
 

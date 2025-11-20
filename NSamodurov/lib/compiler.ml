@@ -14,8 +14,8 @@ type instr =
   | Push (** Push argument onto argument stack *)
   | PushMark (** Same as Push instruction but used first*)
   | AppTerm (** Tail-recursive version of EndLet *)
-  | Dummy (** Push dummy symbol to enviroment *)
-  | Update (** Substitute variable in enviroment *)
+  | Dummy (** Push dummy symbol to enviroment, used by let rec *)
+  | Update (**  *)
   | Add (** Arithmetic operators  *)
   | Sub
   | Mul
@@ -61,6 +61,19 @@ let compile =
     | EConst (Bool c) -> Const (if c then 1 else 0) :: acc
   and helper_c acc = function
     | EVar (Index i) -> Access (i - reserved) :: acc
+    | EIf (pred, e1, e2) ->
+      (* inoptimized *)
+      let then_instr = helper_t [] e1 in
+      let else_instr = helper_t [] e2 in
+      let pred_instr = helper_t [] pred in
+      let then_ofs = List.length then_instr in
+      let else_ofs = List.length else_instr in
+      pred_instr
+      @ [ BranchIf then_ofs ]
+      @ then_instr
+      @ [ Branch else_ofs ]
+      @ else_instr
+      @ acc
     | EApp (e1, e2) ->
       (match list_of_apps e1 with
        | EVar (Index 0) :: tl ->

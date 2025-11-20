@@ -29,7 +29,7 @@ let%expect_test "one int" =
 ;;
 
 let%expect_test "arithmetic expression" =
-  parse_and_print "1 + 1";
+  parse_and_print "(1 + 1)";
   [%expect {| Type: (TGround "int") |}]
 ;;
 
