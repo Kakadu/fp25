@@ -47,12 +47,17 @@ let evar v = EVar v
 let elet flag v e1 e2 = ELet (flag, v, e1, e2)
 let eabs v t = EAbs (v, t)
 let eapp e1 e2 = EApp (e1, e2)
-let plus = EVar (Index 0)
-let minus = EVar (Index 1)
-let asterisk = EVar (Index 2)
-let slash = EVar (Index 3)
-let reserved = 4
+let reserved = 13
 let add e1 e2 = eapp (eapp (evar "+") e1) e2
 let sub e1 e2 = eapp (eapp (evar "-") e1) e2
 let mul e1 e2 = eapp (eapp (evar "*") e1) e2
 let div e1 e2 = eapp (eapp (evar "/") e1) e2
+let le e1 e2 = eapp (eapp (evar "<") e1) e2
+let gr e1 e2 = eapp (eapp (evar ">") e1) e2
+let leq e1 e2 = eapp (eapp (evar "<=") e1) e2
+let grq e1 e2 = eapp (eapp (evar ">=") e1) e2
+let eq e1 e2 = eapp (eapp (evar "=") e1) e2
+let neq_phy e1 e2 = eapp (eapp (evar "!=") e1) e2
+let neq_str e1 e2 = eapp (eapp (evar "<>") e1) e2
+let andl e1 e2 = eapp (eapp (evar "&&") e1) e2
+let orl e1 e2 = eapp (eapp (evar "||") e1) e2

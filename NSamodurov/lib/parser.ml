@@ -86,12 +86,12 @@ let prio expr table =
     then expr
     else (
       let xs = table.(level) in
-      return (List.fold_left (fun acc (op, r) -> op acc r))
+      return (List.fold_left (fun acc (p, c) -> p acc c))
       <*> helper (level + 1)
       <*> many
           @@ conde
           @@ List.map
-               (fun (op, f) -> op *> helper (level + 1) >>= fun r -> return (f, r))
+               (fun (p, c) -> p *> helper (level + 1) >>= fun r -> return (c, r))
                xs)
   in
   helper 0
@@ -101,7 +101,17 @@ let parse_lam =
   let expr pack =
     prio
       (pack.apps pack)
-      [| [ ws *> char '+' <* ws, add; ws *> char '-' <* ws, sub ]
+      [| [ ws *> char '<' <* ws, le
+         ; ws *> char '>' <* ws, gr
+         ; ws *> char '<' <* char '=' <* ws, leq
+         ; ws *> char '>' <* char '=' <* ws, grq
+         ; ws *> char '=' <* ws, eq
+         ; ws *> char '!' <* char '=' <* ws, neq_phy
+         ; ws *> char '<' <* char '>' <* ws, neq_str
+         ; ws *> char '&' <* char '&' <* ws, andl
+         ; ws *> char '|' <* char '|' <* ws, orl
+         ]
+       ; [ ws *> char '+' <* ws, add; ws *> char '-' <* ws, sub ]
        ; [ ws *> char '*' <* ws, mul; ws *> char '/' <* ws, div ]
       |]
   in
@@ -147,8 +157,6 @@ let parse_lam =
            | v :: args ->
              let e1 = List.fold_right (fun x acc -> Ast.EAbs (x, acc)) args e1 in
              return (Ast.ELet (Ast.NotRecursive, v, e1, e2)))
-          (* ; (string "fun" *> ws *> many1 (varname <* ws) *)
-          (*    >>= fun _ -> return @@ EConst (Int 1)) *)
         ; (string "fun" *> ws *> many1 (varname <* ws)
            >>= fun list ->
            string "->" *> pack.expr pack
@@ -197,10 +205,19 @@ let to_brujin expr =
   let open Env.Syntax in
   let rec helper =
     fun bound -> function
-      | EVar "+" -> return plus
-      | EVar "-" -> return minus
-      | EVar "*" -> return asterisk
-      | EVar "/" -> return slash
+      | EVar "+" -> return @@ EVar (Index 0)
+      | EVar "-" -> return @@ EVar (Index 1)
+      | EVar "*" -> return @@ EVar (Index 2)
+      | EVar "/" -> return @@ EVar (Index 3)
+      | EVar "<" -> return @@ EVar (Index 4)
+      | EVar ">" -> return @@ EVar (Index 5)
+      | EVar "<=" -> return @@ EVar (Index 6)
+      | EVar ">=" -> return @@ EVar (Index 7)
+      | EVar "=" -> return @@ EVar (Index 8)
+      | EVar "!=" -> return @@ EVar (Index 9)
+      | EVar "<>" -> return @@ EVar (Index 10)
+      | EVar "&&" -> return @@ EVar (Index 11)
+      | EVar "||" -> return @@ EVar (Index 12)
       | EVar v ->
         let* map = read in
         (match List.find_index (String.equal v) bound with

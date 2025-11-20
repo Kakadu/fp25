@@ -199,11 +199,21 @@ let infer env =
 
 let env : scheme IMap.t =
   let arith_ty = tarrow tint (tarrow tint tint) in
+  let bool_ty = tarrow tbool (tarrow tbool tbool) in
   Context.empty
   |> Context.add 0 (Scheme.mono arith_ty)
   |> Context.add 1 (Scheme.mono arith_ty)
   |> Context.add 2 (Scheme.mono arith_ty)
   |> Context.add 3 (Scheme.mono arith_ty)
+  |> Context.add 4 (Scheme.mono bool_ty)
+  |> Context.add 5 (Scheme.mono bool_ty)
+  |> Context.add 6 (Scheme.mono bool_ty)
+  |> Context.add 7 (Scheme.mono bool_ty)
+  |> Context.add 8 (Scheme.mono bool_ty)
+  |> Context.add 9 (Scheme.mono bool_ty)
+  |> Context.add 10 (Scheme.mono bool_ty)
+  |> Context.add 11 (Scheme.mono bool_ty)
+  |> Context.add 12 (Scheme.mono bool_ty)
 ;;
 
 let w : Ast.brujin Ast.t -> (ty, error) Result.t =

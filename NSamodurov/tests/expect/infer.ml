@@ -35,27 +35,27 @@ let%expect_test "arithmetic expression" =
 
 let%expect_test "constant function" =
   parse_and_print "fun x -> 1";
-  [%expect {| Type: (TArrow ((TVar 4), (TGround "int"))) |}]
+  [%expect {| Type: (TArrow ((TVar 13), (TGround "int"))) |}]
 ;;
 
 let%expect_test "identity" =
   parse_and_print "fun x -> x";
-  [%expect {| Type: (TArrow ((TVar 4), (TVar 4))) |}]
+  [%expect {| Type: (TArrow ((TVar 13), (TVar 13))) |}]
 ;;
 
 let%expect_test "false" =
   parse_and_print "fun x y -> y";
-  [%expect {| Type: (TArrow ((TVar 4), (TArrow ((TVar 5), (TVar 5))))) |}]
+  [%expect {| Type: (TArrow ((TVar 13), (TArrow ((TVar 14), (TVar 14))))) |}]
 ;;
 
 let%expect_test "many arguments" =
   parse_and_print "fun x y z u v -> y";
   [%expect
     {|
-    Type: (TArrow ((TVar 4),
-             (TArrow ((TVar 5),
-                (TArrow ((TVar 6),
-                   (TArrow ((TVar 7), (TArrow ((TVar 8), (TVar 5)))))))
+    Type: (TArrow ((TVar 13),
+             (TArrow ((TVar 14),
+                (TArrow ((TVar 15),
+                   (TArrow ((TVar 16), (TArrow ((TVar 17), (TVar 14)))))))
                 ))
              ))
     |}]
