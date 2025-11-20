@@ -46,4 +46,6 @@ let print_error = function
   | Unimplemented -> "Not implemented yet..."
   | TooManyArgs -> "Too many args for function"
   | ParttialApplication -> "Not enought args to calculate function"
+  | ExceedNumberOfSteps expr ->
+    Printf.sprintf "Exceed number of redunction posssible: \n%s" (print_ast expr)
 ;;

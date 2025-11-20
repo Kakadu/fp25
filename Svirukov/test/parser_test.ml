@@ -71,8 +71,7 @@ let%expect_test "parse complex expression" =
 
 let%expect_test "parse function with multiple args" =
   print_string (print_ast (parse "let add x y = x + y in add 1 2" |> Result.get_ok));
-  [%expect
-    {| (let add = (fun x -> (fun y -> (x + y))) in add 1 2) |}]
+  [%expect {| (let add = (fun x -> (fun y -> (x + y))) in add 1 2) |}]
 ;;
 
 let%expect_test "parse nested application" =
@@ -84,8 +83,7 @@ let%expect_test "factorial with rec" =
   print_string
     (print_ast
        (parse "let rec fac n= if n = 1 then 1 else (fac (n-1)) * n" |> Result.get_ok));
-  [%expect
-    {| (let rec fac = (fun n -> (if (n = 1) then 1 else (fac (n - 1) * n)))) |}]
+  [%expect {| (let rec fac = (fun n -> (if (n = 1) then 1 else (fac (n - 1) * n)))) |}]
 ;;
 
 let%expect_test "some skope values" =
@@ -123,8 +121,7 @@ let%expect_test "simple application" =
 let%expect_test "nested let with application" =
   print_string
     (print_ast (parse "let f = fun x -> x + 1 in let y = f 5 in y * 2" |> Result.get_ok));
-  [%expect
-    {| (let f = (fun x -> (x + 1)) in (let y = f 5 in (y * 2))) |}]
+  [%expect {| (let f = (fun x -> (x + 1)) in (let y = f 5 in (y * 2))) |}]
 ;;
 
 let%expect_test "anonymous function in application" =
@@ -134,14 +131,12 @@ let%expect_test "anonymous function in application" =
 
 let%expect_test "multiple applications with arithmetic" =
   print_string (print_ast (parse "f (g x) + h (k y) * 2" |> Result.get_ok));
-  [%expect
-    {| (f g x + (h k y * 2)) |}]
+  [%expect {| (f g x + (h k y * 2)) |}]
 ;;
 
 let%expect_test "conditional with applications" =
   print_string (print_ast (parse "if f x > 0 then g y else h z" |> Result.get_ok));
-  [%expect
-    {| (if (f x > 0) then g y else h z) |}]
+  [%expect {| (if (f x > 0) then g y else h z) |}]
 ;;
 
 let%expect_test "nested anonymous functions" =
@@ -152,14 +147,12 @@ let%expect_test "nested anonymous functions" =
 let%expect_test "let with multiple arguments and application" =
   print_string
     (print_ast (parse "let add x y = x + y in add (f 1) (g 2)" |> Result.get_ok));
-  [%expect
-    {| (let add = (fun x -> (fun y -> (x + y))) in add f 1 g 2) |}]
+  [%expect {| (let add = (fun x -> (fun y -> (x + y))) in add f 1 g 2) |}]
 ;;
 
 let%expect_test "application chain with comparison" =
   print_string (print_ast (parse "f a b > g c d + 1" |> Result.get_ok));
-  [%expect
-    {| (f a b > (g c d + 1)) |}]
+  [%expect {| (f a b > (g c d + 1)) |}]
 ;;
 
 let%expect_test "nested lets with applications" =
@@ -167,15 +160,13 @@ let%expect_test "nested lets with applications" =
     (print_ast
        (parse "let x = 5 in let f = fun y -> x + y in let z = f 10 in z * 2"
         |> Result.get_ok));
-  [%expect
-    {| (let x = 5 in (let f = (fun y -> (x + y)) in (let z = f 10 in (z * 2)))) |}]
+  [%expect {| (let x = 5 in (let f = (fun y -> (x + y)) in (let z = f 10 in (z * 2)))) |}]
 ;;
 
 let%expect_test "application with complex expressions" =
   print_string
     (print_ast (parse "f (x + 1) (y * 2) (if z > 0 then a else b)" |> Result.get_ok));
-  [%expect
-    {| f (x + 1) (y * 2) (if (z > 0) then a else b) |}]
+  [%expect {| f (x + 1) (y * 2) (if (z > 0) then a else b) |}]
 ;;
 
 let%expect_test "recursive function with application" =
@@ -196,13 +187,11 @@ let%expect_test "nested if-then-else" =
   print_string
     (print_ast
        (parse "if 4>8 then if 7>9 then 7 else g 7 else g (k 4) 7" |> Result.get_ok));
-  [%expect
-    {| (if (4 > 8) then (if (7 > 9) then 7 else g 7) else g k 4 7) |}]
+  [%expect {| (if (4 > 8) then (if (7 > 9) then 7 else g 7) else g k 4 7) |}]
 ;;
 
 let%expect_test "test else if" =
   print_string
     (print_ast (parse "if 4>8 then g 7 4 h else if 7>9 then 7 else g 7" |> Result.get_ok));
-  [%expect
-    {| (if (4 > 8) then g 7 4 h else (if (7 > 9) then 7 else g 7)) |}]
+  [%expect {| (if (4 > 8) then g 7 4 h else (if (7 > 9) then 7 else g 7)) |}]
 ;;

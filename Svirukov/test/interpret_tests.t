@@ -13,7 +13,7 @@ in the dune file
   > 5 + 5
   (5 + 5)
   10
-  $ ../bin/REPL.exe -dparsetree <<EOF
+  $ ../bin/REPL.exe <<EOF
   > let r x y= y+x*8 in r 9 10
   (let r = (fun x -> (fun y -> (y + (x * 8)))) in r 9 10)
   82
@@ -103,12 +103,18 @@ in the dune file
   (let r = 5 in (let rec f = (fun n -> (fun k -> (if (n > k) then (n + f (n - 1) k) else k))) in (let y = (if (r > 0) then ((-1 * r) + 5) else (r - 5)) in f r y)))
   15
 
-  $ ../bin/REPL.exe <<EOF
+  $ ../bin/REPL.exe --steps=1 --ast <<EOF
   > let x c = c*2 in x g
-  (let x = (fun c -> (c * 2)) in x g)
-  Unbound variable g
+  Exceed number of redunction posssible: 
+  (fun c -> (c * 2))
 
   $ ../bin/REPL.exe <<EOF
   > let x a b = a + b in let r t = t+t in x (r 10) 7
   (let x = (fun a -> (fun b -> (a + b))) in (let r = (fun t -> (t + t)) in x r 10 7))
   27
+
+  $ ../bin/REPL.exe --steps 100 <<EOF
+  > let rec t n= t (n+1) in t 4
+  (let rec t = (fun n -> t (n + 1)) in t 4)
+  Exceed number of redunction posssible: 
+  100

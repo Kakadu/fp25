@@ -14,6 +14,7 @@ type error =
   | DivisionByZero
   | ParttialApplication
   | TooManyArgs
+  | ExceedNumberOfSteps of expr
   | Unimplemented
 
 type value =
@@ -31,4 +32,4 @@ module type MONAD = sig
   val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
 end
 
-val run_interpret : expr -> (expr, error) result
+val run_interpret : expr -> int -> (expr, error) result

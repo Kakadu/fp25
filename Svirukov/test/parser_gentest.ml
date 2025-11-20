@@ -109,7 +109,7 @@ let gen_expr =
     aux depth)
 ;;
 
-let arb_program = make Gen.(map print_expr gen_expr)
+let arb_program = make Gen.(map print_ast gen_expr)
 
 let gen_invalid_program =
   make
@@ -174,7 +174,7 @@ let round_trip_property =
   Test.make ~name:"Parser round-trip property" ~count:1000 arb_program (fun program_str ->
     match parse program_str with
     | Ok ast ->
-      let printed = print_expr ast in
+      let printed = print_ast ast in
       (match parse printed with
        | Ok ast2 -> ast = ast2
        | Error _ -> false)
