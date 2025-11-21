@@ -1,7 +1,7 @@
 (library
- (name parser_unittests)
+ (name interpreter_unittests)
  (package ShaehmitovShamil)
- (libraries base parser ast)
+ (libraries base parser ast interpreter)
  (inline_tests)
  (instrumentation
   (backend bisect_ppx))

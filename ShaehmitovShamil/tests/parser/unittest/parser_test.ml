@@ -138,3 +138,43 @@ let%expect_test "fun with two arguments" =
     {|
     (FunExpr ([(PVar "x"); (PVar "y")], (BinOp (Add, (Var "x"), (Var "y"))))) |}]
 ;;
+
+let run_program_parser input =
+  match parse_structure_items input with
+  | Ok expr -> print_endline (show_program expr)
+  | Error msg -> Stdlib.Printf.printf "Error: %s\n" msg
+;;
+
+let%expect_test "simple structure" =
+  run_program_parser "10 + 5 - 6";
+  [%expect {|
+    [(Expr
+        (BinOp (Sub, (BinOp (Add, (Const (CInt 10)), (Const (CInt 5)))),
+           (Const (CInt 6)))))
+      ] |}]
+;;
+
+let%expect_test "binding test" =
+ run_program_parser "let f x y = x + y";
+ [%expect {|
+   [(Value
+       (NonRec, (PVar "f"),
+        (FunExpr ([(PVar "x"); (PVar "y")], (BinOp (Add, (Var "x"), (Var "y")))
+           ))))
+     ] |}]
+;;
+
+let%expect_test "two binding" =
+run_program_parser "let f x y = x * y ;;
+\  let g n = f n 5";
+[%expect {|
+  [(Value
+      (NonRec, (PVar "f"),
+       (FunExpr ([(PVar "x"); (PVar "y")], (BinOp (Mul, (Var "x"), (Var "y")))
+          ))));
+    (Value
+       (NonRec, (PVar "g"),
+        (FunExpr ([(PVar "n")],
+           (App ((App ((Var "f"), (Var "n"))), (Const (CInt 5))))))))
+    ] |}]
+

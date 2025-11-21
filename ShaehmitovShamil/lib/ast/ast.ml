@@ -41,10 +41,13 @@ type expr =
 [@@deriving show { with_path = false }]
 
 type binding = rec_flag * pattern * expr
+[@@deriving show { with_path = false }]
 type structure_item = Value of binding | Expr of expr
+[@@deriving show { with_path = false }]
 type program = structure_item list
+[@@deriving show { with_path = false }]
 
-let rec pretty_print_pattern = function
+let pretty_print_pattern = function
   | PVar s -> s
   | PAny -> "_"
 ;;
@@ -99,7 +102,7 @@ let rec pretty_print_expr = function
     ^ ")"
 ;;
 
-let rec pretty_print_program_item = function
+let pretty_print_program_item = function
   | Value (NonRec, p, e) -> "let " ^ pretty_print_pattern p ^ " = " ^ pretty_print_expr e
   | Value (Rec, p, e) -> "let rec " ^ pretty_print_pattern p ^ " = " ^ pretty_print_expr e
   | Expr e -> pretty_print_expr e

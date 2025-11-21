@@ -190,6 +190,13 @@ let parse_program_item expr =
   choice [ (parse_binding expr >>| fun e -> Value e); (expr >>| fun e -> Expr e) ]
 ;;
 
-let parse_program1 expr =
-  sep_by (token (string ";;")) (parse_program_item expr) <* end_of_input
+let parse_program1 =
+  let items = sep_by (token (string ";;")) (parse_program_item parse_expr) in
+  whitespace *> items <* option () (token (string ";;") *> return ()) <* whitespace <* end_of_input
+;;
+
+let parse_structure_items s = 
+  match Angstrom.parse_string ~consume:All parse_program1 s with
+  | Ok result -> Ok result
+  | Error msg -> Error msg
 ;;
