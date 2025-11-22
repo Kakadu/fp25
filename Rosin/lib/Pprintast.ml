@@ -38,9 +38,15 @@ let rec pp =
   | Fun (name, e) ->
     fprintf fmt "Fun(%s, %a)" name pp e
   | Let (name, rhs, body) ->
-    fprintf fmt "Let((%s, %a) in %a)" name pp rhs pp body
+    let res = match body with
+    | Some body -> fprintf fmt "Let((%s, %a) in %a)" name pp rhs pp body
+    | None -> fprintf fmt "Let(%s, %a)" name pp rhs
+  in res
   | Letrec (name, rhs, body) ->
-    fprintf fmt "Letrec((%s, %a) in %a)" name pp rhs pp body
+    let res = match body with
+    | Some body -> fprintf fmt "Letrec((%s, %a) in %a)" name pp rhs pp body
+    | None -> fprintf fmt "Letrec(%s, %a)" name pp rhs
+  in res
   | Fix (e) ->
     fprintf fmt "Fix(%a)" pp e
   | App (f, x) ->

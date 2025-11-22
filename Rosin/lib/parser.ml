@@ -54,6 +54,8 @@ let unop = token (string "++" *> return Ast.Inc <|> string "--" *> return Ast.De
 let mult_div_op = token (char '*' *> return Ast.Mult <|> char '/' *> return Ast.Div)
 let add_div_op = token (char '+' *> return Ast.Plus <|> char '-' *> return Ast.Minus)
 
+let multi_fun args = List.fold_right (fun arg body -> Ast.Fun (arg, body)) args
+
 let expr =
   fix (fun expr ->
     let atom =
@@ -121,8 +123,7 @@ let expr =
       token (string "->") *> expr
       >>= fun body ->
       (* Десугаризация: fun x y -> e => fun x -> fun y -> e *)
-      let multi_fun = List.fold_right (fun arg body -> Ast.Fun (arg, body)) args body in
-      return multi_fun
+      return @@ multi_fun args body
     in
     (** Парсер для let выражений *)
     let let_expr =
@@ -130,13 +131,19 @@ let expr =
       >>= fun is_rec ->
       varname
       >>= fun name ->
+      many varname
+      >>= fun args ->
       token (char '=') *> expr
       >>= fun value ->
-      token (string "in") *> expr
-      >>= fun body ->
-      if is_rec
-      then return (Ast.Letrec (name, value, body))
-      else return (Ast.Let (name, value, body))
+      let body = match args with
+      | [] -> value
+      | _ -> (multi_fun args value)
+      in
+      option None (token (string "in") *> expr >>| fun cont -> Some cont)
+      >>= fun res -> 
+      if(is_rec)
+      then return @@ Ast.Letrec (name, body, res)
+      else return @@ Ast.Let (name, body, res)
     in
     choice [ if_expr; fun_expr; let_expr; add_expr ])
 ;;
