@@ -10,7 +10,7 @@ let is_space = function
 ;;
 
 let spaces = skip_while is_space
-let token p = spaces *> p <* spaces
+let token p = p <* spaces
 let parens p = token (char '(') *> p <* token (char ')')
 
 (** Парсер целых чисел *)
@@ -49,21 +49,10 @@ let varname =
 (** Unary operations *)
 let unop = token (string "++" *> return Ast.Inc <|> string "--" *> return Ast.Dec)
 
-(** Binary operations *)
-let binop =
-  let ops = [ '+', Ast.Plus; '-', Ast.Minus; '*', Ast.Mult; '/', Ast.Div ] in
-  token (choice (List.map (fun (c, op) -> char c *> return op) ops))
-;;
 
-(** Helper for bunary operations chain *)
-let binop_chain elem_parser op_parser =
-  elem_parser
-  >>= fun first ->
-  many (op_parser >>= fun op -> elem_parser >>= fun expr -> return (op, expr))
-  >>= fun rest ->
-  return
-  @@ List.fold_left (fun left (op, right) -> Ast.Binop (op, left, right)) first rest
-;;
+(** Бинарные операции *)
+let mult_div_op = token (char '*' *> return Ast.Mult <|> char '/' *> return Ast.Div)
+let add_div_op = token (char '+' *> return Ast.Plus <|> char '-' *> return Ast.Minus)
 
 let expr =
   fix (fun expr ->
@@ -91,8 +80,29 @@ let expr =
       | [] -> fail "empty application"
       | x :: xs -> return (List.fold_left (fun f arg -> Ast.App (f, arg)) x xs)
     in
-    (*** Парсер для бинарных операций *)
-    let mult_expr = binop_chain app_expr binop in
+    let mult_expr =
+      app_expr >>= fun first ->
+      let rec parse_rest left =
+        choice [
+          (mult_div_op >>= fun op -> app_expr >>= fun right -> 
+            parse_rest (Ast.Binop (op, left, right)));
+          return left
+        ]
+      in
+      parse_rest first
+    in
+
+    let add_expr =
+      mult_expr >>= fun first ->
+      let rec parse_rest left =
+        choice [
+          (add_div_op >>= fun op -> mult_expr >>= fun right -> 
+            parse_rest (Ast.Binop (op, left, right)));
+          return left
+        ]
+      in
+      parse_rest first
+    in
     (* Парсер для if выражений *)
     let if_expr =
       token (string "if") *> expr
@@ -126,7 +136,7 @@ let expr =
       then return (Ast.Letrec (name, value, body))
       else return (Ast.Let (name, value, body))
     in
-    choice [ if_expr; fun_expr; let_expr; mult_expr ])
+    choice [ if_expr; fun_expr; let_expr; add_expr ])
 ;;
 
 type error = [ `Parsing_error of string ]
