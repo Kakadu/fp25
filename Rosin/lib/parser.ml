@@ -8,8 +8,9 @@ let is_space = function
   | ' ' | '\t' | '\n' | '\r' -> true
   | _ -> false
 ;;
-
 let spaces = skip_while is_space
+let spaces1 = satisfy is_space >>= fun c -> skip_while is_space >>| fun () -> c
+let split_args = satisfy is_space >>= fun c -> spaces >>| fun () -> c
 let token p = p <* spaces
 let parens p = token (char '(') *> p <* token (char ')')
 
@@ -52,7 +53,7 @@ let unop = token (string "++" *> return Ast.Inc <|> string "--" *> return Ast.De
 
 (** Бинарные операции *)
 let mult_div_op = token (char '*' *> return Ast.Mult <|> char '/' *> return Ast.Div)
-let add_div_op = token (char '+' *> return Ast.Plus <|> char '-' *> return Ast.Minus)
+let add_sub_op = token (char '+' *> return Ast.Plus <|> char '-' *> return Ast.Minus)
 
 let multi_fun args = List.fold_right (fun arg body -> Ast.Fun (arg, body)) args
 
@@ -65,47 +66,45 @@ let expr =
         parens expr;
       ]
     in
-    let simple_expr =
-      choice
-        [ number
-        ; (varname >>| fun v -> Ast.Var v)
-        ; parens expr
-        ; (token (string "fix") *> expr >>| fun e -> Ast.Fix e)
-        ; (token (string "print") *> expr >>| fun e -> Ast.Print e)
-        ; (unop >>= fun op -> atom <|> parens expr >>| fun e -> Ast.Unop (op, e))
-        ]
-    in
-    (** Парсер для применения функций (левоассоциативный) *)
-    let app_expr =
-      many1 simple_expr
-      >>= function
-      | [] -> fail "empty application"
-      | x :: xs -> return (List.fold_left (fun f arg -> Ast.App (f, arg)) x xs)
+
+  let unary_expr =
+      choice [
+        (unop >>= fun op -> atom >>| fun e -> Ast.Unop (op, e));
+        (token (string "fix") *> atom >>| fun e -> Ast.Fix e);
+        (token (string "print") *> atom >>| fun e -> Ast.Print e);
+        atom
+      ]
     in
 
-    let mult_expr =
-      simple_expr >>= fun first ->
-      let rec parse_rest left =
-        choice [
-          (mult_div_op >>= fun op -> app_expr >>= fun right -> 
-            parse_rest (Ast.Binop (op, left, right)));
-          return left
-        ]
-      in
-      parse_rest first
-    in
+  let app_expr =
+    many1 unary_expr >>= function
+    | [] -> fail "empty application"
+    | x :: xs -> return (List.fold_left (fun f arg -> Ast.App (f, arg)) x xs)
+  in
 
-    let add_expr =
-      mult_expr >>= fun first ->
-      let rec parse_rest left =
-        choice [
-          (add_div_op >>= fun op -> mult_expr >>= fun right -> 
-            parse_rest (Ast.Binop (op, left, right)));
-          return left
-        ]
-      in
-      parse_rest first
+  let mult_expr =
+    app_expr >>= fun first ->
+    let rec parse_rest left =
+      choice [
+        (mult_div_op >>= fun op -> app_expr >>= fun right -> 
+          parse_rest (Ast.Binop (op, left, right)));
+        return left
+      ]
     in
+    parse_rest first
+  in
+
+  let add_expr =
+    mult_expr >>= fun first ->
+    let rec parse_rest left =
+      choice [
+        (add_sub_op >>= fun op -> mult_expr >>= fun right -> 
+          parse_rest (Ast.Binop (op, left, right)));
+        return left
+      ]
+    in
+    parse_rest first
+  in
 
     (* Парсер для if выражений *)
     let if_expr =
@@ -145,7 +144,7 @@ let expr =
       then return @@ Ast.Letrec (name, body, res)
       else return @@ Ast.Let (name, body, res)
     in
-    choice [ if_expr; fun_expr; let_expr; add_expr ])
+    choice [ if_expr; fun_expr; let_expr; add_expr])
 ;;
 
 type error = [ `Parsing_error of string ]
@@ -155,7 +154,7 @@ let pp_error ppf = function
 ;;
 
 let parse str =
-  match Angstrom.parse_string ~consume:Consume.All (expr <* spaces) str with
+  match Angstrom.parse_string ~consume:Consume.All (spaces *> expr <* spaces) str with
   | Result.Ok x -> Result.Ok x
   | Error msg -> Result.Error (`Parsing_error msg)
 ;;

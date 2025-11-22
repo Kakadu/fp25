@@ -27,8 +27,8 @@ let rec pp =
   in
 
   let pp fmt = function
-  | Num n -> fprintf fmt "%d" n
-  | Var v -> fprintf fmt "%s" v
+  | Num n -> fprintf fmt "Int(%d)" n
+  | Var v -> fprintf fmt "Var(%s)" v
   | Unop (op, a) ->
     parens fmt (fun ppf () -> fprintf ppf "%s(%a)" (pp_unop op) pp a )
   | Binop (op, a, b) ->
@@ -50,7 +50,7 @@ let rec pp =
   | Fix (e) ->
     fprintf fmt "Fix(%a)" pp e
   | App (f, x) ->
-    parens fmt (fun ppf () -> fprintf ppf "%a %a" pp f pp x)
+    parens fmt (fun ppf () -> fprintf ppf "App(%a, %a)" pp f pp x)
   | Print (e) ->
     fprintf fmt "Print(%a)" pp e
   in pp
