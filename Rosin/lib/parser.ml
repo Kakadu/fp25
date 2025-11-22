@@ -80,8 +80,9 @@ let expr =
       | [] -> fail "empty application"
       | x :: xs -> return (List.fold_left (fun f arg -> Ast.App (f, arg)) x xs)
     in
+
     let mult_expr =
-      app_expr >>= fun first ->
+      simple_expr >>= fun first ->
       let rec parse_rest left =
         choice [
           (mult_div_op >>= fun op -> app_expr >>= fun right -> 
@@ -103,6 +104,7 @@ let expr =
       in
       parse_rest first
     in
+
     (* Парсер для if выражений *)
     let if_expr =
       token (string "if") *> expr
