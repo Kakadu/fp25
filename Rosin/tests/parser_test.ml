@@ -29,6 +29,31 @@ let%expect_test "parse negative number" =
   [%expect{| -42 |}]
 ;;
 
+let%expect_test "parse variable" =
+  Format.printf "%a" pp (parse_optimistically "x");
+  [%expect{| x |}]
+;;
+
+let%expect_test "parse number sum" =
+  Format.printf "%a" pp (parse_optimistically "2 + 2");
+  [%expect{| (Plus(2, 2)) |}]
+;;
+
+let%expect_test "parse number and variable sum" =
+  Format.printf "%a" pp (parse_optimistically "x + 2");
+  [%expect{| (Plus(x, 2)) |}]
+;;
+
+let%expect_test "parse binary operation chain with multiplication" =
+  Format.printf "%a" pp (parse_optimistically "y + 2 * x");
+  [%expect{| (Plus(y, (Mult(2, x)))) |}]
+;;
+
+let%expect_test "parse binary operation chain with division" =
+  Format.printf "%a" pp (parse_optimistically "y + 2 / x");
+  [%expect{| (Plus(y, (Div(2, x)))) |}]
+;;
+
 let%expect_test _ =
   Format.printf "%a" pp (parse_optimistically "let rec x = 2 in x + 2");
   [%expect{| Letrec((x, 2) in (Plus(x, 2))) |}]
