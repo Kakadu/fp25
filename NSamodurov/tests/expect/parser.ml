@@ -108,7 +108,7 @@ let%expect_test "parenthesis work in arithmetic" =
 let%expect_test "factorial" =
   parse_and_print "let rec id x = if true then x * id (x-1) else 0 in id 1";
   [%expect
-    {| let rec i13 = (λ . if (((i4 i13) 0)) then ((i13 * (i14 (i13 - 1)))) else (0)) in (i13 1) |}]
+    {| let rec i13 = (λ . if (true) then ((i13 * (i14 (i13 - 1)))) else (0)) in (i13 1) |}]
 ;;
 
 let%expect_test "compare" =

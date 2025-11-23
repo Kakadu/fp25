@@ -41,6 +41,7 @@ let free_vars ~equal =
     | EVar s -> s :: acc
     | EConst _ -> []
     | ELet (_, _, e1, e2) -> helper (helper acc e1) e2
+    | EIf (p, t, e) -> helper (helper (helper acc e) t) p
     | EAbs (v, l) -> acc @ list_remove ~equal v (helper [] l)
     | EApp (l, r) -> helper (helper acc r) l
   in

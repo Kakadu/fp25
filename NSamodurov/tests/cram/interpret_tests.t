@@ -21,5 +21,13 @@ SPDX-License-Identifier: CC0-1.0
   Success: (Int 2)
 
   $ ../../bin/REPL.exe << EOF
+  > if false then 123 else 321
+  Success: (Int 321)
+
+  $ ../../bin/REPL.exe << EOF
+  > if 1 < 2 then 123 else 321
+  Success: (Int 123)
+
+  $ ../../bin/REPL.exe << EOF
   > let rec id x = if (true) then 0 else id (x-1) in id 5
-  Error: Can't interpret: Operand is not int
+  Success: (Int 0)

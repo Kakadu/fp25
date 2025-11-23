@@ -50,6 +50,9 @@ let%expect_test "identity" =
     {| (Cur [(Access 0); Return]);Let;PushMark;(Const 1);Push;(Access 0);Apply;EndLet; |}]
 ;;
 
+let%expect_test "identity" = instruction_of_program "if true then 123 else 321";
+  [%expect {| (Const 1);(BranchIf 2);(Const 123);(Branch 1);(Const 321); |}]
+
 let%expect_test "identity" =
   instruction_of_program " let f = (fun x -> 5 + 2) in f 7";
   [%expect

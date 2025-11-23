@@ -68,7 +68,7 @@ let compile =
       let then_ofs = List.length then_instr in
       let else_ofs = List.length else_instr in
       pred_instr
-      @ [ BranchIf then_ofs ]
+      @ [ BranchIf (then_ofs + 1) ]
       @ then_instr
       @ [ Branch else_ofs ]
       @ else_instr
@@ -95,7 +95,7 @@ let compile =
       let then_ofs = List.length then_instr in
       let else_ofs = List.length else_instr in
       pred_instr
-      @ [ BranchIf then_ofs ]
+      @ [ BranchIf (then_ofs + 1) ]
       @ then_instr
       @ [ Branch else_ofs ]
       @ else_instr

@@ -99,10 +99,18 @@ let%expect_test "arith" =
 
 let%expect_test "factorial" =
   parse_and_print "let rec id x = if (true) then 0 else id (x-1) in id";
-  [%expect {| Error:  |}]
+  [%expect {| Error: Unbound variable: 12 |}]
 ;;
 
-let%expect_test "factorial" =
+let%expect_test "many arguments" =
   parse_and_print "fun x y z u v -> y";
-  [%expect {| Error:  |}]
+  [%expect
+    {|                                                             
+    Type: (TArrow ((TVar 13),                                             
+             (TArrow ((TVar 14),                                          
+                (TArrow ((TVar 15),                                       
+                   (TArrow ((TVar 16), (TArrow ((TVar 17), (TVar 14)))))))
+                ))                                                        
+             ))                                                           
+    |}]
 ;;

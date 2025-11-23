@@ -11,7 +11,6 @@
 open Parser
 open Compiler
 open Monads
-open Inferencer
 open Utils
 
 module ErrorMonad : sig
@@ -131,8 +130,16 @@ let interpret =
       let* env = helper_update env in
       helper acc env arg ret instr
     (* Branching *)
-    | Branch _ :: _ -> failwith "unimpl"
-    | BranchIf _ :: _ -> failwith "unimpl"
+    | Branch n :: instr ->
+      let instr = List.drop n instr in
+      helper acc env arg ret instr
+    | BranchIf n :: instr ->
+      let instr =
+        match acc with
+        | Int i when i = 0 -> List.drop n instr
+        | _ -> instr
+      in
+      helper acc env arg ret instr
   in
   helper Epsilon [] [] []
 ;;
