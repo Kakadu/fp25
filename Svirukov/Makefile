@@ -4,7 +4,7 @@ all:
 	dune build
 
 repl:
-	dune build ./REPL.exe && rlwrap _build/default/REPL.exe
+	dune build ./bin/REPL.exe && rlwrap _build/default/bin/REPL.exe
 
 tests: test
 test:
@@ -35,7 +35,7 @@ odig:
 	odig odoc $(ODIG_SWITCHES) Lambda
 
 TEST_COV_D = /tmp/cov
-COVERAGE_OPTS = --coverage-path $(TEST_COV_D) --expect lib/ --expect test/
+COVERAGE_OPTS = --coverage-path $(TEST_COV_D) --expect lib/ --expect tests/
 
 .PHONY: test_coverage coverage
 test_coverage: coverage

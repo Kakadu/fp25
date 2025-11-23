@@ -11,3 +11,7 @@
 (cram
  (applies_to interpret_tests)
  (deps ../bin/REPL.exe))
+
+(cram
+ (applies_to inference)
+ (deps ../bin/inference_test.exe))
