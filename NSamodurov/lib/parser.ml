@@ -40,7 +40,7 @@ let conde = function
 ;;
 
 let keyword = function
-  | "let" | "in" | "if" | "then" | "else" | "->" | "fun" -> true
+  | "let" | "in" | "if" | "then" | "else" | "->" | "fun" | "true" | "false" -> true
   | _ -> false
 ;;
 
@@ -63,6 +63,15 @@ let sign_of_char = function
 
 let number =
   digit >>= fun h -> many digit >>= fun tl -> return @@ int_of_char_list (h :: tl)
+;;
+
+let bool_string =
+  string "true"
+  <|> string "false"
+  >>= function
+  | "true" -> return true
+  | "false" -> return false
+  | _ -> fail "nobool"
 ;;
 
 type dispatch =
@@ -121,6 +130,7 @@ let parse_lam =
         [ parens (pack.expr pack)
         ; varname <* ws >>| var
         ; number <* ws >>| int
+        ; bool_string <* ws >>| bool
         ; (string "if" *> ws *> pack.expr pack
            >>= fun p ->
            string "then" *> ws *> pack.expr pack

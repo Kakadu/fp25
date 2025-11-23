@@ -7,7 +7,7 @@
 [@@@ocaml.text "/*"]
 
 (** Main entry of parser *)
-val parse : string -> (Ast.name Ast.t, [> Inferencer.error ]) result
+val parse : string -> (Ast.name Ast.t, [> Utils.error ]) result
 
 val to_brujin : string Ast.t -> Ast.brujin Ast.t
 

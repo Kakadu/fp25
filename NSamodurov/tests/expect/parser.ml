@@ -8,13 +8,14 @@
 
 open Lambda_lib
 open Parser
+open Utils
 
 let parse_and_print str =
   match parse str with
   | Result.Ok v ->
     let b = to_brujin v in
     Format.printf "%a\n" Pprintast.pp_brujin b
-  | Result.Error e -> Format.printf "Error: %a" Inferencer.pp_error e
+  | Result.Error e -> Format.printf "Error: %a" pp_error e
 ;;
 
 let%expect_test "unbound" =
@@ -94,15 +95,23 @@ let%expect_test "if expression 1" =
   [%expect {| if (i13) then (i14) else (i15) |}]
 ;;
 
-let%expect_test "fact" =
-  parse_and_print "let fact n = if n then n else n in fact 5";
-  [%expect {| let i13 = (λ . if (i13) then (i13) else (i13)) in (i13 5) |}]
-;;
-
-let%expect_test "arithmetic wtih non-numbers" = parse_and_print "((fun x -> x) + 1)";
+let%expect_test "arithmetic wtih non-numbers" =
+  parse_and_print "((fun x -> x) + 1)";
   [%expect {| ((λ . i13) + 1) |}]
+;;
 
 let%expect_test "parenthesis work in arithmetic" =
   parse_and_print "(1 + (2 + 3) + 4)";
   [%expect {| ((1 + (2 + 3)) + 4) |}]
+;;
+
+let%expect_test "factorial" =
+  parse_and_print "let rec id x = if true then x * id (x-1) else 0 in id 1";
+  [%expect
+    {| let rec i13 = (λ . if (((i4 i13) 0)) then ((i13 * (i14 (i13 - 1)))) else (0)) in (i13 1) |}]
+;;
+
+let%expect_test "compare" =
+  parse_and_print "(true)";
+  [%expect {| true |}]
 ;;

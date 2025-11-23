@@ -1,15 +1,3 @@
-type error =
-  [ `ParsingError of string
-  | `OccursCheck of Type.ty * Type.ty
-  | `UnifyError of Type.ty * Type.ty
-  | `UnboundVariable of int
-  | `AbstractionExpected of Type.ty
-  | `UsingReservedVariable of int
-  | `ReservedError
-  | `InterpretError of string
-  ]
-[@@deriving show { with_path = false }]
-
 module Scheme : sig
   type t
 
@@ -108,15 +96,14 @@ module Context : sig
   type t = Type.scheme Map.Make(Int).t
 
   val empty : 'a Map.Make(Int).t
-  val lookup : int -> ('a * 'b) Map.Make(Int).t -> (error, 'b) InferMonad.t
 end
 
-val unify : Type.ty -> Type.ty -> (error, unit) InferMonad.t
+val unify : Type.ty -> Type.ty -> (Utils.error, unit) InferMonad.t
 
 val infer
   :  Type.scheme Map.Make(Int).t
   -> Ast.brujin Ast.t
-  -> (error, Type.ty) InferMonad.t
+  -> (Utils.error, Type.ty) InferMonad.t
 
-val w : Ast.brujin Ast.t -> (Type.ty, error) Result.t
+val w : Ast.brujin Ast.t -> (Type.ty, Utils.error) Result.t
 val env : Type.scheme Type.IMap.t

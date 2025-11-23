@@ -1,7 +1,23 @@
+type op =
+  | Add
+  | Sub
+  | Mul
+  | Div
+  | Less
+  | Great
+  | LessEq
+  | GreatEq
+  | Equal
+  | NeqPhysical
+  | NeqStruct
+  | And
+  | Or
+
 type instr =
   | Access of int (** Access variable *)
   | Cur of instr list (** Non-tail recursive closure *)
   | Const of int (** Put a constant to accumulator *)
+  | Primitive of op (** Primitive operators *)
   | BranchIf of int (** Jump to specific offset if acc != 0 *)
   | Branch of int (** Unconditional jump*)
   | EndLet (** End of let "frame" *)
@@ -14,10 +30,6 @@ type instr =
   | AppTerm (** Tail-recursive version of EndLet *)
   | Dummy (** Push dummy symbol to enviroment *)
   | Update (** Substitute variable in enviroment *)
-  | Add (** Arithmetic operators  *)
-  | Sub
-  | Mul
-  | Div
 
 val compile : Ast.brujin Ast.t -> instr list
 val pp_instr : Format.formatter -> instr -> unit

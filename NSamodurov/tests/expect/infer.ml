@@ -10,6 +10,7 @@ open Lambda_lib
 open Parser
 open Type
 open Inferencer
+open Utils
 
 let parse_and_print str =
   let helper str =
@@ -20,7 +21,7 @@ let parse_and_print str =
   in
   match helper str with
   | Ok v -> Format.printf "Type: %a" pp_ty v
-  | Error e -> Format.printf "Error: %a" Inferencer.pp_error e
+  | Error e -> Format.printf "Error: %a" pp_error e
 ;;
 
 let%expect_test "one int" =
@@ -29,7 +30,7 @@ let%expect_test "one int" =
 ;;
 
 let%expect_test "arithmetic expression" =
-  parse_and_print "(1 + 1)";
+  parse_and_print "(1 + 2)";
   [%expect {| Type: (TGround "int") |}]
 ;;
 
@@ -72,6 +73,36 @@ let%expect_test "let2" =
 ;;
 
 let%expect_test "basic substituion" =
-  parse_and_print "let id = (fun x -> x) in id 1";
+  parse_and_print "let id x = x in id 1";
   [%expect {| Type: (TGround "int") |}]
+;;
+
+let%expect_test "compare" =
+  parse_and_print "if true then 1 else 2";
+  [%expect {| Type: (TGround "int") |}]
+;;
+
+let%expect_test "compare" =
+  parse_and_print "let cmp x y = x < y in cmp";
+  [%expect
+    {|
+    Type: (TArrow ((TGround "int"), (TArrow ((TGround "int"), (TGround "bool")))
+             ))
+    |}]
+;;
+
+let%expect_test "arith" =
+  parse_and_print "let arith x y = x + y in arith";
+  [%expect
+    {| Type: (TArrow ((TGround "int"), (TArrow ((TGround "int"), (TGround "int"))))) |}]
+;;
+
+let%expect_test "factorial" =
+  parse_and_print "let rec id x = if (true) then 0 else id (x-1) in id";
+  [%expect {| Error:  |}]
+;;
+
+let%expect_test "factorial" =
+  parse_and_print "fun x y z u v -> y";
+  [%expect {| Error:  |}]
 ;;

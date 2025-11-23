@@ -9,6 +9,7 @@
 open Lambda_lib
 open Parser
 open Compiler
+open Utils
 
 let instruction_of_program str =
   let helper str =
@@ -20,7 +21,7 @@ let instruction_of_program str =
   in
   match helper str with
   | Ok v -> List.iter (fun x -> Format.printf "%a;" Compiler.pp_instr x) v
-  | Error e -> Format.printf "Error: %a" Inferencer.pp_error e
+  | Error e -> Format.printf "Error: %a" pp_error e
 ;;
 
 let%expect_test "applicaiton1" =
@@ -35,12 +36,12 @@ let%expect_test "constant" =
 
 let%expect_test "arith" =
   instruction_of_program "(1 + 2)";
-  [%expect {| (Const 2);Push;(Const 1);Add; |}]
+  [%expect {| (Const 2);Push;(Const 1);(Primitive Add); |}]
 ;;
 
 let%expect_test "function" =
   instruction_of_program "fun x -> (2 + 1)";
-  [%expect {| (Cur [(Const 1); Push; (Const 2); Add; Return]); |}]
+  [%expect {| (Cur [(Const 1); Push; (Const 2); (Primitive Add); Return]); |}]
 ;;
 
 let%expect_test "identity" =
@@ -53,7 +54,7 @@ let%expect_test "identity" =
   instruction_of_program " let f = (fun x -> 5 + 2) in f 7";
   [%expect
     {|
-    (Cur [(Const 2); Push; (Const 5); Add; Return]);Let;PushMark;(Const 7);Push;(
-    Access 0);Apply;EndLet;
+    (Cur [(Const 2); Push; (Const 5); (Primitive Add); Return]);Let;PushMark;(
+    Const 7);Push;(Access 0);Apply;EndLet;
     |}]
 ;;
