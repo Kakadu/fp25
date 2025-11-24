@@ -50,4 +50,4 @@ SPDX-License-Identifier: CC0-1.0
   > let b = 2 in
   > let c = 1 in
   > c
-  Success: (Int 1) 
+  Success: (Int 1)

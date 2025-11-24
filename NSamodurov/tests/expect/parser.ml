@@ -20,44 +20,44 @@ let parse_and_print str =
 
 let%expect_test "unbound" =
   parse_and_print "x y z";
-  [%expect {| ((i13 i14) i15) |}]
+  [%expect {| ((i0 i1) i2) |}]
 ;;
 
 let%expect_test "bound and unbound" =
   parse_and_print "w (fun x -> x)";
-  [%expect {| (i13 (λ . i13)) |}]
+  [%expect {| (i0 (λ . i0)) |}]
 ;;
 
 let%expect_test "identity" =
   parse_and_print "(fun x -> x)";
-  [%expect {| (λ . i13) |}]
+  [%expect {| (λ . i0) |}]
 ;;
 
 let%expect_test "true" =
   parse_and_print "(fun x y -> x)";
-  [%expect {| (λ . (λ . i14)) |}]
+  [%expect {| (λ . (λ . i1)) |}]
 ;;
 
 let%expect_test "false" =
   parse_and_print "(fun x y -> y)";
-  [%expect {| (λ . (λ . i13)) |}]
+  [%expect {| (λ . (λ . i0)) |}]
 ;;
 
 let%expect_test "omega comb" =
   parse_and_print "(fun x -> x x) (fun x -> x x)";
-  [%expect {| ((λ . (i13 i13)) (λ . (i13 i13))) |}]
+  [%expect {| ((λ . (i0 i0)) (λ . (i0 i0))) |}]
 ;;
 
 let%expect_test "turing comb" =
   parse_and_print "(fun x y -> x y x) (fun x y -> x y x) ";
-  [%expect {| ((λ . (λ . ((i14 i13) i14))) (λ . (λ . ((i14 i13) i14)))) |}]
+  [%expect {| ((λ . (λ . ((i1 i0) i1))) (λ . (λ . ((i1 i0) i1)))) |}]
 ;;
 
 let%expect_test "weird function" =
   parse_and_print
     "(fun x y -> x y x) (fun x y -> x y x) (fun x y -> x y x)(fun x y -> x y x)";
   [%expect
-    {| ((((λ . (λ . ((i14 i13) i14))) (λ . (λ . ((i14 i13) i14)))) (λ . (λ . ((i14 i13) i14)))) (λ . (λ . ((i14 i13) i14)))) |}]
+    {| ((((λ . (λ . ((i1 i0) i1))) (λ . (λ . ((i1 i0) i1)))) (λ . (λ . ((i1 i0) i1)))) (λ . (λ . ((i1 i0) i1)))) |}]
 ;;
 
 let%expect_test "plus is left associative" =
@@ -77,27 +77,27 @@ let%expect_test "arith prio work correctly" =
 
 let%expect_test "let expression" =
   parse_and_print "let x = 1 in x ";
-  [%expect {| let i13 = 1 in i13 |}]
+  [%expect {| let i0 = 1 in i0 |}]
 ;;
 
 let%expect_test "let function" =
   parse_and_print "let id x = x in 1 + 2 ";
-  [%expect {| let i13 = (λ . i13) in (1 + 2) |}]
+  [%expect {| let i0 = (λ . i0) in (1 + 2) |}]
 ;;
 
 let%expect_test "let rec expression" =
   parse_and_print "let rec variable = x in y";
-  [%expect {| let rec i13 = i14 in i15 |}]
+  [%expect {| let rec i0 = i1 in i2 |}]
 ;;
 
 let%expect_test "if expression 1" =
   parse_and_print "if pred then e1 else e2";
-  [%expect {| if (i13) then (i14) else (i15) |}]
+  [%expect {| if (i0) then (i1) else (i2) |}]
 ;;
 
 let%expect_test "arithmetic wtih non-numbers" =
   parse_and_print "((fun x -> x) + 1)";
-  [%expect {| ((λ . i13) + 1) |}]
+  [%expect {| ((λ . i0) + 1) |}]
 ;;
 
 let%expect_test "parenthesis work in arithmetic" =
@@ -108,10 +108,15 @@ let%expect_test "parenthesis work in arithmetic" =
 let%expect_test "factorial" =
   parse_and_print "let rec id x = if true then x * id (x-1) else 0 in id 1";
   [%expect
-    {| let rec i13 = (λ . if (true) then ((i13 * (i14 (i13 - 1)))) else (0)) in (i13 1) |}]
+    {| let rec i0 = (λ . if (true) then ((i0 * (i1 (i0 - 1)))) else (0)) in (i0 1) |}]
+;;
+
+let%expect_test "bool" =
+  parse_and_print "(true)";
+  [%expect {| true |}]
 ;;
 
 let%expect_test "compare" =
-  parse_and_print "(true)";
+  parse_and_print "\n  let a = 3 in\n  let b = 2 in\n  let c = 1 in\n  c\n\n";
   [%expect {| true |}]
 ;;

@@ -36,27 +36,27 @@ let%expect_test "arithmetic expression" =
 
 let%expect_test "constant function" =
   parse_and_print "fun x -> 1";
-  [%expect {| Type: (TArrow ((TVar 13), (TGround "int"))) |}]
+  [%expect {| Type: (TArrow ((TVar 0), (TGround "int"))) |}]
 ;;
 
 let%expect_test "identity" =
   parse_and_print "fun x -> x";
-  [%expect {| Type: (TArrow ((TVar 13), (TVar 13))) |}]
+  [%expect {| Type: (TArrow ((TVar 0), (TVar 0))) |}]
 ;;
 
 let%expect_test "false" =
   parse_and_print "fun x y -> y";
-  [%expect {| Type: (TArrow ((TVar 13), (TArrow ((TVar 14), (TVar 14))))) |}]
+  [%expect {| Type: (TArrow ((TVar 0), (TArrow ((TVar 1), (TVar 1))))) |}]
 ;;
 
 let%expect_test "many arguments" =
   parse_and_print "fun x y z u v -> y";
   [%expect
     {|
-    Type: (TArrow ((TVar 13),
-             (TArrow ((TVar 14),
-                (TArrow ((TVar 15),
-                   (TArrow ((TVar 16), (TArrow ((TVar 17), (TVar 14)))))))
+    Type: (TArrow ((TVar 0),
+             (TArrow ((TVar 1),
+                (TArrow ((TVar 2),
+                   (TArrow ((TVar 3), (TArrow ((TVar 4), (TVar 1)))))))
                 ))
              ))
     |}]
@@ -99,18 +99,21 @@ let%expect_test "arith" =
 
 let%expect_test "factorial" =
   parse_and_print "let rec id x = if (true) then 0 else id (x-1) in id";
-  [%expect {| Error: Unbound variable: 12 |}]
+  [%expect {|
+    Error: Unification error: ((TGround "int")) ((TArrow ((TGround "int"),
+                                                    (TGround "int"))))
+    |}]
 ;;
 
 let%expect_test "many arguments" =
   parse_and_print "fun x y z u v -> y";
   [%expect
-    {|                                                             
-    Type: (TArrow ((TVar 13),                                             
-             (TArrow ((TVar 14),                                          
-                (TArrow ((TVar 15),                                       
-                   (TArrow ((TVar 16), (TArrow ((TVar 17), (TVar 14)))))))
-                ))                                                        
-             ))                                                           
+    {|
+    Type: (TArrow ((TVar 0),
+             (TArrow ((TVar 1),
+                (TArrow ((TVar 2),
+                   (TArrow ((TVar 3), (TArrow ((TVar 4), (TVar 1)))))))
+                ))
+             ))
     |}]
 ;;
