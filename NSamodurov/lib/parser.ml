@@ -207,7 +207,7 @@ end
 module Context = struct
   include Map.Make (String)
 
-  let extend k v m = add k (v + reserved) m
+  let extend k v m = add k v m
 end
 
 let to_brujin expr =
@@ -215,19 +215,19 @@ let to_brujin expr =
   let open Env.Syntax in
   let rec helper =
     fun bound -> function
-      | EVar "+" -> return @@ EVar (Index 0)
-      | EVar "-" -> return @@ EVar (Index 1)
-      | EVar "*" -> return @@ EVar (Index 2)
-      | EVar "/" -> return @@ EVar (Index 3)
-      | EVar "<" -> return @@ EVar (Index 4)
-      | EVar ">" -> return @@ EVar (Index 5)
-      | EVar "<=" -> return @@ EVar (Index 6)
-      | EVar ">=" -> return @@ EVar (Index 7)
-      | EVar "=" -> return @@ EVar (Index 8)
-      | EVar "!=" -> return @@ EVar (Index 9)
-      | EVar "<>" -> return @@ EVar (Index 10)
-      | EVar "&&" -> return @@ EVar (Index 11)
-      | EVar "||" -> return @@ EVar (Index 12)
+      | EVar "+" -> return @@ EVar (Index (-1))
+      | EVar "-" -> return @@ EVar (Index (-2))
+      | EVar "*" -> return @@ EVar (Index (-3))
+      | EVar "/" -> return @@ EVar (Index (-4))
+      | EVar "<" -> return @@ EVar (Index (-5))
+      | EVar ">" -> return @@ EVar (Index (-6))
+      | EVar "<=" -> return @@ EVar (Index (-7))
+      | EVar ">=" -> return @@ EVar (Index (-8))
+      | EVar "=" -> return @@ EVar (Index (-9))
+      | EVar "!=" -> return @@ EVar (Index (-10))
+      | EVar "<>" -> return @@ EVar (Index (-11))
+      | EVar "&&" -> return @@ EVar (Index (-12))
+      | EVar "||" -> return @@ EVar (Index (-13))
       | EVar v ->
         let* map = read in
         (match List.find_index (String.equal v) bound with
@@ -237,8 +237,8 @@ let to_brujin expr =
            else (
              let i = Context.cardinal map in
              let* () = write (Context.extend v i map) in
-             return (evar (Index (i + List.length bound + reserved))))
-         | Some i -> return (EVar (Index (i + reserved))))
+             return (evar (Index (i + List.length bound))))
+         | Some i -> return (EVar (Index i)))
       | EConst (Int x) -> return (int x)
       | EConst (Bool x) -> return (bool x)
       | ELet (flag, v, e1, e2) ->
@@ -247,7 +247,7 @@ let to_brujin expr =
         let* () = write (Context.extend v i map) in
         let* e1 = helper bound e1 in
         let* e2 = helper bound e2 in
-        return (ELet (flag, Index (i + reserved), e1, e2))
+        return (ELet (flag, Index i, e1, e2))
       | EIf (pred, e1, e2) ->
         let* pred = helper bound pred in
         let* e1 = helper bound e1 in
@@ -258,12 +258,12 @@ let to_brujin expr =
         if Context.mem x map
         then
           let* e = helper (x :: bound) e in
-          return (eabs (Index (List.length bound + reserved)) e)
+          return (eabs (Index (List.length bound)) e)
         else (
           let i = Context.cardinal map in
           let* () = write (Context.extend x i map) in
           let* e = helper (x :: bound) e in
-          return (eabs (Index (List.length bound + reserved)) e))
+          return (eabs (Index (List.length bound)) e))
       | EApp (e1, e2) ->
         let* b1 = helper bound e1 in
         let* b2 = helper bound e2 in

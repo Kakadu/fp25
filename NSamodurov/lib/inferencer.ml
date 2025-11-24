@@ -69,7 +69,7 @@ end = struct
 
   let fresh = fun (sub, st) -> st + 1, Result.ok (sub, st)
   let subst = fun (sub, st) -> st, Result.ok (sub, sub)
-  let run m = snd (m (Subst.empty, reserved))
+  let run m = snd (m (Subst.empty, 0))
   let extend = fun i ty (sub, st) -> st, Result.ok (Subst.extend sub i ty, ())
 
   module Syntax = struct
@@ -158,7 +158,7 @@ let infer env =
     fun env height -> function
       | EConst (Int _) -> return tint
       | EConst (Bool _) -> return tbool
-      | EVar (Index b) when b >= reserved -> lookup (reserved + height - b - 1) env
+      | EVar (Index b) when b >= 0 -> lookup (height - b - 1) env
       | EVar (Index b) -> lookup b env
       | ELet (NotRecursive, Index v, e1, e2) ->
         let* t1 = helper env height e1 in
@@ -207,7 +207,7 @@ let infer env =
            walk r
          | _ -> fail (`AbstractionExpected t1))
   in
-  helper env reserved
+  helper env 0
 ;;
 
 let env : scheme IMap.t =
@@ -215,26 +215,24 @@ let env : scheme IMap.t =
   let bool_ty = tarrow tbool (tarrow tbool tbool) in
   let cmp_ty = tarrow tint (tarrow tint tbool) in
   Context.empty
-  |> Context.add 0 (Scheme.mono arith_ty)
-  |> Context.add 1 (Scheme.mono arith_ty)
-  |> Context.add 2 (Scheme.mono arith_ty)
-  |> Context.add 3 (Scheme.mono arith_ty)
-  |> Context.add 4 (Scheme.mono cmp_ty)
-  |> Context.add 5 (Scheme.mono cmp_ty)
-  |> Context.add 6 (Scheme.mono cmp_ty)
-  |> Context.add 7 (Scheme.mono cmp_ty)
-  |> Context.add 8 (Scheme.mono cmp_ty)
-  |> Context.add 9 (Scheme.mono cmp_ty)
-  |> Context.add 10 (Scheme.mono cmp_ty)
-  |> Context.add 11 (Scheme.mono bool_ty)
+  |> Context.add (-1) (Scheme.mono arith_ty)
+  |> Context.add (-2) (Scheme.mono arith_ty)
+  |> Context.add (-3) (Scheme.mono arith_ty)
+  |> Context.add (-4) (Scheme.mono arith_ty)
+  |> Context.add (-5) (Scheme.mono cmp_ty)
+  |> Context.add (-6) (Scheme.mono cmp_ty)
+  |> Context.add (-7) (Scheme.mono cmp_ty)
+  |> Context.add (-8) (Scheme.mono cmp_ty)
+  |> Context.add (-9) (Scheme.mono cmp_ty)
+  |> Context.add (-10) (Scheme.mono cmp_ty)
+  |> Context.add (-11) (Scheme.mono cmp_ty)
+  |> Context.add (-12) (Scheme.mono bool_ty)
+  |> Context.add (-13) (Scheme.mono bool_ty)
 ;;
 
 let w : Ast.brujin Ast.t -> (ty, Utils.error) Result.t =
   let ( let* ) = Result.bind in
   fun x ->
-    if Context.cardinal env <= reserved
-    then
-      let* _, t = run (infer env x) in
-      Result.ok t
-    else Result.Error `ReservedError
+    let* _, t = run (infer env x) in
+    Result.ok t
 ;;

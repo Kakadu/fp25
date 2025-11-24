@@ -50,14 +50,20 @@ let%expect_test "identity" =
     {| (Cur [(Access 0); Return]);Let;PushMark;(Const 1);Push;(Access 0);Apply;EndLet; |}]
 ;;
 
-let%expect_test "identity" = instruction_of_program "if true then 123 else 321";
+let%expect_test "if" =
+  instruction_of_program "if true then 123 else 321";
   [%expect {| (Const 1);(BranchIf 2);(Const 123);(Branch 1);(Const 321); |}]
+;;
 
-let%expect_test "identity" =
-  instruction_of_program " let f = (fun x -> 5 + 2) in f 7";
+let%expect_test "fact" =
+  instruction_of_program "let rec fact n = if n < 2 then 1 else n * fact (n-1) in fact 3";
   [%expect
     {|
-    (Cur [(Const 2); Push; (Const 5); (Primitive Add); Return]);Let;PushMark;(
-    Const 7);Push;(Access 0);Apply;EndLet;
+    Dummy;(Cur
+             [(Const 2); Push; (Access 0); (Primitive Less); (BranchIf 2);
+               (Const 1); (Branch 11); PushMark; (Const 1); Push; (Access 0);
+               (Primitive Sub); Push; (Access 1); Apply; Push; (Access 0);
+               (Primitive Mul); Return]);Update;PushMark;(Const 3);Push;(
+    Access 0);Apply;EndLet;
     |}]
 ;;

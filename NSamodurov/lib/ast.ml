@@ -47,7 +47,6 @@ let evar v = EVar v
 let elet flag v e1 e2 = ELet (flag, v, e1, e2)
 let eabs v t = EAbs (v, t)
 let eapp e1 e2 = EApp (e1, e2)
-let reserved = 13
 let add e1 e2 = eapp (eapp (evar "+") e1) e2
 let sub e1 e2 = eapp (eapp (evar "-") e1) e2
 let mul e1 e2 = eapp (eapp (evar "*") e1) e2

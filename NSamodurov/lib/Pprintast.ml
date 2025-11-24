@@ -13,10 +13,10 @@ open Utils
 
 let pp_brujin (* ?(compact = true) *) =
   let rec pp fmt = function
-    | EApp (EApp (EVar (Index 0), l), r) -> Format.fprintf fmt "(%a + %a)" pp l pp r
-    | EApp (EApp (EVar (Index 1), l), r) -> Format.fprintf fmt "(%a - %a)" pp l pp r
-    | EApp (EApp (EVar (Index 2), l), r) -> Format.fprintf fmt "(%a * %a)" pp l pp r
-    | EApp (EApp (EVar (Index 3), l), r) -> Format.fprintf fmt "(%a / %a)" pp l pp r
+    | EApp (EApp (EVar (Index -1), l), r) -> Format.fprintf fmt "(%a + %a)" pp l pp r
+    | EApp (EApp (EVar (Index -2), l), r) -> Format.fprintf fmt "(%a - %a)" pp l pp r
+    | EApp (EApp (EVar (Index -3), l), r) -> Format.fprintf fmt "(%a * %a)" pp l pp r
+    | EApp (EApp (EVar (Index -4), l), r) -> Format.fprintf fmt "(%a / %a)" pp l pp r
     | EIf (pred, e1, e2) ->
       Format.fprintf fmt "if (%a) then (%a) else (%a)" pp pred pp e1 pp e2
     | EVar (Index i) -> Format.fprintf fmt "i%d" i

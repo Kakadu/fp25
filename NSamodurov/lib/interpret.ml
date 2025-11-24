@@ -47,6 +47,9 @@ let int_of_bool = fun x -> if x then Int 1 else Int 0
 let interpret =
   let rec helper acc env arg ret = function
     (* let rec helper acc env arg ret instr = *)
+    (*   (match instr with *)
+    (*    | [] -> () *)
+    (*    | h :: _ -> Format.printf ">>>>>>>>>>>>>>>>  %a <<<<<<<<<<<<< \n" pp_instr h); *)
     (*   Format.printf "acc: %a\n" pp_eval acc; *)
     (*   Format.printf "env: "; *)
     (*   List.iter (Format.printf "%a, " pp_eval) env; *)
@@ -55,9 +58,9 @@ let interpret =
     (*   List.iter (Format.printf "%a, " pp_eval) arg; *)
     (*   Format.printf "\n"; *)
     (*   Format.printf "ret: "; *)
-    (*   List.iter (Format.printf "%a, " pp_eval) ret; *)
+    (*   List.iter (Format.printf ">>>>>>>>>>>>>>%a, \n" pp_eval) ret; *)
     (*   Format.printf "\n"; *)
-    (*   match instr with *)
+    (* match instr with *)
     | [] -> return acc
     | Primitive p :: instr ->
       (match p, acc, arg with
@@ -96,6 +99,7 @@ let interpret =
       (match acc, arg with
        | Pair (instr2, env2), v :: arg ->
          helper acc (v :: env2) arg (Pair (instr, env) :: ret) instr2
+       | DummyStack, v :: arg -> failwith "Fix needed"
        | Pair _, [] -> fail (`InterpretError "Argument stack is empty in Apply")
        | _, _ -> fail (`InterpretError "Expected pair in Apply"))
     | Push :: instr -> helper acc env (acc :: arg) ret instr
@@ -122,13 +126,16 @@ let interpret =
        | _ :: tl -> helper acc tl arg ret instr)
     | Dummy :: instr -> helper acc (DummyStack :: env) arg ret instr
     | Update :: instr ->
-      let rec helper_update = function
-        | [] -> fail (`InterpretError "Can't find dummy in enviroment")
-        | DummyStack :: tl -> return (acc :: tl)
-        | h :: tl -> helper_update tl >>= fun tl -> return (h :: tl)
-      in
-      let* env = helper_update env in
-      helper acc env arg ret instr
+      (match env with
+       | DummyStack :: env -> helper acc (acc :: env) arg ret instr
+       | _ -> fail (`InterpretError "Can't Update"))
+    (* let rec helper_update = function *)
+    (*   | [] -> fail (`InterpretError "Can't find dummy in enviroment") *)
+    (*   | DummyStack :: tl -> return (acc :: tl) *)
+    (*   | h :: tl -> helper_update tl >>= fun tl -> return (h :: tl) *)
+    (* in *)
+    (* let* env = helper_update env in *)
+    (* helper acc env arg ret instro *)
     (* Branching *)
     | Branch n :: instr ->
       let instr = List.drop n instr in

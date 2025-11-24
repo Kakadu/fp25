@@ -44,23 +44,23 @@ let rec list_of_apps = function
 let compile =
   let helper_op f l instr =
     match l with
-    | EVar (Index 0) :: tl -> f (Primitive Add) tl
-    | EVar (Index 1) :: tl -> f (Primitive Sub) tl
-    | EVar (Index 2) :: tl -> f (Primitive Mul) tl
-    | EVar (Index 3) :: tl -> f (Primitive Div) tl
-    | EVar (Index 4) :: tl -> f (Primitive Less) tl
-    | EVar (Index 5) :: tl -> f (Primitive Great) tl
-    | EVar (Index 6) :: tl -> f (Primitive LessEq) tl
-    | EVar (Index 7) :: tl -> f (Primitive GreatEq) tl
-    | EVar (Index 8) :: tl -> f (Primitive Equal) tl
-    | EVar (Index 9) :: tl -> f (Primitive NeqPhysical) tl
-    | EVar (Index 10) :: tl -> f (Primitive NeqStruct) tl
-    | EVar (Index 11) :: tl -> f (Primitive And) tl
-    | EVar (Index 12) :: tl -> f (Primitive Or) tl
+    | EVar (Index -1) :: tl -> f (Primitive Add) tl
+    | EVar (Index -2) :: tl -> f (Primitive Sub) tl
+    | EVar (Index -3) :: tl -> f (Primitive Mul) tl
+    | EVar (Index -4) :: tl -> f (Primitive Div) tl
+    | EVar (Index -5) :: tl -> f (Primitive Less) tl
+    | EVar (Index -6) :: tl -> f (Primitive Great) tl
+    | EVar (Index -7) :: tl -> f (Primitive LessEq) tl
+    | EVar (Index -8) :: tl -> f (Primitive GreatEq) tl
+    | EVar (Index -9) :: tl -> f (Primitive Equal) tl
+    | EVar (Index -10) :: tl -> f (Primitive NeqPhysical) tl
+    | EVar (Index -11) :: tl -> f (Primitive NeqStruct) tl
+    | EVar (Index -12) :: tl -> f (Primitive And) tl
+    | EVar (Index -13) :: tl -> f (Primitive Or) tl
     | apps -> f instr apps
   in
   let rec helper_t acc = function
-    | EVar (Index i) -> Access (i - reserved) :: acc
+    | EVar (Index i) -> Access i :: acc
     | EIf (pred, e1, e2) ->
       let then_instr = helper_t [] e1 in
       let else_instr = helper_t [] e2 in
@@ -86,7 +86,7 @@ let compile =
     | EConst (Int c) -> Const c :: acc
     | EConst (Bool c) -> Const (if c then 1 else 0) :: acc
   and helper_c acc = function
-    | EVar (Index i) -> Access (i - reserved) :: acc
+    | EVar (Index i) -> Access i :: acc
     | EIf (pred, e1, e2) ->
       (* TODO: rewrite a faster version *)
       let then_instr = helper_t [] e1 in
@@ -107,7 +107,7 @@ let compile =
           e2
       in
       (match list_of_apps e1 with
-       | EVar (Index i) :: _ as apps when i < reserved -> helper_op aux apps Apply
+       | EVar (Index i) :: _ as apps when i < 0 -> helper_op aux apps Apply
        | apps -> PushMark :: helper_op aux apps Apply)
     | EAbs (_, e) -> Cur (helper_t [ Return ] e) :: acc
     | ELet (Recursive, _, a, b) ->
