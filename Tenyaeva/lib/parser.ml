@@ -118,8 +118,8 @@ let parse_value_binding parse_expr =
   let* pattern = parse_pattern in
   let* pat_list = many parse_pattern in
   let+ expression = token "=" *> parse_expr in
-  { pat = pattern
-  ; expr =
+  { vb_pat = pattern
+  ; vb_expr =
       (match pat_list with
        | [] -> expression
        | _ -> List.fold_right ~f:(fun f p -> Expr_fun (f, p)) pat_list ~init:expression)
