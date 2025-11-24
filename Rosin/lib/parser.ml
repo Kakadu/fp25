@@ -8,9 +8,9 @@ let is_space = function
   | ' ' | '\t' | '\n' | '\r' -> true
   | _ -> false
 ;;
+
 let spaces = skip_while is_space
-let spaces1 = satisfy is_space >>= fun c -> skip_while is_space >>| fun () -> c
-let split_args = satisfy is_space >>= fun c -> spaces >>| fun () -> c
+let split_arg = satisfy is_space >>= fun c -> spaces >>| fun () -> c
 let token p = p <* spaces
 let parens p = token (char '(') *> p <* token (char ')')
 
@@ -59,51 +59,50 @@ let multi_fun args = List.fold_right (fun arg body -> Ast.Fun (arg, body)) args
 
 let expr =
   fix (fun expr ->
-    let atom =
-      choice [
-        number;
-        varname >>| (fun v -> Ast.Var v);
-        parens expr;
-      ]
+    let unop_expr =
+      unop >>= fun op ->
+        choice [number; (varname >>| (fun v -> Ast.Var v))] >>| fun var ->
+          Ast.Unop (op, var)
     in
+    (** Парсер для функций (с поддержкой многопараметрического сахара) *)
+    let fun_expr =
+      token (string "fun") *> many1 varname
+      >>= fun args ->
+      token (string "->") *> expr
+      >>= fun body ->
+      (* Десугаризация: fun x y -> e => fun x -> fun y -> e *)
+      return @@ multi_fun args body
+    in
+  
+
+  let app_expr =
+    choice [fun_expr ; (varname >>| (fun v -> Ast.Var v))] >>= fun name ->
+    many1(choice [ number; parens fun_expr; (varname >>| (fun v -> Ast.Var v)) ]) >>| fun args ->
+      List.fold_left (fun f arg -> Ast.App (f, arg)) name args
+  in
 
   let unary_expr =
       choice [
-        (unop >>= fun op -> atom >>| fun e -> Ast.Unop (op, e));
-        (token (string "fix") *> atom >>| fun e -> Ast.Fix e);
-        (token (string "print") *> atom >>| fun e -> Ast.Print e);
-        atom
+          number
+        ; app_expr
+        ; (varname >>| (fun v -> Ast.Var v))
+        ; unop_expr
+        ; parens expr
+        ; fun_expr
       ]
     in
-
-  let app_expr =
-    many1 unary_expr >>= function
-    | [] -> fail "empty application"
-    | x :: xs -> return (List.fold_left (fun f arg -> Ast.App (f, arg)) x xs)
-  in
 
   let mult_expr =
-    app_expr >>= fun first ->
-    let rec parse_rest left =
-      choice [
-        (mult_div_op >>= fun op -> app_expr >>= fun right -> 
-          parse_rest (Ast.Binop (op, left, right)));
-        return left
-      ]
-    in
-    parse_rest first
+    unary_expr >>= fun first ->
+    many
+          (mult_div_op >>= fun op -> unary_expr >>| fun right -> op, right)
+        >>| List.fold_left (fun left (op, right) -> Ast.Binop (op, left, right)) first
   in
 
   let add_expr =
     mult_expr >>= fun first ->
-    let rec parse_rest left =
-      choice [
-        (add_sub_op >>= fun op -> mult_expr >>= fun right -> 
-          parse_rest (Ast.Binop (op, left, right)));
-        return left
-      ]
-    in
-    parse_rest first
+    many (add_sub_op >>= fun op -> mult_expr >>| fun right -> op, right)
+        >>| List.fold_left (fun left (op, right) -> Ast.Binop (op, left, right)) first
   in
 
     (* Парсер для if выражений *)
@@ -115,15 +114,7 @@ let expr =
       token (string "else") *> expr
       >>= fun else_branch -> return (Ast.If (cond, then_branch, else_branch))
     in
-    (** Парсер для функций (с поддержкой многопараметрического сахара) *)
-    let fun_expr =
-      token (string "fun") *> many1 varname
-      >>= fun args ->
-      token (string "->") *> expr
-      >>= fun body ->
-      (* Десугаризация: fun x y -> e => fun x -> fun y -> e *)
-      return @@ multi_fun args body
-    in
+    
     (** Парсер для let выражений *)
     let let_expr =
       token (string "let") *> (token (string "rec") *> return true <|> return false)
