@@ -1,0 +1,7 @@
+(library
+ (name parser_tests)
+ (modules parser_tests)
+ (libraries lambda_lib)
+ (preprocess (pps ppx_expect))
+ (inline_tests)
+ (instrumentation (backend bisect_ppx)))
