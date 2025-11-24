@@ -19,7 +19,7 @@ type type_env = (string, typ, String.comparator_witness) Map.t
 type type_error =
   | UnboundVariable of string
   | TypeMismatch of typ * typ
-  | RecursiveFunctionError of string
+  | OccursCheckError
   | InvalidCondition
   | ApplicationError
   | NotExpression
@@ -56,7 +56,7 @@ let rec unify t1 t2 =
   | TUnit, TUnit -> return ()
   | TVar name1, TVar name2 when String.( = ) name1 name2 -> return ()
   | TVar name, t | t, TVar name ->
-    if occurs_check name t then fail (TypeMismatch (TVar name, t)) else return ()
+    if occurs_check name t then fail OccursCheckError else return ()
   | TFun (arg1, ret1), TFun (arg2, ret2) ->
     let* () = unify arg1 arg2 in
     unify ret1 ret2
@@ -126,7 +126,7 @@ let typecheck_program expr =
       let temp_env = Map.set env ~key:name ~data:func_type in
       let* actual_type, counter2 = check value_expr temp_env counter1 Expression in
       (match occurs_check (string_of_int counter2) actual_type with
-       | true -> fail (RecursiveFunctionError name)
+       | true -> fail OccursCheckError
        | false ->
          let* () = unify func_type actual_type in
          let final_env = Map.set env ~key:name ~data:actual_type in
@@ -157,9 +157,8 @@ let show_type_error = function
        | TInt -> "int"
        | TUnit -> "unit"
        | TFun _ -> "function"
-       | TVar s -> s)
-  | RecursiveFunctionError name ->
-    Printf.sprintf "Recursive function %s has infinite type" name
+       | TVar s -> Printf.sprintf "Var(%s)" s)
+  | OccursCheckError -> "Recursive function has infinite type"
   | InvalidCondition -> "Condition must be of type int"
   | ApplicationError -> "Cannot apply non-function"
   | NotExpression -> "Not an expression"

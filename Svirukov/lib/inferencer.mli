@@ -9,7 +9,7 @@ type type_env = (string, typ, Base.String.comparator_witness) Base.Map.t
 type type_error =
   | UnboundVariable of string
   | TypeMismatch of typ * typ
-  | RecursiveFunctionError of string
+  | OccursCheckError
   | InvalidCondition
   | ApplicationError
   | NotExpression

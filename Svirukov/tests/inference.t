@@ -41,6 +41,11 @@ in the dune file
   Not an expression
 
   $ ../bin/inference_test.exe<<EOF
+  > let x n=  n+ 1 in x (let r = 555)
+  (let x = (fun n -> (n + 1)) in x (let r = 555))
+  Not an expression
+
+  $ ../bin/inference_test.exe<<EOF
   > let r = 5 in let t = 89
   (let r = 5 in (let t = 89))
   TUnit
@@ -63,7 +68,7 @@ in the dune file
   $ ../bin/inference_test.exe<<EOF
   > let rec f n = f n
   (let rec f = (fun n -> f n))
-  Recursive function f has infinite type
+  Recursive function has infinite type
 
   $ ../bin/inference_test.exe<<EOF
   > let f n = if n> 0 then n
@@ -71,6 +76,6 @@ in the dune file
   TUnit
 
   $ ../bin/inference_test.exe<<EOF
-  > let rec f n= f (n+1)
-  (let rec f = (fun n -> f (n + 1)))
-  Recursive function f has infinite type
+  > let rec fix f eta = f (fix f) eta in let fact_gen = fun fact -> fun n -> if n = 0 then 1 else n * fact (n - 1) in let fact = fix fact_gen in fact 5
+  (let rec fix = (fun f -> (fun eta -> f fix f eta)) in (let fact_gen = (fun fact -> (fun n -> (if (n = 0) then 1 else (n * fact (n - 1))))) in (let fact = fix fact_gen in fact 5)))
+  Recursive function has infinite type

@@ -118,3 +118,8 @@ in the dune file
   (let rec t = (fun n -> t (n + 1)) in t 4)
   Exceed number of redunction posssible: 
   100
+
+  $ ../bin/REPL.exe <<EOF
+  > let rec fix f eta = f (fix f) eta in let fact_gen = fun fact -> fun n -> if n = 0 then 1 else n * fact (n - 1) in let fact = fix fact_gen in fact 5
+  (let rec fix = (fun f -> (fun eta -> f fix f eta)) in (let fact_gen = (fun fact -> (fun n -> (if (n = 0) then 1 else (n * fact (n - 1))))) in (let fact = fix fact_gen in fact 5)))
+  120
