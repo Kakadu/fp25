@@ -1,0 +1,173 @@
+(** Copyright 2025, Tenyaeva Ekaterina *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+open Ast
+open Angstrom
+open Base
+
+(* ==================== auxiliary ==================== *)
+
+let ws = skip_while Char.is_whitespace
+let ws1 = skip Char.is_whitespace *> ws
+let token str = ws *> string str
+let skip_round_par parse = token "(" *> parse <* token ")"
+
+let is_keyword = function
+  | "let"
+  | "rec"
+  | "and"
+  | "in"
+  | "if"
+  | "then"
+  | "else"
+  | "match"
+  | "with"
+  | "true"
+  | "false"
+  | "Some"
+  | "None"
+  | "type"
+  | "_" -> true
+  | _ -> false
+;;
+
+(* ==================== constant ==================== *)
+
+let parse_int =
+  take_while1 Char.is_digit >>| fun int_value -> Const_int (Int.of_string int_value)
+;;
+
+let parse_unit = token "()" *> return Const_unit
+let parse_const = ws *> choice [ parse_int; parse_unit ]
+
+(* ==================== ident ==================== *)
+
+let parse_ident =
+  ws
+  *>
+  let* fst_char =
+    satisfy (function
+      | 'a' .. 'z' | '_' -> true
+      | _ -> false)
+    >>| String.of_char
+  in
+  let* rest_str =
+    take_while (function
+      | 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' | '_' | '\'' -> true
+      | _ -> false)
+  in
+  let id = fst_char ^ rest_str in
+  if is_keyword id then fail (Printf.sprintf "Impossible name: %S." id) else return id
+;;
+
+(* --------------------- type ---------------------- *)
+
+let parse_base_type =
+  choice [ token "unit" *> return Type_unit; token "int" *> return Type_int ]
+;;
+
+(* -------------------- pattern -------------------- *)
+
+let parse_pat_any = token "_" *> return Pat_any
+let parse_pat_const = parse_const >>| fun c -> Pat_constant c
+let parse_pat_var = parse_ident >>| fun i -> Pat_var i
+
+let parse_pat_option parse_pat =
+  token "Some" *> parse_pat
+  >>| (fun e -> Some e)
+  <|> token "None" *> return None
+  >>| fun e -> Pat_option e
+;;
+
+let parse_pat_constraint parse_pat =
+  let* pat = token "(" *> parse_pat in
+  let* constr = token ":" *> parse_base_type <* token ")" in
+  return (Pat_constraint (constr, pat))
+;;
+
+let parse_pattern = choice [ parse_pat_const; parse_pat_var; parse_pat_any ]
+
+(* -------------------- expression -------------------- *)
+
+let parse_rec_flag = token "rec" *> return Recursive <|> return NonRecursive
+let parse_expr_const = parse_const >>| fun c -> Expr_const c
+let parse_expr_ident = parse_ident >>| fun i -> Expr_ident i
+
+let parse_expr_option parse_expr =
+  token "Some" *> parse_expr
+  >>| (fun op -> Some op)
+  <|> token "None" *> return None
+  >>| fun e -> Expr_option e
+;;
+
+let parse_expr_constraint parse_expr =
+  let* expr = token "(" *> parse_expr in
+  let* constr = token ":" *> parse_base_type <* token ")" in
+  return (Expr_constraint (constr, expr))
+;;
+
+let parse_expr_if parse_expr =
+  return (fun cond expr_then expr_else -> Expr_if (cond, expr_then, expr_else))
+  <*> token "if" *> parse_expr
+  <*> token "then" *> parse_expr
+  <*> (token "else" *> parse_expr >>| (fun e -> Some e) <|> return None)
+;;
+
+let parse_value_binding parse_expr =
+  let* pattern = parse_pattern in
+  let* pat_list = many parse_pattern in
+  let+ expression = token "=" *> parse_expr in
+  { pat = pattern
+  ; expr =
+      (match pat_list with
+       | [] -> expression
+       | _ -> List.fold_right ~f:(fun f p -> Expr_fun (f, p)) pat_list ~init:expression)
+  }
+;;
+
+let parse_let parse_expr =
+  let* rec_flag = token "let" *> parse_rec_flag in
+  let* vb = parse_value_binding parse_expr in
+  let* value_bindings = many (token "and" *> parse_value_binding parse_expr) in
+  let+ expr = token "in" *> parse_expr in
+  Expr_let (rec_flag, vb, value_bindings, expr)
+;;
+
+let parse_expression =
+  fix (fun self ->
+    let atom =
+      choice
+        [ skip_round_par self
+        ; parse_expr_const
+        ; parse_expr_ident
+        ; parse_expr_constraint self
+        ; parse_expr_option self
+        ]
+    in
+    let expr_if = parse_expr_if self <|> atom in
+    let expr_let = parse_let expr_if <|> expr_if in
+    expr_let)
+;;
+
+(* ==================== structure ==================== *)
+
+let parse_structure_value parse_exp =
+  token "let"
+  *>
+  let* rec_flag = parse_rec_flag in
+  let* vb = parse_value_binding parse_exp in
+  let+ value_bindings = many (token "and" *> parse_value_binding parse_exp) in
+  Str_value (rec_flag, vb, value_bindings)
+;;
+
+let parse_structure =
+  let str_value = parse_structure_value parse_expression in
+  let str_eval = str_value <|> (parse_expression >>| fun ex -> Str_eval ex) in
+  let semicolons = many (token ";;") in
+  sep_by semicolons str_eval <* semicolons <* ws
+;;
+
+(* ==================== execute ==================== *)
+
+let parse = parse_string ~consume:All parse_structure
