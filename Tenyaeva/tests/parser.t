@@ -31,3 +31,22 @@
       (Expr_if ((Expr_ident "x"),
          (Expr_if ((Expr_ident "y"), (Expr_ident "z"), None)), None)))
     ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > match x with | Some x -> y | None -> z
+  [(Str_eval
+      (Expr_match ((Expr_ident "x"),
+         { case_pat = (Pat_option (Some (Pat_var "x")));
+           case_expr = (Expr_ident "y") },
+         [{ case_pat = (Pat_option None); case_expr = (Expr_ident "z") }])))
+    ]
+
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > function | x -> y | z -> w
+  [(Str_eval
+      (Expr_function (
+         { case_pat = (Pat_var "x"); case_expr = (Expr_ident "y") },
+         [{ case_pat = (Pat_var "z"); case_expr = (Expr_ident "w") }])))
+    ]
+
