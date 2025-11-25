@@ -116,6 +116,18 @@ let parse_expr_constraint parse_expr =
   return (Expr_constraint (constr, expr))
 ;;
 
+let parse_expr_fun parse_expr =
+  let* pat = token "fun" *> parse_pattern in
+  let* params = many parse_pattern in
+  let* body_expr = token "->" *> parse_expr in
+  let expr =
+    match params with
+    | [] -> body_expr
+    | _ -> List.fold_right ~f:(fun par acc -> Expr_fun (par, acc)) params ~init:body_expr
+  in
+  return (Expr_fun (pat, expr))
+;;
+
 let parse_expr_if parse_expr =
   let* cond = token "if" *> parse_expr in
   let* expr_then = token "then" *> parse_expr in
@@ -176,7 +188,8 @@ let parse_expression =
     let expr_if = parse_expr_if self <|> atom in
     let expr_match = parse_expr_match expr_if <|> expr_if in
     let expr_functon = parse_expr_function expr_match <|> expr_match in
-    let expr_let = parse_let expr_functon <|> expr_functon in
+    let expr_fun = parse_expr_fun expr_functon <|> expr_functon in
+    let expr_let = parse_let expr_fun <|> expr_fun in
     expr_let)
 ;;
 
