@@ -70,7 +70,7 @@ let parse_expression =
       spaces *> string "else" *> spaces *> expr >>| fun e -> Expr_conditional (cond, t, e)
     in
     let parse_function_expression =
-      string "fun" *> spaces *> many1 parse_identifier
+      string "fun" *> many1 (spaces *> parse_identifier)
       >>= fun args ->
       spaces *> string "->" *> spaces *> expr
       >>| fun body ->
