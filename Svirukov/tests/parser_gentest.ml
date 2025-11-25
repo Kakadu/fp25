@@ -77,7 +77,9 @@ let gen_expr =
            let* right = medium_expr in
            return (App (left, right)))
         ; (let* func =
-             map (fun (pat, body) -> Fun (pat, body)) (pair gen_pattern subexpr)
+             map
+               (fun (pat, body) -> Lambda_lib.Ast.Fun (pat, body))
+               (pair gen_pattern subexpr)
            in
            let* arg = medium_expr in
            return (App (func, arg)))
@@ -85,11 +87,13 @@ let gen_expr =
            let* arg1 = simple_expr in
            let* arg2 = simple_expr in
            return (App (App (func, arg1), arg2)))
-        ; map (fun (pat, body) -> Fun (pat, body)) (pair gen_pattern subexpr)
+        ; map
+            (fun (pat, body) -> Lambda_lib.Ast.Fun (pat, body))
+            (pair gen_pattern subexpr)
         ; (let* arg1 = gen_pattern in
            let* arg2 = gen_pattern in
            let* body = subexpr in
-           return (Fun (arg1, Fun (arg2, body))))
+           return (Lambda_lib.Ast.Fun (arg1, Fun (arg2, body))))
         ; map
             (fun (left, op, right) -> Binop (op, left, right))
             (triple (gen_binopr_expr (depth / 2)) gen_binop (gen_binopr_expr (depth / 2)))

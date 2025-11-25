@@ -25,8 +25,8 @@ module type MONAD = sig
   val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
 end
 
-module ResultM : MONAD with type 'a t = ('a, error) result = struct
-  type 'a t = ('a, error) result
+module ResultM : MONAD with type 'a t = ('a, error) Base.result = struct
+  type 'a t = ('a, error) Base.result
 
   let return x = Ok x
   let fail msg = Error msg
@@ -43,17 +43,15 @@ end
 let ( let* ) = ResultM.( >>= )
 
 module Env : sig
-  val find : env -> string -> value option
   val init : env
   val add_val : env -> string -> value -> env
   val ok_or_novar : env -> string -> value ResultM.t
 end = struct
   let init = Map.empty (module String)
-  let find env key = Map.find env key
   let add_val env key value = Map.set env ~key ~data:value
 
   let ok_or_novar env name =
-    match find env name with
+    match Map.find env name with
     | Some v -> ResultM.return v
     | None -> ResultM.fail (UnboundVariable name)
   ;;
