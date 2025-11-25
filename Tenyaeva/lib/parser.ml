@@ -86,7 +86,16 @@ let parse_pat_constraint parse_pat =
   return (Pat_constraint (constr, pat))
 ;;
 
-let parse_pattern = choice [ parse_pat_const; parse_pat_var; parse_pat_any ]
+let parse_pattern =
+  fix (fun self ->
+    choice
+      [ parse_pat_const
+      ; parse_pat_var
+      ; parse_pat_any
+      ; parse_pat_option self
+      ; parse_pat_constraint self
+      ])
+;;
 
 (* -------------------- expression -------------------- *)
 
@@ -110,7 +119,7 @@ let parse_expr_constraint parse_expr =
 let parse_expr_if parse_expr =
   let* cond = token "if" *> parse_expr in
   let* expr_then = token "then" *> parse_expr in
-  let* expr_else = (token "else" *> parse_expr >>| (fun e -> Some e) <|> return None) in
+  let* expr_else = token "else" *> parse_expr >>| (fun e -> Some e) <|> return None in
   return (Expr_if (cond, expr_then, expr_else))
 ;;
 
