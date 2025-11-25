@@ -143,6 +143,25 @@ let parse_let parse_expr =
   Expr_let (rec_flag, vb, value_bindings, expr)
 ;;
 
+let parse_case parse_expr =
+  let* pat = token "|" *> parse_pattern in
+  let* expr = token "->" *> parse_expr in
+  return { case_pat = pat; case_expr = expr }
+;;
+
+let parse_expr_function parse_expr =
+  let* case = token "function" *> parse_case parse_expr in
+  let* casel = many (parse_case parse_expr) in
+  return (Expr_function (case, casel))
+;;
+
+let parse_expr_match parse_expr =
+  let* expr = token "match" *> parse_expr <* token "with" in
+  let* case = parse_case parse_expr in
+  let* casel = many (parse_case parse_expr) in
+  return (Expr_match (expr, case, casel))
+;;
+
 let parse_expression =
   fix (fun self ->
     let atom =
@@ -155,7 +174,9 @@ let parse_expression =
         ]
     in
     let expr_if = parse_expr_if self <|> atom in
-    let expr_let = parse_let expr_if <|> expr_if in
+    let expr_match = parse_expr_match expr_if <|> expr_if in
+    let expr_functon = parse_expr_function expr_match <|> expr_match in
+    let expr_let = parse_let expr_functon <|> expr_functon in
     expr_let)
 ;;
 
