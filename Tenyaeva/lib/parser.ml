@@ -108,10 +108,10 @@ let parse_expr_constraint parse_expr =
 ;;
 
 let parse_expr_if parse_expr =
-  return (fun cond expr_then expr_else -> Expr_if (cond, expr_then, expr_else))
-  <*> token "if" *> parse_expr
-  <*> token "then" *> parse_expr
-  <*> (token "else" *> parse_expr >>| (fun e -> Some e) <|> return None)
+  let* cond = token "if" *> parse_expr in
+  let* expr_then = token "then" *> parse_expr in
+  let* expr_else = (token "else" *> parse_expr >>| (fun e -> Some e) <|> return None) in
+  return (Expr_if (cond, expr_then, expr_else))
 ;;
 
 let parse_value_binding parse_expr =
