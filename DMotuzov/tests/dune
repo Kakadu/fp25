@@ -1,0 +1,14 @@
+(include_subdirs no)
+
+(library
+ (name tests)
+ (libraries DMotuzov_lib)
+ (preprocess
+  (pps ppx_expect ppx_deriving.show))
+ (inline_tests)
+ (instrumentation
+  (backend bisect_ppx)))
+
+(cram
+ (applies_to *)
+ (deps ../bin/REPL.exe))
