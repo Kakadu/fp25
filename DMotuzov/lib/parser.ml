@@ -6,7 +6,7 @@ let spaces = take_while1 Char.is_whitespace >>| fun _ -> ()
 let skip_opt_spaces = skip_while Char.is_whitespace
 
 let is_keyword = function
-  | "let" | "rec" | "if" | "then" | "else" | "fun" | "fix" -> true
+  | "let" | "rec" | "if" | "then" | "else" | "fun" | "fix" | "in" -> true
   | _ -> false
 ;;
 
@@ -79,14 +79,14 @@ let parse_expression =
     let parse_let_in_expression =
       string "let" *> spaces *> parse_identifier
       >>= fun id ->
-      spaces *> char '=' *> spaces *> expr
+      skip_opt_spaces *> char '=' *> skip_opt_spaces *> expr
       >>= fun value ->
       spaces *> string "in" *> spaces *> expr >>| fun body -> Expr_let_in (id, value, body)
     in
     let parse_let_rec_in_expression =
       string "let" *> spaces *> string "rec" *> spaces *> parse_identifier
       >>= fun id ->
-      spaces *> char '=' *> spaces *> expr
+      skip_opt_spaces *> char '=' *> skip_opt_spaces *> expr
       >>= fun value ->
       spaces *> string "in" *> spaces *> expr
       >>| fun body -> Expr_let_rec_in (id, value, body)

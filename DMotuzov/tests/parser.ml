@@ -170,12 +170,35 @@ let%expect_test "parse_application_parens" =
 
 let%expect_test "parse_let_in" =
   run "let x = let y = 10 in y + 2 ;;";
-  [%expect {| : end_of_input |}]
+  [%expect {|
+    [(Top_let ((Id "x"),
+        (Expr_let_in ((Id "y"), (Expr_const (Const_int 10)),
+           (Expr_binary_op (Plus, (Expr_var (Id "y")), (Expr_const (Const_int 2))
+              ))
+           ))
+        ))
+      ] |}]
 ;;
 
 let%expect_test "parse_let_rec" =
   run "let f = let rec fact = fun n -> if n then n * fact (n - 1) else 1 in fact ;;";
-  [%expect {| : end_of_input |}]
+  [%expect {|
+    [(Top_let ((Id "f"),
+        (Expr_let_rec_in ((Id "fact"),
+           (Expr_fun ((Id "n"),
+              (Expr_conditional ((Expr_var (Id "n")),
+                 (Expr_binary_op (Mul, (Expr_var (Id "n")),
+                    (Expr_ap ((Expr_var (Id "fact")),
+                       [(Expr_binary_op (Sub, (Expr_var (Id "n")),
+                           (Expr_const (Const_int 1))))
+                         ]
+                       ))
+                    )),
+                 (Expr_const (Const_int 1))))
+              )),
+           (Expr_var (Id "fact"))))
+        ))
+      ] |}]
 ;;
 
 (* --- FIX --- *)
