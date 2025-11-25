@@ -16,21 +16,42 @@ let%expect_test "parse_multiple_bindings" =
 ;;
 
 let%expect_test "parse_bin_op" =
-  run "let x = 1 + 2 * 3;;";
+  run "let x = 1 + 2 * 3 + 4;;";
   [%expect
     {|
     [(Top_let ((Id "x"),
-        (Expr_binary_op (Plus, (Expr_const (Const_int 1)),
-           (Expr_binary_op (Mul, (Expr_const (Const_int 2)),
-              (Expr_const (Const_int 3))))
-           ))
+        (Expr_binary_op (Plus,
+           (Expr_binary_op (Plus, (Expr_const (Const_int 1)),
+              (Expr_binary_op (Mul, (Expr_const (Const_int 2)),
+                 (Expr_const (Const_int 3))))
+              )),
+           (Expr_const (Const_int 4))))
+        ))
+      ] |}]
+;;
+
+let%expect_test "parse_parens" =
+  run "let x = (2+4) ;;";
+  [%expect
+    {|
+    [(Top_let ((Id "x"),
+        (Expr_binary_op (Plus, (Expr_const (Const_int 2)),
+           (Expr_const (Const_int 4))))
         ))
       ] |}]
 ;;
 
 let%expect_test "parse_if_then_else" =
-  run "let x=(2+4)+if true then 1 else 0 ;;";
+  run "let x = (2+4) + if 2 then 1 else 0 ;;";
   [%expect
     {|
-    : end_of_input |}]
+    [(Top_let ((Id "x"),
+        (Expr_binary_op (Plus,
+           (Expr_binary_op (Plus, (Expr_const (Const_int 2)),
+              (Expr_const (Const_int 4)))),
+           (Expr_conditional ((Expr_const (Const_int 2)),
+              (Expr_const (Const_int 1)), (Expr_const (Const_int 0))))
+           ))
+        ))
+      ] |}]
 ;;

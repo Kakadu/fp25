@@ -5,6 +5,11 @@ open Base
 let spaces = take_while1 Char.is_whitespace >>| fun _ -> ()
 let skip_opt_spaces = skip_while Char.is_whitespace
 
+let is_keyword = function
+  | "let" | "rec" | "if" | "then" | "else" | "fun" | "fix" -> true
+  | _ -> false
+;;
+
 (* ================= вспомогательные парсеры ================= *)
 
 let parse_identifier =
@@ -19,7 +24,11 @@ let parse_identifier =
       | 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' | '_' | '\'' -> true
       | _ -> false)
   in
-  return (Id (fst_char ^ rest))
+  let id = fst_char ^ rest in
+  let is_key = is_keyword id in
+  if is_key
+  then fail ("keyword cannot be identifier: " ^ id)
+  else return (Id (fst_char ^ rest))
 ;;
 
 let parse_constant =
@@ -50,13 +59,15 @@ let parse_expression =
   fix (fun expr ->
     (* атомы *)
     let parse_identifier_expression = parse_identifier >>| fun id -> Expr_var id in
-    let parse_parens = char '(' *> spaces *> expr <* spaces <* char ')' in
+    let parse_parens =
+      char '(' *> skip_opt_spaces *> expr <* skip_opt_spaces <* char ')'
+    in
     let parse_if_expression =
       string "if" *> spaces *> expr
       >>= fun cond ->
-      string "then" *> spaces *> expr
+      spaces *> string "then" *> spaces *> expr
       >>= fun t ->
-      string "else" *> spaces *> expr >>| fun e -> Expr_conditional (cond, t, e)
+      spaces *> string "else" *> spaces *> expr >>| fun e -> Expr_conditional (cond, t, e)
     in
     let parse_function_expression =
       string "fun" *> spaces *> many1 parse_identifier
