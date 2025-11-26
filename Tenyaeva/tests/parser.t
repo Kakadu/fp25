@@ -11,6 +11,34 @@
   [(Str_eval (Expr_constraint (Type_int, (Expr_ident "x"))))]
 
   $ ../bin/REPL.exe -dparsetree <<EOF
+  > (x : int option)
+  [(Str_eval (Expr_constraint ((Type_option Type_int), (Expr_ident "x"))))]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > (x : int -> int)
+  [(Str_eval
+      (Expr_constraint ((Type_arrow (Type_int, Type_int)), (Expr_ident "x"))))
+    ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > (x : (int -> int) option)
+  [(Str_eval
+      (Expr_constraint ((Type_option (Type_arrow (Type_int, Type_int))),
+         (Expr_ident "x"))))
+    ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > (x : int -> int -> int -> int option)
+  [(Str_eval
+      (Expr_constraint (
+         (Type_arrow (Type_int,
+            (Type_arrow (Type_int,
+               (Type_arrow (Type_int, (Type_option Type_int)))))
+            )),
+         (Expr_ident "x"))))
+    ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
   > let x = Some y
   [(Str_value (NonRecursive,
       { vb_pat = (Pat_var "x"); vb_expr = (Expr_option (Some (Expr_ident "y")))
@@ -49,4 +77,3 @@
          { case_pat = (Pat_var "x"); case_expr = (Expr_ident "y") },
          [{ case_pat = (Pat_var "z"); case_expr = (Expr_ident "w") }])))
     ]
-
