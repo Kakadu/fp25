@@ -32,6 +32,19 @@ let is_keyword = function
   | _ -> false
 ;;
 
+let chain_left parse p_function =
+  let rec go acc = lift2 (fun f x -> f acc x) p_function parse >>= go <|> return acc in
+  parse >>= go
+;;
+
+let rec chain_right parse p_function =
+  let* left = parse in
+  (let* f = p_function in
+   let* right = chain_right parse p_function in
+   return (f left right))
+  <|> return left
+;;
+
 (* ==================== constant ==================== *)
 
 let parse_int =
@@ -148,6 +161,8 @@ let parse_expr_fun parse_expr =
   return (Expr_fun (pat, expr))
 ;;
 
+let parse_expr_apply parse_expr = chain_left parse_expr (return (fun e1 e2 -> Expr_apply (e1, e2)))
+
 let parse_expr_if parse_expr =
   let* cond = token "if" *> parse_expr in
   let* expr_then = token "then" *> parse_expr in
@@ -208,7 +223,8 @@ let parse_expression =
     let expr_if = parse_expr_if self <|> atom in
     let expr_match = parse_expr_match expr_if <|> expr_if in
     let expr_functon = parse_expr_function expr_match <|> expr_match in
-    let expr_fun = parse_expr_fun expr_functon <|> expr_functon in
+    let expr_app = parse_expr_apply expr_functon <|> expr_functon in
+    let expr_fun = parse_expr_fun expr_app <|> expr_app in
     let expr_let = parse_let expr_fun <|> expr_fun in
     expr_let)
 ;;
