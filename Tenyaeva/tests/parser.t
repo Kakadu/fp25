@@ -77,3 +77,74 @@
          { case_pat = (Pat_var "x"); case_expr = (Expr_ident "y") },
          [{ case_pat = (Pat_var "z"); case_expr = (Expr_ident "w") }])))
     ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > x y z w
+  [(Str_eval
+      (Expr_apply (
+         (Expr_apply ((Expr_apply ((Expr_ident "x"), (Expr_ident "y"))),
+            (Expr_ident "z"))),
+         (Expr_ident "w"))))
+    ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > fun x y z -> w
+  [(Str_eval
+      (Expr_fun ((Pat_var "x"),
+         (Expr_fun ((Pat_var "y"), (Expr_fun ((Pat_var "z"), (Expr_ident "w")))
+            ))
+         )))
+    ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > fun x y z -> x y z 
+  [(Str_eval
+      (Expr_fun ((Pat_var "x"),
+         (Expr_fun ((Pat_var "y"),
+            (Expr_fun ((Pat_var "z"),
+               (Expr_apply ((Expr_apply ((Expr_ident "x"), (Expr_ident "y"))),
+                  (Expr_ident "z")))
+               ))
+            ))
+         )))
+    ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > fun x y -> (fun z -> x y z)
+  [(Str_eval
+      (Expr_fun ((Pat_var "x"),
+         (Expr_fun ((Pat_var "y"),
+            (Expr_fun ((Pat_var "z"),
+               (Expr_apply ((Expr_apply ((Expr_ident "x"), (Expr_ident "y"))),
+                  (Expr_ident "z")))
+               ))
+            ))
+         )))
+    ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > x + y + z - w
+  [(Str_eval
+      (Expr_binop (Sub,
+         (Expr_binop (Add,
+            (Expr_binop (Add, (Expr_ident "x"), (Expr_ident "y"))),
+            (Expr_ident "z"))),
+         (Expr_ident "w"))))
+    ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > x + y * w / z
+  [(Str_eval
+      (Expr_binop (Add, (Expr_ident "x"),
+         (Expr_binop (Div,
+            (Expr_binop (Mult, (Expr_ident "y"), (Expr_ident "w"))),
+            (Expr_ident "z")))
+         )))
+    ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > x + y > x - y
+  [(Str_eval
+      (Expr_binop (Gt, (Expr_binop (Add, (Expr_ident "x"), (Expr_ident "y"))),
+         (Expr_binop (Sub, (Expr_ident "x"), (Expr_ident "y"))))))
+    ]
