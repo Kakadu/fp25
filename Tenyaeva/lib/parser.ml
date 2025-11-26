@@ -67,6 +67,26 @@ let parse_base_type =
   choice [ token "unit" *> return Type_unit; token "int" *> return Type_int ]
 ;;
 
+let parse_type_option p_type =
+  let* t = p_type <* token "option" in
+  return (Type_option t)
+;;
+
+let rec parse_type_arrow p_type =
+  let* l_type = p_type in
+  (let* r_type = token "->" *> parse_type_arrow p_type in
+   return (Type_arrow (l_type, r_type)))
+  <|> return l_type
+;;
+
+let parse_type =
+  fix (fun self ->
+    let atom = parse_base_type <|> skip_round_par self in
+    let opt = parse_type_option atom <|> atom in
+    let arr = parse_type_arrow opt <|> opt in
+    arr)
+;;
+
 (* -------------------- pattern -------------------- *)
 
 let parse_pat_any = token "_" *> return Pat_any
@@ -82,7 +102,7 @@ let parse_pat_option parse_pat =
 
 let parse_pat_constraint parse_pat =
   let* pat = token "(" *> parse_pat in
-  let* constr = token ":" *> parse_base_type <* token ")" in
+  let* constr = token ":" *> parse_type <* token ")" in
   return (Pat_constraint (constr, pat))
 ;;
 
@@ -112,7 +132,7 @@ let parse_expr_option parse_expr =
 
 let parse_expr_constraint parse_expr =
   let* expr = token "(" *> parse_expr in
-  let* constr = token ":" *> parse_base_type <* token ")" in
+  let* constr = token ":" *> parse_type <* token ")" in
   return (Expr_constraint (constr, expr))
 ;;
 
