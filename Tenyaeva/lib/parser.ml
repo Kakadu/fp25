@@ -130,6 +130,40 @@ let parse_pattern =
       ])
 ;;
 
+(* -------------------- operation -------------------- *)
+
+let cmp =
+  choice
+    [ token "=" *> return Eq
+    ; token "<>" *> return Neq
+    ; token "<=" *> return Lte
+    ; token ">=" *> return Gte
+    ; token "<" *> return Lt
+    ; token ">" *> return Gt
+    ]
+;;
+
+let add_sub = choice [ token "+" *> return Add; token "-" *> return Sub ]
+let mult_div = choice [ token "/" *> return Div; token "*" *> return Mult ]
+
+let parse_binop parse_expr parse_op =
+  chain_left parse_expr (parse_op >>| fun opr exp1 exp2 -> Expr_binop (opr, exp1, exp2))
+;;
+
+let parse_expr_binop parse_expr =
+  let parse_expr = parse_binop parse_expr mult_div in
+  let parse_expr = parse_binop parse_expr add_sub in
+  parse_binop parse_expr cmp
+;;
+
+let parse_unop = choice [ token "-" *> return Negative; token "+" *> return Positive ]
+
+let parse_expr_unop parse_expr =
+  let* op = parse_unop in
+  let* e = parse_expr in
+  return (Expr_unop (op, e))
+;;
+
 (* -------------------- expression -------------------- *)
 
 let parse_rec_flag = token "rec" *> return Recursive <|> return NonRecursive
@@ -161,7 +195,9 @@ let parse_expr_fun parse_expr =
   return (Expr_fun (pat, expr))
 ;;
 
-let parse_expr_apply parse_expr = chain_left parse_expr (return (fun e1 e2 -> Expr_apply (e1, e2)))
+let parse_expr_apply parse_expr =
+  chain_left parse_expr (return (fun e1 e2 -> Expr_apply (e1, e2)))
+;;
 
 let parse_expr_if parse_expr =
   let* cond = token "if" *> parse_expr in
@@ -221,7 +257,9 @@ let parse_expression =
         ]
     in
     let expr_if = parse_expr_if self <|> atom in
-    let expr_match = parse_expr_match expr_if <|> expr_if in
+    let expr_unop = parse_expr_unop expr_if <|> expr_if in
+    let expr_binop = parse_expr_binop expr_unop <|> expr_unop in
+    let expr_match = parse_expr_match expr_binop <|> expr_binop in
     let expr_functon = parse_expr_function expr_match <|> expr_match in
     let expr_app = parse_expr_apply expr_functon <|> expr_functon in
     let expr_fun = parse_expr_fun expr_app <|> expr_app in
