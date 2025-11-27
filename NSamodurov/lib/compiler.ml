@@ -1,19 +1,19 @@
 open Ast
 
 type op =
-  | Add
-  | Sub
-  | Mul
-  | Div
-  | Less
-  | Great
-  | LessEq
-  | GreatEq
-  | Equal
-  | NeqPhysical
-  | NeqStruct
-  | And
-  | Or
+  | Add (** e1 + e2 *)
+  | Sub (** e1 - e2 *)
+  | Mul (** e1 * e2 *)
+  | Div (** e1 / e2 *)
+  | Less (** e1 < e2 *)
+  | Great (** e1 > e2 *)
+  | LessEq (** e1 <= e2 *)
+  | GreatEq (** e1 >= e2 *)
+  | Equal (** e1 = e2 *)
+  | NeqPhysical (** e1 != e2 *)
+  | NeqStruct (** e1 <> e2 *)
+  | And (** e1 && e2 *)
+  | Or (** e1 || e2 *)
 [@@deriving show { with_path = false }]
 
 type instr =
@@ -68,17 +68,13 @@ let compile : brujin t -> instr list =
   let rec helper_t acc = function
     | EVar (Index i) -> Access i :: acc
     | EIf (pred, e1, e2) ->
-      let then_instr = helper_t [] e1 in
       let else_instr = helper_t [] e2 in
-      let pred_instr = helper_t [] pred in
-      let then_ofs = List.length then_instr in
       let else_ofs = List.length else_instr in
-      pred_instr
-      @ [ BranchIf (then_ofs + 1) ]
-      @ then_instr
-      @ [ Branch else_ofs ]
-      @ else_instr
-      @ acc
+      let acc = Branch else_ofs :: (else_instr @ acc) in
+      let then_instr = helper_t [] e1 in
+      let then_ofs = List.length then_instr in
+      let acc = BranchIf (then_ofs + 1) :: (then_instr @ acc) in
+      helper_t acc pred
     | EApp (e1, e2) ->
       let aux instr l =
         helper_c
@@ -96,18 +92,13 @@ let compile : brujin t -> instr list =
   and helper_c acc = function
     | EVar (Index i) -> Access i :: acc
     | EIf (pred, e1, e2) ->
-      (* TODO: rewrite a faster version *)
-      let then_instr = helper_t [] e1 in
       let else_instr = helper_t [] e2 in
-      let pred_instr = helper_t [] pred in
-      let then_ofs = List.length then_instr in
       let else_ofs = List.length else_instr in
-      pred_instr
-      @ [ BranchIf (then_ofs + 1) ]
-      @ then_instr
-      @ [ Branch else_ofs ]
-      @ else_instr
-      @ acc
+      let acc = Branch else_ofs :: (else_instr @ acc) in
+      let then_instr = helper_t [] e1 in
+      let then_ofs = List.length then_instr in
+      let acc = BranchIf (then_ofs + 1) :: (then_instr @ acc) in
+      helper_t acc pred
     | EApp (e1, e2) ->
       let aux instr l =
         helper_c

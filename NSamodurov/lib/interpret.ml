@@ -6,7 +6,11 @@
 
 [@@@ocaml.text "/*"]
 
-(** https://caml.inria.fr/pub/papers/xleroy-zinc.pdf *)
+(**
+   ZINC abstract machine with cyclic enviroment for recursion
+
+   Literature: https://caml.inria.fr/pub/papers/xleroy-zinc.pdf
+*)
 
 open Parser
 open Compiler
@@ -34,6 +38,7 @@ end
 
 open ErrorMonad
 
+(** A type of value used in interepreter *)
 type eval =
   | Pair of int (** Pairs, used to sotre closure *)
   | Int of int (** Integer *)
@@ -43,8 +48,10 @@ type eval =
 
 let int_of_bool = fun x -> if x then Int 1 else Int 0
 
+(** a sequence of instructions that retains state *)
 type closure = instr list * eval list
 
+(** A state of interpreter  *)
 type state =
   { acc : eval (** Accumulator *)
   ; env : eval list (** Enviroment stack *)
@@ -69,6 +76,7 @@ let print_state { acc; env; arg; ret; _ } instr =
   Format.printf "\n"
 ;;
 
+(* TODO: remove mutability *)
 let interpret =
   let rec helper { acc; env; arg; ret; curs } instr =
     (* print_state { acc; env; arg; ret; curs } instr; *)
