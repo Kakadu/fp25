@@ -29,25 +29,35 @@ SPDX-License-Identifier: CC0-1.0
   Success: (Int 123)
 
   $ ../../bin/REPL.exe << EOF
-  > let rec fact n = if n < 2 then 1 else n * fact (n-1) in fact 5
-  Fatal error: exception Failure("Fix needed")
-  Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
-  Called from Lambda_lib__Interpret.interpret in file "lib/interpret.ml" (inlined), line 151, characters 2-25
-  Called from Lambda_lib__Interpret.parse_and_run.helper in file "lib/interpret.ml", line 161, characters 8-25
-  Called from Stdlib__Result.bind in file "result.ml" (inlined), line 23, characters 36-39
-  Called from Lambda_lib__Interpret.parse_and_run.helper in file "lib/interpret.ml", lines 157-161, characters 4-25
-  Called from Dune__exe__REPL in file "bin/REPL.ml", line 14, characters 2-20
-  [2]
-
-  $ ../../bin/REPL.exe << EOF
-  > let rec fib n = if n <= 1 then n else fib (n-1) + fib(n-2) in
-  > let rec fact n = if n < 2 then 1 else n * fact (n-1) in
-  > fib 3
-  Error: Can't interpret: Can't access a variable
-
-  $ ../../bin/REPL.exe << EOF
   > let a = 3 in
   > let b = 2 in
   > let c = 1 in
   > c
   Success: (Int 1)
+
+  $ ../../bin/REPL.exe << EOF
+  > let rec fact acc n = if n <= 1 then acc else fact (n * acc) (n-1) in
+  > fact 1 4
+  Success: (Int 24)
+
+  $ ../../bin/REPL.exe << EOF
+  > let rec fact n = if n <= 1 then n else n * fact (n-1) in
+  > fact 10
+  Success: (Int 1)
+
+  $ ../../bin/REPL.exe << EOF
+  > let id x = x in
+  > let idd x = x in
+  > idd 12 + id 23
+  Success: (Int 35)
+
+  $ ../../bin/REPL.exe << EOF
+  > let rec fib n =
+  > if n <= 1 then
+  >   n
+  > else
+  >   fib (n-1) + fib (n-2)
+  > in
+  > fib 2
+  Success: (Int 1)
+

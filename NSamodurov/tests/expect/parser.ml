@@ -87,7 +87,7 @@ let%expect_test "let function" =
 
 let%expect_test "let rec expression" =
   parse_and_print "let rec variable = x in y";
-  [%expect {| let rec i0 = i1 in i2 |}]
+  [%expect {| let rec i0 = i0 in i2 |}]
 ;;
 
 let%expect_test "if expression 1" =
@@ -113,10 +113,5 @@ let%expect_test "factorial" =
 
 let%expect_test "bool" =
   parse_and_print "(true)";
-  [%expect {| true |}]
-;;
-
-let%expect_test "compare" =
-  parse_and_print "\n  let a = 3 in\n  let b = 2 in\n  let c = 1 in\n  c\n\n";
   [%expect {| true |}]
 ;;

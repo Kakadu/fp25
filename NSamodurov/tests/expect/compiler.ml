@@ -67,3 +67,14 @@ let%expect_test "fact" =
     Access 0);Apply;EndLet;
     |}]
 ;;
+
+let%expect_test "sum of applications" =
+  instruction_of_program
+    "let rec fib n = if n <= 1 then n else fib (n-1) + fib (n-2) in fib 2";
+  [%expect {| let i0 = 3 in let i1 = 2 in let i2 = 1 in i0 |}]
+;;
+
+let%expect_test "sum of applications" =
+  instruction_of_program "let id x = x in id 12 + id 23";
+  [%expect {| let i0 = 3 in let i1 = 2 in let i2 = 1 in i0 |}]
+;;

@@ -40,23 +40,26 @@ let rec list_of_apps = function
   | a -> [ a ]
 ;;
 
-(* TODO: write CPS version *)
 let compile =
   let helper_op f l instr =
+    let op_arr =
+      [| Primitive Add
+       ; Primitive Sub
+       ; Primitive Mul
+       ; Primitive Div
+       ; Primitive Less
+       ; Primitive Great
+       ; Primitive LessEq
+       ; Primitive GreatEq
+       ; Primitive Equal
+       ; Primitive NeqPhysical
+       ; Primitive NeqStruct
+       ; Primitive And
+       ; Primitive Or
+      |]
+    in
     match l with
-    | EVar (Index -1) :: tl -> f (Primitive Add) tl
-    | EVar (Index -2) :: tl -> f (Primitive Sub) tl
-    | EVar (Index -3) :: tl -> f (Primitive Mul) tl
-    | EVar (Index -4) :: tl -> f (Primitive Div) tl
-    | EVar (Index -5) :: tl -> f (Primitive Less) tl
-    | EVar (Index -6) :: tl -> f (Primitive Great) tl
-    | EVar (Index -7) :: tl -> f (Primitive LessEq) tl
-    | EVar (Index -8) :: tl -> f (Primitive GreatEq) tl
-    | EVar (Index -9) :: tl -> f (Primitive Equal) tl
-    | EVar (Index -10) :: tl -> f (Primitive NeqPhysical) tl
-    | EVar (Index -11) :: tl -> f (Primitive NeqStruct) tl
-    | EVar (Index -12) :: tl -> f (Primitive And) tl
-    | EVar (Index -13) :: tl -> f (Primitive Or) tl
+    | EVar (Index i) :: tl when i >= -Array.length op_arr && i < 0 -> f op_arr.(-i - 1) tl
     | apps -> f instr apps
   in
   let rec helper_t acc = function
@@ -79,7 +82,9 @@ let compile =
           (List.fold_left (fun acc x -> Push :: helper_c acc x) (instr :: acc) l)
           e2
       in
-      helper_op aux (list_of_apps e1) AppTerm
+      (match list_of_apps e1 with
+       | EVar (Index i) :: _ as apps when i < 0 -> helper_op aux apps AppTerm
+       | apps -> PushMark :: helper_op aux apps AppTerm)
     | EAbs (_, e) -> Grab :: helper_t acc e
     | ELet (Recursive, _, a, b) -> Dummy :: helper_c (Update :: helper_t acc b) a
     | ELet (NotRecursive, _, a, b) -> helper_c (Let :: helper_t acc b) a
