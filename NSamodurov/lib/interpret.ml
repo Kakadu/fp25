@@ -71,7 +71,7 @@ let print_state { acc; env; arg; ret; _ } instr =
 
 let interpret =
   let rec helper { acc; env; arg; ret; curs } instr =
-    print_state { acc; env; arg; ret; curs } instr;
+    (* print_state { acc; env; arg; ret; curs } instr; *)
     match instr with
     | [] -> return acc
     | Primitive p :: instr ->

@@ -33,3 +33,4 @@ type instr =
 
 val compile : Ast.brujin Ast.t -> instr list
 val pp_instr : Format.formatter -> instr -> unit
+val list_of_apps : 'a Ast.t -> 'a Ast.t list

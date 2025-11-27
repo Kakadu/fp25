@@ -17,30 +17,33 @@ type op =
 [@@deriving show { with_path = false }]
 
 type instr =
-  | Access of int (** Access variable *)
+  | Access of int (** Access n'th variable from enviroment stack *)
   | Cur of instr list (** Non-tail recursive closure *)
   | Const of int (** Put a constant to accumulator *)
   | Primitive of op (** Primitive operators *)
   | BranchIf of int (** Jump to specific offset if acc != 0 *)
-  | Branch of int (** Unconditional jump*)
+  | Branch of int (** Unconditional jump *)
   | EndLet (** End of let "frame" *)
   | Return (** Return value and get to previous enviroment *)
   | Grab (** Get argument from argument stack *)
   | Apply (** Apply argument from accumulator *)
   | Let (** Start let "frame" *)
   | Push (** Push argument onto argument stack *)
-  | PushMark (** Same as Push instruction but used first*)
+  | PushMark (** Start marker of application sequence *)
   | AppTerm (** Tail-recursive version of EndLet *)
   | Dummy (** Push dummy symbol to enviroment, used by let rec *)
-  | Update (**  *)
+  | Update (** Replace the top of the enviroment stack  *)
 [@@deriving show { with_path = false }]
 
-let rec list_of_apps = function
-  | EApp (a1, a2) -> a1 :: list_of_apps a2
-  | a -> [ a ]
+let list_of_apps =
+  let rec helper = function
+    | EApp (a1, a2) -> a2 :: helper a1
+    | a -> [ a ]
+  in
+  fun l -> List.rev (helper l)
 ;;
 
-let compile =
+let compile : brujin t -> instr list =
   let helper_op f l instr =
     let op_arr =
       [| Primitive Add

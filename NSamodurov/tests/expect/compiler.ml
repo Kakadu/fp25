@@ -71,10 +71,23 @@ let%expect_test "fact" =
 let%expect_test "sum of applications" =
   instruction_of_program
     "let rec fib n = if n <= 1 then n else fib (n-1) + fib (n-2) in fib 2";
-  [%expect {| let i0 = 3 in let i1 = 2 in let i2 = 1 in i0 |}]
+  [%expect
+    {|
+    Dummy;(Cur
+             [(Const 1); Push; (Access 0); (Primitive LessEq); (BranchIf 2);
+               (Access 0); (Branch 18); PushMark; (Const 2); Push; (Access 0);
+               (Primitive Sub); Push; (Access 1); Apply; Push; PushMark;
+               (Const 1); Push; (Access 0); (Primitive Sub); Push; (Access 1);
+               Apply; (Primitive Add); Return]);Update;PushMark;(Const 2);Push;(
+    Access 0);Apply;EndLet;
+    |}]
 ;;
 
 let%expect_test "sum of applications" =
-  instruction_of_program "let id x = x in id 12 + id 23";
-  [%expect {| let i0 = 3 in let i1 = 2 in let i2 = 1 in i0 |}]
+  instruction_of_program "let id x = x in (id 12 + id 23)";
+  [%expect
+    {|
+    (Cur [(Access 0); Return]);Let;PushMark;(Const 23);Push;(Access 0);Apply;Push;PushMark;(
+    Const 12);Push;(Access 0);Apply;(Primitive Add);EndLet;
+    |}]
 ;;
