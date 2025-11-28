@@ -1,10 +1,6 @@
-[@@@ocaml.text "/*"]
-
-(** Copyright 2021-2024, Kakadu and contributors *)
+(** Copyright 2021-2025, Kakadu and contributors *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
-
-[@@@ocaml.text "/*"]
 
 open Ast
 
@@ -21,7 +17,7 @@ type value =
   | VInt of int
   | VClosure of pattern * expr
 
-and env = (string, value, Base.String.comparator_witness) Base.Map.t
+type env = (string, value, Base.String.comparator_witness) Base.Map.t
 
 module type MONAD = sig
   type 'a t

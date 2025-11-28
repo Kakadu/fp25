@@ -1,4 +1,4 @@
-(** Copyright 2021-2023, Kakadu and contributors *)
+(** Copyright 2021-2025, Kakadu and contributors *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
@@ -49,7 +49,6 @@ let variable_name =
 
 let var = variable_name >>| fun s -> PVar s
 let var_expr = var >>| fun p -> Var p
-let parse_bool = token (string "true") <|> token (string "false") >>| bool_of_string
 let skip_parens p = token (char '(') *> p <* token (char ')')
 
 let cmp =
@@ -94,7 +93,7 @@ let cmp_op =
 let rec build_curried_function args body =
   match args with
   | [] -> body
-  | arg :: rest_args -> Fun (arg, build_curried_function rest_args body)
+  | arg :: rest_args -> Func (arg, build_curried_function rest_args body)
 ;;
 
 let expr =
@@ -157,7 +156,7 @@ let expr =
       >>= fun args ->
       token (char '=') *> expr
       >>= fun ex ->
-      let body = if args = [] then ex else build_curried_function args ex in
+      let body = build_curried_function args ex in
       option None (token (string "in") *> expr >>| fun cont -> Some cont)
       >>= fun skope -> return (Let (recurs, name, body, skope))
     in

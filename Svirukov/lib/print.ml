@@ -1,3 +1,7 @@
+(** Copyright 2021-2025, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
 open Ast
 open Interpret
 
@@ -35,7 +39,7 @@ let rec print_ast = function
     Printf.sprintf "(let rec %s = %s)" name (print_ast body)
   | Let (Rec, PVar name, body, Some next) ->
     Printf.sprintf "(let rec %s = %s in %s)" name (print_ast body) (print_ast next)
-  | Fun (PVar arg, body) -> Printf.sprintf "(fun %s -> %s)" arg (print_ast body)
+  | Func (PVar arg, body) -> Printf.sprintf "(fun %s -> %s)" arg (print_ast body)
   | App (left, right) -> Printf.sprintf "%s %s" (print_ast left) (print_ast right)
 ;;
 

@@ -1,3 +1,7 @@
+(** Copyright 2021-2025, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
 open Ast
 open Base
 
@@ -5,7 +9,7 @@ type value =
   | VInt of int
   | VClosure of pattern * expr
 
-and env = (string, value, Base.String.comparator_witness) Base.Map.t
+type env = (string, value, Base.String.comparator_witness) Base.Map.t
 
 type error =
   | UnboundVariable of string
@@ -25,8 +29,8 @@ module type MONAD = sig
   val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
 end
 
-module ResultM : MONAD with type 'a t = ('a, error) Base.result = struct
-  type 'a t = ('a, error) Base.result
+module ResultM : MONAD with type 'a t = ('a, error) Result.t = struct
+  type 'a t = ('a, error) Result.t
 
   let return x = Ok x
   let fail msg = Error msg
@@ -82,8 +86,8 @@ let rec substitute expr varname value =
          , match body_expr with
            | Some e -> Some (substitute e varname value)
            | None -> None ))
-  | Fun (PVar param, _) when Base.String.( = ) param varname -> expr
-  | Fun (param, body) -> Fun (param, substitute body varname value)
+  | Func (PVar param, _) when Base.String.( = ) param varname -> expr
+  | Func (param, body) -> Func (param, substitute body varname value)
   | App (func, arg) -> App (substitute func varname value, substitute arg varname value)
 ;;
 
@@ -98,7 +102,7 @@ let rec eval exp env step =
       let* binding = Env.ok_or_novar env name in
       (match binding with
        | VInt n -> ResultM.return (Constant (CInt n))
-       | VClosure (pat, body) -> ResultM.return (Fun (pat, body)))
+       | VClosure (pat, body) -> ResultM.return (Func (pat, body)))
     | Binop (op, left, right) ->
       let eval_binop expr =
         match eval expr env (step - 1) with
@@ -123,7 +127,7 @@ let rec eval exp env step =
       let* letval =
         match body with
         | Constant (CInt n) -> ResultM.return (VInt n)
-        | Fun (pat, inner) -> ResultM.return (VClosure (pat, inner))
+        | Func (pat, inner) -> ResultM.return (VClosure (pat, inner))
         | _ -> ResultM.fail (TypeError "can put only vars and funcs in env")
       in
       let new_env = Env.add_val env name letval in
@@ -133,7 +137,7 @@ let rec eval exp env step =
     | Let (Rec, PVar name, body, cont) ->
       let* new_env =
         match body with
-        | Fun (PVar var, func) ->
+        | Func (PVar var, func) ->
           ResultM.return (Env.add_val env name (VClosure (PVar var, func)))
         | _ -> ResultM.fail (TypeError "can put only vars and funcs in env")
       in
@@ -153,7 +157,7 @@ let rec eval exp env step =
       let rec application core env args =
         match args, core with
         | [], expr -> eval expr env (step - 1)
-        | arg :: tail, Fun (PVar name, body) ->
+        | arg :: tail, Func (PVar name, body) ->
           let new_body = substitute body name arg in
           application new_body env tail
         | _ :: _, _ -> ResultM.fail TooManyArgs
@@ -171,11 +175,11 @@ let rec eval exp env step =
         | Var (PVar name) ->
           let* binding = eval body env (step - 1) in
           ResultM.return (substitute body name binding)
-        | Fun (_, _) -> ResultM.return body
+        | Func (_, _) -> ResultM.return body
         | _ -> ResultM.fail (TypeError "can only apply args to funcs")
       in
       application new_body env args
-    | Fun (pat, ex) -> ResultM.return (Fun (pat, ex)))
+    | Func (pat, ex) -> ResultM.return (Func (pat, ex)))
 ;;
 
 let run_interpret expr steps =

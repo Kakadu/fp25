@@ -1,3 +1,7 @@
+(** Copyright 2021-2025, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
 open Ast
 open Base
 
@@ -25,8 +29,6 @@ type type_error =
   | NotExpression
 
 module TypeMonad = struct
-  type 'a t = ('a, type_error) result
-
   let return x = Ok x
   let fail msg = Error msg
 
@@ -71,7 +73,7 @@ let typecheck_program expr =
   let rec check expr env counter mode =
     let fresh_var counter =
       let new_counter = counter + 1 in
-      TVar (string_of_int new_counter), new_counter
+      TVar (Int.to_string new_counter), new_counter
     in
     match expr with
     | Constant CUnit -> return (TUnit, counter)
@@ -101,7 +103,7 @@ let typecheck_program expr =
             let* () = unify then_type TUnit in
             return (TUnit, counter2)
           | Statement -> return (then_type, counter2)))
-    | Fun (PVar param, body) ->
+    | Func (PVar param, body) ->
       let param_type, counter1 = fresh_var counter in
       let new_env = Map.set env ~key:param ~data:param_type in
       let* body_type, counter2 = check body new_env counter1 Expression in
@@ -125,17 +127,17 @@ let typecheck_program expr =
       let func_type, counter1 = fresh_var counter in
       let temp_env = Map.set env ~key:name ~data:func_type in
       let* actual_type, counter2 = check value_expr temp_env counter1 Expression in
-      (match occurs_check (string_of_int counter2) actual_type with
-       | true -> fail OccursCheckError
-       | false ->
-         let* () = unify func_type actual_type in
-         let final_env = Map.set env ~key:name ~data:actual_type in
-         (match body_opt with
-          | Some body -> check body final_env counter2 mode
-          | None ->
-            (match mode with
-             | Expression -> fail NotExpression
-             | Statement -> return (TUnit, counter2))))
+      if occurs_check (Int.to_string counter2) actual_type
+      then fail OccursCheckError
+      else
+        let* () = unify func_type actual_type in
+        let final_env = Map.set env ~key:name ~data:actual_type in
+        (match body_opt with
+         | Some body -> check body final_env counter2 mode
+         | None ->
+           (match mode with
+            | Expression -> fail NotExpression
+            | Statement -> return (TUnit, counter2)))
   in
   let empty_env = Map.empty (module String) in
   match check expr empty_env 0 Statement with
