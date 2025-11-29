@@ -26,9 +26,7 @@ let parse_identifier =
   in
   let id = fst_char ^ rest in
   let is_key = is_keyword id in
-  if is_key
-  then fail ("keyword cannot be identifier: " ^ id)
-  else return (Id (fst_char ^ rest))
+  if is_key then fail ("keyword cannot be identifier: " ^ id) else return (fst_char ^ rest)
 ;;
 
 let parse_constant =

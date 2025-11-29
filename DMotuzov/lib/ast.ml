@@ -1,4 +1,4 @@
-type identificator = Id of string [@@deriving show { with_path = false }]
+type identificator = string [@@deriving show { with_path = false }]
 
 type constant =
   | Const_int of int
