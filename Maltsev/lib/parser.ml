@@ -47,6 +47,8 @@ let sign =
 ;;
 
 let parse_number =
+  spaces
+  >>= fun _ ->
   sign
   >>= fun sign ->
   take_while1 is_digit
@@ -57,6 +59,8 @@ let parse_number =
 ;;
 
 let parse_varname =
+  spaces
+  >>= fun _ ->
   take_while1 var_name
   >>= fun s ->
   match s with
@@ -64,18 +68,18 @@ let parse_varname =
   | _ -> return (Ast.Ident s)
 ;;
 
-let plus = char '+' >>= fun _ -> return Plus
-let minus = char '-' >>= fun _ -> return Minus
-let mul = char '*' >>= fun _ -> return Mul
-let div = char '/' >>= fun _ -> return Div
-let eq = char '=' >>= fun _ -> return Eq
-let neq = string "!=" >>= fun _ -> return Neq
-let le = char '<' >>= fun _ -> return Le
-let bi = char '>' >>= fun _ -> return Bi
+let plus = spaces >>= fun _ -> char '+' >>= fun _ -> return Plus
+let minus = spaces >>= fun _ -> char '-' >>= fun _ -> return Minus
+let mul = spaces >>= fun _ -> char '*' >>= fun _ -> return Mul
+let div = spaces >>= fun _ -> char '/' >>= fun _ -> return Div
+let eq = spaces >>= fun _ -> char '=' >>= fun _ -> return Eq
+let neq = spaces >>= fun _ -> string "!=" >>= fun _ -> return Neq
+let le = spaces >>= fun _ -> char '<' >>= fun _ -> return Le
+let bi = spaces >>= fun _ -> char '>' >>= fun _ -> return Bi
 
-let parse_arithm =
-  fix (fun parse_arithm ->
-    let helper = conde [ parse_varname <|> parse_number; parens parse_arithm ] in
+let parse_expr =
+  fix (fun parse_expr ->
+    let helper = conde [ parse_varname <|> parse_number; parens parse_expr ] in
     let mul_helper =
       helper
       >>= fun left ->
