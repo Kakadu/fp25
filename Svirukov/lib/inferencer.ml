@@ -11,17 +11,10 @@ type typ =
   | TUnit
   | TVar of string
 
-let rec print_typ = function
-  | TInt -> "TInt"
-  | TFun (l, r) -> Printf.sprintf "TFun(%s, %s)" (print_typ l) (print_typ r)
-  | TUnit -> "TUnit"
-  | TVar s -> Printf.sprintf "TVar(%s)" s
-;;
-
 type type_env = (string, typ, String.comparator_witness) Map.t
 
 type type_error =
-  | UnboundVariable of string
+  | UnboundVar of string
   | TypeMismatch of typ * typ
   | OccursCheckError
   | InvalidCondition
@@ -81,7 +74,7 @@ let typecheck_program expr =
     | Var (PVar name) ->
       (match Map.find env name with
        | Some typ -> return (typ, counter)
-       | None -> fail (UnboundVariable name))
+       | None -> fail (UnboundVar name))
     | Binop (_, left, right) ->
       let* left_type, counter1 = check left env counter Expression in
       let* right_type, counter2 = check right env counter1 Expression in
@@ -143,25 +136,4 @@ let typecheck_program expr =
   match check expr empty_env 0 Statement with
   | Ok (typ, _) -> Ok typ
   | Error e -> Error e
-;;
-
-let show_type_error = function
-  | UnboundVariable name -> Printf.sprintf "Unbound variable: %s" name
-  | TypeMismatch (t1, t2) ->
-    Printf.sprintf
-      "Type mismatch: expected %s but got %s"
-      (match t1 with
-       | TInt -> "int"
-       | TUnit -> "unit"
-       | TFun _ -> "function"
-       | TVar s -> Printf.sprintf "Var(%s)" s)
-      (match t2 with
-       | TInt -> "int"
-       | TUnit -> "unit"
-       | TFun _ -> "function"
-       | TVar s -> Printf.sprintf "Var(%s)" s)
-  | OccursCheckError -> "Recursive function has infinite type"
-  | InvalidCondition -> "Condition must be of type int"
-  | ApplicationError -> "Cannot apply non-function"
-  | NotExpression -> "Not an expression"
 ;;

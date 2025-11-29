@@ -4,3 +4,5 @@
 
 val print_ast : Ast.expr -> string
 val print_error : Interpret.error -> string
+val print_typ : Inferencer.typ -> string
+val show_type_error : Inferencer.type_error -> string

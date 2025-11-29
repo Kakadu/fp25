@@ -3,6 +3,7 @@
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
 open Ast
+open Inferencer
 open Interpret
 
 let rec print_ast = function
@@ -52,4 +53,32 @@ let print_error = function
   | ParttialApplication -> "Not enought args to calculate function"
   | ExceedNumberOfSteps expr ->
     Printf.sprintf "Exceed number of redunction posssible: \n%s" (print_ast expr)
+;;
+
+let show_type_error = function
+  | NotExpression -> "Not an expression"
+  | UnboundVar name -> Printf.sprintf "Unbound variable: %s" name
+  | TypeMismatch (t1, t2) ->
+    Printf.sprintf
+      "Type mismatch: expected %s but got %s"
+      (match t1 with
+       | TInt -> "int"
+       | TUnit -> "unit"
+       | TFun _ -> "function"
+       | TVar s -> Printf.sprintf "Var(%s)" s)
+      (match t2 with
+       | TInt -> "int"
+       | TUnit -> "unit"
+       | TFun _ -> "function"
+       | TVar s -> Printf.sprintf "Var(%s)" s)
+  | OccursCheckError -> "Recursive function has infinite type"
+  | InvalidCondition -> "Condition must be of type int"
+  | ApplicationError -> "Cannot apply non-function"
+;;
+
+let rec print_typ = function
+  | TInt -> "TInt"
+  | TFun (l, r) -> Printf.sprintf "TFun(%s, %s)" (print_typ l) (print_typ r)
+  | TUnit -> "TUnit"
+  | TVar s -> Printf.sprintf "TVar(%s)" s
 ;;

@@ -37,7 +37,7 @@ let () =
     | true ->
       (match Inferencer.typecheck_program expr with
        | Ok _ -> None
-       | Error er -> Some (Inferencer.show_type_error er))
+       | Error er -> Some (Print.show_type_error er))
     | false -> None
   in
   match typecheck with
