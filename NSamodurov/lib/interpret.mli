@@ -6,4 +6,6 @@
 
 [@@@ocaml.text "/*"]
 
-val parse_and_run : string -> unit
+type flags = { print_instr_exec : bool (** If set, print instruction executed *) }
+
+val parse_and_run : string -> flags -> unit

@@ -19,19 +19,22 @@ open Utils
 open Type
 
 type output = string list
+type flags = { print_instr_exec : bool (** If set, print instruction executed *) }
 
 module ErrorMonad : sig
   include GENERAL_MONAD_2
 
   val fail : 's -> ('s, 'a) t
-  val run : ('s, 'a) t -> output * ('a, 's) Result.t
+  val run : ('s, 'a) t -> (int * output) * ('a, 's) Result.t
   val write : string -> ('s, unit) t
+  val tick : ('s, unit) t
 end = struct
-  type ('s, 'a) t = output -> output * ('a, 's) Result.t
+  type ('s, 'a) t = int * output -> (int * output) * ('a, 's) Result.t
 
-  let fail e out = out, Result.error e
-  let return x out = out, Result.ok x
-  let write x = fun out -> x :: out, Result.ok ()
+  let fail e s = s, Result.error e
+  let return x s = s, Result.ok x
+  let write x = fun (i, out) -> (i, x :: out), Result.ok ()
+  let tick (i, out) = (i + 1, out), Result.ok ()
 
   let bind =
     fun o f st ->
@@ -41,7 +44,7 @@ end = struct
     | Ok v -> (f v) out
   ;;
 
-  let run m = m []
+  let run m = m (0, [])
 
   module Syntax = struct
     let ( let* ) = bind
@@ -93,6 +96,8 @@ let print_state { acc; env; arg; ret; _ } instr =
 let interpret =
   let rec helper { acc; env; arg; ret; curs } instr =
     (* print_state { acc; env; arg; ret; curs } instr; *)
+    tick
+    >>= fun _ ->
     match instr with
     | [] -> return acc
     | Primitive p :: instr ->
@@ -232,7 +237,7 @@ let interpret =
     run (helper { acc = Epsilon; env = []; arg = []; ret = []; curs = IMap.empty } instr)
 ;;
 
-let parse_and_run str =
+let parse_and_run str { print_instr_exec } =
   let helper str =
     let ( let* ) = Result.bind in
     let* ast = parse str in
@@ -244,8 +249,9 @@ let parse_and_run str =
     Result.ok (out, r)
   in
   match helper str with
-  | Ok (out, v) ->
+  | Ok ((i, out), v) ->
     List.iter (Format.printf "%s\n") (List.rev out);
+    if print_instr_exec then Format.printf "Number of intructions executed : %d\n" i;
     Format.printf "Success: %a" pp_eval v
   | Error e -> Format.printf "Error: %a" pp_error e
 ;;

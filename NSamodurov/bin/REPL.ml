@@ -11,5 +11,5 @@ open Interpret
 
 let () =
   let text = In_channel.(input_all stdin) |> String.trim in
-  parse_and_run text
+  parse_and_run text { print_instr_exec = false }
 ;;
