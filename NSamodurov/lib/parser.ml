@@ -40,7 +40,8 @@ let conde = function
 ;;
 
 let keyword = function
-  | "let" | "in" | "if" | "then" | "else" | "->" | "fun" | "true" | "false" -> true
+  | "let" | "in" | "if" | "then" | "else" | "->" | "fun" | "true" | "false" | "print" ->
+    true
   | _ -> false
 ;;
 
@@ -131,6 +132,8 @@ let parse_lam =
         ; varname <* ws >>| var
         ; number <* ws >>| int
         ; bool_string <* ws >>| bool
+        ; (string "print" *> ws *> pack.expr pack
+           >>= fun v -> return (Ast.EApp (Ast.EVar "print", v)))
         ; (string "if" *> ws *> pack.expr pack
            >>= fun p ->
            string "then" *> ws *> pack.expr pack
@@ -228,6 +231,7 @@ let to_brujin expr =
       | EVar "<>" -> return @@ EVar (Index (-11))
       | EVar "&&" -> return @@ EVar (Index (-12))
       | EVar "||" -> return @@ EVar (Index (-13))
+      | EVar "print" -> return @@ EVar (Index (-14))
       | EVar v ->
         let* map = read in
         (match List.find_index (String.equal v) bound with

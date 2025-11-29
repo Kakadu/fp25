@@ -228,6 +228,7 @@ let env : scheme IMap.t =
   |> Context.add (-11) (Scheme.mono cmp_ty)
   |> Context.add (-12) (Scheme.mono bool_ty)
   |> Context.add (-13) (Scheme.mono bool_ty)
+  |> Context.add (-14) (Scheme.mono (tarrow tint tint))
 ;;
 
 let w : Ast.brujin Ast.t -> (ty, Utils.error) Result.t =

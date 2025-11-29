@@ -1,17 +1,17 @@
 type op =
-  | Add
-  | Sub
-  | Mul
-  | Div
-  | Less
-  | Great
-  | LessEq
-  | GreatEq
-  | Equal
-  | NeqPhysical
-  | NeqStruct
-  | And
-  | Or
+  | Add (** e1 + e2 *)
+  | Sub (** e1 - e2 *)
+  | Mul (** e1 * e2 *)
+  | Div (** e1 / e2 *)
+  | Less (** e1 < e2 *)
+  | Great (** e1 > e2 *)
+  | LessEq (** e1 <= e2 *)
+  | GreatEq (** e1 >= e2 *)
+  | Equal (** e1 = e2 *)
+  | NeqPhysical (** e1 != e2 *)
+  | NeqStruct (** e1 <> e2 *)
+  | And (** e1 && e2 *)
+  | Or (** e1 || e2 *)
 
 type instr =
   | Access of int (** Access variable *)
@@ -29,7 +29,8 @@ type instr =
   | PushMark (** Same as Push instruction but used first*)
   | AppTerm (** Tail-recursive version of EndLet *)
   | Dummy (** Push dummy symbol to enviroment *)
-  | Update (** Substitute variable in enviroment *)
+  | Update (** Replace the top of the enviroment stack  *)
+  | Print (** Prints value in accumulator *)
 
 val compile : Ast.brujin Ast.t -> instr list
 val pp_instr : Format.formatter -> instr -> unit

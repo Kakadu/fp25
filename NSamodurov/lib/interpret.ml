@@ -16,19 +16,32 @@ open Parser
 open Compiler
 open Monads
 open Utils
+open Type
+
+type output = string list
 
 module ErrorMonad : sig
   include GENERAL_MONAD_2
 
   val fail : 's -> ('s, 'a) t
-  val run : ('s, 'a) t -> ('a, 's) Result.t
+  val run : ('s, 'a) t -> output * ('a, 's) Result.t
+  val write : string -> ('s, unit) t
 end = struct
-  type ('s, 'a) t = ('a, 's) Result.t
+  type ('s, 'a) t = output -> output * ('a, 's) Result.t
 
-  let fail = Result.error
-  let return = Result.ok
-  let bind = Result.bind
-  let run = Fun.id
+  let fail e out = out, Result.error e
+  let return x out = out, Result.ok x
+  let write x = fun out -> x :: out, Result.ok ()
+
+  let bind =
+    fun o f st ->
+    let out, r = o st in
+    match r with
+    | Result.Error _ as e -> out, e
+    | Ok v -> (f v) out
+  ;;
+
+  let run m = m []
 
   module Syntax = struct
     let ( let* ) = bind
@@ -37,6 +50,7 @@ end = struct
 end
 
 open ErrorMonad
+open ErrorMonad.Syntax
 
 (** A type of value used in interepreter *)
 type eval =
@@ -57,7 +71,7 @@ type state =
   ; env : eval list (** Enviroment stack *)
   ; arg : eval list (** Argument stack *)
   ; ret : eval list (** Return value stack *)
-  ; curs : closure Dynarray.t (** Array of closures *)
+  ; curs : closure IMap.t (** Array of closures *)
   }
 
 let print_state { acc; env; arg; ret; _ } instr =
@@ -76,7 +90,6 @@ let print_state { acc; env; arg; ret; _ } instr =
   Format.printf "\n"
 ;;
 
-(* TODO: remove mutability *)
 let interpret =
   let rec helper { acc; env; arg; ret; curs } instr =
     (* print_state { acc; env; arg; ret; curs } instr; *)
@@ -123,24 +136,24 @@ let interpret =
     | AppTerm :: _ ->
       (match acc, arg with
        | Pair ind, v :: arg ->
-         let instr, env2 = Dynarray.get curs ind in
+         let instr, env2 = IMap.find ind curs in
          helper { acc; env = v :: env2; arg; ret; curs } instr
        | DummyStack ind2, v :: arg ->
-         let instr2, env2 = Dynarray.get curs ind2 in
+         let instr2, env2 = IMap.find ind2 curs in
          helper { acc; env = v :: env2; arg; ret; curs } instr2
        | Pair _, _ -> fail (`InterpretError "Argument stack is empty")
        | _ -> fail (`InterpretError "Expected pair in AppTerm"))
     | Apply :: instr ->
       (match acc, arg with
        | Pair ind2, v :: arg ->
-         let instr2, env2 = Dynarray.get curs ind2 in
-         let new_ind = Dynarray.length curs in
-         Dynarray.add_last curs (instr, env);
+         let instr2, env2 = IMap.find ind2 curs in
+         let new_ind = IMap.cardinal curs in
+         let curs = IMap.add new_ind (instr, env) curs in
          helper { acc; env = v :: env2; arg; ret = Pair new_ind :: ret; curs } instr2
        | DummyStack ind2, v :: arg ->
-         let instr2, env2 = Dynarray.get curs ind2 in
-         let new_ind = Dynarray.length curs in
-         Dynarray.add_last curs (instr, env);
+         let instr2, env2 = IMap.find ind2 curs in
+         let new_ind = IMap.cardinal curs in
+         let curs = IMap.add new_ind (instr, env) curs in
          helper
            { acc; env = v :: env2; arg; ret = DummyStack new_ind :: ret; curs }
            instr2
@@ -150,15 +163,15 @@ let interpret =
     | PushMark :: instr -> helper { acc; env; arg = Epsilon :: arg; ret; curs } instr
     (* Abstractions *)
     | Cur cur :: instr ->
-      let new_ind = Dynarray.length curs in
-      Dynarray.add_last curs (cur, env);
+      let new_ind = IMap.cardinal curs in
+      let curs = IMap.add new_ind (cur, env) curs in
       helper { acc = Pair new_ind; env; arg; ret; curs } instr
     | Grab :: instr ->
       (match arg, ret with
        | Epsilon :: arg, Pair ind2 :: ret ->
-         let instr2, env2 = Dynarray.get curs ind2 in
-         let new_ind = Dynarray.length curs in
-         Dynarray.add_last curs (instr, env);
+         let instr2, env2 = IMap.find ind2 curs in
+         let new_ind = IMap.cardinal curs in
+         let curs = IMap.add new_ind (instr, env) curs in
          helper { acc = Pair new_ind; env = env2; arg; ret; curs } instr2
        | v :: arg, ret -> helper { acc; env = v :: env; arg; ret; curs } instr
        | _, [] -> fail (`InterpretError "Return stack is empty")
@@ -166,13 +179,13 @@ let interpret =
     | Return :: _ ->
       (match acc, arg, ret with
        | acc, Epsilon :: arg, Pair ind2 :: ret ->
-         let instr2, env2 = Dynarray.get curs ind2 in
+         let instr2, env2 = IMap.find ind2 curs in
          helper { acc; env = env2; arg; ret; curs } instr2
        | acc, Epsilon :: arg, DummyStack ind2 :: ret ->
-         let instr2, env2 = Dynarray.get curs ind2 in
+         let instr2, env2 = IMap.find ind2 curs in
          helper { acc; env = env2; arg; ret; curs } instr2
        | Pair ind2, v :: arg, ret ->
-         let instr2, env2 = Dynarray.get curs ind2 in
+         let instr2, env2 = IMap.find ind2 curs in
          helper { acc; env = v :: env2; arg; ret; curs } instr2
        | _ -> fail (`InterpretError "Don't know what to do with Return"))
     (* Local declarations *)
@@ -186,14 +199,14 @@ let interpret =
     | Update :: instr ->
       (match acc, env with
        | Pair ind2, DummyStack _ :: env ->
-         let instr2, env2 = Dynarray.get curs ind2 in
+         let instr2, env2 = IMap.find ind2 curs in
          let rec a = function
            | [] -> []
            | DummyStack _ :: tl -> DummyStack ind2 :: tl
            | h :: tl -> h :: a tl
          in
          let e = a env2 in
-         Dynarray.set curs ind2 (instr2, e);
+         let curs = IMap.add ind2 (instr2, e) curs in
          helper { acc; env = Pair ind2 :: env; arg; ret; curs } instr
        | _ -> fail (`InterpretError "Can't Update"))
     (* Branching *)
@@ -207,9 +220,16 @@ let interpret =
         | _ -> instr
       in
       helper { acc; env; arg; ret; curs } instr
+    (* Misc. *)
+    | Print :: instr ->
+      (match acc with
+       | Int i ->
+         let* () = write (string_of_int i) in
+         helper { acc; env; arg; ret; curs } instr
+       | _ -> fail (`InterpretError "Can't print what's not int"))
   in
-  let arr = Stdlib.Dynarray.create () in
-  helper { acc = Epsilon; env = []; arg = []; ret = []; curs = arr }
+  fun instr ->
+    run (helper { acc = Epsilon; env = []; arg = []; ret = []; curs = IMap.empty } instr)
 ;;
 
 let parse_and_run str =
@@ -219,9 +239,13 @@ let parse_and_run str =
     let ast = to_brujin ast in
     let _ = Inferencer.w ast in
     let instr = compile ast in
-    run (interpret instr)
+    let out, r = interpret instr in
+    let* r = r in
+    Result.ok (out, r)
   in
   match helper str with
-  | Ok v -> Format.printf "Success: %a" pp_eval v
+  | Ok (out, v) ->
+    List.iter (Format.printf "%s\n") (List.rev out);
+    Format.printf "Success: %a" pp_eval v
   | Error e -> Format.printf "Error: %a" pp_error e
 ;;

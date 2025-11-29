@@ -33,6 +33,7 @@ type instr =
   | AppTerm (** Tail-recursive version of EndLet *)
   | Dummy (** Push dummy symbol to enviroment, used by let rec *)
   | Update (** Replace the top of the enviroment stack  *)
+  | Print (** Prints value in accumulator *)
 [@@deriving show { with_path = false }]
 
 let list_of_apps =
@@ -84,6 +85,7 @@ let compile : brujin t -> instr list =
       let then_ofs = List.length then_instr in
       let acc = BranchIf (then_ofs + 1) :: (then_instr @ acc) in
       helper_t acc pred
+    | EApp (EVar (Index -14), e2) -> helper_t (Print :: Const 0 :: acc) e2
     | EApp (e1, e2) ->
       let aux instr l =
         helper_c
@@ -108,6 +110,7 @@ let compile : brujin t -> instr list =
       let then_ofs = List.length then_instr in
       let acc = BranchIf (then_ofs + 1) :: (then_instr @ acc) in
       helper_c acc pred
+    | EApp (EVar (Index -14), e2) -> helper_c (Print :: Const 0 :: acc) e2
     | EApp (e1, e2) ->
       let aux instr l =
         helper_c
