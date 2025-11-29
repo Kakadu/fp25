@@ -68,6 +68,10 @@ let plus = char '+' >>= fun _ -> return Plus
 let minus = char '-' >>= fun _ -> return Minus
 let mul = char '*' >>= fun _ -> return Mul
 let div = char '/' >>= fun _ -> return Div
+let eq = char '=' >>= fun _ -> return Eq
+let neq = string "!=" >>= fun _ -> return Neq
+let le = char '<' >>= fun _ -> return Le
+let bi = char '>' >>= fun _ -> return Bi
 
 let parse_arithm =
   fix (fun parse_arithm ->
@@ -88,7 +92,15 @@ let parse_arithm =
         (plus <|> minus >>= fun operation -> mul_helper >>| fun right -> operation, right)
       >>| fun l -> List.fold_left (fun l (op, r) -> Ast.Binexpr (op, l, r)) left l
     in
-    sum_helper)
+    let comp =
+      sum_helper
+      >>= fun left ->
+      option
+        left
+        (conde [ eq; neq; bi; le ]
+         >>= fun op -> sum_helper >>| fun right -> Ast.Binexpr (op, left, right))
+    in
+    comp)
 ;;
 
 let parse str =

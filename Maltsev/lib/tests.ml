@@ -65,3 +65,17 @@ let%test _ =
 ;;
 
 let%test _ = Result.get_ok (algebr "a") = Ast.Ident "a"
+
+(* test some comparison *)
+let compr str =
+  match Angstrom.parse_string parse_arithm ~consume:Angstrom.Consume.All str with
+  | Result.Ok x -> Result.Ok x
+  | Error _ -> Result.Error (`Parsing_error "Failed to parse ident")
+;;
+
+let%test _ = Result.get_ok (compr "1=2") = Ast.Binexpr (Ast.Eq, Ast.Const 1, Ast.Const 2)
+
+let%test _ =
+  Result.get_ok (compr "1*a<2")
+  = Ast.Binexpr (Ast.Le, Ast.Binexpr (Ast.Mul, Ast.Const 1, Ast.Ident "a"), Ast.Const 2)
+;;

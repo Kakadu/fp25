@@ -7,8 +7,6 @@ type binop =
   | Minus
   | Mul
   | Div
-
-type compop =
   | Eq
   | Neq
   | Le
@@ -21,11 +19,9 @@ type arithm =
   | Ident of ident
   | Binexpr of binop * arithm * arithm
 
-type comparison = Comp of compop * arithm * arithm
-
 type expr =
   | Var of string
-  | Ite of comparison * expr * expr
+  | Ite of binop * expr * expr
   | Abs of ident * expr
   | App of expr * expr
   | Let of recflag * ident * expr * expr option
