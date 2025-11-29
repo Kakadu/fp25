@@ -43,6 +43,15 @@ let list_of_apps =
   fun l -> List.rev (helper l)
 ;;
 
+let rec is_tail ind = function
+  | EVar (Index i) when ind = i -> true
+  | EVar _ -> false
+  | EIf (_, e1, e2) -> is_tail ind e1 || is_tail ind e2
+  | EApp (a1, _) -> is_tail ind a1
+  | EConst _ -> true
+  | _ -> false
+;;
+
 let compile : brujin t -> instr list =
   let helper_op f l instr =
     let op_arr =
@@ -92,13 +101,13 @@ let compile : brujin t -> instr list =
   and helper_c acc = function
     | EVar (Index i) -> Access i :: acc
     | EIf (pred, e1, e2) ->
-      let else_instr = helper_t [] e2 in
+      let else_instr = helper_c [] e2 in
       let else_ofs = List.length else_instr in
       let acc = Branch else_ofs :: (else_instr @ acc) in
-      let then_instr = helper_t [] e1 in
+      let then_instr = helper_c [] e1 in
       let then_ofs = List.length then_instr in
       let acc = BranchIf (then_ofs + 1) :: (then_instr @ acc) in
-      helper_t acc pred
+      helper_c acc pred
     | EApp (e1, e2) ->
       let aux instr l =
         helper_c
@@ -109,8 +118,10 @@ let compile : brujin t -> instr list =
        | EVar (Index i) :: _ as apps when i < 0 -> helper_op aux apps Apply
        | apps -> PushMark :: helper_op aux apps Apply)
     | EAbs (_, e) -> Cur (helper_t [ Return ] e) :: acc
-    | ELet (Recursive, _, a, b) ->
-      Dummy :: helper_c (Update :: helper_c (EndLet :: acc) b) a
+    | ELet (Recursive, Index i, a, b) ->
+      if is_tail i a
+      then Dummy :: helper_c (Update :: helper_t acc b) a
+      else Dummy :: helper_c (Update :: helper_c (EndLet :: acc) b) a
     | ELet (NotRecursive, _, a, b) -> helper_c (Let :: helper_c (EndLet :: acc) b) a
     | EConst (Int c) -> Const c :: acc
     | EConst (Bool c) -> Const (if c then 1 else 0) :: acc
