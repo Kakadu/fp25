@@ -1,6 +1,6 @@
 type num = int
 type ident = string
-type recflag = bool
+type recflag = Recflag of bool
 
 type binop =
   | Plus
@@ -24,7 +24,7 @@ type expr =
   | Ident of ident (* some variable name to lookup *)
   | Binexpr of binop * expr * expr (* arithmetic or comparison of 2 expressions *)
   | Ite of expr * expr * expr (* condition (false is 0 otherwise true), then, else *)
-  | Abs of ident * expr (* curried lambda abstraction (fun name -> expr) *)
+  | Abs of expr * expr (* curried lambda abstraction (fun name -> expr) *)
   | App of expr * expr (* application *)
   | Let of recflag * ident * expr * expr option
 (* let binding, might be recursive, might be just a function definition *)

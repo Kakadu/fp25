@@ -47,9 +47,7 @@ let sign =
 ;;
 
 let parse_number =
-  spaces
-  >>= fun _ ->
-  sign
+  spaces *> sign
   >>= fun sign ->
   take_while1 is_digit
   >>| fun x ->
@@ -58,24 +56,29 @@ let parse_number =
   | _ -> Ast.Const (int_of_string x)
 ;;
 
+let is_keyword s =
+  match s with
+  | "let" | "rec" | "if" | "then" | "else" | "fun" | "->" -> true
+  | _ -> false
+;;
+
 let parse_varname =
-  spaces
-  >>= fun _ ->
-  take_while1 var_name
+  spaces *> take_while1 var_name
   >>= fun s ->
   match s with
+  | _ when is_keyword s -> fail "Can't have a name same as keyword"
   | _ when String.for_all is_digit s -> fail "Number cant be a name"
   | _ -> return (Ast.Ident s)
 ;;
 
-let plus = spaces >>= fun _ -> char '+' >>= fun _ -> return Plus
-let minus = spaces >>= fun _ -> char '-' >>= fun _ -> return Minus
-let mul = spaces >>= fun _ -> char '*' >>= fun _ -> return Mul
-let div = spaces >>= fun _ -> char '/' >>= fun _ -> return Div
-let eq = spaces >>= fun _ -> char '=' >>= fun _ -> return Eq
-let neq = spaces >>= fun _ -> string "!=" >>= fun _ -> return Neq
-let le = spaces >>= fun _ -> char '<' >>= fun _ -> return Le
-let bi = spaces >>= fun _ -> char '>' >>= fun _ -> return Bi
+let plus = spaces *> char '+' >>= fun _ -> return Plus
+let minus = spaces *> char '-' >>= fun _ -> return Minus
+let mul = spaces *> char '*' >>= fun _ -> return Mul
+let div = spaces *> char '/' >>= fun _ -> return Div
+let eq = spaces *> char '=' >>= fun _ -> return Eq
+let neq = spaces *> string "!=" >>= fun _ -> return Neq
+let le = spaces *> char '<' >>= fun _ -> return Le
+let bi = spaces *> char '>' >>= fun _ -> return Bi
 
 let parse_expr =
   fix (fun parse_expr ->
@@ -104,16 +107,31 @@ let parse_expr =
         (conde [ eq; neq; bi; le ]
          >>= fun op -> sum_helper >>| fun right -> Ast.Binexpr (op, left, right))
     in
-    comp)
+    let conditional =
+      spaces *> string "if"
+      >>= fun _ ->
+      parse_expr
+      >>= fun cond ->
+      spaces *> string "then"
+      >>= fun _ ->
+      parse_expr
+      >>= fun tbranch ->
+      spaces *> string "else"
+      >>= fun _ -> parse_expr >>| fun ebranch -> Ast.Ite (cond, tbranch, ebranch)
+    in
+    let abstr =
+      spaces *> string "fun"
+      >>= fun _ ->
+      parse_varname
+      >>= fun arg_name ->
+      spaces *> string "->"
+      >>= fun _ -> parse_expr >>| fun body -> Ast.Abs (arg_name, body)
+    in
+    conde [ comp; conditional; abstr ])
 ;;
 
 let parse str =
-  match
-    Angstrom.parse_string
-      (parse_number <|> parse_varname)
-      ~consume:Angstrom.Consume.All
-      str
-  with
+  match Angstrom.parse_string parse_expr ~consume:Angstrom.Consume.All str with
   | Result.Ok x -> Result.Ok x
   | Error _ -> Result.Error (`Parsing_error "Failed to parse")
 ;;

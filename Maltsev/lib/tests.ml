@@ -19,7 +19,8 @@ let%test _ = Result.get_ok (parse "    -102929") = Ast.Const (-102929)
 
 (* no success *)
 let%test _ = Result.get_error (parse "-") = `Parsing_error "Failed to parse"
-let%test _ = Result.get_error (parse "1-000") = `Parsing_error "Failed to parse"
+
+(* let%test _ = Result.get_error (num "1-000") = `Parsing_error "Failed to parse" *)
 let%test _ = Result.get_error (parse "--1") = `Parsing_error "Failed to parse"
 
 (* test ident parsing *)
@@ -27,7 +28,7 @@ let%test _ = Result.get_error (parse "--1") = `Parsing_error "Failed to parse"
 let ident str =
   match Angstrom.parse_string parse_varname ~consume:Angstrom.Consume.All str with
   | Result.Ok x -> Result.Ok x
-  | Error _ -> Result.Error (`Parsing_error "Failed to parse ident")
+  | Error _ -> Result.Error (`Parsing_error "Failed to parse")
 ;;
 
 let%test _ = Result.get_ok (ident "aaa") = Ast.Ident "aaa"
@@ -35,8 +36,9 @@ let%test _ = Result.get_ok (ident "1a") = Ast.Ident "1a"
 let%test _ = Result.get_ok (ident "  a1") = Ast.Ident "a1"
 
 (* no success *)
-let%test _ = Result.get_error (ident "1") = `Parsing_error "Failed to parse ident"
-let%test _ = Result.get_error (ident "") = `Parsing_error "Failed to parse ident"
+let%test _ = Result.get_error (ident "1") = `Parsing_error "Failed to parse"
+let%test _ = Result.get_error (ident "") = `Parsing_error "Failed to parse"
+let%test _ = Result.get_error (ident "let") = `Parsing_error "Failed to parse"
 
 (* test parser of arithmetics *)
 let algebr str =
@@ -84,4 +86,31 @@ let%test _ =
 
 let%test _ =
   Result.get_ok (algebr "1 + 2") = Ast.Binexpr (Ast.Plus, Ast.Const 1, Ast.Const 2)
+;;
+
+(* test conditionals *)
+let ite str =
+  match Angstrom.parse_string parse_expr ~consume:Angstrom.Consume.All str with
+  | Result.Ok x -> Result.Ok x
+  | Error _ -> Result.Error (`Parsing_error "Failed to parse ident")
+;;
+
+let%test _ =
+  Result.get_ok (ite " if 1 then 2 else 3")
+  = Ast.Ite (Ast.Const 1, Ast.Const 2, Ast.Const 3)
+;;
+
+let%test _ =
+  Result.get_ok (ite "if if 0 then 2 else 3 then 1 else 10")
+  = Ast.Ite (Ast.Ite (Ast.Const 0, Ast.Const 2, Ast.Const 3), Ast.Const 1, Ast.Const 10)
+;;
+
+(* test abstractions *)
+let%test _ = Result.get_ok (parse "fun x -> a") = Ast.Abs (Ast.Ident "x", Ast.Ident "a")
+
+let%test _ =
+  Result.get_ok (parse "fun x -> fun k -> x + k")
+  = Ast.Abs
+      ( Ast.Ident "x"
+      , Ast.Abs (Ast.Ident "k", Ast.Binexpr (Ast.Plus, Ast.Ident "x", Ast.Ident "k")) )
 ;;
