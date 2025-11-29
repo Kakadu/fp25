@@ -76,6 +76,13 @@ let parse_ident =
 
 (* --------------------- type ---------------------- *)
 
+let parse_type_var =
+  token "'"
+  *>
+  let* name = parse_ident in
+  return (Type_var ("'" ^ name))
+;;
+
 let parse_base_type =
   choice [ token "unit" *> return Type_unit; token "int" *> return Type_int ]
 ;;
@@ -94,7 +101,7 @@ let rec parse_type_arrow p_type =
 
 let parse_type =
   fix (fun self ->
-    let atom = parse_base_type <|> skip_round_par self in
+    let atom = parse_base_type <|> parse_type_var <|> skip_round_par self in
     let opt = parse_type_option atom <|> atom in
     let arr = parse_type_arrow opt <|> opt in
     arr)
