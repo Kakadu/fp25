@@ -22,7 +22,7 @@ depends: [
   "bisect_ppx"
   "stdune"
   "odoc" {with-doc}
-  "ocamlformat" {build & = "0.26.2"}
+  "ocamlformat" {build & = "0.27.0"}
 ]
 build: [
   ["dune" "subst"] {dev}
