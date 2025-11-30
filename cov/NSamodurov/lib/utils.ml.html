@@ -186,22 +186,22 @@ let pp_error ppf = function
   | <span data-count="0">`</span>InterpretError s -&gt; Format.fprintf ppf "Can't interpret: %s\n" s
 ;;
 
-let list_remove x ~equal = <span data-count="16662">L</span>ist.filter ~f:(fun a -&gt; <span data-count="6628">n</span>ot (equa<span data-count="6628">l</span> a x))
+let list_remove x ~equal = <span data-count="18361">L</span>ist.filter ~f:(fun a -&gt; <span data-count="7779">n</span>ot (equa<span data-count="7779">l</span> a x))
 
 let free_vars ~equal =
-  <span data-count="15683">l</span>et rec helper acc = function
-    | <span data-count="27666">E</span>Var s -&gt; s :: acc
-    | <span data-count="55909">E</span>Const _ -&gt; []
-    | <span data-count="16755">E</span>Let (_, _, e1, e2) -&gt; helper (helpe<span data-count="16755">r</span> acc e1) e2
-    | <span data-count="17211">E</span>If (p, t, e) -&gt; helper (helpe<span data-count="17211">r</span> (helpe<span data-count="17211">r</span> acc e) t) p
-    | <span data-count="16662">E</span>Abs (v, l) -&gt; acc @ list_remov<span data-count="16662">e</span> ~equal v (helpe<span data-count="16662">r</span> [] l)
-    | <span data-count="16715">E</span>App (l, r) -&gt; helper (helpe<span data-count="16715">r</span> acc r) l
+  <span data-count="16480">l</span>et rec helper acc = function
+    | <span data-count="30300">E</span>Var s -&gt; s :: acc
+    | <span data-count="60304">E</span>Const _ -&gt; []
+    | <span data-count="18485">E</span>Let (_, _, e1, e2) -&gt; helper (helpe<span data-count="18485">r</span> acc e1) e2
+    | <span data-count="18609">E</span>If (p, t, e) -&gt; helper (helpe<span data-count="18609">r</span> (helpe<span data-count="18609">r</span> acc e) t) p
+    | <span data-count="18361">E</span>Abs (v, l) -&gt; acc @ list_remov<span data-count="18361">e</span> ~equal v (helpe<span data-count="18361">r</span> [] l)
+    | <span data-count="18421">E</span>App (l, r) -&gt; helper (helpe<span data-count="18421">r</span> acc r) l
   in
   helper []
 ;;
 
 let is_free_in x term =
-  <span data-count="15683">L</span>ist.mem (free_var<span data-count="15683">s</span> term ~equal:String.equal) x ~equal:String.equal
+  <span data-count="16480">L</span>ist.mem (free_var<span data-count="16480">s</span> term ~equal:String.equal) x ~equal:String.equal
 ;;
 </code></pre>
       </div>

@@ -269,18 +269,18 @@ let pp_brujin (* ?(compact = true) *) =
 let pp ?(compact = <span data-count="0">t</span>rue) =
   <span data-count="20">l</span>et open Format in
   let mangle t fmt x =
-    <span data-count="15683">i</span>f is_free_i<span data-count="15683">n</span> x <span data-count="0">t</span> || not compac<span data-count="15683">t</span> then <span data-count="15683">f</span>printf fmt "%s" x else <span data-count="0">f</span>printf fmt "_"
+    <span data-count="16480">i</span>f is_free_i<span data-count="16480">n</span> x <span data-count="0">t</span> || not compac<span data-count="16480">t</span> then <span data-count="16480">f</span>printf fmt "%s" x else <span data-count="0">f</span>printf fmt "_"
   in
   let rec pp fmt = function
-    | <span data-count="21136">E</span>Var s -&gt; Format.fprintf fmt "%s" s
-    | <span data-count="15571">E</span>App (l, r) -&gt; Format.fprintf fmt "(%a %a)" pp l pp r
-    | <span data-count="21249">E</span>Const (Int i) -&gt; Format.fprintf fmt "%d" i
-    | <span data-count="15907">E</span>If (pred, e1, e2) -&gt;
+    | <span data-count="22121">E</span>Var s -&gt; Format.fprintf fmt "%s" s
+    | <span data-count="16470">E</span>App (l, r) -&gt; Format.fprintf fmt "(%a %a)" pp l pp r
+    | <span data-count="22197">E</span>Const (Int i) -&gt; Format.fprintf fmt "%d" i
+    | <span data-count="16544">E</span>If (pred, e1, e2) -&gt;
       Format.fprintf fmt "(if %a then %a else %a)" pp pred pp e1 pp e2
-    | <span data-count="21152">E</span>Const (Bool b) -&gt; Format.fprintf fmt (if b then <span data-count="10471">"</span>true" else <span data-count="10681">"</span>false")
+    | <span data-count="22071">E</span>Const (Bool b) -&gt; Format.fprintf fmt (if b then <span data-count="10978">"</span>true" else <span data-count="11093">"</span>false")
     | <span data-count="0">E</span>Let (NotRecursive, v, e1, e2) -&gt;
       Format.fprintf fmt "(let %s = %a in %a)" v pp e1 pp e2
-    | <span data-count="15752">E</span>Let (Recursive, v, e1, e2) -&gt;
+    | <span data-count="16431">E</span>Let (Recursive, v, e1, e2) -&gt;
       Format.fprintf fmt "(let rec %s = %a in %a)" v pp e1 pp e2
     (* | Abs (x, Abs (y, Var z)) when x = z &amp;&amp; y &lt;&gt; z &amp;&amp; compact -&gt; *)
     (*   if compact then Format.fprintf fmt "⊤" *)
@@ -323,7 +323,7 @@ let pp ?(compact = <span data-count="0">t</span>rue) =
     (*     t *)
     (* | EAbs (v1, EAbs (v2, t)) when compact -&gt; *)
     (*   Format.fprintf fmt "(λ %a %a -&gt; %a)" (mangle t) v1 (mangle t) v2 pp t *)
-    | <span data-count="15683">E</span>Abs (x, t) -&gt; Format.fprintf fmt "(fun %a -&gt; %a)" (mangl<span data-count="15683">e</span> t) x pp t
+    | <span data-count="16480">E</span>Abs (x, t) -&gt; Format.fprintf fmt "(fun %a -&gt; %a)" (mangl<span data-count="16480">e</span> t) x pp t
   in
   pp
 ;;
