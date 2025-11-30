@@ -96,6 +96,18 @@ module Inter = struct
       let closure_value = RecClosure (id, param, body, env) in
       let env' = EvalEnv.extend env id closure_value in
       eval_expression env' expr2
+    | Expr_fix expr ->
+      let* f_val = eval_expression env expr in
+      (match f_val with
+       | ValFun (f, f_body, f_env) ->
+         let* inner = eval_expression f_env f_body in
+         (match inner with
+          | ValFun (x, body, body_env) ->
+            let closure = RecClosure (f, x, body, body_env) in
+            let closure_env = EvalEnv.extend body_env f closure in
+            return (RecClosure (f, x, body, closure_env))
+          | _ -> fail TypeError)
+       | _ -> fail TypeError)
     | Expr_var id -> find_exn env id
     | Expr_const const ->
       (match const with

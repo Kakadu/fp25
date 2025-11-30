@@ -295,3 +295,13 @@ let%expect_test "parse_fib" =
         ))
       ] |}]
 ;;
+
+let%expect_test "fix" =
+  run "let id = fix (fun f -> fun x -> x) ;;let y = id 10;;";
+  [%expect {|
+    [(Top_let ("id",
+        (Expr_fix (Expr_fun ("f", (Expr_fun ("x", (Expr_var "x"))))))));
+      (Top_let ("y", (Expr_ap ((Expr_var "id"), [(Expr_const (Const_int 10))]))))
+      ]
+    |}]
+;;

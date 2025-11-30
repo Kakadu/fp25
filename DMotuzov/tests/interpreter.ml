@@ -122,3 +122,19 @@ let%expect_test "local let rec fact" =
     val f = <rec-fun>
     val y = 120 |}]
 ;;
+
+let%expect_test "fix" =
+  run "let id = fix (fun f -> fun x -> x) ;;let y = id 10;;";
+  [%expect {|
+    val id = <rec-fun>
+    val y = 10 |}]
+;;
+
+let%expect_test "fix factorial" =
+  run
+    "let fact = fix (fun f -> fun n -> if n then n * (f (n - 1)) else 1) ;;\n\
+    \       let y = fact 5 ;;";
+  [%expect {|
+    val fact = <rec-fun>
+    val y = 120 |}]
+;;
