@@ -25,11 +25,11 @@ end
 module IMap = struct
   include Map.Make (Int)
 
-  (* let pp ppf s = *)
-  (*   Format.printf "<. "; *)
-  (*   iter (fun x -> Format.fprintf ppf "%d" x) s; *)
-  (*   Format.printf ".> " *)
-  (* ;; *)
+  let pp ppf s =
+    Format.printf "<. ";
+    iter (fun _ -> Format.fprintf ppf "%d") s;
+    Format.printf ".> "
+  ;;
 end
 [@@deriving show { with_path = false }]
 

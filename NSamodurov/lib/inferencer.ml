@@ -6,12 +6,10 @@ module Scheme : sig
   type t
 
   val mono : ty -> scheme
-  val fv : t -> binder_set
 end = struct
   type t = scheme
 
   let mono t = ISet.empty, t
-  let fv (b, ty) = ISet.diff (Type.fv ty) b
 end
 
 (* Triangular substituion *)
@@ -21,14 +19,12 @@ module Subst : sig
   val empty : t
   val remove : int -> t -> t
   val apply : t -> ty -> ty
-  val print : t -> unit
   val extend : t -> int -> ty -> t
 end = struct
   type t = ty IMap.t
 
   let empty = IMap.empty
   let remove = IMap.remove
-  let print s = Format.printf "%d\n" (IMap.cardinal s)
   let extend m i ty = IMap.add i ty m
 
   let apply map =
@@ -84,9 +80,6 @@ open InferMonad.Syntax
 module Context = struct
   include IMap
 
-  type t = scheme IMap.t
-
-  let empty = IMap.empty
   let fv = fun m -> fold (fun _ a acc -> ISet.union acc (fst a)) m ISet.empty
 end
 

@@ -3,7 +3,6 @@
  (public_name NSamodurov.Lib)
  (modules
   Ast
-  Lambda
   Interpret
   Inferencer
   Parser

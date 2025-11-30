@@ -21,6 +21,8 @@ open Type
 type output = string list
 type flags = { print_instr_exec : bool (** If set, print instruction executed *) }
 
+module Format = Stdlib.Format
+
 module ErrorMonad : sig
   include GENERAL_MONAD_2
 
@@ -77,21 +79,21 @@ type state =
   ; curs : closure IMap.t (** Array of closures *)
   }
 
-let print_state { acc; env; arg; ret; _ } instr =
-  (match instr with
-   | [] -> ()
-   | h :: _ -> Format.printf ">>>>>>>>>>>>>>>>  %a <<<<<<<<<<<<< \n" pp_instr h);
-  Format.printf "acc: %a\n" pp_eval acc;
-  Format.printf "env: ";
-  List.iter (Format.printf "%a, " pp_eval) env;
-  Format.printf "\n";
-  Format.printf "arg: ";
-  List.iter (Format.printf "%a, " pp_eval) arg;
-  Format.printf "\n";
-  Format.printf "ret: ";
-  List.iter (Format.printf ">>>>>>>>>>>>>>%a, \n" pp_eval) ret;
-  Format.printf "\n"
-;;
+(* let print_state { acc; env; arg; ret; _ } instr = *)
+(*   (match instr with *)
+(*    | [] -> () *)
+(*    | h :: _ -> Format.printf ">>>>>>>>>>>>>>>>  %a <<<<<<<<<<<<< \n" pp_instr h); *)
+(*   Format.printf "acc: %a\n" pp_eval acc; *)
+(*   Format.printf "env: "; *)
+(*   List.iter (Format.printf "%a, " pp_eval) env; *)
+(*   Format.printf "\n"; *)
+(*   Format.printf "arg: "; *)
+(*   List.iter (Format.printf "%a, " pp_eval) arg; *)
+(*   Format.printf "\n"; *)
+(*   Format.printf "ret: "; *)
+(*   List.iter (Format.printf ">>>>>>>>>>>>>>%a, \n" pp_eval) ret; *)
+(*   Format.printf "\n" *)
+(* ;; *)
 
 let rec drop acc l =
   if acc = 0

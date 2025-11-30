@@ -54,14 +54,6 @@ let varname =
   if keyword str then fail "keyword" else return str
 ;;
 
-let sign_of_char = function
-  | '+' -> Plus
-  | '-' -> Minus
-  | '*' -> Asterisk
-  | '/' -> Slash
-  | c -> Ast.Other c
-;;
-
 let number =
   digit >>= fun h -> many digit >>= fun tl -> return @@ int_of_char_list (h :: tl)
 ;;
@@ -82,9 +74,6 @@ type dispatch =
   }
 
 let parens = fun p -> char '(' *> p <* char ')' <?> "Parentheses expected"
-let to_left_assoc s h tl = List.fold_left (fun acc x -> s acc x) h tl
-let multi_sum h tl = to_left_assoc add h tl
-let multi_prod h tl = to_left_assoc sub h tl
 let var v = EVar v
 let int c = EConst (Int c)
 let bool c = EConst (Bool c)

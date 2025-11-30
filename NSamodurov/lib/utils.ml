@@ -9,6 +9,7 @@
 open Base
 open Ast
 open Type
+module Format = Stdlib.Format
 
 type error =
   [ `ParsingError of string
