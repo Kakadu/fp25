@@ -1,3 +1,11 @@
+[@@@ocaml.text "/*"]
+
+(** Copyright 2021-2024, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+[@@@ocaml.text "/*"]
+
 type ty =
   | TGround of string (** Primitive type [int, bool, float] *)
   | TArrow of ty * ty (** Type of abstraction [t1 -> t2]  *)

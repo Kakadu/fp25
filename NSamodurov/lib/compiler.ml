@@ -1,3 +1,11 @@
+[@@@ocaml.text "/*"]
+
+(** Copyright 2021-2024, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+[@@@ocaml.text "/*"]
+
 open Ast
 
 type op =
@@ -121,10 +129,10 @@ let compile : brujin t -> instr list =
        | EVar (Index i) :: _ as apps when i < 0 -> helper_op aux apps Apply
        | apps -> PushMark :: helper_op aux apps Apply)
     | EAbs (_, e) -> Cur (helper_t [ Return ] e) :: acc
-    | ELet (Recursive, Index i, a, b) ->
-      if is_tail i a
-      then Dummy :: helper_c (Update :: helper_t acc b) a
-      else Dummy :: helper_c (Update :: helper_c (EndLet :: acc) b) a
+    | ELet (Recursive, Index i, a, b) when is_tail i a ->
+      Dummy :: helper_c (Update :: helper_t acc b) a
+    | ELet (Recursive, Index _, a, b) ->
+      Dummy :: helper_c (Update :: helper_c (EndLet :: acc) b) a
     | ELet (NotRecursive, _, a, b) -> helper_c (Let :: helper_c (EndLet :: acc) b) a
     | EConst (Int c) -> Const c :: acc
     | EConst (Bool c) -> Const (if c then 1 else 0) :: acc

@@ -34,7 +34,7 @@ let varname =
 let gen =
   let open QCheck.Gen in
   sized
-    (fix (fun _self -> function
+    (fix (fun self -> function
        | 0 ->
          frequency
            [ 1, map evar varname
@@ -43,16 +43,16 @@ let gen =
            ]
        | n ->
          frequency
-           [ 1, map2 eabs (fun _x -> "var") (_self (n / 2))
-           ; 1, map2 eapp (_self (n / 2)) (_self (n / 2))
-           ; 1, map3 eif (_self (n / 3)) (_self (n / 3)) (_self (n / 3))
+           [ 1, map2 eabs (fun _x -> "var") (self (n / 2))
+           ; 1, map2 eapp (self (n / 2)) (self (n / 2))
+           ; 1, map3 eif (self (n / 3)) (self (n / 3)) (self (n / 3))
            ; ( 1
              , map4
                  elet
                  (fun _x -> Recursive)
                  (fun _x -> "var")
-                 (_self ((n / 2) - 1))
-                 (_self ((n / 2) - 1)) )
+                 (self ((n / 2) - 1))
+                 (self ((n / 2) - 1)) )
            ]))
 ;;
 

@@ -199,14 +199,15 @@ end
 module Context = struct
   include Map.Make (String)
 
-  let extend k v m = add k v m
+  let extend = add
 end
 
 (* List function from newer ocaml stdlib *)
 let find_index p =
   let rec helper i = function
     | [] -> None
-    | a :: l -> if p a then Some i else helper (i + 1) l
+    | a :: _ when p a -> Some i
+    | _ :: l -> helper (i + 1) l
   in
   helper 0
 ;;
