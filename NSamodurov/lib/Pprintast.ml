@@ -41,12 +41,13 @@ let pp ?(compact = true) =
     | EVar s -> Format.fprintf fmt "%s" s
     | EApp (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | EConst (Int i) -> Format.fprintf fmt "%d" i
-    | EIf (pred, e1, e2) -> Format.fprintf fmt "if %a then %a else %a" pp pred pp e1 pp e2
+    | EIf (pred, e1, e2) ->
+      Format.fprintf fmt "(if %a then %a else %a)" pp pred pp e1 pp e2
     | EConst (Bool b) -> Format.fprintf fmt (if b then "true" else "false")
     | ELet (NotRecursive, v, e1, e2) ->
-      Format.fprintf fmt "let %s = %a in %a" v pp e1 pp e2
+      Format.fprintf fmt "(let %s = %a in %a)" v pp e1 pp e2
     | ELet (Recursive, v, e1, e2) ->
-      Format.fprintf fmt "let rec %s = %a in %a" v pp e1 pp e2
+      Format.fprintf fmt "(let rec %s = %a in %a)" v pp e1 pp e2
     (* | Abs (x, Abs (y, Var z)) when x = z && y <> z && compact -> *)
     (*   if compact then Format.fprintf fmt "⊤" *)
     (* | Abs (x, Abs (y, Var z)) when y = z && x <> z && compact -> Format.fprintf fmt "⊥" *)
@@ -60,35 +61,35 @@ let pp ?(compact = true) =
     (* | EBop (Asterisk, a, b) -> Format.fprintf fmt "%a * %a" pp a pp b *)
     (* | EBop (Slash, a, b) -> Format.fprintf fmt "%a / %a" pp a pp b *)
     (* | EBop (Other s, a, b) -> Format.fprintf fmt "%a %c %a" pp a s pp b *)
-    | EAbs (v1, EAbs (v2, EAbs (v3, EAbs (v4, t)))) when compact ->
-      Format.fprintf
-        fmt
-        "(λ %a %a %a %a -> %a)"
-        (mangle t)
-        v1
-        (mangle t)
-        v2
-        (mangle t)
-        v3
-        (mangle t)
-        v4
-        pp
-        t
-    | EAbs (v1, EAbs (v2, EAbs (v3, t))) when compact ->
-      Format.fprintf
-        fmt
-        "(λ %a %a %a -> %a)"
-        (mangle t)
-        v1
-        (mangle t)
-        v2
-        (mangle t)
-        v3
-        pp
-        t
-    | EAbs (v1, EAbs (v2, t)) when compact ->
-      Format.fprintf fmt "(λ %a %a -> %a)" (mangle t) v1 (mangle t) v2 pp t
-    | EAbs (x, t) -> Format.fprintf fmt "(λ %a . %a)" (mangle t) x pp t
+    (* | EAbs (v1, EAbs (v2, EAbs (v3, EAbs (v4, t)))) when compact -> *)
+    (*   Format.fprintf *)
+    (*     fmt *)
+    (*     "(λ %a %a %a %a -> %a)" *)
+    (*     (mangle t) *)
+    (*     v1 *)
+    (*     (mangle t) *)
+    (*     v2 *)
+    (*     (mangle t) *)
+    (*     v3 *)
+    (*     (mangle t) *)
+    (*     v4 *)
+    (*     pp *)
+    (*     t *)
+    (* | EAbs (v1, EAbs (v2, EAbs (v3, t))) when compact -> *)
+    (*   Format.fprintf *)
+    (*     fmt *)
+    (*     "(λ %a %a %a -> %a)" *)
+    (*     (mangle t) *)
+    (*     v1 *)
+    (*     (mangle t) *)
+    (*     v2 *)
+    (*     (mangle t) *)
+    (*     v3 *)
+    (*     pp *)
+    (*     t *)
+    (* | EAbs (v1, EAbs (v2, t)) when compact -> *)
+    (*   Format.fprintf fmt "(λ %a %a -> %a)" (mangle t) v1 (mangle t) v2 pp t *)
+    | EAbs (x, t) -> Format.fprintf fmt "(fun %a -> %a)" (mangle t) x pp t
   in
   pp
 ;;

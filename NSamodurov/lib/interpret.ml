@@ -93,6 +93,14 @@ let print_state { acc; env; arg; ret; _ } instr =
   Format.printf "\n"
 ;;
 
+let rec drop acc l =
+    if acc = 0 then return l else
+      match l with
+      | [] -> fail (`InterpretError "Can't drop list")
+      | _ :: tl -> drop (acc-1) tl
+;;
+  
+
 let interpret =
   let rec helper { acc; env; arg; ret; curs } instr =
     (* print_state { acc; env; arg; ret; curs } instr; *)
@@ -216,13 +224,14 @@ let interpret =
        | _ -> fail (`InterpretError "Can't Update"))
     (* Branching *)
     | Branch n :: instr ->
-      let instr = List.drop n instr in
+      let* instr = drop n instr in
       helper { acc; env; arg; ret; curs } instr
     | BranchIf n :: instr ->
-      let instr =
+      let* instr =
         match acc with
-        | Int i when i = 0 -> List.drop n instr
-        | _ -> instr
+        | Int i when i = 0 ->
+          drop n instr
+        | _ -> return instr
       in
       helper { acc; env; arg; ret; curs } instr
     (* Misc. *)

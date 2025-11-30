@@ -43,8 +43,10 @@ type 'a t =
   | EApp of 'a t * 'a t (** Abstraction [N M] *)
 
 let eint i = EConst (Int i)
+let ebool i = EConst (Bool i)
 let evar v = EVar v
 let elet flag v e1 e2 = ELet (flag, v, e1, e2)
+let eif p t e = EIf (p, t, e)
 let eabs v t = EAbs (v, t)
 let eapp e1 e2 = EApp (e1, e2)
 let add e1 e2 = eapp (eapp (evar "+") e1) e2

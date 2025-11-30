@@ -22,3 +22,10 @@
   (pps ppx_show ppx_expect))
  (inline_tests))
 
+(library
+ (name property)
+ (modules property)
+ (libraries qcheck qcheck-core lambda_lib ppx_show.runtime)
+ (preprocess
+  (pps ppx_show ppx_expect))
+ (inline_tests))

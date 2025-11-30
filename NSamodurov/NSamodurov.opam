@@ -15,8 +15,12 @@ depends: [
   "base"
   "ppx_inline_test" {with-test}
   "ppx_expect"
+  "ppx_show"
   "ppx_deriving"
+  "qcheck"
+  "qcheck-core"
   "bisect_ppx"
+  "stdune"
   "odoc" {with-doc}
   "ocamlformat" {build & = "0.26.2"}
 ]
