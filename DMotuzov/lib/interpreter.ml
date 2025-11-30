@@ -4,11 +4,18 @@ type error =
   | TypeError
   | DivisionByZero
   | NoVariable of identificator
+  | One
+  | Two
+  | Tree
+  | Four
+  | Five
+  | Six
 
 type value =
   | ValInt of int
   | ValUnit
   | ValFun of identificator * expression * env
+  | RecClosure of identificator * identificator * expression * env
 
 and env = (identificator, value, Base.String.comparator_witness) Base.Map.t
 
@@ -58,10 +65,37 @@ module Inter = struct
     | Div, _, ValInt 0 -> fail DivisionByZero
     | Plus, ValInt val1, ValInt val2 -> eval_arith ( + ) val1 val2
     | Sub, ValInt val1, ValInt val2 -> eval_arith ( - ) val1 val2
-    | _ -> fail TypeError
+    | _ -> fail One
   ;;
 
   let rec eval_expression env = function
+    | Expr_fun (param, body) -> return (ValFun (param, body, env))
+    | Expr_ap (fun_expr, args) ->
+      let* f_val = eval_expression env fun_expr in
+      let rec apply f_val args =
+        match args with
+        | [] -> return f_val
+        | arg :: rest ->
+          let* arg_val = eval_expression env arg in
+          let* f_val =
+            match f_val with
+            | ValFun _ -> return f_val
+            | RecClosure (id, param, body, closure_env) ->
+              return (ValFun (param, body, EvalEnv.extend closure_env id f_val))
+            | _ -> fail Two
+          in
+          (match f_val with
+           | ValFun (param, body, closure_env) ->
+             let call_env = EvalEnv.extend closure_env param arg_val in
+             let* res = eval_expression call_env body in
+             apply res rest
+           | _ -> fail Tree)
+      in
+      apply f_val args
+    | Expr_let_rec_in (id, Expr_fun (param, body), expr2) ->
+      let closure_value = RecClosure (id, param, body, env) in
+      let env' = EvalEnv.extend env id closure_value in
+      eval_expression env' expr2
     | Expr_var id -> find_exn env id
     | Expr_const const ->
       (match const with
@@ -80,8 +114,8 @@ module Inter = struct
       (match value1 with
        | ValInt n ->
          if n <> 0 then eval_expression env expr2 else eval_expression env expr3
-       | _ -> fail TypeError)
-    | _ -> fail TypeError
+       | _ -> fail Four)
+    | _ -> fail Five
   ;;
 
   let eval_top_let env = function
@@ -89,7 +123,11 @@ module Inter = struct
       let* value = eval_expression env expr in
       let env' = EvalEnv.extend env id value in
       return env'
-    | _ -> fail TypeError
+    | Top_let_rec (id, Expr_fun (param, body)) ->
+      let closure_value = RecClosure (id, param, body, env) in
+      let env' = EvalEnv.extend env id closure_value in
+      return env'
+    | _ -> fail Six
   ;;
 
   let rec eval_program env = function

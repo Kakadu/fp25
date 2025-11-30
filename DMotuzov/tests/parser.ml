@@ -114,7 +114,8 @@ let%expect_test "parse_lambda_one_arg" =
 
 let%expect_test "parse_lambda_two_args_sugar" =
   run "let f = fun x y -> x + y ;;";
-  [%expect {|
+  [%expect
+    {|
     [(Top_let ("f",
         (Expr_fun ("x",
            (Expr_fun ("y",
@@ -150,7 +151,8 @@ let%expect_test "parse_application" =
 
 let%expect_test "parse_application_parens" =
   run "let x = (fun x y -> x + y) 3 4 ;;";
-  [%expect {|
+  [%expect
+    {|
     [(Top_let ("x",
         (Expr_ap (
            (Expr_fun ("x",
@@ -166,7 +168,8 @@ let%expect_test "parse_application_parens" =
 
 let%expect_test "parse_let_in" =
   run "let x = let y = 10 in y + 2 ;;";
-  [%expect {|
+  [%expect
+    {|
     [(Top_let ("x",
         (Expr_let_in ("y", (Expr_const (Const_int 10)),
            (Expr_binary_op (Plus, (Expr_var "y"), (Expr_const (Const_int 2))))))
@@ -176,7 +179,8 @@ let%expect_test "parse_let_in" =
 
 let%expect_test "parse_let_rec" =
   run "let f = let rec fact = fun n -> if n then n * fact (n - 1) else 1 in fact ;;";
-  [%expect {|
+  [%expect
+    {|
     [(Top_let ("f",
         (Expr_let_rec_in ("fact",
            (Expr_fun ("n",

@@ -7,6 +7,7 @@ let string_of_value = function
   | ValInt n -> string_of_int n
   | ValUnit -> "()"
   | ValFun (_, _, _) -> "<fun>"
+  | RecClosure (_, _, _, _) -> "<rec-fun>"
 ;;
 
 (* Печать окружения *)
@@ -27,6 +28,12 @@ let run input =
          | TypeError -> "Type error"
          | DivisionByZero -> "Division by zero"
          | NoVariable id -> "No such variable: " ^ id
+         | One -> "One"
+         | Two -> "Two"
+         | Tree -> "Tree"
+         | Four -> "Four"
+         | Five -> "Five"
+         | Six -> "Six"
        in
        Format.printf "Interpreter error: %s\n" err_str)
   | Error err -> Format.printf "Parse error: %s\n" err
@@ -67,4 +74,51 @@ let%expect_test "nested if" =
   [%expect {|
   val x = 3
   |}]
+;;
+
+let%expect_test "nested if" =
+  run "let x = if 1 then if 0 then 2 else 3 else 4 ;;let y = 2 + x;;";
+  [%expect {|
+    val x = 3
+    val y = 5 |}]
+;;
+
+"let x = (fun x y -> x + y) 3 4 ;;"
+
+let%expect_test "application" =
+  run "let x = (fun x y -> x + y) 3 4 ;;";
+  [%expect {| val x = 7 |}]
+;;
+
+let%expect_test "fact" =
+  run
+    "let f = let rec fact = fun n -> if n then n * fact (n - 1) else 1 in fact ;; let y \
+     = f 10;;";
+  [%expect {|
+    val f = <rec-fun>
+    val y = 3628800 |}]
+;;
+
+"let rec fib = fun n -> if n then if n - 1 then fib (n - 1) + fib (n - 2) else 1 else 0 \
+ ;;"
+
+let%expect_test "fib" =
+  run
+    "let rec fib = fun n -> if n then if n - 1 then fib (n - 1) + fib (n - 2) else 1 \
+     else 0 ;; let y = fib 10;;";
+  [%expect {|
+    val fib = <rec-fun>
+    val y = 55 |}]
+;;
+
+let%expect_test "local let rec fact" =
+  run
+    "let f =\n\
+    \       let rec fact = fun n ->\n\
+    \         if n then n * fact (n - 1) else 1\n\
+    \       in fact\n\
+    \     ;; let y = f 5 ;;";
+  [%expect {|
+    val f = <rec-fun>
+    val y = 120 |}]
 ;;
