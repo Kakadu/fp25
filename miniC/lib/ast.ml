@@ -49,15 +49,15 @@ type expression =
           - name is the bound variable;
           - expression is the bound value;
           - expression option is the body (None for top-level statements). *)
-  | Lam of name * expression  (** Abstraction: fun x -> e. *)
+  | Fun of name * expression  (** Abstraction: fun x -> e. *)
   | App of expression * expression  (** Application: f a. *)
-  | Binop of operation_id * expression * expression  (** Integer operation. *)
+  | BinOp of operation_id * expression * expression  (** Integer operation. *)
   | If of expression * expression * expression option
       (** Condition: 0 is false, non-zero is true; else is optional. *)
 [@@deriving show { with_path = false }]
 
-(** Notes:
-    - Call-by-value evaluation.
-    - No booleans: conditions test zero vs non-zero.
-    - Functions are curried: fun x y -> e is sugar for fun x -> fun y -> e.
-    - No lists or strings, only ints and unit. *)
+(** 
+    - CBV 
+    - Bool on int: 0 - False, != 0 - True
+    fun a b -> ... - sugar for fun a -> fun b -> ...
+    *)

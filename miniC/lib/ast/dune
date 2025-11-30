@@ -1,9 +1,0 @@
-(library
- (name ast)
- (public_name miniMl.Ast)
- (modules Ast)
- (libraries base angstrom)
- (preprocess
-  (pps ppx_deriving.show))
- (instrumentation
-  (backend bisect_ppx)))
