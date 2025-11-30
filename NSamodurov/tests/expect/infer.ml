@@ -99,7 +99,8 @@ let%expect_test "arith" =
 
 let%expect_test "factorial" =
   parse_and_print "let rec id x = if (true) then 0 else id (x-1) in id";
-  [%expect {|
+  [%expect
+    {|
     Error: Unification error: ((TGround "int")) ((TArrow ((TGround "int"),
                                                     (TGround "int"))))
     |}]

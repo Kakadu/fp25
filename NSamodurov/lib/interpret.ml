@@ -94,12 +94,13 @@ let print_state { acc; env; arg; ret; _ } instr =
 ;;
 
 let rec drop acc l =
-    if acc = 0 then return l else
-      match l with
-      | [] -> fail (`InterpretError "Can't drop list")
-      | _ :: tl -> drop (acc-1) tl
+  if acc = 0
+  then return l
+  else (
+    match l with
+    | [] -> fail (`InterpretError "Can't drop list")
+    | _ :: tl -> drop (acc - 1) tl)
 ;;
-  
 
 let interpret =
   let rec helper { acc; env; arg; ret; curs } instr =
@@ -229,8 +230,7 @@ let interpret =
     | BranchIf n :: instr ->
       let* instr =
         match acc with
-        | Int i when i = 0 ->
-          drop n instr
+        | Int i when i = 0 -> drop n instr
         | _ -> return instr
       in
       helper { acc; env; arg; ret; curs } instr

@@ -1,1 +1,2 @@
-(cram (deps %{project_root}/bin/REPL.exe))
+(cram
+ (deps %{project_root}/bin/REPL.exe))
