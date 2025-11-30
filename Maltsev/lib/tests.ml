@@ -163,3 +163,8 @@ let%test _ =
               , Ast.Ident "n" ) )
       , None )
 ;;
+
+let%test _ =
+  Result.get_ok (parse "f n + 2")
+  = Ast.Binexpr (Ast.Plus, Ast.App (Ast.Ident "f", Ast.Ident "n"), Ast.Const 2)
+;;

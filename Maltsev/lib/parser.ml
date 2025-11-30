@@ -82,7 +82,23 @@ let bi = spaces *> char '>' >>= fun _ -> return Bi
 
 let parse_expr =
   fix (fun parse_expr ->
-    let helper = conde [ parse_varname <|> parse_number; parens parse_expr ] in
+    let abstr =
+      spaces *> string "fun"
+      >>= fun _ ->
+      parse_varname
+      >>= fun arg_name ->
+      spaces *> string "->"
+      >>= fun _ -> spaces *> parse_expr >>| fun body -> Ast.Abs (arg_name, body)
+    in
+    let app =
+      spaces *> (parens abstr <|> parse_varname)
+      >>= fun func ->
+      many1
+        (spaces *> conde [ parse_number; parse_varname; parens parse_expr ]
+         >>| fun arg -> arg)
+      >>| fun l -> List.fold_left (fun x arg -> Ast.App (x, arg)) func l
+    in
+    let helper = conde [ app; parse_varname <|> parse_number; parens parse_expr ] in
     let mul_helper =
       helper
       >>= fun left ->
@@ -119,20 +135,6 @@ let parse_expr =
       spaces *> string "else"
       >>= fun _ -> parse_expr >>| fun ebranch -> Ast.Ite (cond, tbranch, ebranch)
     in
-    let abstr =
-      spaces *> string "fun"
-      >>= fun _ ->
-      parse_varname
-      >>= fun arg_name ->
-      spaces *> string "->"
-      >>= fun _ -> spaces *> parse_expr >>| fun body -> Ast.Abs (arg_name, body)
-    in
-    let app =
-      spaces *> (parens abstr <|> parse_varname)
-      >>= fun func ->
-      many1 (spaces *> parse_expr >>| fun arg -> arg)
-      >>| fun l -> List.fold_left (fun x arg -> Ast.App (x, arg)) func l
-    in
     let letbind =
       spaces *> string "let"
       >>= fun _ ->
@@ -152,7 +154,7 @@ let parse_expr =
          >>= fun _ -> spaces *> parse_expr >>| fun bound -> Some bound)
       >>| fun inexpr -> Ast.Let (recbool, name, args, letexpr, inexpr)
     in
-    conde [ letbind; app; comp; conditional; abstr ])
+    conde [ letbind; comp; conditional; abstr ])
 ;;
 
 let parse str =
