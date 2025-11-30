@@ -15,10 +15,11 @@
 (homepage "https://github.com/Kakadu/fp25")
 
 (package
- (name Krivonosov) ; FIXME and regenerate .opam file using 'dune build @install'
+ (name Krivonosov)
  (synopsis "An interpreter for mimiML")
- (description "TODO: An interpreter for a functional miniML language")
- (documentation "https://kakadu.github.io/fp25/docs/Lambda")
+ (description
+  "A Call-by-Value miniML interpreter featuring recursion, arithmetic, and monadic error handling")
+ (documentation "https://kakadu.github.io/fp25/docs/Krivonosov")
  (version 0.1)
  (depends
   (dune
