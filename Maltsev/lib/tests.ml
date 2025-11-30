@@ -16,6 +16,7 @@ let%test _ = Result.get_ok (parse "100") = Ast.Const 100
 let%test _ = Result.get_ok (parse "1") = Ast.Const 1
 let%test _ = Result.get_ok (parse "-1") = Ast.Const (-1)
 let%test _ = Result.get_ok (parse "    -102929") = Ast.Const (-102929)
+let%test _ = Result.get_ok (parse "(1)") = Ast.Const 1
 
 (* no success *)
 let%test _ = Result.get_error (parse "-") = `Parsing_error "Failed to parse"
@@ -113,4 +114,52 @@ let%test _ =
   = Ast.Abs
       ( Ast.Ident "x"
       , Ast.Abs (Ast.Ident "k", Ast.Binexpr (Ast.Plus, Ast.Ident "x", Ast.Ident "k")) )
+;;
+
+let%test _ =
+  Result.get_ok (parse "fun x -> if x = 0 then 1 else 2")
+  = Ast.Abs
+      ( Ast.Ident "x"
+      , Ast.Ite
+          (Ast.Binexpr (Ast.Eq, Ast.Ident "x", Ast.Const 0), Ast.Const 1, Ast.Const 2) )
+;;
+
+(* test application *)
+let%test _ = Result.get_ok (parse "fact 10") = Ast.App (Ast.Ident "fact", Ast.Const 10)
+
+let%test _ =
+  Result.get_ok (parse "(fun x -> x 1) (fun y -> y)")
+  = Ast.App
+      ( Ast.Abs (Ast.Ident "x", Ast.App (Ast.Ident "x", Ast.Const 1))
+      , Ast.Abs (Ast.Ident "y", Ast.Ident "y") )
+;;
+
+let%test _ =
+  Result.get_ok (parse "if n < 2 then 1 else fact (n - 1)")
+  = Ast.Ite
+      ( Ast.Binexpr (Ast.Le, Ast.Ident "n", Ast.Const 2)
+      , Ast.Const 1
+      , Ast.App (Ast.Ident "fact", Ast.Binexpr (Ast.Minus, Ast.Ident "n", Ast.Const 1)) )
+;;
+
+let%test _ =
+  Result.get_ok (parse "let a = 1 in b")
+  = Ast.Let (Ast.Recflag false, Ast.Ident "a", [], Ast.Const 1, Some (Ast.Ident "b"))
+;;
+
+let%test _ =
+  Result.get_ok (parse "let rec fact n = if n < 2 then 1 else fact (n - 1) * n")
+  = Ast.Let
+      ( Ast.Recflag true
+      , Ast.Ident "fact"
+      , [ Ast.Ident "n" ]
+      , Ast.Ite
+          ( Ast.Binexpr (Ast.Le, Ast.Ident "n", Ast.Const 2)
+          , Ast.Const 1
+          , Ast.Binexpr
+              ( Ast.Mul
+              , Ast.App
+                  (Ast.Ident "fact", Ast.Binexpr (Ast.Minus, Ast.Ident "n", Ast.Const 1))
+              , Ast.Ident "n" ) )
+      , None )
 ;;

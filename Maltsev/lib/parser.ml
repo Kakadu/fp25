@@ -58,7 +58,7 @@ let parse_number =
 
 let is_keyword s =
   match s with
-  | "let" | "rec" | "if" | "then" | "else" | "fun" | "->" -> true
+  | "let" | "rec" | "in" | "if" | "then" | "else" | "fun" | "->" -> true
   | _ -> false
 ;;
 
@@ -125,9 +125,34 @@ let parse_expr =
       parse_varname
       >>= fun arg_name ->
       spaces *> string "->"
-      >>= fun _ -> parse_expr >>| fun body -> Ast.Abs (arg_name, body)
+      >>= fun _ -> spaces *> parse_expr >>| fun body -> Ast.Abs (arg_name, body)
     in
-    conde [ comp; conditional; abstr ])
+    let app =
+      spaces *> (parens abstr <|> parse_varname)
+      >>= fun func ->
+      many1 (spaces *> parse_expr >>| fun arg -> arg)
+      >>| fun l -> List.fold_left (fun x arg -> Ast.App (x, arg)) func l
+    in
+    let letbind =
+      spaces *> string "let"
+      >>= fun _ ->
+      option (Ast.Recflag false) (spaces *> string "rec" >>| fun _ -> Ast.Recflag true)
+      >>= fun recbool ->
+      parse_varname
+      >>= fun name ->
+      many parse_varname
+      >>= fun args ->
+      spaces *> string "="
+      >>= fun _ ->
+      spaces *> parse_expr
+      >>= fun letexpr ->
+      option
+        None
+        (spaces *> string "in"
+         >>= fun _ -> spaces *> parse_expr >>| fun bound -> Some bound)
+      >>| fun inexpr -> Ast.Let (recbool, name, args, letexpr, inexpr)
+    in
+    conde [ letbind; app; comp; conditional; abstr ])
 ;;
 
 let parse str =

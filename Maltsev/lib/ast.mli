@@ -26,5 +26,5 @@ type expr =
   | Ite of expr * expr * expr (* condition (false is 0 otherwise true), then, else *)
   | Abs of expr * expr (* curried lambda abstraction (fun name -> expr) *)
   | App of expr * expr (* application *)
-  | Let of recflag * ident * expr * expr option
+  | Let of recflag * expr * expr list * expr * expr option
 (* let binding, might be recursive, might be just a function definition *)
