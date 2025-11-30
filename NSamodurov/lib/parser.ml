@@ -202,6 +202,15 @@ module Context = struct
   let extend k v m = add k v m
 end
 
+(* List function from newer ocaml stdlib *)
+let find_index p =
+  let rec helper i = function
+    | [] -> None
+    | a :: l -> if p a then Some i else helper (i + 1) l
+  in
+  helper 0
+;;
+
 let to_brujin expr =
   let open Env in
   let open Env.Syntax in
