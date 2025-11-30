@@ -232,7 +232,7 @@ let to_brujin expr =
       | EVar "print" -> return @@ EVar (Index (-14))
       | EVar v ->
         let* map = read in
-        (match List.find_index (String.equal v) bound with
+        (match find_index (String.equal v) bound with
          | None ->
            if Context.mem v map
            then return (evar (Index (Context.find v map + List.length bound)))
