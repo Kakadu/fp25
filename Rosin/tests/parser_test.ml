@@ -35,7 +35,7 @@ let%expect_test "variable" =
 ;;
 
 let%expect_test "number sum" =
-  Format.printf "%a" pp (parse_optimistically "2 - 2");
+  Format.printf "%a" pp (parse_optimistically "2 -2");
   [%expect {| (Minus(Int(2), Int(2))) |}]
 ;;
 
@@ -120,4 +120,51 @@ let%expect_test "let for function defenition" =
 let%expect_test "function application" =
   Format.printf "%a" pp (parse_optimistically "sub x");
   [%expect {| (App(Var(sub), Var(x))) |}]
+;;
+
+let%expect_test "fib" =
+  Format.printf
+    "%a"
+    pp
+    (parse_optimistically
+       "let rec fib = fun n -> if n - 1 then n else fib (n - 1) + fib (n + 2) in fib 6");
+  [%expect
+    {| Letrec((fib, Fun(n, If(((Minus(Var(n), Int(1)))) Then(Var(n)) Else((Plus((App(Var(fib), (Minus(Var(n), Int(1))))), (App(Var(fib), (Plus(Var(n), Int(2))))))))))) in (App(Var(fib), Int(6)))) |}]
+;;
+
+let%expect_test "factorial of 5" =
+  let fact_program =
+    "let rec fact = fun n ->\n\
+    \      if 2-n then 1 else n * fact (n - 1)\n\
+    \    in\n\
+    \    fact 2"
+  in
+  Format.printf "%a" pp (parse_optimistically fact_program);
+  [%expect
+    {| Letrec((fact, Fun(n, If(((Minus(Int(2), Var(n)))) Then(Int(1)) Else((Mult(Var(n), (App(Var(fact), (Minus(Var(n), Int(1))))))))))) in (App(Var(fact), Int(2)))) |}]
+;;
+
+let%expect_test "fibonacci of 6" =
+  let fib_program =
+    "\n\
+    \    let rec fib = fun n ->\n\
+    \      if 2-n then n else fib (n - 1) + fib (n - 2)\n\
+    \    in\n\
+    \    fib 6\n\
+    \  "
+  in
+  Format.printf "%a" pp (parse_optimistically fib_program);
+  [%expect
+    {| Letrec((fib, Fun(n, If(((Minus(Int(2), Var(n)))) Then(Var(n)) Else((Plus((App(Var(fib), (Minus(Var(n), Int(1))))), (App(Var(fib), (Minus(Var(n), Int(2))))))))))) in (App(Var(fib), Int(6)))) |}]
+;;
+
+let%expect_test "print int" =
+  Format.printf "%a" pp (parse_optimistically "print 42");
+  [%expect {| Print(Int(42)) |}]
+;;
+
+let%expect_test "print variable" =
+  Format.printf "%a" pp (parse_optimistically "let x = 42 in print x");
+  [%expect {|
+    Let((x, Int(42)) in Print(Var(x))) |}]
 ;;

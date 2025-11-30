@@ -20,6 +20,7 @@ type binop =
 
 (** The main type for AST *)
 type expr =
+  | Unit
   | Num of int (** integer constant *)
   | Var of varname (** variable *)
   | Unop of unop * expr (** unary operation *)
@@ -27,7 +28,8 @@ type expr =
   | If of expr * expr * expr (** if-then-else *)
   | Fun of varname * expr (** function definitions *)
   | Let of varname * expr * expr option (** local naming [let varname = expr in expr] *)
-  | Letrec of varname * expr * expr option (** recursive local naming [letrec varname = expr in expr] *)
+  | Letrec of varname * expr * expr option
+  (** recursive local naming [letrec varname = expr in expr] *)
   | Fix of expr (** fix point *)
   | App of expr * expr (** function applications *)
   | Print of expr (** integer printer *)
