@@ -215,13 +215,13 @@ type 'a t =
   | EAbs of 'a * 'a t (** Abstraction [λx.e] *)
   | EApp of 'a t * 'a t (** Abstraction [N M] *)
 
-let eint i = <span data-count="19496">E</span>Const (Int i)
-let ebool i = <span data-count="19418">E</span>Const (Bool i)
-let evar v = <span data-count="19413">E</span>Var v
-let elet flag v e1 e2 = <span data-count="14636">E</span>Let (flag, v, e1, e2)
-let eif p t e = <span data-count="14357">E</span>If (p, t, e)
-let eabs v t = <span data-count="14544">E</span>Abs (v, t)
-let eapp e1 e2 = <span data-count="14760">E</span>App (e1, e2)
+let eint i = <span data-count="21249">E</span>Const (Int i)
+let ebool i = <span data-count="21152">E</span>Const (Bool i)
+let evar v = <span data-count="21207">E</span>Var v
+let elet flag v e1 e2 = <span data-count="15752">E</span>Let (flag, v, e1, e2)
+let eif p t e = <span data-count="15907">E</span>If (p, t, e)
+let eabs v t = <span data-count="15739">E</span>Abs (v, t)
+let eapp e1 e2 = <span data-count="15825">E</span>App (e1, e2)
 let add e1 e2 = <span data-count="21">e</span>app (eap<span data-count="21">p</span> (eva<span data-count="21">r</span> "+") e1) e2
 let sub e1 e2 = <span data-count="13">e</span>app (eap<span data-count="13">p</span> (eva<span data-count="13">r</span> "-") e1) e2
 let mul e1 e2 = <span data-count="9">e</span>app (eap<span data-count="9">p</span> (eva<span data-count="9">r</span> "*") e1) e2

@@ -251,32 +251,32 @@ let rec shrink =
 
 let varname =
   QCheck.Gen.ma<span data-count="4">p</span>
-    (fun x -&gt; <span data-count="19342">S</span>tring.make 1 (Char.ch<span data-count="19342">r</span> x))
+    (fun x -&gt; <span data-count="21136">S</span>tring.make 1 (Char.ch<span data-count="21136">r</span> x))
     (QCheck.Gen.int_rang<span data-count="4">e</span> (Char.cod<span data-count="4">e</span> 'a') (Char.cod<span data-count="4">e</span> 'z'))
 ;;
 
 let gen =
   let open QCheck.Gen in
   size<span data-count="4">d</span>
-    (fi<span data-count="4">x</span> (fun _self -&gt; function
-       | <span data-count="58256">0</span> -&gt;
+    (fi<span data-count="4">x</span> (fun self -&gt; function
+       | <span data-count="63537">0</span> -&gt;
          frequency
-           [ 1, ma<span data-count="58256">p</span> evar varname
-           ; 1, ma<span data-count="58256">p</span> eint (fun x -&gt; <span data-count="19496">a</span>bs (QCheck.Gen.in<span data-count="19496">t</span> x))
-           ; 1, ma<span data-count="58256">p</span> ebool QCheck.Gen.bool
+           [ 1, ma<span data-count="63537">p</span> evar varname
+           ; 1, ma<span data-count="63537">p</span> eint (fun x -&gt; <span data-count="21249">a</span>bs (QCheck.Gen.in<span data-count="21249">t</span> x))
+           ; 1, ma<span data-count="63537">p</span> ebool QCheck.Gen.bool
            ]
-       | <span data-count="57987">n</span> -&gt;
+       | <span data-count="62913">n</span> -&gt;
          frequency
-           [ 1, map<span data-count="57987">2</span> eabs (fun _x -&gt; <span data-count="14488">"</span>var") (_sel<span data-count="57987">f</span> (n / 2))
-           ; 1, map<span data-count="57987">2</span> eapp (_sel<span data-count="57987">f</span> (n / 2)) (_sel<span data-count="57987">f</span> (n / 2))
-           ; 1, map<span data-count="57987">3</span> eif (_sel<span data-count="57987">f</span> (n / 3)) (_sel<span data-count="57987">f</span> (n / 3)) (_sel<span data-count="57987">f</span> (n / 3))
+           [ 1, map<span data-count="62913">2</span> eabs (fun _x -&gt; <span data-count="15683">"</span>var") (sel<span data-count="62913">f</span> (n / 2))
+           ; 1, map<span data-count="62913">2</span> eapp (sel<span data-count="62913">f</span> (n / 2)) (sel<span data-count="62913">f</span> (n / 2))
+           ; 1, map<span data-count="62913">3</span> eif (sel<span data-count="62913">f</span> (n / 3)) (sel<span data-count="62913">f</span> (n / 3)) (sel<span data-count="62913">f</span> (n / 3))
            ; ( 1
-             , map<span data-count="57987">4</span>
+             , map<span data-count="62913">4</span>
                  elet
-                 (fun _x -&gt; <span data-count="14636">R</span>ecursive)
-                 (fun _x -&gt; <span data-count="14636">"</span>var")
-                 (_sel<span data-count="57987">f</span> ((n / 2) - 1))
-                 (_sel<span data-count="57987">f</span> ((n / 2) - 1)) )
+                 (fun _x -&gt; <span data-count="15752">R</span>ecursive)
+                 (fun _x -&gt; <span data-count="15752">"</span>var")
+                 (sel<span data-count="62913">f</span> ((n / 2) - 1))
+                 (sel<span data-count="62913">f</span> ((n / 2) - 1)) )
            ]))
 ;;
 
