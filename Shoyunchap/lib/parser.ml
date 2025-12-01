@@ -15,9 +15,9 @@ let is_space = function
   | _ -> false
 
 let spaces = skip_while is_space
-let spaces1 = skip_while1 is_space
+let spaces1 = satisfy is_space *> spaces
 
-let lexeme p = spaces *> p <* spaces
+let lexeme p = spaces *> p
 let sym c = lexeme (char c)
 let kwd s = lexeme (string s)
 
@@ -248,3 +248,6 @@ let parse (s : string) : (expression, error) result =
   match parse_string ~consume:Consume.All expr s with
   | Ok e -> Ok e
   | Error msg -> Error (`Parsing_error msg)
+
+let pp_error fmt (`Parsing_error msg) =
+  Format.fprintf fmt "Parse error: %s" msg
