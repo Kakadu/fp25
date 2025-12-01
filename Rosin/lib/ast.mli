@@ -9,18 +9,17 @@
 type varname = string
 
 type unop =
-  | Inc
-  | Dec
+  | Inc (** incrementing value [++x]*)
+  | Dec (** decrementing value [--x]*)
 
 type binop =
-  | Plus
-  | Minus
-  | Mult
-  | Div
+  | Plus (** addition of two argumanets [x + y]*)
+  | Minus (** subtraction of two argumanets [x - y]*)
+  | Mult (** mulitplication of two argumanets [x * y]*)
+  | Div (** division of two argumanets [x / y]*)
 
 (** The main type for AST *)
 type expr =
-  | Unit
   | Num of int (** integer constant *)
   | Var of varname (** variable *)
   | Unop of unop * expr (** unary operation *)

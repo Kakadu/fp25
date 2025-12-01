@@ -49,7 +49,8 @@ let%expect_test "variable" =
     pp
     (parse_optimistically
        "let fact = fix (fun f n -> if n then n * f (n - 1) else 1) in fact 5");
-  [%expect{| Let(fact, Fix(Fun(f, Fun(n, If(Var(n)) Then((Mult(Var(n), (App(Var(f), (Minus(Var(n), Int(1)))))))) Else (Int(1))))))) in (App(Var(fact), Int(5))) |}]
+  [%expect
+    {| Let(fact, Fix(Fun(f, Fun(n, If(Var(n)) Then((Mult(Var(n), (App(Var(f), (Minus(Var(n), Int(1)))))))) Else (Int(1))))))) in (App(Var(fact), Int(5))) |}]
 ;;
 
 let%expect_test "number sum" =

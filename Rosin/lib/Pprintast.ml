@@ -27,7 +27,6 @@ let rec pp =
     | Div -> "Div"
   in
   let pp fmt = function
-    | Unit -> fprintf fmt "Unit"
     | Num n -> fprintf fmt "Int(%d)" n
     | Var v -> fprintf fmt "Var(%s)" v
     | Unop (op, a) -> parens fmt (fun ppf () -> fprintf ppf "%s(%a)" (pp_unop op) pp a)

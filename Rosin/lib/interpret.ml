@@ -59,7 +59,6 @@ let rec eval env steps (e : expr) =
   then fail StepLimitExceeded
   else (
     match e with
-    | Unit -> return (VUnit, steps - 1)
     | Num n -> return (VNum n, steps - 1)
     | Var x ->
       (match find_var x env with
@@ -112,18 +111,14 @@ let rec eval env steps (e : expr) =
       let* f, st = eval env (steps - 1) e in
       (match f with
        | VClosure (f_param, body, closure_env) ->
-         (* Обрабатываем каррированную функцию, ищем внутреннюю функцию *)
          (match body with
           | Fun (n_param, inner_body) ->
-            (* Создаем рекурсивное замыкание, которое принимает один аргумент n *)
             let rec_closure = VRecClosure (f_param, n_param, inner_body, closure_env) in
             return (rec_closure, st)
           | _ ->
-            (* Если тело не функция, создаем рекурсивное замыкание напрямую *)
             let rec_closure = VRecClosure (f_param, f_param, body, closure_env) in
             return (rec_closure, st))
        | VRecClosure (f_name, param, body, closure_env) ->
-         (* Уже рекурсивное замыкание - возвращаем как есть *)
          return (VRecClosure (f_name, param, body, closure_env), st)
        | _ -> fail (NonFunctionApplication f))
     | App (e1, e2) ->
