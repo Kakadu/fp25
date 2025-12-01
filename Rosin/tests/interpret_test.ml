@@ -91,9 +91,9 @@ let%expect_test "fibonacci of 6" =
     \    fib 8\n\
     \  "
   in
-  let result = interpret_optimistically fib_program 10000 in
+  let result = interpret_optimistically fib_program Int.max_int in
   Format.printf "%a" pp_result (Ok result);
-  [%expect {| Ok (21) |}]
+  [%expect{| Ok (21) |}]
 ;;
 
 let%expect_test "print number" =

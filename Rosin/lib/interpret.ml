@@ -87,27 +87,27 @@ let rec eval env steps (e : expr) =
           | Mult -> return (Num (n1 * n2), st2)
           | Div -> if n2 = 0 then fail DivisionByZero else return (Num (n1 / n2), st2))
        | _ -> fail (InvalidBinop (op, v1, v2)))
-    | If (e1, e2, e3) ->
+    | If (e1, e2, e3_opt) ->
       let* cond, st1 = eval env (steps - 1) e1 in
       (match cond with
-       | Num n -> if n > 0 then eval env st1 e2 else eval env st1 e3
+       | Num n when n > 0 -> eval env (st1 - 1) e2
+       | Num _ ->
+         (match e3_opt with
+          | Some e3 -> eval env (st1 - 1) e3
+          | None -> return (Unit, st1 - 1))
        | _ -> fail (NonIntegerCondition cond))
     | Fun (x, body) -> return (Closure (x, body, env), steps - 1)
-    | Let (x, e1, e2_opt) ->
+    | Let (x, e1, e2) ->
       let* body, st = eval env (steps - 1) e1 in
       let new_env = (x, body) :: env in
-      (match e2_opt with
-       | Some exp -> eval new_env (st - 1) exp
-       | None -> return (Unit, st - 1))
-    | Letrec (x, e1, e2_opt) ->
+      eval new_env (st - 1) e2
+    | Letrec (x, e1, e2) ->
       let* new_env =
         match e1 with
         | Fun (var, func) -> return ((x, RecClosure (x, var, func, env)) :: env)
         | _ -> fail TypeError
       in
-      (match e2_opt with
-       | Some e -> eval new_env (steps - 1) e
-       | None -> return (Unit, steps - 1))
+      eval new_env (steps - 1) e2
     | Fix e ->
       let* f, st = eval env (steps - 1) e in
       (match f with

@@ -102,7 +102,7 @@ let expr =
       >>= fun cond ->
       token (string "then") *> expr
       >>= fun then_branch ->
-      token (string "else") *> expr
+      option None (token (string "else") *> expr >>| fun e -> Some e)
       >>= fun else_branch -> return @@ Ast.If (cond, then_branch, else_branch)
     in
     (* Парсер для let выражений *)
@@ -120,7 +120,8 @@ let expr =
         | [] -> value
         | _ -> multi_fun args value
       in
-      option None (token (string "in") *> expr >>| fun cont -> Some cont)
+      token (string "in") *> expr
+      >>| (fun cont -> cont)
       >>= fun res ->
       if is_rec
       then return @@ Ast.Letrec (name, body, res)

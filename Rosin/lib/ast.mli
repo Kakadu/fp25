@@ -25,10 +25,10 @@ type expr =
   | Var of varname (** variable *)
   | Unop of unop * expr (** unary operation *)
   | Binop of binop * expr * expr (** binary operation *)
-  | If of expr * expr * expr (** if-then-else *)
+  | If of expr * expr * expr option (** if-then-else *)
   | Fun of varname * expr (** function definitions *)
-  | Let of varname * expr * expr option (** local naming [let varname = expr in expr] *)
-  | Letrec of varname * expr * expr option
+  | Let of varname * expr * expr (** local naming [let varname = expr in expr] *)
+  | Letrec of varname * expr * expr
   (** recursive local naming [letrec varname = expr in expr] *)
   | Fix of expr (** fix point *)
   | App of expr * expr (** function applications *)

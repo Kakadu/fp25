@@ -71,7 +71,7 @@ let%expect_test "variable increment with binary operation" =
 
 let%expect_test "easy condition" =
   Format.printf "%a" pp (parse_optimistically "if x - 2 then x else -2");
-  [%expect {| If(((Minus(Var(x), Int(2)))) Then(Var(x)) Else(Int(-2))) |}]
+  [%expect {| If((Minus(Var(x), Int(2)))) Then(Var(x)) Else (Int(-2))) |}]
 ;;
 
 let%expect_test "nested condition" =
@@ -80,7 +80,7 @@ let%expect_test "nested condition" =
     pp
     (parse_optimistically "if x - 2 then if(x + 3) then 3 else 1 else -2");
   [%expect
-    {| If(((Minus(Var(x), Int(2)))) Then(If(((Plus(Var(x), Int(3)))) Then(Int(3)) Else(Int(1)))) Else(Int(-2))) |}]
+    {| If((Minus(Var(x), Int(2)))) Then(If((Plus(Var(x), Int(3)))) Then(Int(3)) Else (Int(1)))) Else (Int(-2))) |}]
 ;;
 
 let%expect_test "easy anonimous function" =
@@ -90,7 +90,7 @@ let%expect_test "easy anonimous function" =
 
 let%expect_test "anonimous function with condition in body" =
   Format.printf "%a" pp (parse_optimistically "fun x -> if(x - 2) then 2 else x");
-  [%expect {| Fun(x, If(((Minus(Var(x), Int(2)))) Then(Int(2)) Else(Var(x)))) |}]
+  [%expect {| Fun(x, If((Minus(Var(x), Int(2)))) Then(Int(2)) Else (Var(x)))) |}]
 ;;
 
 let%expect_test "anonimous function with few variables" =
@@ -99,22 +99,22 @@ let%expect_test "anonimous function with few variables" =
     pp
     (parse_optimistically "fun x y -> if(x + y + 2) then 2 else x + y");
   [%expect
-    {| Fun(x, Fun(y, If(((Plus((Plus(Var(x), Var(y))), Int(2)))) Then(Int(2)) Else((Plus(Var(x), Var(y))))))) |}]
+    {| Fun(x, Fun(y, If((Plus((Plus(Var(x), Var(y))), Int(2)))) Then(Int(2)) Else ((Plus(Var(x), Var(y))))))) |}]
 ;;
 
 let%expect_test "anonimous function with condition in body" =
   Format.printf "%a" pp (parse_optimistically "fun x -> if(x + 2) then 2 else x");
-  [%expect {| Fun(x, If(((Plus(Var(x), Int(2)))) Then(Int(2)) Else(Var(x)))) |}]
+  [%expect {| Fun(x, If((Plus(Var(x), Int(2)))) Then(Int(2)) Else (Var(x)))) |}]
 ;;
 
 let%expect_test "easy let" =
   Format.printf "%a" pp (parse_optimistically "let x = 2 in x + 2");
-  [%expect {| Let((x, Int(2)) in (Plus(Var(x), Int(2)))) |}]
+  [%expect {| Let(x, Int(2)) in (Plus(Var(x), Int(2))) |}]
 ;;
 
 let%expect_test "let for function defenition" =
-  Format.printf "%a" pp (parse_optimistically "let sub x = x - 1");
-  [%expect {| Let(sub, Fun(x, (Minus(Var(x), Int(1))))) |}]
+  Format.printf "%a" pp (parse_optimistically "let sub x = x - 1 in sub 2");
+  [%expect{| Let(sub, Fun(x, (Minus(Var(x), Int(1))))) in (App(Var(sub), Int(2))) |}]
 ;;
 
 let%expect_test "function application" =
@@ -129,7 +129,7 @@ let%expect_test "fib" =
     (parse_optimistically
        "let rec fib = fun n -> if n - 1 then n else fib (n - 1) + fib (n + 2) in fib 6");
   [%expect
-    {| Letrec((fib, Fun(n, If(((Minus(Var(n), Int(1)))) Then(Var(n)) Else((Plus((App(Var(fib), (Minus(Var(n), Int(1))))), (App(Var(fib), (Plus(Var(n), Int(2))))))))))) in (App(Var(fib), Int(6)))) |}]
+    {| Letrec((fib, Fun(n, If((Minus(Var(n), Int(1)))) Then(Var(n)) Else ((Plus((App(Var(fib), (Minus(Var(n), Int(1))))), (App(Var(fib), (Plus(Var(n), Int(2))))))))))) in (App(Var(fib), Int(6)))) |}]
 ;;
 
 let%expect_test "factorial of 5" =
@@ -141,7 +141,7 @@ let%expect_test "factorial of 5" =
   in
   Format.printf "%a" pp (parse_optimistically fact_program);
   [%expect
-    {| Letrec((fact, Fun(n, If(((Minus(Int(2), Var(n)))) Then(Int(1)) Else((Mult(Var(n), (App(Var(fact), (Minus(Var(n), Int(1))))))))))) in (App(Var(fact), Int(2)))) |}]
+    {| Letrec((fact, Fun(n, If((Minus(Int(2), Var(n)))) Then(Int(1)) Else ((Mult(Var(n), (App(Var(fact), (Minus(Var(n), Int(1))))))))))) in (App(Var(fact), Int(2)))) |}]
 ;;
 
 let%expect_test "fibonacci of 6" =
@@ -155,7 +155,7 @@ let%expect_test "fibonacci of 6" =
   in
   Format.printf "%a" pp (parse_optimistically fib_program);
   [%expect
-    {| Letrec((fib, Fun(n, If(((Minus(Int(2), Var(n)))) Then(Var(n)) Else((Plus((App(Var(fib), (Minus(Var(n), Int(1))))), (App(Var(fib), (Minus(Var(n), Int(2))))))))))) in (App(Var(fib), Int(6)))) |}]
+    {| Letrec((fib, Fun(n, If((Minus(Int(2), Var(n)))) Then(Var(n)) Else ((Plus((App(Var(fib), (Minus(Var(n), Int(1))))), (App(Var(fib), (Minus(Var(n), Int(2))))))))))) in (App(Var(fib), Int(6)))) |}]
 ;;
 
 let%expect_test "print int" =
@@ -166,5 +166,5 @@ let%expect_test "print int" =
 let%expect_test "print variable" =
   Format.printf "%a" pp (parse_optimistically "let x = 42 in print x");
   [%expect {|
-    Let((x, Int(42)) in Print(Var(x))) |}]
+    Let(x, Int(42)) in Print(Var(x)) |}]
 ;;
