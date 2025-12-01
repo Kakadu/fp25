@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>parser_gentest.ml &mdash; Coverage report</title>
-    <meta name="description" content="94.41% coverage in tests/parser_gentest.ml">
+    <meta name="description" content="96.18% coverage in tests/parser_gentest.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,18 +15,15 @@
           <span class="dirname">tests/</span>parser_gentest.ml
         </a>
       </h1>
-      <h2>94.41%</h2>
+      <h2>96.18%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="bottom:20.10%"></span>
-      <span class="unvisited" style="bottom:19.60%"></span>
-      <span class="unvisited" style="bottom:19.10%"></span>
-      <span class="unvisited" style="bottom:14.07%"></span>
-      <span class="unvisited" style="bottom:13.57%"></span>
-      <span class="unvisited" style="bottom:13.07%"></span>
-      <span class="unvisited" style="bottom:7.54%"></span>
-      <span class="unvisited" style="bottom:7.04%"></span>
-      <span class="unvisited" style="bottom:1.51%"></span>
+      <span class="unvisited" style="bottom:14.89%"></span>
+      <span class="unvisited" style="bottom:14.36%"></span>
+      <span class="unvisited" style="bottom:13.83%"></span>
+      <span class="unvisited" style="bottom:7.98%"></span>
+      <span class="unvisited" style="bottom:7.45%"></span>
+      <span class="unvisited" style="bottom:1.60%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -189,47 +186,36 @@
 <a id="L156"></a><span > </span>
 <a id="L157"></a><span > </span>
 <a id="L158"></a><span > </span>
-<a id="L159"></a><span class="unvisited"> </span>
+<a id="L159"></a><span class="visited"> </span>
 <a id="L160"></a><span class="unvisited"> </span>
 <a id="L161"></a><span class="unvisited"> </span>
-<a id="L162"></a><span > </span>
-<a id="L163"></a><span > </span>
+<a id="L162"></a><span class="unvisited"> </span>
+<a id="L163"></a><span class="visited"> </span>
 <a id="L164"></a><span > </span>
-<a id="L165"></a><span class="visited"> </span>
+<a id="L165"></a><span > </span>
 <a id="L166"></a><span > </span>
-<a id="L167"></a><span > </span>
-<a id="L168"></a><span > </span>
-<a id="L169"></a><span > </span>
-<a id="L170"></a><span class="visited"> </span>
-<a id="L171"></a><span class="unvisited"> </span>
-<a id="L172"></a><span class="unvisited"> </span>
+<a id="L167"></a><span class="visited"> </span>
+<a id="L168"></a><span class="visited"> </span>
+<a id="L169"></a><span class="visited"> </span>
+<a id="L170"></a><span > </span>
+<a id="L171"></a><span class="visited"> </span>
+<a id="L172"></a><span class="visited"> </span>
 <a id="L173"></a><span class="unvisited"> </span>
-<a id="L174"></a><span class="visited"> </span>
+<a id="L174"></a><span class="unvisited"> </span>
 <a id="L175"></a><span > </span>
 <a id="L176"></a><span > </span>
 <a id="L177"></a><span > </span>
 <a id="L178"></a><span class="visited"> </span>
-<a id="L179"></a><span class="visited"> </span>
-<a id="L180"></a><span class="visited"> </span>
+<a id="L179"></a><span > </span>
+<a id="L180"></a><span > </span>
 <a id="L181"></a><span > </span>
-<a id="L182"></a><span class="visited"> </span>
+<a id="L182"></a><span > </span>
 <a id="L183"></a><span class="visited"> </span>
-<a id="L184"></a><span class="unvisited"> </span>
+<a id="L184"></a><span class="visited"> </span>
 <a id="L185"></a><span class="unvisited"> </span>
 <a id="L186"></a><span > </span>
 <a id="L187"></a><span > </span>
-<a id="L188"></a><span > </span>
-<a id="L189"></a><span class="visited"> </span>
-<a id="L190"></a><span > </span>
-<a id="L191"></a><span > </span>
-<a id="L192"></a><span > </span>
-<a id="L193"></a><span > </span>
-<a id="L194"></a><span class="visited"> </span>
-<a id="L195"></a><span class="visited"> </span>
-<a id="L196"></a><span class="unvisited"> </span>
-<a id="L197"></a><span > </span>
-<a id="L198"></a><span > </span>
-<a id="L199"></a><span class="visited"> </span>
+<a id="L188"></a><span class="visited"> </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -422,17 +408,6 @@
 <a href="#L186">186</a>
 <a href="#L187">187</a>
 <a href="#L188">188</a>
-<a href="#L189">189</a>
-<a href="#L190">190</a>
-<a href="#L191">191</a>
-<a href="#L192">192</a>
-<a href="#L193">193</a>
-<a href="#L194">194</a>
-<a href="#L195">195</a>
-<a href="#L196">196</a>
-<a href="#L197">197</a>
-<a href="#L198">198</a>
-<a href="#L199">199</a>
 </pre>
 <pre><code class="ocaml">(** Copyright 2021-2025, Kakadu and contributors *)
 
@@ -444,7 +419,7 @@ open Lambda_lib.Print
 open Lambda_lib.Ast
 open Gen
 
-let gen_constant = Gen.(ma<span data-count="9">p</span> (fun i -&gt; <span data-count="23378">C</span>Int i) small_int)
+let gen_constant = Gen.(ma<span data-count="9">p</span> (fun i -&gt; <span data-count="22796">C</span>Int i) small_int)
 
 let gen_var_name =
   Gen.(
@@ -465,7 +440,7 @@ let gen_var_name =
       ])
 ;;
 
-let gen_pattern = Gen.ma<span data-count="9">p</span> (fun name -&gt; <span data-count="53582">P</span>Var name) gen_var_name
+let gen_pattern = Gen.ma<span data-count="9">p</span> (fun name -&gt; <span data-count="53142">P</span>Var name) gen_var_name
 
 let gen_binop =
   Gen.(
@@ -484,64 +459,64 @@ let gen_binop =
 
 let gen_expr =
   let rec aux depth =
-    <span data-count="425112">l</span>et open Gen in
+    <span data-count="419712">l</span>et open Gen in
     if depth &lt;= 0
     then
-      <span data-count="289408">o</span>neof [ ma<span data-count="289408">p</span> (fun c -&gt; <span data-count="10502">C</span>onstant c) gen_constant; ma<span data-count="289408">p</span> (fun p -&gt; <span data-count="10674">V</span>ar p) gen_pattern ]
-    else <span data-count="135704">(</span>
+      <span data-count="285808">o</span>neof [ ma<span data-count="285808">p</span> (fun c -&gt; <span data-count="10402">C</span>onstant c) gen_constant; ma<span data-count="285808">p</span> (fun p -&gt; <span data-count="10670">V</span>ar p) gen_pattern ]
+    else <span data-count="133904">(</span>
       let subexpr = aux (depth - 1) in
-      <span data-count="135704">l</span>et medium_expr = aux (depth / 2) in
-      <span data-count="135704">l</span>et simple_expr = aux 0 in
-      <span data-count="135704">l</span>et gen_binopr_expr binop_depth =
-        <span data-count="407112">l</span>et rec gen_binop_atom bdepth =
-          <span data-count="636192">i</span>f bdepth &lt;= 0
+      <span data-count="133904">l</span>et medium_expr = aux (depth / 2) in
+      <span data-count="133904">l</span>et simple_expr = aux 0 in
+      <span data-count="133904">l</span>et gen_binopr_expr binop_depth =
+        <span data-count="401712">l</span>et rec gen_binop_atom bdepth =
+          <span data-count="627168">i</span>f bdepth &lt;= 0
           then
-            <span data-count="407112">o</span>neof
-              [ ma<span data-count="407112">p</span> (fun c -&gt; <span data-count="4722">C</span>onstant c) gen_constant; ma<span data-count="407112">p</span> (fun p -&gt; <span data-count="4736">V</span>ar p) gen_pattern ]
-          else <span data-count="229080">(</span>
+            <span data-count="401712">o</span>neof
+              [ ma<span data-count="401712">p</span> (fun c -&gt; <span data-count="4498">C</span>onstant c) gen_constant; ma<span data-count="401712">p</span> (fun p -&gt; <span data-count="4480">V</span>ar p) gen_pattern ]
+          else <span data-count="225456">(</span>
             let sub_binop = gen_binop_atom (bdepth - 1) in
-            <span data-count="229080">o</span>neof
-              [ ma<span data-count="229080">p</span> (fun c -&gt; <span data-count="3822">C</span>onstant c) gen_constant
-              ; ma<span data-count="229080">p</span> (fun p -&gt; <span data-count="3872">V</span>ar p) gen_pattern
-              ; ma<span data-count="229080">p</span>
-                  (fun (left, op, right) -&gt; <span data-count="3868">B</span>inop (op, left, right))
-                  (tripl<span data-count="229080">e</span> sub_binop gen_binop sub_binop)
+            <span data-count="225456">o</span>neof
+              [ ma<span data-count="225456">p</span> (fun c -&gt; <span data-count="3714">C</span>onstant c) gen_constant
+              ; ma<span data-count="225456">p</span> (fun p -&gt; <span data-count="3528">V</span>ar p) gen_pattern
+              ; ma<span data-count="225456">p</span>
+                  (fun (left, op, right) -&gt; <span data-count="3532">B</span>inop (op, left, right))
+                  (tripl<span data-count="225456">e</span> sub_binop gen_binop sub_binop)
               ])
         in
         gen_binop_atom binop_depth
       in
       oneof
-        [ ma<span data-count="135704">p</span> (fun c -&gt; <span data-count="4332">C</span>onstant c) gen_constant
-        ; ma<span data-count="135704">p</span> (fun p -&gt; <span data-count="4228">V</span>ar p) gen_pattern
-        ; (let* left = oneo<span data-count="135704">f</span> [ ma<span data-count="135704">p</span> (fun p -&gt; <span data-count="4426">V</span>ar p) gen_pattern ] in
-           <span data-count="4426">l</span>et* right = medium_expr in
-           <span data-count="4426">r</span>eturn (App (left, right)))
+        [ ma<span data-count="133904">p</span> (fun c -&gt; <span data-count="4182">C</span>onstant c) gen_constant
+        ; ma<span data-count="133904">p</span> (fun p -&gt; <span data-count="4370">V</span>ar p) gen_pattern
+        ; (let* left = oneo<span data-count="133904">f</span> [ ma<span data-count="133904">p</span> (fun p -&gt; <span data-count="4266">V</span>ar p) gen_pattern ] in
+           <span data-count="4266">l</span>et* right = medium_expr in
+           <span data-count="4266">r</span>eturn (App (left, right)))
         ; (let* func =
-             ma<span data-count="135704">p</span> (fun (pat, body) -&gt; <span data-count="4310">F</span>unc (pat, body)) (pai<span data-count="135704">r</span> gen_pattern subexpr)
+             ma<span data-count="133904">p</span> (fun (pat, body) -&gt; <span data-count="4260">F</span>unc (pat, body)) (pai<span data-count="133904">r</span> gen_pattern subexpr)
            in
-           <span data-count="4310">l</span>et* arg = medium_expr in
-           <span data-count="4310">r</span>eturn (App (func, arg)))
-        ; (let* func = oneo<span data-count="135704">f</span> [ ma<span data-count="135704">p</span> (fun p -&gt; <span data-count="4392">V</span>ar p) gen_pattern ] in
-           <span data-count="4392">l</span>et* arg1 = simple_expr in
-           <span data-count="4392">l</span>et* arg2 = simple_expr in
-           <span data-count="4392">r</span>eturn (App (App (func, arg1), arg2)))
-        ; ma<span data-count="135704">p</span> (fun (pat, body) -&gt; <span data-count="4290">F</span>unc (pat, body)) (pai<span data-count="135704">r</span> gen_pattern subexpr)
+           <span data-count="4260">l</span>et* arg = medium_expr in
+           <span data-count="4260">r</span>eturn (App (func, arg)))
+        ; (let* func = oneo<span data-count="133904">f</span> [ ma<span data-count="133904">p</span> (fun p -&gt; <span data-count="4400">V</span>ar p) gen_pattern ] in
+           <span data-count="4400">l</span>et* arg1 = simple_expr in
+           <span data-count="4400">l</span>et* arg2 = simple_expr in
+           <span data-count="4400">r</span>eturn (App (App (func, arg1), arg2)))
+        ; ma<span data-count="133904">p</span> (fun (pat, body) -&gt; <span data-count="4200">F</span>unc (pat, body)) (pai<span data-count="133904">r</span> gen_pattern subexpr)
         ; (let* arg1 = gen_pattern in
-           <span data-count="4212">l</span>et* arg2 = gen_pattern in
-           <span data-count="4212">l</span>et* body = subexpr in
-           <span data-count="4212">r</span>eturn (Func (arg1, Func (arg2, body))))
-        ; ma<span data-count="135704">p</span>
-            (fun (left, op, right) -&gt; <span data-count="4424">B</span>inop (op, left, right))
-            (tripl<span data-count="135704">e</span> (gen_binopr_exp<span data-count="135704">r</span> (depth / 2)) gen_binop (gen_binopr_exp<span data-count="135704">r</span> (depth / 2)))
-        ; (let* cond = gen_binopr_exp<span data-count="135704">r</span> (depth / 2) in
-           <span data-count="4436">l</span>et* then_expr = subexpr in
-           <span data-count="4436">l</span>et* else_opt = Gen.optio<span data-count="4436">n</span> subexpr in
-           <span data-count="4436">r</span>eturn (Conditional (cond, then_expr, else_opt)))
-        ; (let* rec_flag = oneo<span data-count="135704">f</span> [ pur<span data-count="135704">e</span> NonRec; pur<span data-count="135704">e</span> Rec ] in
-           <span data-count="4230">l</span>et* pat = gen_pattern in
-           <span data-count="4230">l</span>et* e1 = medium_expr in
-           <span data-count="4230">l</span>et* next_opt = Gen.optio<span data-count="4230">n</span> subexpr in
-           <span data-count="4230">r</span>eturn (Let (rec_flag, pat, e1, next_opt)))
+           <span data-count="4332">l</span>et* arg2 = gen_pattern in
+           <span data-count="4332">l</span>et* body = subexpr in
+           <span data-count="4332">r</span>eturn (Func (arg1, Func (arg2, body))))
+        ; ma<span data-count="133904">p</span>
+            (fun (left, op, right) -&gt; <span data-count="4248">B</span>inop (op, left, right))
+            (tripl<span data-count="133904">e</span> (gen_binopr_exp<span data-count="133904">r</span> (depth / 2)) gen_binop (gen_binopr_exp<span data-count="133904">r</span> (depth / 2)))
+        ; (let* cond = gen_binopr_exp<span data-count="133904">r</span> (depth / 2) in
+           <span data-count="4192">l</span>et* then_expr = subexpr in
+           <span data-count="4192">l</span>et* else_opt = Gen.optio<span data-count="4192">n</span> subexpr in
+           <span data-count="4192">r</span>eturn (Conditional (cond, then_expr, else_opt)))
+        ; (let* rec_flag = oneo<span data-count="133904">f</span> [ pur<span data-count="133904">e</span> NonRec; pur<span data-count="133904">e</span> Rec ] in
+           <span data-count="4304">l</span>et* pat = gen_pattern in
+           <span data-count="4304">l</span>et* e1 = medium_expr in
+           <span data-count="4304">l</span>et* next_opt = Gen.optio<span data-count="4304">n</span> subexpr in
+           <span data-count="4304">r</span>eturn (Let (rec_flag, pat, e1, next_opt)))
         ])
   in
   Gen.size<span data-count="9">d</span> (fun size -&gt;
@@ -554,17 +529,17 @@ let arb_program = mak<span data-count="9">e</span> Gen.(ma<span data-count="9">p
 let gen_invalid_program =
   mak<span data-count="9">e</span>
     (oneo<span data-count="9">f</span>
-       [ ma<span data-count="9">p</span> (fun (n1, n2) -&gt; <span data-count="563">P</span>rintf.sprintf "%d %d" n1 n2) (pai<span data-count="9">r</span> small_int small_int)
-       ; ma<span data-count="9">p</span> (fun n -&gt; <span data-count="547">P</span>rintf.sprintf "%d + + %d" n n) small_int
-       ; ma<span data-count="9">p</span> (fun n -&gt; <span data-count="571">P</span>rintf.sprintf "%d * * %d" n n) small_int
+       [ ma<span data-count="9">p</span> (fun (n1, n2) -&gt; <span data-count="606">P</span>rintf.sprintf "%d %d" n1 n2) (pai<span data-count="9">r</span> small_int small_int)
+       ; ma<span data-count="9">p</span> (fun n -&gt; <span data-count="559">P</span>rintf.sprintf "%d + + %d" n n) small_int
+       ; ma<span data-count="9">p</span> (fun n -&gt; <span data-count="574">P</span>rintf.sprintf "%d * * %d" n n) small_int
        ; pur<span data-count="9">e</span> "let x = "
        ; pur<span data-count="9">e</span> "if x &gt; 5 then"
        ; pur<span data-count="9">e</span> "fun x -&gt;"
        ; pur<span data-count="9">e</span> "x +"
-       ; ma<span data-count="9">p</span> (fun n -&gt; <span data-count="577">P</span>rintf.sprintf "(%d + %d" n n) small_int
-       ; ma<span data-count="9">p</span> (fun n -&gt; <span data-count="529">P</span>rintf.sprintf "((%d)))" n) small_int
+       ; ma<span data-count="9">p</span> (fun n -&gt; <span data-count="583">P</span>rintf.sprintf "(%d + %d" n n) small_int
+       ; ma<span data-count="9">p</span> (fun n -&gt; <span data-count="540">P</span>rintf.sprintf "((%d)))" n) small_int
        ; ma<span data-count="9">p</span>
-           (fun kw -&gt; <span data-count="543">P</span>rintf.sprintf "let %s = 5 in x" kw)
+           (fun kw -&gt; <span data-count="536">P</span>rintf.sprintf "let %s = 5 in x" kw)
            (oneo<span data-count="9">f</span>
               [ pur<span data-count="9">e</span> "let"
               ; pur<span data-count="9">e</span> "in"
@@ -577,24 +552,13 @@ let gen_invalid_program =
               ; pur<span data-count="9">e</span> "false"
               ; pur<span data-count="9">e</span> "rec"
               ])
-       ; ma<span data-count="9">p</span> (fun n -&gt; <span data-count="586">P</span>rintf.sprintf "let %d = 5 in x" n) small_int
+       ; ma<span data-count="9">p</span> (fun n -&gt; <span data-count="551">P</span>rintf.sprintf "let %d = 5 in x" n) small_int
        ; pur<span data-count="9">e</span> "()"
        ; pur<span data-count="9">e</span> "fun x .. -&gt; x"
        ; pur<span data-count="9">e</span> "fun x y -&gt; -&gt; x + y"
        ; pur<span data-count="9">e</span> "let let x = 5 in x"
        ; pur<span data-count="9">e</span> "if if x then 1 else 0"
        ])
-;;
-
-let invalid_programs_fail_parsing =
-  Test.mak<span data-count="9">e</span>
-    ~name:"Invalid programs should fail parsing"
-    ~count:100
-    gen_invalid_program
-    (fun program_str -&gt;
-       <span data-count="0">m</span>atch parse program_str with
-       | <span data-count="0">O</span>k _ -&gt; false
-       | <span data-count="0">E</span>rror _ -&gt; true)
 ;;
 
 let invalid_prog =

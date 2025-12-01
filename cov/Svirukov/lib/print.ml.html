@@ -222,40 +222,40 @@ open Interpret
 
 let rec print_ast = function
   | <span data-count="1">C</span>onstant CUnit -&gt; "()"
-  | <span data-count="35256">C</span>onstant (CInt n) -&gt; string_of_int n
-  | <span data-count="48704">V</span>ar (PVar name) -&gt; name
-  | <span data-count="12554">B</span>inop (op, left, right) -&gt;
+  | <span data-count="34383">C</span>onstant (CInt n) -&gt; string_of_int n
+  | <span data-count="47783">V</span>ar (PVar name) -&gt; name
+  | <span data-count="11786">B</span>inop (op, left, right) -&gt;
     let op_str =
       match op with
-      | <span data-count="1489">P</span>lus -&gt; "+"
-      | <span data-count="1338">M</span>inus -&gt; "-"
-      | <span data-count="1449">A</span>steriks -&gt; "*"
-      | <span data-count="1375">D</span>ash -&gt; "/"
-      | <span data-count="1328">E</span>quals -&gt; "="
-      | <span data-count="1419">M</span>oreThan -&gt; "&gt;"
-      | <span data-count="1414">L</span>essThan -&gt; "&lt;"
-      | <span data-count="1359">E</span>qLess -&gt; "&lt;="
-      | <span data-count="1383">E</span>qMore -&gt; "&gt;="
+      | <span data-count="1339">P</span>lus -&gt; "+"
+      | <span data-count="1209">M</span>inus -&gt; "-"
+      | <span data-count="1368">A</span>steriks -&gt; "*"
+      | <span data-count="1357">D</span>ash -&gt; "/"
+      | <span data-count="1196">E</span>quals -&gt; "="
+      | <span data-count="1242">M</span>oreThan -&gt; "&gt;"
+      | <span data-count="1441">L</span>essThan -&gt; "&lt;"
+      | <span data-count="1281">E</span>qLess -&gt; "&lt;="
+      | <span data-count="1353">E</span>qMore -&gt; "&gt;="
     in
-    Printf.sprintf "(%s %s %s)" (print_as<span data-count="12554">t</span> left) op_str (print_as<span data-count="12554">t</span> right)
-  | <span data-count="969">C</span>onditional (cond, main, None) -&gt;
-    Printf.sprintf "(if %s then %s)" (print_as<span data-count="969">t</span> cond) (print_as<span data-count="969">t</span> main)
-  | <span data-count="5708">C</span>onditional (cond, main, Some alt) -&gt;
+    Printf.sprintf "(%s %s %s)" (print_as<span data-count="11786">t</span> left) op_str (print_as<span data-count="11786">t</span> right)
+  | <span data-count="957">C</span>onditional (cond, main, None) -&gt;
+    Printf.sprintf "(if %s then %s)" (print_as<span data-count="957">t</span> cond) (print_as<span data-count="957">t</span> main)
+  | <span data-count="5354">C</span>onditional (cond, main, Some alt) -&gt;
     Printf.sprintf
       "(if %s then %s else %s)"
-      (print_as<span data-count="5708">t</span> cond)
-      (print_as<span data-count="5708">t</span> main)
-      (print_as<span data-count="5708">t</span> alt)
-  | <span data-count="469">L</span>et (NonRec, PVar name, body, None) -&gt;
-    Printf.sprintf "(let %s = %s)" name (print_as<span data-count="469">t</span> body)
-  | <span data-count="2862">L</span>et (NonRec, PVar name, body, Some next) -&gt;
-    Printf.sprintf "(let %s = %s in %s)" name (print_as<span data-count="2862">t</span> body) (print_as<span data-count="2862">t</span> next)
-  | <span data-count="395">L</span>et (Rec, PVar name, body, None) -&gt;
-    Printf.sprintf "(let rec %s = %s)" name (print_as<span data-count="395">t</span> body)
-  | <span data-count="2686">L</span>et (Rec, PVar name, body, Some next) -&gt;
-    Printf.sprintf "(let rec %s = %s in %s)" name (print_as<span data-count="2686">t</span> body) (print_as<span data-count="2686">t</span> next)
-  | <span data-count="25600">F</span>unc (PVar arg, body) -&gt; Printf.sprintf "(fun %s -&gt; %s)" arg (print_as<span data-count="25600">t</span> body)
-  | <span data-count="26387">A</span>pp (left, right) -&gt; Printf.sprintf "%s %s" (print_as<span data-count="26387">t</span> left) (print_as<span data-count="26387">t</span> right)
+      (print_as<span data-count="5354">t</span> cond)
+      (print_as<span data-count="5354">t</span> main)
+      (print_as<span data-count="5354">t</span> alt)
+  | <span data-count="523">L</span>et (NonRec, PVar name, body, None) -&gt;
+    Printf.sprintf "(let %s = %s)" name (print_as<span data-count="523">t</span> body)
+  | <span data-count="2781">L</span>et (NonRec, PVar name, body, Some next) -&gt;
+    Printf.sprintf "(let %s = %s in %s)" name (print_as<span data-count="2781">t</span> body) (print_as<span data-count="2781">t</span> next)
+  | <span data-count="467">L</span>et (Rec, PVar name, body, None) -&gt;
+    Printf.sprintf "(let rec %s = %s)" name (print_as<span data-count="467">t</span> body)
+  | <span data-count="2752">L</span>et (Rec, PVar name, body, Some next) -&gt;
+    Printf.sprintf "(let rec %s = %s in %s)" name (print_as<span data-count="2752">t</span> body) (print_as<span data-count="2752">t</span> next)
+  | <span data-count="25750">F</span>unc (PVar arg, body) -&gt; Printf.sprintf "(fun %s -&gt; %s)" arg (print_as<span data-count="25750">t</span> body)
+  | <span data-count="26096">A</span>pp (left, right) -&gt; Printf.sprintf "%s %s" (print_as<span data-count="26096">t</span> left) (print_as<span data-count="26096">t</span> right)
 ;;
 
 let print_error = function
