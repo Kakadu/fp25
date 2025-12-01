@@ -1,3 +1,7 @@
+(** Copyright 2021-2025, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
 open Lambda_lib.Parser
 open Lambda_lib.Print
 open Lambda_lib.Inferencer
