@@ -8,16 +8,6 @@
  (instrumentation
   (backend bisect_ppx)))
 
-(library
- (name interpret_test)
- (libraries miniml_lib)
- (modules interpret_test)
- (inline_tests)
- (preprocess
-  (pps ppx_expect ppx_deriving.show))
- (instrumentation
-  (backend bisect_ppx)))
-
 (cram
- (applies_to interpret_tests)
+ (applies_to interpret_test)
  (deps ../bin/REPL.exe))

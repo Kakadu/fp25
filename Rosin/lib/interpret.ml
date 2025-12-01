@@ -10,10 +10,10 @@ open Ast
 open Base
 
 type value =
-  | Unit
-  | Num of int
-  | Closure of varname * expr * env
-  | RecClosure of varname * varname * expr * env
+  | VUnit
+  | VNum of int
+  | VClosure of varname * expr * env
+  | VRecClosure of varname * varname * expr * env
 
 and env = (varname * value) list
 
@@ -59,8 +59,8 @@ let rec eval env steps (e : expr) =
   then fail StepLimitExceeded
   else (
     match e with
-    | Unit -> return (Unit, steps - 1)
-    | Num n -> return (Num n, steps - 1)
+    | Unit -> return (VUnit, steps - 1)
+    | Num n -> return (VNum n, steps - 1)
     | Var x ->
       (match find_var x env with
        | Some v -> return (v, steps - 1)
@@ -68,11 +68,11 @@ let rec eval env steps (e : expr) =
     | Unop (op, e) ->
       let* v, st = eval env (steps - 1) e in
       (match v with
-       | Num n ->
+       | VNum n ->
          let result =
            match op with
-           | Inc -> Num (n + 1)
-           | Dec -> Num (n - 1)
+           | Inc -> VNum (n + 1)
+           | Dec -> VNum (n - 1)
          in
          return (result, st)
        | _ -> fail (InvalidUnop (op, v)))
@@ -80,23 +80,23 @@ let rec eval env steps (e : expr) =
       let* v1, st1 = eval env (steps - 1) e1 in
       let* v2, st2 = eval env st1 e2 in
       (match v1, v2 with
-       | Num n1, Num n2 ->
+       | VNum n1, VNum n2 ->
          (match op with
-          | Plus -> return (Num (n1 + n2), st2)
-          | Minus -> return (Num (n1 - n2), st2)
-          | Mult -> return (Num (n1 * n2), st2)
-          | Div -> if n2 = 0 then fail DivisionByZero else return (Num (n1 / n2), st2))
+          | Plus -> return (VNum (n1 + n2), st2)
+          | Minus -> return (VNum (n1 - n2), st2)
+          | Mult -> return (VNum (n1 * n2), st2)
+          | Div -> if n2 = 0 then fail DivisionByZero else return (VNum (n1 / n2), st2))
        | _ -> fail (InvalidBinop (op, v1, v2)))
     | If (e1, e2, e3_opt) ->
       let* cond, st1 = eval env (steps - 1) e1 in
       (match cond with
-       | Num n when n > 0 -> eval env (st1 - 1) e2
-       | Num _ ->
+       | VNum n when n > 0 -> eval env (st1 - 1) e2
+       | VNum _ ->
          (match e3_opt with
           | Some e3 -> eval env (st1 - 1) e3
-          | None -> return (Unit, st1 - 1))
+          | None -> return (VUnit, st1 - 1))
        | _ -> fail (NonIntegerCondition cond))
-    | Fun (x, body) -> return (Closure (x, body, env), steps - 1)
+    | Fun (x, body) -> return (VClosure (x, body, env), steps - 1)
     | Let (x, e1, e2) ->
       let* body, st = eval env (steps - 1) e1 in
       let new_env = (x, body) :: env in
@@ -104,33 +104,43 @@ let rec eval env steps (e : expr) =
     | Letrec (x, e1, e2) ->
       let* new_env =
         match e1 with
-        | Fun (var, func) -> return ((x, RecClosure (x, var, func, env)) :: env)
+        | Fun (var, func) -> return ((x, VRecClosure (x, var, func, env)) :: env)
         | _ -> fail TypeError
       in
       eval new_env (steps - 1) e2
     | Fix e ->
       let* f, st = eval env (steps - 1) e in
       (match f with
-       | Closure (arg, body, env') ->
-         let fixed = RecClosure (arg, arg, body, env') in
-         eval ((arg, fixed) :: env') st body
-       | RecClosure (f_name, arg, body, env') ->
-         let fixed = RecClosure (f_name, arg, body, env') in
-         eval ((arg, fixed) :: (f_name, fixed) :: env') st body
+       | VClosure (f_param, body, closure_env) ->
+         (* Обрабатываем каррированную функцию, ищем внутреннюю функцию *)
+         (match body with
+          | Fun (n_param, inner_body) ->
+            (* Создаем рекурсивное замыкание, которое принимает один аргумент n *)
+            let rec_closure = VRecClosure (f_param, n_param, inner_body, closure_env) in
+            return (rec_closure, st)
+          | _ ->
+            (* Если тело не функция, создаем рекурсивное замыкание напрямую *)
+            let rec_closure = VRecClosure (f_param, f_param, body, closure_env) in
+            return (rec_closure, st))
+       | VRecClosure (f_name, param, body, closure_env) ->
+         (* Уже рекурсивное замыкание - возвращаем как есть *)
+         return (VRecClosure (f_name, param, body, closure_env), st)
        | _ -> fail (NonFunctionApplication f))
     | App (e1, e2) ->
       let* f, st1 = eval env (steps - 1) e1 in
       let* arg, st2 = eval env st1 e2 in
       (match f with
-       | Closure (x, body, env') -> eval ((x, arg) :: env') (st2 - 1) body
-       | RecClosure (f_name, x, body, env') ->
-         let new_env = (x, arg) :: (f_name, RecClosure (f_name, x, body, env')) :: env' in
+       | VClosure (x, body, env') -> eval ((x, arg) :: env') (st2 - 1) body
+       | VRecClosure (f_name, x, body, env') ->
+         let new_env =
+           (x, arg) :: (f_name, VRecClosure (f_name, x, body, env')) :: env'
+         in
          eval new_env (st2 - 1) body
        | _ -> fail (NonFunctionApplication f))
     | Print e ->
       let* v, st = eval env (steps - 1) e in
       (match v with
-       | Num n ->
+       | VNum n ->
          print_int n;
          print_newline ();
          return (v, st)

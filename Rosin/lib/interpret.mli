@@ -9,10 +9,10 @@
 open Ast
 
 type value =
-  | Unit
-  | Num of int
-  | Closure of varname * expr * env
-  | RecClosure of varname * varname * expr * env
+  | VUnit
+  | VNum of int
+  | VClosure of varname * expr * env
+  | VRecClosure of varname * varname * expr * env
 
 and env = (varname * value) list
 

@@ -34,6 +34,24 @@ let%expect_test "variable" =
   [%expect {| Var(x) |}]
 ;;
 
+let%expect_test "variable" =
+  Format.printf
+    "%a"
+    pp
+    (parse_optimistically "let rec infinite = fun x -> infinite x in infinite 1");
+  [%expect
+    {| Letrec((infinite, Fun(x, (App(Var(infinite), Var(x))))) in (App(Var(infinite), Int(1)))) |}]
+;;
+
+let%expect_test "variable" =
+  Format.printf
+    "%a"
+    pp
+    (parse_optimistically
+       "let fact = fix (fun f n -> if n then n * f (n - 1) else 1) in fact 5");
+  [%expect{| Let(fact, Fix(Fun(f, Fun(n, If(Var(n)) Then((Mult(Var(n), (App(Var(f), (Minus(Var(n), Int(1)))))))) Else (Int(1))))))) in (App(Var(fact), Int(5))) |}]
+;;
+
 let%expect_test "number sum" =
   Format.printf "%a" pp (parse_optimistically "2 -2");
   [%expect {| (Minus(Int(2), Int(2))) |}]
@@ -114,7 +132,7 @@ let%expect_test "easy let" =
 
 let%expect_test "let for function defenition" =
   Format.printf "%a" pp (parse_optimistically "let sub x = x - 1 in sub 2");
-  [%expect{| Let(sub, Fun(x, (Minus(Var(x), Int(1))))) in (App(Var(sub), Int(2))) |}]
+  [%expect {| Let(sub, Fun(x, (Minus(Var(x), Int(1))))) in (App(Var(sub), Int(2))) |}]
 ;;
 
 let%expect_test "function application" =

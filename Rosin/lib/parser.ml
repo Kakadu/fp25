@@ -105,6 +105,9 @@ let expr =
       option None (token (string "else") *> expr >>| fun e -> Some e)
       >>= fun else_branch -> return @@ Ast.If (cond, then_branch, else_branch)
     in
+    let fix_expr =
+      token (string "fix") *> token (parens fun_expr) >>= fun fn -> return @@ Ast.Fix fn
+    in
     (* Парсер для let выражений *)
     let let_expr =
       token (string "let") *> (token (string "rec") *> return true <|> return false)
@@ -127,11 +130,8 @@ let expr =
       then return @@ Ast.Letrec (name, body, res)
       else return @@ Ast.Let (name, body, res)
     in
-    let print_expr =
-      token (string "print") *> choice [ number_expr; (varname >>| fun v -> Ast.Var v) ]
-      >>| fun var -> Ast.Print var
-    in
-    choice [ if_expr; fun_expr; let_expr; add_expr; print_expr ])
+    let print_expr = token (string "print") *> unary_expr >>| fun var -> Ast.Print var in
+    choice [ if_expr; fun_expr; let_expr; add_expr; fix_expr; print_expr ])
 ;;
 
 type error = [ `Parsing_error of string ]
