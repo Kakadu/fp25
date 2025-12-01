@@ -8,15 +8,12 @@
 
 open Lambda_lib
 open Stdio
-open Base
 
 type args =
   { mutable ast : bool
   ; mutable steps : int
   ; mutable typecheck : bool
   }
-
-open Base
 
 type error = string
 
@@ -25,7 +22,6 @@ module UnResult : sig
 
   val return : 'a -> 'a t
   val fail : error -> 'a t
-  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
 end = struct
   type 'a t = ('a, error) Result.t

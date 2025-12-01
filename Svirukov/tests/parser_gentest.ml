@@ -150,17 +150,6 @@ let gen_invalid_program =
        ])
 ;;
 
-let invalid_programs_fail_parsing =
-  Test.make
-    ~name:"Invalid programs should fail parsing"
-    ~count:100
-    gen_invalid_program
-    (fun program_str ->
-       match parse program_str with
-       | Ok _ -> false
-       | Error _ -> true)
-;;
-
 let invalid_prog =
   Test.make
     ~name:"Invalid programs return errors"
