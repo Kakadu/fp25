@@ -11,14 +11,9 @@ open Miniml_lib
 open Ast
 
 let expr_to_string e = Format.asprintf "%a" Pprintast.pp e
-
-(* Простой генератор имен переменных *)
 let varname_gen = Gen.(string_size (int_range 1 3))
-
-(* Простой генератор чисел *)
 let num_gen = Gen.(int_range (-100) 100)
 
-(* Безопасный генератор выражений - только простые конструкции *)
 let gen_simple_expr =
   let rec expr depth =
     if depth <= 0
@@ -45,9 +40,6 @@ let gen_simple_expr =
   Gen.sized (fun size -> expr (min size 2))
 ;;
 
-(* Очень маленькая глубина! *)
-
-(* Arbitrary для простых выражений *)
 let arb_simple_expr =
   make
     ~print:(fun e ->
@@ -56,11 +48,10 @@ let arb_simple_expr =
     gen_simple_expr
 ;;
 
-(* Тест 1: Принтер не падает на простых выражениях *)
 let test_printer_safety =
   Test.make
     ~name:"Printer doesn't crash on simple expressions"
-    ~count:20 (* Очень мало тестов! *)
+    ~count:20
     arb_simple_expr
     (fun e ->
        try
@@ -72,7 +63,6 @@ let test_printer_safety =
          false)
 ;;
 
-(* Тест 2: Парсер не падает на корректном синтаксисе (ручные примеры) *)
 let test_parser_on_valid_syntax =
   let valid_strings =
     [ "42"
@@ -100,13 +90,12 @@ let test_parser_on_valid_syntax =
          match Parser.parse s with
          | Ok _ -> true
          | Error err ->
-           (* Парсинг может закончиться ошибкой, но не должен падать *)
            Printf.eprintf
              "Parser returned error (expected): %s for: %s\n"
              (match err with
               | `Parsing_error msg -> msg)
              s;
-           true (* Ошибка парсера - это нормально, главное что не упал *)
+           true
        with
        | exn ->
          Printf.eprintf "Parser crashed on: %s with: %s\n" s (Printexc.to_string exn);
@@ -147,18 +136,9 @@ let test_printer_concrete_cases =
          false)
 ;;
 
-(* Тест 4: Отрицательные тесты для парсера *)
 let test_parser_negative =
   let invalid_strings =
-    [ ""
-    ; "++"
-    ; "if then else"
-    ; "let x = in x"
-    ; "fun -> x"
-    ; "fix 42"
-    ; (* fix должен содержать fun в скобках *)
-      "1 + + 2"
-    ]
+    [ ""; "++"; "if then else"; "let x = in x"; "fun -> x"; "fix 42"; "1 + + 2" ]
   in
   let arb_invalid = make ~print:(fun s -> s) (Gen.oneofl invalid_strings) in
   Test.make
@@ -173,7 +153,7 @@ let test_parser_negative =
              "Parser should have failed but returned: %s\n"
              (expr_to_string expr);
            false
-         | Error _ -> true (* Ожидаем ошибку для невалидного синтаксиса *)
+         | Error _ -> true
        with
        | exn ->
          Printf.eprintf
@@ -183,7 +163,6 @@ let test_parser_negative =
          false)
 ;;
 
-(* Тест 5: Проверка структуры AST после парсинга *)
 let test_parser_structure =
   let test_cases =
     [ ( "42"
@@ -225,8 +204,6 @@ let test_parser_structure =
          Printf.eprintf "Parser crashed: %s\n" (Printexc.to_string exn);
          false)
 ;;
-
-(* Запуск всех тестов *)
 
 let tests =
   [ test_printer_safety
