@@ -1,0 +1,48 @@
+open Ast
+
+let pp =
+  let rec pp_expr fmt = function
+    | Expr_var id -> Format.fprintf fmt "%s" id
+    | Expr_const (Const_int int) -> Format.fprintf fmt "%d" int
+    | Expr_const Const_unit -> Format.fprintf fmt "()"
+    | Expr_ap (f, args) ->
+      Format.fprintf
+        fmt
+        "%a %a"
+        pp_expr
+        f
+        (Format.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " ") pp_expr)
+        args
+    | Expr_conditional (e1, e2, e3) ->
+      Format.fprintf fmt "if %a then %a else %a" pp_expr e1 pp_expr e2 pp_expr e3
+    | Expr_fun (arg, expr) -> Format.fprintf fmt "fun %s -> %a" arg pp_expr expr
+    | Expr_binary_op (op, expr1, expr2) ->
+      Format.fprintf
+        fmt
+        "(%a %s %a)"
+        pp_expr
+        expr1
+        (match op with
+         | Plus -> "+"
+         | Mul -> "*"
+         | Sub -> "-"
+         | Div -> "/")
+        pp_expr
+        expr2
+    | Expr_let_in (id, expr1, expr2) ->
+      Format.fprintf fmt "let %s = %a in %a" id pp_expr expr1 pp_expr expr2
+    | Expr_let_rec_in (id, expr1, expr2) ->
+      Format.fprintf fmt "let rec %s = %a in %a" id pp_expr expr1 pp_expr expr2
+    | Expr_fix expr -> Format.fprintf fmt "fix ( %a )" pp_expr expr
+  in
+  pp_expr
+;;
+
+let pp_top_let fmt = function
+  | Top_let (id, expr) -> Format.fprintf fmt "let %s = %a;;" id pp expr
+  | Top_let_rec (id, expr) -> Format.fprintf fmt "let rec %s = %a;;" id pp expr
+;;
+
+let pp_prog fmt prog =
+  Format.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt "\n") pp_top_let fmt prog
+;;

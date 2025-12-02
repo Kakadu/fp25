@@ -1,7 +1,7 @@
 (library
  (name DMotuzov_lib)
  (public_name DMotuzov.Lib)
- (modules Ast Parser Interpreter)
+ (modules Ast Parser Interpreter Prettyprinter)
  (libraries base angstrom)
  (preprocess
   (pps ppx_deriving.show))
