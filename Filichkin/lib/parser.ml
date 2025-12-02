@@ -30,7 +30,7 @@ let is_keyword = function
   | _ -> false
 ;;
 
-let is_integer =
+let integer =
   spaces
   *> take_while1 (function
     | '1' .. '9' -> true
@@ -82,4 +82,43 @@ let op =
        ; string ">=" *> return EMore
        ; string "<=" *> return ELess
        ]
+;;
+
+(* *_* *)
+let atom expr = choice [ integer; identifier; parens expr ]
+
+(* sugar: f x y *)
+let application expr =
+  atom expr
+  >>= fun f ->
+  many1 (atom expr)
+  >>= fun args -> return (List.fold_left (fun acc a -> App (acc, a)) f args) <|> atom expr
+;;
+
+(* fun *)
+let fun_expr expr =
+  kw_fun *> many1 identifier
+  <* kw "->"
+  >>= fun params ->
+  expr
+  >>= fun budy ->
+  return
+    (Abs
+       ( List.map
+           (function
+             | Var x -> x
+             | _ -> failwith "impossible")
+           params
+       , budy ))
+;;
+
+(* if *)
+let if_expr expr =
+  kw_if *> expr
+  >>= fun cond ->
+  kw_then *> expr
+  >>= fun t ->
+  kw_else *> expr
+  >>= (fun e -> return (If (cond, t, Some e)))
+  <|> return (If (cond, t, None))
 ;;
