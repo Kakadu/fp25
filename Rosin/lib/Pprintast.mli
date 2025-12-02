@@ -6,5 +6,4 @@
 
 [@@@ocaml.text "/*"]
 
-(** Verbose printing. Usable for paring *)
 val pp : Format.formatter -> Ast.expr -> unit

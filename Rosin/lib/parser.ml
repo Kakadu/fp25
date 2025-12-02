@@ -50,13 +50,8 @@ let varname =
 ;;
 
 let varname_expr = varname >>| fun v -> Ast.Var v
-
-(** Unary operations *)
 let unop = token (string "++" *> return Ast.Inc <|> string "--" *> return Ast.Dec)
-
-(** Бинарные операции *)
 let mult_div_op = token (char '*' *> return Ast.Mult <|> char '/' *> return Ast.Div)
-
 let add_sub_op = token (char '+' *> return Ast.Plus <|> char '-' *> return Ast.Minus)
 let multi_fun args = List.fold_right (fun arg body -> Ast.Fun (arg, body)) args
 
@@ -66,7 +61,6 @@ let expr =
       unop
       >>= fun op -> choice [ number_expr; varname_expr ] >>| fun var -> Ast.Unop (op, var)
     in
-    (* Парсер для анонимных функций *)
     let fun_expr =
       token (string "fun") *> many1 varname
       >>= fun args ->
@@ -96,7 +90,6 @@ let expr =
       many (add_sub_op >>= fun op -> mult_expr >>| fun right -> op, right)
       >>| List.fold_left (fun left (op, right) -> Ast.Binop (op, left, right)) first
     in
-    (* Парсер для if выражений *)
     let if_expr =
       token (string "if") *> expr
       >>= fun cond ->
@@ -108,7 +101,6 @@ let expr =
     let fix_expr =
       token (string "fix") *> token (parens fun_expr) >>= fun fn -> return @@ Ast.Fix fn
     in
-    (* Парсер для let выражений *)
     let let_expr =
       token (string "let") *> (token (string "rec") *> return true <|> return false)
       >>= fun is_rec ->

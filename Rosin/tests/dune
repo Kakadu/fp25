@@ -1,10 +1,6 @@
-(library
+(test
  (name parser_test)
- (libraries miniml_lib)
- (modules parser_test)
- (inline_tests)
- (preprocess
-  (pps ppx_expect ppx_deriving.show))
+ (libraries miniml_lib qcheck)
  (instrumentation
   (backend bisect_ppx)))
 
