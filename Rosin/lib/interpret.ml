@@ -48,13 +48,13 @@ let ( let* ) = ResultM.( >>= )
 
 open ResultM
 
-let rec find_var x env =
-  match env with
+let rec find_var x = function
   | [] -> None
-  | (y, v) :: rest -> if String.( = ) x y then Some v else find_var x rest
+  | (y, v) :: _ when String.equal x y -> Some v
+  | (_, _) :: rest -> find_var x rest
 ;;
 
-let rec eval env steps (e : expr) =
+let rec eval env steps e =
   if steps <= 0
   then fail StepLimitExceeded
   else (
