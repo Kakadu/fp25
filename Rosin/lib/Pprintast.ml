@@ -15,37 +15,33 @@ let parens ppf f =
   fprintf ppf ")"
 ;;
 
-let rec pp =
-  let pp_unop = function
-    | Inc -> "Inc"
-    | Dec -> "Dec"
-  in
-  let pp_binop = function
-    | Plus -> "Plus"
-    | Minus -> "Minus"
-    | Mult -> "Mult"
-    | Div -> "Div"
-  in
-  let pp fmt = function
-    | Num n -> fprintf fmt "Int(%d)" n
-    | Var v -> fprintf fmt "Var(%s)" v
-    | Unop (op, a) -> parens fmt (fun ppf () -> fprintf ppf "%s(%a)" (pp_unop op) pp a)
-    | Binop (op, a, b) ->
-      parens fmt (fun ppf () -> fprintf ppf "%s(%a, %a)" (pp_binop op) pp a pp b)
-    | If (cond, then_e, else_e) ->
-      let res =
-        match else_e with
-        | Some else_e ->
-          fprintf fmt "If(%a) Then(%a) Else (%a))" pp cond pp then_e pp else_e
-        | None -> fprintf fmt "If(%a) Then(%a)" pp cond pp then_e
-      in
-      res
-    | Fun (name, e) -> fprintf fmt "Fun(%s, %a)" name pp e
-    | Let (name, rhs, body) -> fprintf fmt "Let(%s, %a) in %a" name pp rhs pp body
-    | Letrec (name, rhs, body) -> fprintf fmt "Letrec((%s, %a) in %a)" name pp rhs pp body
-    | Fix e -> fprintf fmt "Fix(%a)" pp e
-    | App (f, x) -> parens fmt (fun ppf () -> fprintf ppf "App(%a, %a)" pp f pp x)
-    | Print e -> fprintf fmt "Print(%a)" pp e
-  in
-  pp
+let pp_error fmt = function
+  | `Parsing_error msg -> fprintf fmt "Parsing error: %s" msg
+;;
+
+let rec pp fmt = function
+  | Num n -> fprintf fmt "%d" n
+  | Var v -> fprintf fmt "%s" v
+  | Unop (Inc, e) -> fprintf fmt "++%a" pp e
+  | Unop (Dec, e) -> fprintf fmt "--%a" pp e
+  | Binop (op, left, right) ->
+    let op_str =
+      match op with
+      | Plus -> "+"
+      | Minus -> "-"
+      | Mult -> "*"
+      | Div -> "/"
+    in
+    fprintf fmt "%a %s %a" pp left op_str pp right
+  | If (cond, then_e, else_e) ->
+    fprintf fmt "if %a then %a" pp cond pp then_e;
+    (match else_e with
+     | Some e -> fprintf fmt " else %a" pp e
+     | None -> ())
+  | Fun (name, e) -> fprintf fmt "fun %s -> %a" name pp e
+  | Let (name, rhs, body) -> fprintf fmt "let %s = %a in %a" name pp rhs pp body
+  | Letrec (name, rhs, body) -> fprintf fmt "let rec %s = %a in %a" name pp rhs pp body
+  | Fix e -> fprintf fmt "fix %a" pp e
+  | App (f, x) -> fprintf fmt "%a %a" pp f pp x
+  | Print e -> fprintf fmt "print %a" pp e
 ;;
