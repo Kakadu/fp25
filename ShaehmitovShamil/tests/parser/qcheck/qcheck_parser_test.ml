@@ -10,12 +10,14 @@ let gen_pattern size =
     oneof
       [ map (fun s -> PVar s) (string_size ~gen:(char_range 'a' 'z') (return 1))
       ; return PAny
+      ; return PUnit
       ]
-  else (
+  else
     frequency
       [ 5, map (fun s -> PVar s) (string_size ~gen:(char_range 'a' 'z') (return 1))
       ; 2, return PAny
-      ])
+      ; 2, return PUnit
+      ]
 ;;
 
 let rec gen_expr size =
@@ -61,7 +63,7 @@ let rec gen_expr size =
 ;;
 
 let shrink_pattern = function
-  | PVar _ | PAny -> Iter.empty
+  | PVar _ | PAny | PUnit -> Iter.empty
 ;;
 
 let rec shrink_expr = function

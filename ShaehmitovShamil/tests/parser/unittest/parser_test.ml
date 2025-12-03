@@ -147,7 +147,8 @@ let run_program_parser input =
 
 let%expect_test "simple structure" =
   run_program_parser "10 + 5 - 6";
-  [%expect {|
+  [%expect
+    {|
     [(Expr
         (BinOp (Sub, (BinOp (Add, (Const (CInt 10)), (Const (CInt 5)))),
            (Const (CInt 6)))))
@@ -155,8 +156,9 @@ let%expect_test "simple structure" =
 ;;
 
 let%expect_test "binding test" =
- run_program_parser "let f x y = x + y";
- [%expect {|
+  run_program_parser "let f x y = x + y";
+  [%expect
+    {|
    [(Value
        (NonRec, (PVar "f"),
         (FunExpr ([(PVar "x"); (PVar "y")], (BinOp (Add, (Var "x"), (Var "y")))
@@ -165,9 +167,9 @@ let%expect_test "binding test" =
 ;;
 
 let%expect_test "two binding" =
-run_program_parser "let f x y = x * y ;;
-\  let g n = f n 5";
-[%expect {|
+  run_program_parser "let f x y = x * y ;;\n  let g n = f n 5";
+  [%expect
+    {|
   [(Value
       (NonRec, (PVar "f"),
        (FunExpr ([(PVar "x"); (PVar "y")], (BinOp (Mul, (Var "x"), (Var "y")))
@@ -177,4 +179,69 @@ run_program_parser "let f x y = x * y ;;
         (FunExpr ([(PVar "n")],
            (App ((App ((Var "f"), (Var "n"))), (Const (CInt 5))))))))
     ] |}]
+;;
 
+let%expect_test "binding and expression" =
+  run_program_parser "let x = 10 in print_int (x * 2)";
+  [%expect
+    {|
+  [(Expr
+      (Let (NonRec, (PVar "x"), (Const (CInt 10)),
+         (App ((Var "print_int"), (BinOp (Mul, (Var "x"), (Const (CInt 2))))))
+         )))
+    ] |}]
+;;
+
+let%expect_test "multiple structure items" =
+  run_program_parser "let f = \n      let x = 6 in\n      let y = 7 in\n      x + y ;;";
+  [%expect
+    {|
+      [(Value
+          (NonRec, (PVar "f"),
+           (Let (NonRec, (PVar "x"), (Const (CInt 6)),
+              (Let (NonRec, (PVar "y"), (Const (CInt 7)),
+                 (BinOp (Add, (Var "x"), (Var "y")))))
+              ))))
+        ]
+     |}]
+;;
+
+let%expect_test "lambda binding" =
+  run_program_parser "let add = fun x y -> x + y ;; add 3 4";
+  [%expect
+    {|
+    [(Value
+        (NonRec, (PVar "add"),
+         (FunExpr ([(PVar "x"); (PVar "y")], (BinOp (Add, (Var "x"), (Var "y")))
+            ))));
+      (Expr (App ((App ((Var "add"), (Const (CInt 3)))), (Const (CInt 4)))))] |}]
+;;
+
+let%expect_test "unit function test" =
+  run_program_parser "let () = print_int 42";
+  [%expect
+    {|
+    [(Value (NonRec, PUnit, (App ((Var "print_int"), (Const (CInt 42))))))] |}]
+;;
+
+let%expect_test "unit pattern in let" =
+  run_program_parser "let () = print_int 42 ";
+  [%expect
+    {|
+    [(Value (NonRec, PUnit, (App ((Var "print_int"), (Const (CInt 42))))))]
+    |}]
+;;
+
+let%expect_test "unit pattern in let with body" =
+  run_program_parser
+    "let printer a b = \n    let () = print_int a in \n    print_int b \n    ;; ";
+  [%expect
+    {|
+    [(Value
+        (NonRec, (PVar "printer"),
+         (FunExpr ([(PVar "a"); (PVar "b")],
+            (Let (NonRec, PUnit, (App ((Var "print_int"), (Var "a"))),
+               (App ((Var "print_int"), (Var "b")))))
+            ))))
+      ] |}]
+;;

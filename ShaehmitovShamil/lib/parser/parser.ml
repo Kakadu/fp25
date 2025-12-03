@@ -22,19 +22,7 @@ let is_name_char = function
   | _ -> false
 ;;
 
-let keywords =
-  [ "let"
-  ; "rec"
-  ; "in"
-  ; "if"
-  ; "then"
-  ; "else"
-  ; "fun"
-  ; "true"
-  ; "false"
-  ; "not"
-  ]
-;;
+let keywords = [ "let"; "rec"; "in"; "if"; "then"; "else"; "fun"; "true"; "false"; "not" ]
 
 let parse_name =
   let* first = satisfy is_name_start in
@@ -65,31 +53,30 @@ let kw_if = keyword "if"
 let kw_then = keyword "then"
 let kw_else = keyword "else"
 let kw_fun = keyword "fun"
+let parse_unit = token (string "()") *> return (Const CUnit)
 
 (** Helper to parse binary operations *)
 let parse_binary_op parsed_bin_op e1 e2 = BinOp (parsed_bin_op, e1, e2)
 
 (** Patterns *)
 let parse_pattern =
-    choice
-      [ (let* first = satisfy is_name_start in
-         let* rest = take_while is_name_char in
-         let* _ = whitespace in
-         let name = String.of_char first ^ rest in
-         if List.mem keywords name ~equal:String.equal || String.equal name "_"
-         then fail ("keyword " ^ name ^ " cannot be an identifier")
-         else return (PVar name))
-      ; (token (char '_') >>| fun _ -> PAny)
-      ]
+  choice
+    [ (let* first = satisfy is_name_start in
+       let* rest = take_while is_name_char in
+       let* _ = whitespace in
+       let name = String.of_char first ^ rest in
+       if List.mem keywords name ~equal:String.equal || String.equal name "_"
+       then fail ("keyword " ^ name ^ " cannot be an identifier")
+       else return (PVar name))
+    ; (token (char '_') >>| fun _ -> PAny)
+    ; (token (string "()") >>| fun _ -> PUnit)
+    ]
 ;;
-
-
 
 let parse_unary_op parsed_un_op =
   return (fun e ->
     match parsed_un_op with
-    | Neg -> UnOp (Neg, e)
-    )
+    | Neg -> UnOp (Neg, e))
 ;;
 
 let parse_if expr =
@@ -112,10 +99,7 @@ let parse_lambda expr =
 
 let parse_app atom =
   let* first = atom in
-  (* let _ =print_endline (show_expr first) in *)
   let* rest = many atom in
-  (* let _ = *)
-  (* print_endline ("Rest: [" ^ String.concat ~sep:"; " (List.map ~f:show_expr rest) ^ "]") in *)
   return (List.fold_left ~f:(fun acc arg -> App (acc, arg)) ~init:first rest)
 ;;
 
@@ -155,7 +139,7 @@ let parse_operators base_parser =
 
 let parse_expr =
   fix (fun parse_expr ->
-    let atom = choice [ parens parse_expr; parse_integer; parse_name ] in
+    let atom = choice [ parse_unit; parens parse_expr; parse_integer; parse_name ] in
     let application = parse_app atom in
     let expr_with_ops = parse_operators application in
     choice
@@ -187,15 +171,18 @@ let parse_binding expr =
 ;;
 
 let parse_program_item expr =
-  choice [ (parse_binding expr >>| fun e -> Value e); (expr >>| fun e -> Expr e) ]
+  choice [ (expr >>| fun e -> Expr e); (parse_binding expr >>| fun e -> Value e) ]
 ;;
 
 let parse_program1 =
   let items = sep_by (token (string ";;")) (parse_program_item parse_expr) in
-  whitespace *> items <* option () (token (string ";;") *> return ()) <* whitespace <* end_of_input
+  whitespace *> items
+  <* option () (token (string ";;") *> return ())
+  <* whitespace
+  <* end_of_input
 ;;
 
-let parse_structure_items s = 
+let parse_structure_items s =
   match Angstrom.parse_string ~consume:All parse_program1 s with
   | Ok result -> Ok result
   | Error msg -> Error msg

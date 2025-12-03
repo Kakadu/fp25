@@ -11,11 +11,13 @@ type binop =
 
 type constant =
   | CInt of int
+  | CUnit
 [@@deriving show { with_path = false }]
 
 type pattern =
   | PVar of name
   | PAny
+  | PUnit
 [@@deriving show { with_path = false }]
 
 type rec_flag =
@@ -24,9 +26,7 @@ type rec_flag =
 [@@deriving show { with_path = false }]
 
 (** Unary operators *)
-type unop =
-  | Neg (** - *)
-[@@deriving show { with_path = false }]
+type unop = Neg (** - *) [@@deriving show { with_path = false }]
 
 (** Expressions in the AST *)
 type expr =
@@ -36,27 +36,28 @@ type expr =
   | UnOp of unop * expr (** Unary operation, e.g. `-e` or `not e` *)
   | If of expr * expr * expr (** Conditional expression, e.g. `if e1 then e2 else e3` *)
   | Let of rec_flag * pattern * expr * expr (** Local binding, e.g. `let x = e1 in e2` *)
-  | FunExpr of pattern list* expr (** Abstraction (function), e.g. `fun x -> e` *)
+  | FunExpr of pattern list * expr (** Abstraction (function), e.g. `fun x -> e` *)
   | App of expr * expr (** Function application, e.g. `f x` *)
 [@@deriving show { with_path = false }]
 
-type binding = rec_flag * pattern * expr
+type binding = rec_flag * pattern * expr [@@deriving show { with_path = false }]
+
+type structure_item =
+  | Value of binding
+  | Expr of expr
 [@@deriving show { with_path = false }]
-type structure_item = Value of binding | Expr of expr
-[@@deriving show { with_path = false }]
-type program = structure_item list
-[@@deriving show { with_path = false }]
+
+type program = structure_item list [@@deriving show { with_path = false }]
 
 let pretty_print_pattern = function
   | PVar s -> s
   | PAny -> "_"
+  | PUnit -> "()"
 ;;
-
-
-
 
 let rec pretty_print_expr = function
   | Const (CInt i) -> string_of_int i
+  | Const CUnit -> "()"
   | Var s -> s
   | UnOp (op, e) ->
     let op_str =
@@ -82,7 +83,11 @@ let rec pretty_print_expr = function
     ^ pretty_print_expr f
     ^ ")"
   | FunExpr (param, body) ->
-    "(fun " ^ String.concat " " (List.map pretty_print_pattern param) ^ " -> " ^ pretty_print_expr body ^ ")"
+    "(fun "
+    ^ String.concat " " (List.map pretty_print_pattern param)
+    ^ " -> "
+    ^ pretty_print_expr body
+    ^ ")"
   | App (f, arg) -> "(" ^ pretty_print_expr f ^ " " ^ pretty_print_expr arg ^ ")"
   | Let (NonRec, p, e1, e2) ->
     "(let "
@@ -108,5 +113,6 @@ let pretty_print_program_item = function
   | Expr e -> pretty_print_expr e
 ;;
 
-let pretty_print_program p = String.concat ";;\n" (List.map pretty_print_program_item p) ^ ";;\n"
+let pretty_print_program p =
+  String.concat ";;\n" (List.map pretty_print_program_item p) ^ ";;\n"
 ;;

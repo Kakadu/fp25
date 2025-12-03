@@ -2,4 +2,5 @@
  (name interpreter)
  (package ShaehmitovShamil)
  (libraries ast base)
- )
+ (instrumentation
+  (backend bisect_ppx)))
