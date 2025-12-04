@@ -1,18 +1,26 @@
+[@@@ocaml.text "/*"]
+
+(** Copyright 2021-2024, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+[@@@ocaml.text "/*"]
+
 (** Name of function or variable *)
 type name = string [@@deriving show { with_path = false }]
 
 (** Binary operators *)
 type binop =
-  | Add (** + *)
-  | Sub (** - *)
-  | Mul (** * *)
-  | Div (** / *)
-  | Eq (** = *)
-  | Neq (** <> *)
-  | Lt (** < *)
-  | Le (** <= *)
-  | Gt (** > *)
-  | Ge (** >= *)
+  | Add (** '+' *)
+  | Sub (** '-' *)
+  | Mul (** '*' *)
+  | Div (** '/' *)
+  | Eq (** '=' *)
+  | Neq (** '<>' *)
+  | Lt (** '<' *)
+  | Le (** '<=' *)
+  | Gt (** '>' *)
+  | Ge (** '>=' *)
 [@@deriving show { with_path = false }]
 
 type constant =
@@ -32,7 +40,7 @@ type rec_flag =
 [@@deriving show { with_path = false }]
 
 (** Unary operators *)
-type unop = Neg (** - *) [@@deriving show { with_path = false }]
+type unop = Neg (** '-' *) [@@deriving show { with_path = false }]
 
 (** Expressions in the AST *)
 type expr =
