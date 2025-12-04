@@ -53,7 +53,7 @@ let list_of_apps =
 ;;
 
 let rec is_tail ind = function
-  | EVar (Index i) when ind = i -> true
+  | EVar (Index (_, i)) when ind = i -> true
   | EVar _ -> false
   | EIf (_, e1, e2) -> is_tail ind e1 || is_tail ind e2
   | EApp (a1, _) -> is_tail ind a1
@@ -80,11 +80,12 @@ let compile : brujin t -> instr list =
       |]
     in
     match l with
-    | EVar (Index i) :: tl when i >= -Array.length op_arr && i < 0 -> f op_arr.(-i - 1) tl
+    | EVar (Index (_, i)) :: tl when i >= -Array.length op_arr && i < 0 ->
+      f op_arr.(-i - 1) tl
     | apps -> f instr apps
   in
   let rec helper_t acc = function
-    | EVar (Index i) -> Access i :: acc
+    | EVar (Index (_, i)) -> Access i :: acc
     | EIf (pred, e1, e2) ->
       let else_instr = helper_t [] e2 in
       let else_ofs = List.length else_instr in
@@ -93,7 +94,7 @@ let compile : brujin t -> instr list =
       let then_ofs = List.length then_instr in
       let acc = BranchIf (then_ofs + 1) :: (then_instr @ acc) in
       helper_t acc pred
-    | EApp (EVar (Index -14), e2) -> helper_t (Print :: Const 0 :: acc) e2
+    | EApp (EVar (Index (_, -14)), e2) -> helper_t (Print :: Const 0 :: acc) e2
     | EApp (e1, e2) ->
       let aux instr l =
         helper_c
@@ -101,7 +102,7 @@ let compile : brujin t -> instr list =
           e2
       in
       (match list_of_apps e1 with
-       | EVar (Index i) :: _ as apps when i < 0 -> helper_op aux apps AppTerm
+       | EVar (Index (_, i)) :: _ as apps when i < 0 -> helper_op aux apps AppTerm
        | apps -> PushMark :: helper_op aux apps AppTerm)
     | EAbs (_, e) -> Grab :: helper_t acc e
     | ELet (Recursive, _, a, b) -> Dummy :: helper_c (Update :: helper_t acc b) a
@@ -109,7 +110,7 @@ let compile : brujin t -> instr list =
     | EConst (Int c) -> Const c :: acc
     | EConst (Bool c) -> Const (if c then 1 else 0) :: acc
   and helper_c acc = function
-    | EVar (Index i) -> Access i :: acc
+    | EVar (Index (_, i)) -> Access i :: acc
     | EIf (pred, e1, e2) ->
       let else_instr = helper_c [] e2 in
       let else_ofs = List.length else_instr in
@@ -118,7 +119,7 @@ let compile : brujin t -> instr list =
       let then_ofs = List.length then_instr in
       let acc = BranchIf (then_ofs + 1) :: (then_instr @ acc) in
       helper_c acc pred
-    | EApp (EVar (Index -14), e2) -> helper_c (Print :: Const 0 :: acc) e2
+    | EApp (EVar (Index (_, -14)), e2) -> helper_c (Print :: Const 0 :: acc) e2
     | EApp (e1, e2) ->
       let aux instr l =
         helper_c
@@ -126,10 +127,10 @@ let compile : brujin t -> instr list =
           e2
       in
       (match list_of_apps e1 with
-       | EVar (Index i) :: _ as apps when i < 0 -> helper_op aux apps Apply
+       | EVar (Index (_, i)) :: _ as apps when i < 0 -> helper_op aux apps Apply
        | apps -> PushMark :: helper_op aux apps Apply)
     | EAbs (_, e) -> Cur (helper_t [ Return ] e) :: acc
-    | ELet (Recursive, Index i, a, b) when is_tail i a ->
+    | ELet (Recursive, Index (_, i), a, b) when is_tail i a ->
       Dummy :: helper_c (Update :: helper_t acc b) a
     | ELet (Recursive, Index _, a, b) ->
       Dummy :: helper_c (Update :: helper_c (EndLet :: acc) b) a

@@ -159,15 +159,15 @@ let infer env =
     fun env height -> function
       | EConst (Int _) -> return tint
       | EConst (Bool _) -> return tbool
-      | EVar (Index b) when b >= 0 -> lookup (height - b - 1) env
-      | EVar (Index b) -> lookup b env
-      | ELet (NotRecursive, Index v, e1, e2) ->
+      | EVar (Index (v, b)) when b >= 0 -> lookup (height - b - 1) env
+      | EVar (Index (v, b)) -> lookup b env
+      | ELet (NotRecursive, Index (_, v), e1, e2) ->
         let* t1 = helper env height e1 in
         let t2 = gen env t1 in
         let env = Context.add v t2 env in
         let* t3 = helper env (height + 1) e2 in
         walk t3
-      | ELet (Recursive, Index v, e1, e2) ->
+      | ELet (Recursive, Index (_, v), e1, e2) ->
         let* fresh = fresh in
         let tv = tvar fresh in
         let env = Context.add v (Scheme.mono tv) env in
@@ -185,7 +185,7 @@ let infer env =
         (* Format.printf "%a, %a\n" pp_ty e1 pp_ty e2; *)
         let* _ = unify e1 e2 in
         walk e1
-      | EAbs (Index v, e) ->
+      | EAbs (Index (_, v), e) ->
         let* fresh = fresh in
         let tv = tvar fresh in
         (* List.iter (fun (k, v) -> Format.printf "%d\n" k) (Context.to_list env); *)

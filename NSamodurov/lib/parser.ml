@@ -221,45 +221,45 @@ let to_brujin expr =
   let open Env.Syntax in
   let rec helper =
     fun bound -> function
-      | EVar "+" -> return @@ EVar (Index (-1))
-      | EVar "-" -> return @@ EVar (Index (-2))
-      | EVar "*" -> return @@ EVar (Index (-3))
-      | EVar "/" -> return @@ EVar (Index (-4))
-      | EVar "<" -> return @@ EVar (Index (-5))
-      | EVar ">" -> return @@ EVar (Index (-6))
-      | EVar "<=" -> return @@ EVar (Index (-7))
-      | EVar ">=" -> return @@ EVar (Index (-8))
-      | EVar "=" -> return @@ EVar (Index (-9))
-      | EVar "!=" -> return @@ EVar (Index (-10))
-      | EVar "<>" -> return @@ EVar (Index (-11))
-      | EVar "&&" -> return @@ EVar (Index (-12))
-      | EVar "||" -> return @@ EVar (Index (-13))
-      | EVar "print" -> return @@ EVar (Index (-14))
+      | EVar "+" -> return @@ EVar (Index ("", -1))
+      | EVar "-" -> return @@ EVar (Index ("", -2))
+      | EVar "*" -> return @@ EVar (Index ("", -3))
+      | EVar "/" -> return @@ EVar (Index ("", -4))
+      | EVar "<" -> return @@ EVar (Index ("", -5))
+      | EVar ">" -> return @@ EVar (Index ("", -6))
+      | EVar "<=" -> return @@ EVar (Index ("", -7))
+      | EVar ">=" -> return @@ EVar (Index ("", -8))
+      | EVar "=" -> return @@ EVar (Index ("", -9))
+      | EVar "!=" -> return @@ EVar (Index ("", -10))
+      | EVar "<>" -> return @@ EVar (Index ("", -11))
+      | EVar "&&" -> return @@ EVar (Index ("", -12))
+      | EVar "||" -> return @@ EVar (Index ("", -13))
+      | EVar "print" -> return @@ EVar (Index ("", -14))
       | EVar v ->
         let* map = read in
         (match find_index (String.equal v) bound with
          | None ->
            if Context.mem v map
-           then return (evar (Index (Context.find v map + List.length bound)))
+           then return (evar (Index (v, Context.find v map + List.length bound)))
            else (
              let i = Context.cardinal map in
              let* () = write (Context.extend v i map) in
-             return (evar (Index (i + List.length bound))))
-         | Some i -> return (EVar (Index i)))
+             return (evar (Index (v, i + List.length bound))))
+         | Some i -> return (EVar (Index (v, i))))
       | EConst (Int x) -> return (int x)
       | EConst (Bool x) -> return (bool x)
       | ELet (flag, v, e1, e2) ->
         let* e1 = helper bound e1 in
         let* e2 = helper (v :: bound) e2 in
-        return (ELet (flag, Index (List.length bound), e1, e2))
+        return (ELet (flag, Index (v, List.length bound), e1, e2))
       | EIf (pred, e1, e2) ->
         let* pred = helper bound pred in
         let* e1 = helper bound e1 in
         let* e2 = helper bound e2 in
         return (EIf (pred, e1, e2))
-      | EAbs (x, e) ->
-        let* e = helper (x :: bound) e in
-        return (eabs (Index (List.length bound)) e)
+      | EAbs (v, e) ->
+        let* e = helper (v :: bound) e in
+        return (eabs (Index (v, List.length bound)) e)
       | EApp (e1, e2) ->
         let* b1 = helper bound e1 in
         let* b2 = helper bound e2 in

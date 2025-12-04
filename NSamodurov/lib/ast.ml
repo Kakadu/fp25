@@ -16,7 +16,7 @@ type op =
 [@@deriving show { with_path = false }]
 
 (** Type used for de Brujin nameless notation *)
-type brujin = Index of int [@@deriving show { with_path = false }]
+type brujin = Index of string * int [@@deriving show { with_path = false }]
 
 (** Type used for let expression *)
 type let_flag =

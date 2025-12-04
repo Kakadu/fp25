@@ -13,21 +13,21 @@ open Utils
 
 let pp_brujin (* ?(compact = true) *) =
   let rec pp fmt = function
-    | EApp (EApp (EVar (Index -1), l), r) -> Format.fprintf fmt "(%a + %a)" pp l pp r
-    | EApp (EApp (EVar (Index -2), l), r) -> Format.fprintf fmt "(%a - %a)" pp l pp r
-    | EApp (EApp (EVar (Index -3), l), r) -> Format.fprintf fmt "(%a * %a)" pp l pp r
-    | EApp (EApp (EVar (Index -4), l), r) -> Format.fprintf fmt "(%a / %a)" pp l pp r
+    | EApp (EApp (EVar (Index (_, -1)), l), r) -> Format.fprintf fmt "(%a + %a)" pp l pp r
+    | EApp (EApp (EVar (Index (_, -2)), l), r) -> Format.fprintf fmt "(%a - %a)" pp l pp r
+    | EApp (EApp (EVar (Index (_, -3)), l), r) -> Format.fprintf fmt "(%a * %a)" pp l pp r
+    | EApp (EApp (EVar (Index (_, -4)), l), r) -> Format.fprintf fmt "(%a / %a)" pp l pp r
     | EIf (pred, e1, e2) ->
       Format.fprintf fmt "if (%a) then (%a) else (%a)" pp pred pp e1 pp e2
-    | EVar (Index i) -> Format.fprintf fmt "i%d" i
+    | EVar (Index (info, i)) -> Format.fprintf fmt "%s" info
     | EApp (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | EConst (Int i) -> Format.fprintf fmt "%d" i
     | EConst (Bool b) -> Format.fprintf fmt (if b then "true" else "false")
     | EAbs (_, t) -> Format.fprintf fmt "(λ . %a)" pp t
-    | ELet (NotRecursive, Index i, e1, e2) ->
-      Format.fprintf fmt "let i%d = %a in %a" i pp e1 pp e2
-    | ELet (Recursive, Index i, e1, e2) ->
-      Format.fprintf fmt "let rec i%d = %a in %a" i pp e1 pp e2
+    | ELet (NotRecursive, Index (info, i), e1, e2) ->
+      Format.fprintf fmt "let %s = %a in %a" info pp e1 pp e2
+    | ELet (Recursive, Index (info, i), e1, e2) ->
+      Format.fprintf fmt "let rec %s = %a in %a" info pp e1 pp e2
   in
   pp
 ;;
