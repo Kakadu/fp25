@@ -29,13 +29,11 @@ end = struct
   let return x = Ok x
   let fail e = Error e
 
-  let ( >>= ) m f =
+  let ( let* ) m f =
     match m with
     | Ok x -> f x
     | Error e -> Error e
   ;;
-
-  let ( let* ) = ( >>= )
 end
 
 open UnResult

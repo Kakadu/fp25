@@ -24,6 +24,11 @@ in the dune file
   12
 
   $ ../bin/REPL.exe <<EOF
+  > 5 / 0
+  (5 / 0)
+  Division by zero
+
+  $ ../bin/REPL.exe <<EOF
   > let r = (fun s k -> s+k) 5 7 in let p = (fun s->s*2) ((fun k -> k*3) 10) in p/2 + r
   (let r = (fun s -> (fun k -> (s + k))) 5 7 in (let p = (fun s -> (s * 2)) (fun k -> (k * 3)) 10 in ((p / 2) + r)))
   42

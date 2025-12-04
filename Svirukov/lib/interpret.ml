@@ -25,7 +25,6 @@ module type MONAD = sig
 
   val return : 'a -> 'a t
   val fail : error -> 'a t
-  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
 end
 
@@ -35,16 +34,14 @@ module ResultM : MONAD with type 'a t = ('a, error) Result.t = struct
   let return x = Ok x
   let fail msg = Error msg
 
-  let ( >>= ) m f =
+  let ( let* ) m f =
     match m with
     | Ok x -> f x
     | Error e -> Error e
   ;;
-
-  let ( let* ) = ( >>= )
 end
 
-let ( let* ) = ResultM.( >>= )
+let ( let* ) = ResultM.( let* )
 
 module Env : sig
   val init : env
@@ -116,6 +113,7 @@ let rec eval exp env step =
        | Plus -> ResultM.return (Constant (CInt (l + r)))
        | Minus -> ResultM.return (Constant (CInt (l - r)))
        | Asteriks -> ResultM.return (Constant (CInt (l * r)))
+       | Dash when r = 0 -> ResultM.fail DivisionByZero
        | Dash -> ResultM.return (Constant (CInt (l / r)))
        | Equals -> ResultM.return (Constant (CInt (if l = r then 1 else 0)))
        | MoreThan -> ResultM.return (Constant (CInt (if l > r then 1 else 0)))

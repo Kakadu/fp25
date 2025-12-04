@@ -89,7 +89,7 @@ let%expect_test "some skope values" =
     \    let inner pp = sterter pp + 8 in\n\
     \  inner 8"
   in
-  print_string (print_ast (parse expresion |> Result.get_ok));
+  print_string (print_ast (Result.get_ok (parse expresion)));
   [%expect
     {| (let result = (let sterter = (fun x -> (if ((x + (8 * 9)) > 4) then (x * 2) else (x * 5))) in (let inner = (fun pp -> (sterter pp + 8)) in inner 8))) |}]
 ;;

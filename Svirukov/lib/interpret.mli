@@ -24,7 +24,6 @@ module type MONAD = sig
 
   val return : 'a -> 'a t
   val fail : error -> 'a t
-  val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
   val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
 end
 

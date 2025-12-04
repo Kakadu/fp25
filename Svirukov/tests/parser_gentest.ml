@@ -77,7 +77,7 @@ let gen_expr =
       oneof
         [ map (fun c -> Constant c) gen_constant
         ; map (fun p -> Var p) gen_pattern
-        ; (let* left = oneof [ map (fun p -> Var p) gen_pattern ] in
+        ; (let* left = map (fun p -> Var p) gen_pattern in
            let* right = medium_expr in
            return (App (left, right)))
         ; (let* func =
@@ -85,7 +85,7 @@ let gen_expr =
            in
            let* arg = medium_expr in
            return (App (func, arg)))
-        ; (let* func = oneof [ map (fun p -> Var p) gen_pattern ] in
+        ; (let* func = map (fun p -> Var p) gen_pattern in
            let* arg1 = simple_expr in
            let* arg2 = simple_expr in
            return (App (App (func, arg1), arg2)))

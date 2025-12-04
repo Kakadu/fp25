@@ -25,13 +25,11 @@ module TypeMonad = struct
   let return x = Ok x
   let fail msg = Error msg
 
-  let ( >>= ) m f =
+  let ( let* ) m f =
     match m with
     | Ok x -> f x
     | Error e -> Error e
   ;;
-
-  let ( let* ) = ( >>= )
 end
 
 let return = TypeMonad.return
