@@ -35,19 +35,10 @@ module Subst : sig
   val remove : int -> t -> t
   val apply : t -> ty -> ty
   val extend : t -> int -> ty -> t
-  val print : t -> unit
 end = struct
   type t = ty IMap.t
 
   let empty = IMap.empty
-
-  let print map =
-    List.iter
-      (fun (i, a) -> Format.printf "(%d, %a)" i pp_ty a)
-      (List.of_seq (IMap.to_seq map));
-    Format.printf "\n"
-  ;;
-
   let remove = IMap.remove
   let extend m i ty = IMap.add i ty m
 
@@ -103,13 +94,6 @@ open InferMonad.Syntax
 
 module Context = struct
   include IMap
-
-  let print map =
-    List.iter
-      (fun (i, (_, a)) -> if i >= 0 then Format.printf "(%d, %a)" i pp_ty a)
-      (List.of_seq (IMap.to_seq map));
-    Format.printf "\n"
-  ;;
 
   let fv = fun m -> fold (fun _ a acc -> ISet.union acc (fst a)) m ISet.empty
 end
@@ -172,14 +156,6 @@ let rec unify t1 t2 =
     let* _ = unify r1 r2 in
     return ()
   | _ -> fail (`UnifyError (t1, t2))
-;;
-
-let list_of_apps =
-  let rec helper = function
-    | EApp (a1, a2) -> a2 :: helper a1
-    | a -> [ a ]
-  in
-  fun l -> List.rev (helper l)
 ;;
 
 let infer env =

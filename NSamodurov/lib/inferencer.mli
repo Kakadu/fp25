@@ -26,8 +26,6 @@ module InferMonad : sig
 
   val return : 'a -> ('s, 'a) t
   val bind : ('s, 'a) t -> ('a -> ('s, 'b) t) -> ('s, 'b) t
-  val fail : 's -> ('s, 'a) t
-  val run : ('s, 'a) t -> (Subst.t * 'a, 's) Result.t
   val fresh : ('s, int) t
   val subst : ('s, Subst.t) t
   val extend : int -> Type.ty -> ('s, unit) t

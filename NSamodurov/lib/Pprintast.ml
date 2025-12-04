@@ -19,14 +19,14 @@ let pp_brujin (* ?(compact = true) *) =
     (* | EApp (EApp (EVar (Index (_, -4)), l), r) -> Format.fprintf fmt "(%a / %a)" pp l pp r *)
     | EIf (pred, e1, e2) ->
       Format.fprintf fmt "if (%a) then (%a) else (%a)" pp pred pp e1 pp e2
-    | EVar (Index (info, i)) -> Format.fprintf fmt "i%d" i
+    | EVar (Index (_, i)) -> Format.fprintf fmt "i%d" i
     | EApp (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | EConst (Int i) -> Format.fprintf fmt "%d" i
     | EConst (Bool b) -> Format.fprintf fmt (if b then "true" else "false")
     | EAbs (_, t) -> Format.fprintf fmt "(λ . %a)" pp t
-    | ELet (NotRecursive, Index (info, i), e1, e2) ->
+    | ELet (NotRecursive, Index (info, _), e1, e2) ->
       Format.fprintf fmt "let %s = %a in %a" info pp e1 pp e2
-    | ELet (Recursive, Index (info, i), e1, e2) ->
+    | ELet (Recursive, Index (info, _), e1, e2) ->
       Format.fprintf fmt "let rec %s = %a in %a" info pp e1 pp e2
   in
   pp
