@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>ast.ml &mdash; Coverage report</title>
-    <meta name="description" content="39.29% coverage in lib/ast.ml">
+    <meta name="description" content="37.93% coverage in lib/ast.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,24 +15,24 @@
           <span class="dirname">lib/</span>ast.ml
         </a>
       </h1>
-      <h2>39.29%</h2>
+      <h2>37.93%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="top:15.62%"></span>
-      <span class="unvisited" style="top:23.44%"></span>
-      <span class="unvisited" style="top:29.69%"></span>
-      <span class="unvisited" style="top:34.38%"></span>
-      <span class="unvisited" style="top:43.75%"></span>
-      <span class="unvisited" style="top:45.31%"></span>
-      <span class="unvisited" style="top:46.88%"></span>
-      <span class="unvisited" style="bottom:46.88%"></span>
-      <span class="unvisited" style="bottom:14.06%"></span>
-      <span class="unvisited" style="bottom:10.94%"></span>
-      <span class="unvisited" style="bottom:7.81%"></span>
-      <span class="unvisited" style="bottom:6.25%"></span>
-      <span class="unvisited" style="bottom:4.69%"></span>
-      <span class="unvisited" style="bottom:3.12%"></span>
-      <span class="unvisited" style="bottom:1.56%"></span>
+      <span class="unvisited" style="top:15.38%"></span>
+      <span class="unvisited" style="top:23.08%"></span>
+      <span class="unvisited" style="top:29.23%"></span>
+      <span class="unvisited" style="top:33.85%"></span>
+      <span class="unvisited" style="top:43.08%"></span>
+      <span class="unvisited" style="top:44.62%"></span>
+      <span class="unvisited" style="top:46.15%"></span>
+      <span class="unvisited" style="bottom:47.69%"></span>
+      <span class="unvisited" style="bottom:13.85%"></span>
+      <span class="unvisited" style="bottom:10.77%"></span>
+      <span class="unvisited" style="bottom:7.69%"></span>
+      <span class="unvisited" style="bottom:6.15%"></span>
+      <span class="unvisited" style="bottom:4.62%"></span>
+      <span class="unvisited" style="bottom:3.08%"></span>
+      <span class="unvisited" style="bottom:1.54%"></span>
       <span class="unvisited" style="bottom:0.00%"></span>
     </div>
     <div id="report">
@@ -82,7 +82,7 @@
 <a id="L42"></a><span > </span>
 <a id="L43"></a><span > </span>
 <a id="L44"></a><span > </span>
-<a id="L45"></a><span class="visited"> </span>
+<a id="L45"></a><span > </span>
 <a id="L46"></a><span class="visited"> </span>
 <a id="L47"></a><span class="visited"> </span>
 <a id="L48"></a><span class="visited"> </span>
@@ -92,16 +92,17 @@
 <a id="L52"></a><span class="visited"> </span>
 <a id="L53"></a><span class="visited"> </span>
 <a id="L54"></a><span class="visited"> </span>
-<a id="L55"></a><span class="unvisited"> </span>
-<a id="L56"></a><span class="visited"> </span>
-<a id="L57"></a><span class="unvisited"> </span>
-<a id="L58"></a><span class="visited"> </span>
-<a id="L59"></a><span class="unvisited"> </span>
+<a id="L55"></a><span class="visited"> </span>
+<a id="L56"></a><span class="unvisited"> </span>
+<a id="L57"></a><span class="visited"> </span>
+<a id="L58"></a><span class="unvisited"> </span>
+<a id="L59"></a><span class="visited"> </span>
 <a id="L60"></a><span class="unvisited"> </span>
 <a id="L61"></a><span class="unvisited"> </span>
 <a id="L62"></a><span class="unvisited"> </span>
 <a id="L63"></a><span class="unvisited"> </span>
 <a id="L64"></a><span class="unvisited"> </span>
+<a id="L65"></a><span class="unvisited"> </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -170,6 +171,7 @@
 <a href="#L62">62</a>
 <a href="#L63">63</a>
 <a href="#L64">64</a>
+<a href="#L65">65</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -189,7 +191,7 @@
 [@@deriving show { with_path = false }]
 
 (** Type used for de Brujin nameless notation *)
-<span data-count="0">t</span>ype brujin = Index of in<span data-count="0">t</span> [@@deriving show { with_path = false }]
+<span data-count="0">t</span>ype brujin = Index of strin<span data-count="0">g</span> * <span data-count="0">i</span>n<span data-count="0">t</span> [@@deriving show { with_path = false }]
 
 (** Type used for let expression *)
 <span data-count="0">t</span>ype let_flag =
@@ -213,22 +215,23 @@ type 'a t =
   | ELet of let_flag * 'a * 'a t * 'a t (** Let expression [let x = e1 in e2]*)
   | EIf of 'a t * 'a t * 'a t (** If expression [if pred then e1 else e2]*)
   | EAbs of 'a * 'a t (** Abstraction [λx.e] *)
-  | EApp of 'a t * 'a t (** Abstraction [N M] *)
+  | EApp of 'a t * 'a t (** Application [N M] *)
+(* | ETuple of 'a t * 'a t * 'a t list (\** Tuple [e1, e2, ..., en] *\) *)
 
-let eint i = <span data-count="22197">E</span>Const (Int i)
-let ebool i = <span data-count="22071">E</span>Const (Bool i)
-let evar v = <span data-count="22192">E</span>Var v
-let elet flag v e1 e2 = <span data-count="16431">E</span>Let (flag, v, e1, e2)
-let eif p t e = <span data-count="16544">E</span>If (p, t, e)
-let eabs v t = <span data-count="16536">E</span>Abs (v, t)
-let eapp e1 e2 = <span data-count="16724">E</span>App (e1, e2)
+let eint i = <span data-count="18795">E</span>Const (Int i)
+let ebool i = <span data-count="18665">E</span>Const (Bool i)
+let evar v = <span data-count="18793">E</span>Var v
+let elet flag v e1 e2 = <span data-count="14185">E</span>Let (flag, v, e1, e2)
+let eif p t e = <span data-count="13771">E</span>If (p, t, e)
+let eabs v t = <span data-count="14133">E</span>Abs (v, t)
+let eapp e1 e2 = <span data-count="14329">E</span>App (e1, e2)
 let add e1 e2 = <span data-count="21">e</span>app (eap<span data-count="21">p</span> (eva<span data-count="21">r</span> "+") e1) e2
-let sub e1 e2 = <span data-count="13">e</span>app (eap<span data-count="13">p</span> (eva<span data-count="13">r</span> "-") e1) e2
+let sub e1 e2 = <span data-count="14">e</span>app (eap<span data-count="14">p</span> (eva<span data-count="14">r</span> "-") e1) e2
 let mul e1 e2 = <span data-count="9">e</span>app (eap<span data-count="9">p</span> (eva<span data-count="9">r</span> "*") e1) e2
 let div e1 e2 = <span data-count="0">e</span>app (eap<span data-count="0">p</span> (eva<span data-count="0">r</span> "/") e1) e2
 let le e1 e2 = <span data-count="3">e</span>app (eap<span data-count="3">p</span> (eva<span data-count="3">r</span> "&lt;") e1) e2
 let gr e1 e2 = <span data-count="0">e</span>app (eap<span data-count="0">p</span> (eva<span data-count="0">r</span> "&gt;") e1) e2
-let leq e1 e2 = <span data-count="5">e</span>app (eap<span data-count="5">p</span> (eva<span data-count="5">r</span> "&lt;=") e1) e2
+let leq e1 e2 = <span data-count="6">e</span>app (eap<span data-count="6">p</span> (eva<span data-count="6">r</span> "&lt;=") e1) e2
 let grq e1 e2 = <span data-count="0">e</span>app (eap<span data-count="0">p</span> (eva<span data-count="0">r</span> "&gt;=") e1) e2
 let eq e1 e2 = <span data-count="0">e</span>app (eap<span data-count="0">p</span> (eva<span data-count="0">r</span> "=") e1) e2
 let neq_phy e1 e2 = <span data-count="0">e</span>app (eap<span data-count="0">p</span> (eva<span data-count="0">r</span> "!=") e1) e2
