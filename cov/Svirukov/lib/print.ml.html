@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>print.ml &mdash; Coverage report</title>
-    <meta name="description" content="68.66% coverage in lib/print.ml">
+    <meta name="description" content="70.15% coverage in lib/print.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,11 +15,10 @@
           <span class="dirname">lib/</span>print.ml
         </a>
       </h1>
-      <h2>68.66%</h2>
+      <h2>70.15%</h2>
     </div>
     <div id="navbar">
       <span class="unvisited" style="bottom:42.86%"></span>
-      <span class="unvisited" style="bottom:40.48%"></span>
       <span class="unvisited" style="bottom:39.29%"></span>
       <span class="unvisited" style="bottom:36.90%"></span>
       <span class="unvisited" style="bottom:28.57%"></span>
@@ -88,7 +87,7 @@
 <a id="L47"></a><span > </span>
 <a id="L48"></a><span class="unvisited"> </span>
 <a id="L49"></a><span class="visited"> </span>
-<a id="L50"></a><span class="unvisited"> </span>
+<a id="L50"></a><span class="visited"> </span>
 <a id="L51"></a><span class="unvisited"> </span>
 <a id="L52"></a><span class="visited"> </span>
 <a id="L53"></a><span class="unvisited"> </span>
@@ -222,46 +221,46 @@ open Interpret
 
 let rec print_ast = function
   | <span data-count="1">C</span>onstant CUnit -&gt; "()"
-  | <span data-count="34383">C</span>onstant (CInt n) -&gt; string_of_int n
-  | <span data-count="47783">V</span>ar (PVar name) -&gt; name
-  | <span data-count="11786">B</span>inop (op, left, right) -&gt;
+  | <span data-count="34862">C</span>onstant (CInt n) -&gt; string_of_int n
+  | <span data-count="47669">V</span>ar (PVar name) -&gt; name
+  | <span data-count="12138">B</span>inop (op, left, right) -&gt;
     let op_str =
       match op with
-      | <span data-count="1339">P</span>lus -&gt; "+"
-      | <span data-count="1209">M</span>inus -&gt; "-"
-      | <span data-count="1368">A</span>steriks -&gt; "*"
-      | <span data-count="1357">D</span>ash -&gt; "/"
-      | <span data-count="1196">E</span>quals -&gt; "="
-      | <span data-count="1242">M</span>oreThan -&gt; "&gt;"
-      | <span data-count="1441">L</span>essThan -&gt; "&lt;"
-      | <span data-count="1281">E</span>qLess -&gt; "&lt;="
-      | <span data-count="1353">E</span>qMore -&gt; "&gt;="
+      | <span data-count="1354">P</span>lus -&gt; "+"
+      | <span data-count="1332">M</span>inus -&gt; "-"
+      | <span data-count="1416">A</span>steriks -&gt; "*"
+      | <span data-count="1289">D</span>ash -&gt; "/"
+      | <span data-count="1328">E</span>quals -&gt; "="
+      | <span data-count="1335">M</span>oreThan -&gt; "&gt;"
+      | <span data-count="1321">L</span>essThan -&gt; "&lt;"
+      | <span data-count="1347">E</span>qLess -&gt; "&lt;="
+      | <span data-count="1416">E</span>qMore -&gt; "&gt;="
     in
-    Printf.sprintf "(%s %s %s)" (print_as<span data-count="11786">t</span> left) op_str (print_as<span data-count="11786">t</span> right)
-  | <span data-count="957">C</span>onditional (cond, main, None) -&gt;
-    Printf.sprintf "(if %s then %s)" (print_as<span data-count="957">t</span> cond) (print_as<span data-count="957">t</span> main)
-  | <span data-count="5354">C</span>onditional (cond, main, Some alt) -&gt;
+    Printf.sprintf "(%s %s %s)" (print_as<span data-count="12138">t</span> left) op_str (print_as<span data-count="12138">t</span> right)
+  | <span data-count="990">C</span>onditional (cond, main, None) -&gt;
+    Printf.sprintf "(if %s then %s)" (print_as<span data-count="990">t</span> cond) (print_as<span data-count="990">t</span> main)
+  | <span data-count="5369">C</span>onditional (cond, main, Some alt) -&gt;
     Printf.sprintf
       "(if %s then %s else %s)"
-      (print_as<span data-count="5354">t</span> cond)
-      (print_as<span data-count="5354">t</span> main)
-      (print_as<span data-count="5354">t</span> alt)
-  | <span data-count="523">L</span>et (NonRec, PVar name, body, None) -&gt;
-    Printf.sprintf "(let %s = %s)" name (print_as<span data-count="523">t</span> body)
-  | <span data-count="2781">L</span>et (NonRec, PVar name, body, Some next) -&gt;
-    Printf.sprintf "(let %s = %s in %s)" name (print_as<span data-count="2781">t</span> body) (print_as<span data-count="2781">t</span> next)
-  | <span data-count="467">L</span>et (Rec, PVar name, body, None) -&gt;
-    Printf.sprintf "(let rec %s = %s)" name (print_as<span data-count="467">t</span> body)
-  | <span data-count="2752">L</span>et (Rec, PVar name, body, Some next) -&gt;
-    Printf.sprintf "(let rec %s = %s in %s)" name (print_as<span data-count="2752">t</span> body) (print_as<span data-count="2752">t</span> next)
-  | <span data-count="25750">F</span>unc (PVar arg, body) -&gt; Printf.sprintf "(fun %s -&gt; %s)" arg (print_as<span data-count="25750">t</span> body)
-  | <span data-count="26096">A</span>pp (left, right) -&gt; Printf.sprintf "%s %s" (print_as<span data-count="26096">t</span> left) (print_as<span data-count="26096">t</span> right)
+      (print_as<span data-count="5369">t</span> cond)
+      (print_as<span data-count="5369">t</span> main)
+      (print_as<span data-count="5369">t</span> alt)
+  | <span data-count="541">L</span>et (NonRec, PVar name, body, None) -&gt;
+    Printf.sprintf "(let %s = %s)" name (print_as<span data-count="541">t</span> body)
+  | <span data-count="2574">L</span>et (NonRec, PVar name, body, Some next) -&gt;
+    Printf.sprintf "(let %s = %s in %s)" name (print_as<span data-count="2574">t</span> body) (print_as<span data-count="2574">t</span> next)
+  | <span data-count="461">L</span>et (Rec, PVar name, body, None) -&gt;
+    Printf.sprintf "(let rec %s = %s)" name (print_as<span data-count="461">t</span> body)
+  | <span data-count="2812">L</span>et (Rec, PVar name, body, Some next) -&gt;
+    Printf.sprintf "(let rec %s = %s in %s)" name (print_as<span data-count="2812">t</span> body) (print_as<span data-count="2812">t</span> next)
+  | <span data-count="25042">F</span>unc (PVar arg, body) -&gt; Printf.sprintf "(fun %s -&gt; %s)" arg (print_as<span data-count="25042">t</span> body)
+  | <span data-count="26192">A</span>pp (left, right) -&gt; Printf.sprintf "%s %s" (print_as<span data-count="26192">t</span> left) (print_as<span data-count="26192">t</span> right)
 ;;
 
 let print_error = function
   | <span data-count="0">U</span>nboundVariable name -&gt; Printf.sprintf "Unbound variable %s" name
   | <span data-count="4">T</span>ypeError err -&gt; err
-  | <span data-count="0">D</span>ivisionByZero -&gt; "Division by zero"
+  | <span data-count="1">D</span>ivisionByZero -&gt; "Division by zero"
   | <span data-count="0">U</span>nimplemented -&gt; "Not implemented yet..."
   | <span data-count="1">T</span>ooManyArgs -&gt; "Too many args for function"
   | <span data-count="0">P</span>arttialApplication -&gt; "Not enought args to calculate function"

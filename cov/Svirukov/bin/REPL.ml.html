@@ -18,13 +18,13 @@
       <h2>70.27%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="top:46.05%"></span>
-      <span class="unvisited" style="bottom:36.84%"></span>
-      <span class="unvisited" style="bottom:31.58%"></span>
-      <span class="unvisited" style="bottom:23.68%"></span>
-      <span class="unvisited" style="bottom:17.11%"></span>
-      <span class="unvisited" style="bottom:14.47%"></span>
-      <span class="unvisited" style="bottom:13.16%"></span>
+      <span class="unvisited" style="top:47.30%"></span>
+      <span class="unvisited" style="bottom:37.84%"></span>
+      <span class="unvisited" style="bottom:32.43%"></span>
+      <span class="unvisited" style="bottom:24.32%"></span>
+      <span class="unvisited" style="bottom:17.57%"></span>
+      <span class="unvisited" style="bottom:14.86%"></span>
+      <span class="unvisited" style="bottom:13.51%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -72,39 +72,37 @@
 <a id="L41"></a><span > </span>
 <a id="L42"></a><span > </span>
 <a id="L43"></a><span > </span>
-<a id="L44"></a><span > </span>
-<a id="L45"></a><span > </span>
-<a id="L46"></a><span class="visited"> </span>
-<a id="L47"></a><span class="visited"> </span>
-<a id="L48"></a><span class="unvisited"> </span>
+<a id="L44"></a><span class="visited"> </span>
+<a id="L45"></a><span class="visited"> </span>
+<a id="L46"></a><span class="unvisited"> </span>
+<a id="L47"></a><span > </span>
+<a id="L48"></a><span > </span>
 <a id="L49"></a><span > </span>
-<a id="L50"></a><span > </span>
-<a id="L51"></a><span > </span>
-<a id="L52"></a><span class="unvisited"> </span>
+<a id="L50"></a><span class="unvisited"> </span>
+<a id="L51"></a><span class="visited"> </span>
+<a id="L52"></a><span > </span>
 <a id="L53"></a><span class="visited"> </span>
-<a id="L54"></a><span > </span>
+<a id="L54"></a><span class="visited"> </span>
 <a id="L55"></a><span class="visited"> </span>
-<a id="L56"></a><span class="visited"> </span>
-<a id="L57"></a><span class="visited"> </span>
-<a id="L58"></a><span class="unvisited"> </span>
+<a id="L56"></a><span class="unvisited"> </span>
+<a id="L57"></a><span > </span>
+<a id="L58"></a><span class="visited"> </span>
 <a id="L59"></a><span > </span>
-<a id="L60"></a><span class="visited"> </span>
-<a id="L61"></a><span > </span>
+<a id="L60"></a><span > </span>
+<a id="L61"></a><span class="unvisited"> </span>
 <a id="L62"></a><span > </span>
 <a id="L63"></a><span class="unvisited"> </span>
-<a id="L64"></a><span > </span>
-<a id="L65"></a><span class="unvisited"> </span>
-<a id="L66"></a><span class="unvisited"> </span>
+<a id="L64"></a><span class="unvisited"> </span>
+<a id="L65"></a><span class="visited"> </span>
+<a id="L66"></a><span > </span>
 <a id="L67"></a><span class="visited"> </span>
-<a id="L68"></a><span > </span>
+<a id="L68"></a><span class="visited"> </span>
 <a id="L69"></a><span class="visited"> </span>
-<a id="L70"></a><span class="visited"> </span>
-<a id="L71"></a><span class="visited"> </span>
-<a id="L72"></a><span > </span>
-<a id="L73"></a><span > </span>
-<a id="L74"></a><span class="visited"> </span>
-<a id="L75"></a><span class="visited"> </span>
-<a id="L76"></a><span > </span>
+<a id="L70"></a><span > </span>
+<a id="L71"></a><span > </span>
+<a id="L72"></a><span class="visited"> </span>
+<a id="L73"></a><span class="visited"> </span>
+<a id="L74"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -183,8 +181,6 @@
 <a href="#L72">72</a>
 <a href="#L73">73</a>
 <a href="#L74">74</a>
-<a href="#L75">75</a>
-<a href="#L76">76</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -214,16 +210,14 @@ module UnResult : sig
 end = struct
   type 'a t = ('a, error) Result.t
 
-  let return x = <span data-count="62">O</span>k x
-  let fail e = <span data-count="7">E</span>rror e
+  let return x = <span data-count="64">O</span>k x
+  let fail e = <span data-count="8">E</span>rror e
 
-  let ( &gt;&gt;= ) m f =
-    <span data-count="46">m</span>atch m with
-    | <span data-count="46">O</span>k x -&gt; f x
+  let ( let* ) m f =
+    <span data-count="48">m</span>atch m with
+    | <span data-count="48">O</span>k x -&gt; f x
     | <span data-count="0">E</span>rror e -&gt; Error e
   ;;
-
-  let ( let* ) = ( &gt;&gt;= )
 end
 
 open UnResult
@@ -238,29 +232,29 @@ let () =
   in
   let usage_msg = "miniMl starts...\n" in
   Arg.parse arg_list (fun _ -&gt; <span data-count="0">(</span>)) usage_msg;
-  <span data-count="23">l</span>et result =
+  <span data-count="24">l</span>et result =
     let* expr =
-      let input = In_channel.(input_al<span data-count="23">l</span> stdin) |&gt; Base.String.rstrip in
-      <span data-count="23">m</span>atch Parser.parse input with
-      | <span data-count="23">O</span>k expr -&gt; retur<span data-count="23">n</span> expr
+      let input = In_channel.(input_al<span data-count="24">l</span> stdin) |&gt; Base.String.rstrip in
+      <span data-count="24">m</span>atch Parser.parse input with
+      | <span data-count="24">O</span>k expr -&gt; retur<span data-count="24">n</span> expr
       | <span data-count="0">E</span>rror (`Parsing_error msg) -&gt; fai<span data-count="0">l</span> msg
     in
-    <span data-count="23">l</span>et _ = if pr_args.ast then <span data-count="22">F</span>ormat.print<span data-count="22">f</span> "%s\n" (Print.print_as<span data-count="22">t</span> expr) in
+    <span data-count="24">l</span>et _ = if pr_args.ast then <span data-count="23">F</span>ormat.print<span data-count="23">f</span> "%s\n" (Print.print_as<span data-count="23">t</span> expr) in
     let* expr =
       if pr_args.typecheck
       then <span data-count="0">(</span>
         match Inferencer.typecheck_program expr with
         | <span data-count="0">O</span>k _ -&gt; retur<span data-count="0">n</span> expr
         | <span data-count="0">E</span>rror er -&gt; fai<span data-count="0">l</span> (Print.show_type_erro<span data-count="0">r</span> er))
-      else <span data-count="23">r</span>etur<span data-count="23">n</span> expr
+      else <span data-count="24">r</span>etur<span data-count="24">n</span> expr
     in
-    <span data-count="23">m</span>atch Interpret.run_interpret expr pr_args.steps with
+    <span data-count="24">m</span>atch Interpret.run_interpret expr pr_args.steps with
     | <span data-count="16">O</span>k expr' -&gt; return expr'
-    | <span data-count="7">E</span>rror er -&gt; fail (Print.print_erro<span data-count="7">r</span> er)
+    | <span data-count="8">E</span>rror er -&gt; fail (Print.print_erro<span data-count="8">r</span> er)
   in
   match result with
   | <span data-count="16">O</span>k expr -&gt; Format.print<span data-count="16">f</span> "%s\n" (Print.print_as<span data-count="16">t</span> expr)
-  | <span data-count="7">E</span>rror msg -&gt; Format.print<span data-count="7">f</span> "%s\n" msg
+  | <span data-count="8">E</span>rror msg -&gt; Format.print<span data-count="8">f</span> "%s\n" msg
 ;;
 </code></pre>
       </div>
