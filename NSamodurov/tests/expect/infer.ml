@@ -10,7 +10,6 @@ open Lambda_lib
 open Parser
 open Type
 open Inferencer
-open Utils
 
 let parse_and_print str =
   (* let* ast = parse str in *)
@@ -99,8 +98,7 @@ let%expect_test "arith" =
 
 let%expect_test "factorial" =
   parse_and_print "let rec id x = if (true) then 0 else id (x-1) in id";
-  [%expect
-    {| Type: (TVar 5) |}]
+  [%expect {| Type: (TVar 5) |}]
 ;;
 
 let%expect_test "many arguments" =

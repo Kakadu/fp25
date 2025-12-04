@@ -112,8 +112,7 @@ let%expect_test "factorial" =
 
 let%expect_test "rec func" =
   parse_and_print "let rec id x = if x then 1 else id true in id true";
-  [%expect
-    {| let rec id = (λ . if (i0) then (1) else ((i1 true))) in (i0 true) |}]
+  [%expect {| let rec id = (λ . if (i0) then (1) else ((i1 true))) in (i0 true) |}]
 ;;
 
 let%expect_test "bool" =
