@@ -367,28 +367,28 @@
 <span data-count="9">t</span>ype program = <span data-count="53">s</span>tructure_item lis<span data-count="11">t</span> [@@deriving show { with_path = false }]
 
 let pretty_print_pattern = function
-  | <span data-count="721">P</span>Var s -&gt; s
-  | <span data-count="358">P</span>Any -&gt; "_"
-  | <span data-count="366">P</span>Unit -&gt; "()"
+  | <span data-count="760">P</span>Var s -&gt; s
+  | <span data-count="337">P</span>Any -&gt; "_"
+  | <span data-count="343">P</span>Unit -&gt; "()"
 ;;
 
 let rec pretty_print_expr = function
-  | <span data-count="1731">C</span>onst (CInt i) -&gt; string_of_int i
+  | <span data-count="1896">C</span>onst (CInt i) -&gt; string_of_int i
   | <span data-count="0">C</span>onst CUnit -&gt; "()"
-  | <span data-count="1827">V</span>ar s -&gt; s
-  | <span data-count="727">U</span>nOp (op, e) -&gt;
+  | <span data-count="1850">V</span>ar s -&gt; s
+  | <span data-count="755">U</span>nOp (op, e) -&gt;
     let op_str =
       match op with
-      | <span data-count="727">N</span>eg -&gt; "-"
+      | <span data-count="755">N</span>eg -&gt; "-"
     in
-    "(" ^ op_str ^ pretty_print_exp<span data-count="727">r</span> e ^ ")"
-  | <span data-count="701">B</span>inOp (op, e1, e2) -&gt;
+    "(" ^ op_str ^ pretty_print_exp<span data-count="755">r</span> e ^ ")"
+  | <span data-count="754">B</span>inOp (op, e1, e2) -&gt;
     let op_str =
       match op with
-      | <span data-count="176">A</span>dd -&gt; " + "
-      | <span data-count="175">S</span>ub -&gt; " - "
-      | <span data-count="156">M</span>ul -&gt; " * "
-      | <span data-count="194">D</span>iv -&gt; " / "
+      | <span data-count="200">A</span>dd -&gt; " + "
+      | <span data-count="197">S</span>ub -&gt; " - "
+      | <span data-count="159">M</span>ul -&gt; " * "
+      | <span data-count="198">D</span>iv -&gt; " / "
       | <span data-count="0">E</span>q -&gt; " = "
       | <span data-count="0">N</span>eq -&gt; " &lt;&gt; "
       | <span data-count="0">L</span>t -&gt; " &lt; "
@@ -396,37 +396,37 @@ let rec pretty_print_expr = function
       | <span data-count="0">G</span>t -&gt; " &gt; "
       | <span data-count="0">G</span>e -&gt; " &gt;= "
     in
-    "(" ^ pretty_print_exp<span data-count="701">r</span> e1 ^ op_str ^ pretty_print_exp<span data-count="701">r</span> e2 ^ ")"
-  | <span data-count="440">I</span>f (cond, t, f) -&gt;
+    "(" ^ pretty_print_exp<span data-count="754">r</span> e1 ^ op_str ^ pretty_print_exp<span data-count="754">r</span> e2 ^ ")"
+  | <span data-count="506">I</span>f (cond, t, f) -&gt;
     "(if "
-    ^ pretty_print_exp<span data-count="440">r</span> cond
+    ^ pretty_print_exp<span data-count="506">r</span> cond
     ^ " then "
-    ^ pretty_print_exp<span data-count="440">r</span> t
+    ^ pretty_print_exp<span data-count="506">r</span> t
     ^ " else "
-    ^ pretty_print_exp<span data-count="440">r</span> f
+    ^ pretty_print_exp<span data-count="506">r</span> f
     ^ ")"
-  | <span data-count="476">F</span>unExpr (param, body) -&gt;
+  | <span data-count="482">F</span>unExpr (param, body) -&gt;
     "(fun "
-    ^ String.conca<span data-count="476">t</span> " " (List.ma<span data-count="476">p</span> pretty_print_pattern param)
+    ^ String.conca<span data-count="482">t</span> " " (List.ma<span data-count="482">p</span> pretty_print_pattern param)
     ^ " -&gt; "
-    ^ pretty_print_exp<span data-count="476">r</span> body
+    ^ pretty_print_exp<span data-count="482">r</span> body
     ^ ")"
   | <span data-count="494">A</span>pp (f, arg) -&gt; "(" ^ pretty_print_exp<span data-count="494">r</span> f ^ " " ^ pretty_print_exp<span data-count="494">r</span> arg ^ ")"
-  | <span data-count="254">L</span>et (NonRec, p, e1, e2) -&gt;
+  | <span data-count="250">L</span>et (NonRec, p, e1, e2) -&gt;
     "(let "
-    ^ pretty_print_patter<span data-count="254">n</span> p
+    ^ pretty_print_patter<span data-count="250">n</span> p
     ^ " = "
-    ^ pretty_print_exp<span data-count="254">r</span> e1
+    ^ pretty_print_exp<span data-count="250">r</span> e1
     ^ " in "
-    ^ pretty_print_exp<span data-count="254">r</span> e2
+    ^ pretty_print_exp<span data-count="250">r</span> e2
     ^ ")"
-  | <span data-count="229">L</span>et (Rec, p, e1, e2) -&gt;
+  | <span data-count="236">L</span>et (Rec, p, e1, e2) -&gt;
     "(let rec "
-    ^ pretty_print_patter<span data-count="229">n</span> p
+    ^ pretty_print_patter<span data-count="236">n</span> p
     ^ " = "
-    ^ pretty_print_exp<span data-count="229">r</span> e1
+    ^ pretty_print_exp<span data-count="236">r</span> e1
     ^ " in "
-    ^ pretty_print_exp<span data-count="229">r</span> e2
+    ^ pretty_print_exp<span data-count="236">r</span> e2
     ^ ")"
 ;;
 
