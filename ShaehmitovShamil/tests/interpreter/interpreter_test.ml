@@ -6,7 +6,7 @@ let run_interpreter_test input =
   match program with
   | Error msg -> Printf.printf "Parse Error: %s\n" msg
   | Ok prog ->
-    (match Interpreter.run_program prog with
+    (match Interpreter.run_program 100000 prog with
      | Ok _ -> ()
      | Error err -> Printf.printf "Runtime Error: %s\n" (Interpreter.show_error err))
 ;;
