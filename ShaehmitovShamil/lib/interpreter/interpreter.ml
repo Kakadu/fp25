@@ -13,10 +13,10 @@ module type Eval = sig
   type value
   type error
   type env
-  type 'a eval_result = ('a, error) result
+  type 'a eval_result = ('a, error) Result.t
 
   val show_error : error -> string
-  val run_program : int -> program -> (env * value option, error) result
+  val run_program : int -> program -> (env * value option, error) Result.t
 end
 
 module Interpreter : Eval = struct
@@ -26,7 +26,7 @@ module Interpreter : Eval = struct
     | DivisionByZero
     | OutOfMaxSteps
 
-  type 'a eval_result = ('a, error) result
+  type 'a eval_result = ('a, error) Result.t
   type is_rec = bool
 
   type value =
@@ -197,7 +197,7 @@ module Interpreter : Eval = struct
            (VBuiltin
               (function
                 | VInt i ->
-                  print_int i;
+                  Stdlib.print_int i;
                   return VUnit
                 | _ -> Error (TypeError "print_int expects an integer")))
     |> set
@@ -206,7 +206,7 @@ module Interpreter : Eval = struct
            (VBuiltin
               (function
                 | VUnit ->
-                  print_newline ();
+                  Stdlib.print_newline ();
                   return VUnit
                 | _ -> Error (TypeError "print_endl expects a unit value ()")))
     |> set

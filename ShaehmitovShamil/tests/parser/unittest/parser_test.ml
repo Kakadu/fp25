@@ -12,7 +12,7 @@ open Ast
 
 let run_test input =
   match parse input with
-  | Ok expr -> print_endline (show_expr expr)
+  | Ok expr -> Stdlib.print_endline (show_expr expr)
   | Error msg -> Stdlib.Printf.printf "Error: %s\n" msg
 ;;
 
@@ -149,7 +149,7 @@ let%expect_test "fun with two arguments" =
 
 let run_program_parser input =
   match parse_structure_items input with
-  | Ok expr -> print_endline (show_program expr)
+  | Ok expr -> Stdlib.print_endline (show_program expr)
   | Error msg -> Stdlib.Printf.printf "Error: %s\n" msg
 ;;
 

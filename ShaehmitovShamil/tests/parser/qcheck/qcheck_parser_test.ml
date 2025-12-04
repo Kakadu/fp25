@@ -70,9 +70,6 @@ let rec gen_expr size =
       ])
 ;;
 
-let shrink_pattern = function
-  | PVar _ | PAny | PUnit -> Iter.empty
-;;
 
 let rec shrink_expr = function
   | Const _ | Var _ -> Iter.empty
@@ -112,7 +109,7 @@ let parser_test =
     let code_string = pretty_print_expr expr in
     match parse code_string with
     | Ok parsed_expr ->
-      if Caml.( = ) expr parsed_expr
+      if Stdlib.( = ) expr parsed_expr
       then true
       else
         Test.fail_reportf
