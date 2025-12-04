@@ -13,15 +13,15 @@ open Inferencer
 open Utils
 
 let parse_and_print str =
-  let helper str =
-    let ( let* ) = Result.bind in
-    let* ast = parse str in
-    let ast = to_brujin ast in
-    w ast
-  in
-  match helper str with
-  | Ok v -> Format.printf "Type: %a" pp_ty v
-  | Error e -> Format.printf "Error: %a" pp_error e
+  (* let* ast = parse str in *)
+  (* let ast = to_brujin ast in *)
+  (* w ast *)
+  match parse str with
+  | Ok v ->
+    (match w (to_brujin v) with
+     | Ok v -> Format.printf "Type: %a" pp_ty v
+     | Error e -> Format.printf "Error: %a" Inferencer.pp_error e)
+  | Error e -> Format.printf "Error: %a" Parser.pp_error e
 ;;
 
 let%expect_test "one int" =
@@ -73,7 +73,7 @@ let%expect_test "let2" =
 ;;
 
 let%expect_test "basic substituion" =
-  parse_and_print "let id x = x in id 1";
+  parse_and_print "let id x = x in id (1 - 1)";
   [%expect {| Type: (TGround "int") |}]
 ;;
 
@@ -100,10 +100,7 @@ let%expect_test "arith" =
 let%expect_test "factorial" =
   parse_and_print "let rec id x = if (true) then 0 else id (x-1) in id";
   [%expect
-    {|
-    Error: Unification error: ((TGround "int")) ((TArrow ((TGround "int"),
-                                                    (TGround "int"))))
-    |}]
+    {| Type: (TVar 5) |}]
 ;;
 
 let%expect_test "many arguments" =

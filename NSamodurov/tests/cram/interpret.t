@@ -71,3 +71,9 @@ SPDX-License-Identifier: CC0-1.0
   > print (fib 12)
   144
   Success: (Int 0)
+
+  $ ../../bin/REPL.exe << EOF
+  > let rec id x = if x then 1 else id true in
+  > id false
+  Success: (Int 1)
+

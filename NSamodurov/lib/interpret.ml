@@ -15,11 +15,11 @@
 open Parser
 open Compiler
 open Monads
-open Utils
 open Type
 
 type output = string list
 type flags = { print_instr_exec : bool (** If set, print instruction executed *) }
+type error = [ `InterpretError of string ] [@@deriving show { with_path = false }]
 
 module Format = Stdlib.Format
 
@@ -249,20 +249,18 @@ let interpret =
 ;;
 
 let parse_and_run str { print_instr_exec } =
-  let helper str =
-    let ( let* ) = Result.bind in
-    let* ast = parse str in
+  match parse str with
+  | Ok ast ->
     let ast = to_brujin ast in
-    let _ = Inferencer.w ast in
-    let instr = compile ast in
-    let out, r = interpret instr in
-    let* r = r in
-    Result.ok (out, r)
-  in
-  match helper str with
-  | Ok ((i, out), v) ->
-    List.iter (Format.printf "%s\n") (List.rev out);
-    if print_instr_exec then Format.printf "Number of intructions executed : %d\n" i;
-    Format.printf "Success: %a" pp_eval v
-  | Error e -> Format.printf "Error: %a" pp_error e
+    (match Inferencer.w ast with
+     | Ok _ ->
+       let (i, out), r = interpret (compile ast) in
+       (match r with
+        | Ok v ->
+          List.iter (Format.printf "%s\n") (List.rev out);
+          if print_instr_exec then Format.printf "Number of intructions executed : %d\n" i;
+          Format.printf "Success: %a" pp_eval v
+        | Error e -> Format.printf "Error: %a" pp_error e)
+     | Error e -> Format.printf "Error: %a" Inferencer.pp_error e)
+  | Error e -> Format.printf "Error: %a" Parser.pp_error e
 ;;

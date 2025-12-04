@@ -6,17 +6,18 @@
 
 [@@@ocaml.text "/*"]
 
-type error =
-  [ `ParsingError of string
-  | `OccursCheck of Type.ty * Type.ty
-  | `UnifyError of Type.ty * Type.ty
-  | `UnboundVariable of int
-  | `AbstractionExpected of Type.ty
-  | `UsingReservedVariable of int
-  | `ReservedError
-  | `InterpretError of string
-  ]
-[@@deriving show { with_path = false }]
+val pp_error
+  :  Format.formatter
+  -> [> `AbstractionExpected of Type.ty
+     | `InterpretError of string
+     | `OccursCheck of Type.ty * Type.ty
+     | `ParsingError of string
+     | `ReservedError
+     | `UnboundVariable of int
+     | `UnifyError of Type.ty * Type.ty
+     | `UsingReservedVariable of int
+     ]
+  -> unit
 
 val free_vars : equal:('a -> 'a -> bool) -> 'a Ast.t -> 'a list
 val is_free_in : string -> string Ast.t -> bool

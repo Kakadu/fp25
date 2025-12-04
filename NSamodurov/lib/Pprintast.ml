@@ -13,13 +13,13 @@ open Utils
 
 let pp_brujin (* ?(compact = true) *) =
   let rec pp fmt = function
-    | EApp (EApp (EVar (Index (_, -1)), l), r) -> Format.fprintf fmt "(%a + %a)" pp l pp r
-    | EApp (EApp (EVar (Index (_, -2)), l), r) -> Format.fprintf fmt "(%a - %a)" pp l pp r
-    | EApp (EApp (EVar (Index (_, -3)), l), r) -> Format.fprintf fmt "(%a * %a)" pp l pp r
-    | EApp (EApp (EVar (Index (_, -4)), l), r) -> Format.fprintf fmt "(%a / %a)" pp l pp r
+    (* | EApp (EApp (EVar (Index (_, -1)), l), r) -> Format.fprintf fmt "(%a + %a)" pp l pp r *)
+    (* | EApp (EApp (EVar (Index (_, -2)), l), r) -> Format.fprintf fmt "(%a - %a)" pp l pp r *)
+    (* | EApp (EApp (EVar (Index (_, -3)), l), r) -> Format.fprintf fmt "(%a * %a)" pp l pp r *)
+    (* | EApp (EApp (EVar (Index (_, -4)), l), r) -> Format.fprintf fmt "(%a / %a)" pp l pp r *)
     | EIf (pred, e1, e2) ->
       Format.fprintf fmt "if (%a) then (%a) else (%a)" pp pred pp e1 pp e2
-    | EVar (Index (info, i)) -> Format.fprintf fmt "%s" info
+    | EVar (Index (info, i)) -> Format.fprintf fmt "i%d" i
     | EApp (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | EConst (Int i) -> Format.fprintf fmt "%d" i
     | EConst (Bool b) -> Format.fprintf fmt (if b then "true" else "false")

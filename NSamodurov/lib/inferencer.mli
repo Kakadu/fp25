@@ -18,6 +18,7 @@ module Subst : sig
   val empty : t
   val remove : int -> t -> t
   val apply : t -> Type.ty -> Type.ty
+  val extend : t -> int -> Type.ty -> t
 end
 
 module InferMonad : sig
@@ -25,6 +26,11 @@ module InferMonad : sig
 
   val return : 'a -> ('s, 'a) t
   val bind : ('s, 'a) t -> ('a -> ('s, 'b) t) -> ('s, 'b) t
+  val fail : 's -> ('s, 'a) t
+  val run : ('s, 'a) t -> (Subst.t * 'a, 's) Result.t
+  val fresh : ('s, int) t
+  val subst : ('s, Subst.t) t
+  val extend : int -> Type.ty -> ('s, unit) t
 
   module Syntax : sig
     val ( >>= ) : ('s, 'a) t -> ('a -> ('s, 'b) t) -> ('s, 'b) t
@@ -35,6 +41,20 @@ module InferMonad : sig
   val run : ('s, 'a) t -> (Subst.t * 'a, 's) Result.t
 end
 
-val unify : Type.ty -> Type.ty -> (Utils.error, unit) InferMonad.t
-val w : Ast.brujin Ast.t -> (Type.ty, Utils.error) Result.t
+type error =
+  [ `OccursCheck of Type.ty * Type.ty
+  | `UnifyError of Type.ty * Type.ty
+  | `UnboundVariable of Ast.name * int
+  ]
+[@@deriving show { with_path = false }]
+
+val w
+  :  Ast.brujin Ast.t
+  -> ( Type.ty
+       , [ `OccursCheck of Type.ty * Type.ty
+         | `UnifyError of Type.ty * Type.ty
+         | `UnboundVariable of Ast.name * int
+         ] )
+       Result.t
+
 val env : Type.scheme Type.IMap.t

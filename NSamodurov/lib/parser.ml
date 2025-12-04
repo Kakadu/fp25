@@ -10,6 +10,8 @@ open Angstrom
 open Ast
 open Monads
 
+type error = [ `ParsingError of string ] [@@deriving show { with_path = false }]
+
 let ws =
   skip_while (function
     | ' ' | '\t' | '\n' | '\r' -> true
@@ -248,10 +250,14 @@ let to_brujin expr =
          | Some i -> return (EVar (Index (v, i))))
       | EConst (Int x) -> return (int x)
       | EConst (Bool x) -> return (bool x)
-      | ELet (flag, v, e1, e2) ->
+      | ELet (NotRecursive, v, e1, e2) ->
         let* e1 = helper bound e1 in
         let* e2 = helper (v :: bound) e2 in
-        return (ELet (flag, Index (v, List.length bound), e1, e2))
+        return (ELet (NotRecursive, Index (v, List.length bound), e1, e2))
+      | ELet (Recursive, v, e1, e2) ->
+        let* e1 = helper (v :: bound) e1 in
+        let* e2 = helper (v :: bound) e2 in
+        return (ELet (Recursive, Index (v, List.length bound), e1, e2))
       | EIf (pred, e1, e2) ->
         let* pred = helper bound pred in
         let* e1 = helper bound e1 in

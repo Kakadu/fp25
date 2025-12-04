@@ -1,6 +1,6 @@
 (library
- (name parser)
- (modules parser)
+ (name parse)
+ (modules parse)
  (libraries lambda_lib ppx_show.runtime)
  (preprocess
   (pps ppx_show ppx_expect))
@@ -19,8 +19,8 @@
  (inline_tests))
 
 (library
- (name compiler)
- (modules compiler)
+ (name compile)
+ (modules compile)
  (libraries lambda_lib ppx_show.runtime)
  (preprocess
   (pps ppx_show ppx_expect))
@@ -29,8 +29,8 @@
  (inline_tests))
 
 (library
- (name property)
- (modules property)
+ (name quick_check)
+ (modules quick_check)
  (libraries qcheck qcheck-core lambda_lib ppx_show.runtime)
  (preprocess
   (pps ppx_show ppx_expect))

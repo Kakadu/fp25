@@ -7,8 +7,9 @@
 [@@@ocaml.text "/*"]
 
 (** Main entry of parser *)
-val parse : string -> (Ast.name Ast.t, [> Utils.error ]) result
+type error = [ `ParsingError of string ] [@@deriving show { with_path = false }]
 
+val parse : string -> (Ast.name Ast.t, [> `ParsingError of string ]) result
 val to_brujin : string Ast.t -> Ast.brujin Ast.t
 
 type dispatch =

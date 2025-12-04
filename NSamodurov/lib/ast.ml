@@ -40,7 +40,8 @@ type 'a t =
   | ELet of let_flag * 'a * 'a t * 'a t (** Let expression [let x = e1 in e2]*)
   | EIf of 'a t * 'a t * 'a t (** If expression [if pred then e1 else e2]*)
   | EAbs of 'a * 'a t (** Abstraction [λx.e] *)
-  | EApp of 'a t * 'a t (** Abstraction [N M] *)
+  | EApp of 'a t * 'a t (** Application [N M] *)
+(* | ETuple of 'a t * 'a t * 'a t list (\** Tuple [e1, e2, ..., en] *\) *)
 
 let eint i = EConst (Int i)
 let ebool i = EConst (Bool i)

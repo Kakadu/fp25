@@ -10,7 +10,7 @@ type ty =
   | TGround of string (** Primitive type [int, bool, float] *)
   | TArrow of ty * ty (** Type of abstraction [t1 -> t2]  *)
   | TVar of int (** Variable [v]  *)
-(* | TTuple of ty * ty * ty list *)
+    (* | TTuple of ty * ty * ty list (\** Ordered sequence [(e1, e2, ..., en)] *\) *)
 [@@deriving show { with_path = false }]
 
 let tground s = TGround s
