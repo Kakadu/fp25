@@ -40,6 +40,12 @@ let add_op = token (string "+") *> return Add
 let sub_op = token (string "-") *> return Sub
 let mul_op = token (string "*") *> return Mul
 let div_op = token (string "/") *> return Div
+let eq_op = token (string "=") *> return Eq
+let neq_op = token (string "<>") *> return Neq
+let lt_op = token (string "<") *> return Lt
+let le_op = token (string "<=") *> return Le
+let gt_op = token (string ">") *> return Gt
+let ge_op = token (string ">=") *> return Ge
 
 (**Unary operators *)
 let neg_op = token (string "-") *> return Neg
@@ -71,12 +77,6 @@ let parse_pattern =
     ; (token (char '_') >>| fun _ -> PAny)
     ; (token (string "()") >>| fun _ -> PUnit)
     ]
-;;
-
-let parse_unary_op parsed_un_op =
-  return (fun e ->
-    match parsed_un_op with
-    | Neg -> UnOp (Neg, e))
 ;;
 
 let parse_if expr =
@@ -134,7 +134,12 @@ let parse_operators base_parser =
   (* Priority of binary operators *)
   let mul_div = chainl1 unary (choice [ mul_op; div_op ] >>| parse_binary_op) in
   let add_sub = chainl1 mul_div (choice [ add_op; sub_op ] >>| parse_binary_op) in
-  add_sub
+  let compare_ops =
+    chainl1
+      add_sub
+      (choice [ eq_op; neq_op; le_op; lt_op; ge_op; gt_op ] >>| parse_binary_op)
+  in
+  compare_ops
 ;;
 
 let parse_expr =
@@ -170,9 +175,7 @@ let parse_binding expr =
   return ((if is_rec then Rec else NonRec), pat, value_with_lambdas)
 ;;
 
-let parse_program_item expr =
-  choice [ (expr >>| fun e -> Expr e); (parse_binding expr >>| fun e -> Value e) ]
-;;
+let parse_program_item expr = parse_binding expr >>| fun e -> Value e
 
 let parse_program1 =
   let items = sep_by (token (string ";;")) (parse_program_item parse_expr) in

@@ -12,17 +12,17 @@ let run_interpreter_test input =
 ;;
 
 let%expect_test "interpreter test print int simple" =
-  run_interpreter_test "print_int 5";
+  run_interpreter_test "let () = print_int 5";
   [%expect {| 5 |}]
 ;;
 
 let%expect_test "interpreter test print int expression" =
-  run_interpreter_test "print_int (2 + 3 * 4)";
+  run_interpreter_test "let () = print_int (2 + 3 * 4)";
   [%expect {| 14 |}]
 ;;
 
 let%expect_test "interpreter test let binding and print" =
-  run_interpreter_test "let x = 10 in print_int (x * 2)";
+  run_interpreter_test "let () = let x = 10 in print_int (x * 2)";
   [%expect {| 20 |}]
 ;;
 
@@ -61,7 +61,7 @@ let%expect_test "lambda binding" =
 let%expect_test "factorial with fix" =
   run_interpreter_test
     "\n\
-    \    let fact = fix (fun slf n -> if n then n * slf (n - 1) else 1) ;;\n\
+    \    let fact = fix (fun slf n -> if n = 0 then 1 else n * slf (n - 1)) ;;\n\
     \    let () = print_int (fact 10)\n\
     \  ";
   [%expect {| 3628800 |}]
@@ -138,4 +138,101 @@ let%expect_test "any pattern in value binding" =
 let%expect_test "applying argument to function with no parameters" =
   run_interpreter_test "let f = 42 ;; let () = print_int (f 5)";
   [%expect {| Runtime Error: Error: Type error - Cannot apply a non-function |}]
+;;
+
+let%expect_test "equality operator test" =
+  run_interpreter_test "let () = print_int (if 5 = 5 then 1 else 0)";
+  [%expect {| 1 |}]
+;;
+
+let%expect_test "inequality operator test" =
+  run_interpreter_test "let () = print_int (if 5 <> 3 then 1 else 0)";
+  [%expect {| 1 |}]
+;;
+
+let%expect_test "less than operator test" =
+  run_interpreter_test "let () = print_int (if 3 < 5 then 1 else 0)";
+  [%expect {| 1 |}]
+;;
+
+let%expect_test "greater than or equal operator test" =
+  run_interpreter_test "let () = print_int (if 5 >= 5 then 1 else 0)";
+  [%expect {| 1 |}]
+;;
+
+let%expect_test "subtraction and multiplication" =
+  run_interpreter_test "let () = print_int (10 - 2 * 3)";
+  [%expect {| 4 |}]
+;;
+
+let%expect_test "division by zero" =
+  run_interpreter_test "let () = print_int (10 / 0)";
+  [%expect {| Runtime Error: Error: Division by zero |}]
+;;
+
+let%expect_test "remaining comparison operators" =
+  run_interpreter_test
+    "let () = print_int (if 5 > 4 then 1 else 0);; \n\
+     let () = print_int (if 4 <= 4 then 1 else 0)";
+  [%expect {| 11 |}]
+;;
+
+let%expect_test "fix error: non-function" =
+  run_interpreter_test "let _ = fix 5";
+  [%expect {| Runtime Error: Error: Type error - fix expects a function |}]
+;;
+
+let%expect_test "fix error: first arg not variable" =
+  run_interpreter_test "let _ = fix (fun () -> 1)";
+  [%expect
+    {| Runtime Error: Error: Type error - First argument of fix must be a named variable |}]
+;;
+
+let%expect_test "recursive let wildcard error" =
+  run_interpreter_test "let rec _ = fun x -> x";
+  [%expect
+    {| Runtime Error: Error: Type error - Recursive value definition cannot be a wildcard |}]
+;;
+
+let%expect_test "unit pattern mismatch in let" =
+  run_interpreter_test "let () = 5";
+  [%expect {| Runtime Error: Error: Type error - Expected unit value for unit pattern |}]
+;;
+
+let%expect_test "unit pattern mismatch in function application" =
+  run_interpreter_test "let f () = 1 ;; let () = print_int (f 5)";
+  [%expect {| Runtime Error: Error: Type error - Expected unit value for unit pattern |}]
+;;
+
+let%expect_test "wildcard argument in function" =
+  run_interpreter_test "let f _ = 42 ;; let () = print_int (f 100)";
+  [%expect {| 42 |}]
+;;
+
+let%expect_test "print_endl type error" =
+  run_interpreter_test "let () = print_endl 5";
+  [%expect {| Runtime Error: Error: Type error - print_endl expects a unit value () |}]
+;;
+
+let%expect_test "print_int type error" =
+  run_interpreter_test "let () = print_int ()";
+  [%expect {| Runtime Error: Error: Type error - print_int expects an integer |}]
+;;
+
+let%expect_test "let rec with non-function error" =
+  run_interpreter_test "let rec f = 42";
+  [%expect
+    {| Runtime Error: Error: Type error - Recursive value definition must be a function |}]
+;;
+
+let%expect_test "fix fun with no arguments error" =
+  run_interpreter_test "let _ = fix (fun () -> 42)";
+  [%expect
+    {| Runtime Error: Error: Type error - First argument of fix must be a named variable |}]
+;;
+
+let%expect_test "applying argument to function with no parameters (fix)" =
+  run_interpreter_test "let g = let f = fix (fun x -> 10) in f 1";
+  [%expect
+    {| Runtime Error: Error: Type error - Applying argument to a function with no parameters |}]
 ;;

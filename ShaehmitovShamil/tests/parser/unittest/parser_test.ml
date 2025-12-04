@@ -146,12 +146,13 @@ let run_program_parser input =
 ;;
 
 let%expect_test "simple structure" =
-  run_program_parser "10 + 5 - 6";
+  run_program_parser "let x = 10 + 5 - 6";
   [%expect
     {|
-    [(Expr
-        (BinOp (Sub, (BinOp (Add, (Const (CInt 10)), (Const (CInt 5)))),
-           (Const (CInt 6)))))
+    [(Value
+        (NonRec, (PVar "x"),
+         (BinOp (Sub, (BinOp (Add, (Const (CInt 10)), (Const (CInt 5)))),
+            (Const (CInt 6))))))
       ] |}]
 ;;
 
@@ -182,13 +183,14 @@ let%expect_test "two binding" =
 ;;
 
 let%expect_test "binding and expression" =
-  run_program_parser "let x = 10 in print_int (x * 2)";
+  run_program_parser "let () = let x = 10 in print_int (x * 2)";
   [%expect
     {|
-  [(Expr
-      (Let (NonRec, (PVar "x"), (Const (CInt 10)),
-         (App ((Var "print_int"), (BinOp (Mul, (Var "x"), (Const (CInt 2))))))
-         )))
+  [(Value
+      (NonRec, PUnit,
+       (Let (NonRec, (PVar "x"), (Const (CInt 10)),
+          (App ((Var "print_int"), (BinOp (Mul, (Var "x"), (Const (CInt 2))))))
+          ))))
     ] |}]
 ;;
 
@@ -207,14 +209,17 @@ let%expect_test "multiple structure items" =
 ;;
 
 let%expect_test "lambda binding" =
-  run_program_parser "let add = fun x y -> x + y ;; add 3 4";
+  run_program_parser "let add = fun x y -> x + y ;; let x = add 3 4";
   [%expect
     {|
     [(Value
         (NonRec, (PVar "add"),
          (FunExpr ([(PVar "x"); (PVar "y")], (BinOp (Add, (Var "x"), (Var "y")))
             ))));
-      (Expr (App ((App ((Var "add"), (Const (CInt 3)))), (Const (CInt 4)))))] |}]
+      (Value
+         (NonRec, (PVar "x"),
+          (App ((App ((Var "add"), (Const (CInt 3)))), (Const (CInt 4))))))
+      ] |}]
 ;;
 
 let%expect_test "unit function test" =

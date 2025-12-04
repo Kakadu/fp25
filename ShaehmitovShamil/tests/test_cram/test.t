@@ -12,3 +12,11 @@
 
   $ main test_data/test5.txt
   Error: Division by zero
+
+  $ main test_data/test6.txt
+  Parse Error: : end_of_input
+
+  $ main test
+  File error: test: No such file or directory
+  [1]
+

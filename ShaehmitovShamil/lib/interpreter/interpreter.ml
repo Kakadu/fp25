@@ -63,7 +63,13 @@ module Interpreter : Eval = struct
           | Add -> return (VInt (i1 + i2))
           | Sub -> return (VInt (i1 - i2))
           | Mul -> return (VInt (i1 * i2))
-          | Div -> if i2 = 0 then Error DivisionByZero else return (VInt (i1 / i2)))
+          | Div -> if i2 = 0 then Error DivisionByZero else return (VInt (i1 / i2))
+          | Eq -> return (VInt (if i1 = i2 then 1 else 0))
+          | Neq -> return (VInt (if i1 <> i2 then 1 else 0))
+          | Lt -> return (VInt (if i1 < i2 then 1 else 0))
+          | Le -> return (VInt (if i1 <= i2 then 1 else 0))
+          | Gt -> return (VInt (if i1 > i2 then 1 else 0))
+          | Ge -> return (VInt (if i1 >= i2 then 1 else 0)))
        | _ -> Error (TypeError "Cannot apply binary operator to non-integers"))
     | If (cond, t, f) ->
       let* v = eval_expr env cond in
@@ -137,9 +143,6 @@ module Interpreter : Eval = struct
     : (env * value option) eval_result
     =
     match item with
-    | Expr e ->
-      let* v = eval_expr env e in
-      return (env, Some v)
     | Value (NonRec, p, expr) ->
       let* v = eval_expr env expr in
       (match p with

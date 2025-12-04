@@ -7,6 +7,12 @@ type binop =
   | Sub (** - *)
   | Mul (** * *)
   | Div (** / *)
+  | Eq (** = *)
+  | Neq (** <> *)
+  | Lt (** < *)
+  | Le (** <= *)
+  | Gt (** > *)
+  | Ge (** >= *)
 [@@deriving show { with_path = false }]
 
 type constant =
@@ -41,12 +47,7 @@ type expr =
 [@@deriving show { with_path = false }]
 
 type binding = rec_flag * pattern * expr [@@deriving show { with_path = false }]
-
-type structure_item =
-  | Value of binding
-  | Expr of expr
-[@@deriving show { with_path = false }]
-
+type structure_item = Value of binding [@@deriving show { with_path = false }]
 type program = structure_item list [@@deriving show { with_path = false }]
 
 let pretty_print_pattern = function
@@ -72,6 +73,12 @@ let rec pretty_print_expr = function
       | Sub -> " - "
       | Mul -> " * "
       | Div -> " / "
+      | Eq -> " = "
+      | Neq -> " <> "
+      | Lt -> " < "
+      | Le -> " <= "
+      | Gt -> " > "
+      | Ge -> " >= "
     in
     "(" ^ pretty_print_expr e1 ^ op_str ^ pretty_print_expr e2 ^ ")"
   | If (cond, t, f) ->
@@ -110,7 +117,6 @@ let rec pretty_print_expr = function
 let pretty_print_program_item = function
   | Value (NonRec, p, e) -> "let " ^ pretty_print_pattern p ^ " = " ^ pretty_print_expr e
   | Value (Rec, p, e) -> "let rec " ^ pretty_print_pattern p ^ " = " ^ pretty_print_expr e
-  | Expr e -> pretty_print_expr e
 ;;
 
 let pretty_print_program p =
