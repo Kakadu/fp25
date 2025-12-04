@@ -1,6 +1,7 @@
 (executable
  (name main)
  (public_name main)
+ (modules main)
  (libraries base parser interpreter)
  (instrumentation
   (backend bisect_ppx)))

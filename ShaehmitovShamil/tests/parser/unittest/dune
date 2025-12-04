@@ -1,9 +1,10 @@
 (library
- (name parser_unittests)
+ (name parser_test)
  (package ShaehmitovShamil)
+ (modules parser_test)
  (libraries base parser ast)
- (inline_tests)
  (instrumentation
   (backend bisect_ppx))
  (preprocess
-  (pps ppx_expect ppx_inline_test)))
+  (pps ppx_expect ppx_inline_test))
+ (inline_tests))

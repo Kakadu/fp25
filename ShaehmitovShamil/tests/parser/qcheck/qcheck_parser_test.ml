@@ -70,7 +70,6 @@ let rec gen_expr size =
       ])
 ;;
 
-
 let rec shrink_expr = function
   | Const _ | Var _ -> Iter.empty
   | UnOp (_, e) ->

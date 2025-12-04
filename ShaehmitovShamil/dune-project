@@ -16,9 +16,9 @@
 
 (package
  (name ShaehmitovShamil) ; FIXME and regenerate .opam file using 'dune build @install'
- (synopsis "FIXME An interpreter for language")
+ (synopsis "Shaehmitov MiniML")
  (description
-  "FIXME. A longer description, for example, which are the most interesing features being supported, etc.")
+  "An interpreter for a small functional programming language similar to OCaml.")
  (documentation "https://kakadu.github.io/fp25/docs/Lambda")
  (version 0.1)
  (depends
@@ -31,6 +31,7 @@
   ppx_expect
   ppx_deriving
   bisect_ppx
+  ppx_deriving_qcheck
   qcheck
   (odoc :with-doc)
   (ocamlformat

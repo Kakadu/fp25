@@ -131,7 +131,7 @@ module Interpreter : Eval = struct
                    | VUnit -> return closure_env
                    | _ -> Error (TypeError "Expected unit value for unit pattern"))
               in
-              if List.length rest = 0
+              if List.is_empty rest
               then eval_expr new_env body steps
               else return (VClosure (false, name, new_env, rest, body), steps))
          | VClosure (true, name, closure_env, params, body) ->
@@ -148,7 +148,7 @@ module Interpreter : Eval = struct
                    | VUnit -> return recursive_env
                    | _ -> Error (TypeError "Expected unit value for unit pattern"))
               in
-              if List.length rest = 0
+              if List.is_empty rest
               then eval_expr new_env body steps
               else return (VClosure (false, name, new_env, rest, body), steps))
          | VBuiltin builtin_fn ->
