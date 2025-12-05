@@ -9,6 +9,8 @@
 open Angstrom
 open Ast
 
+type error = [ `parse_error of string ]
+
 (** Function to check for whitespace characters *)
 let is_space = function
   | ' ' | '\t' | '\n' | '\r' -> true
@@ -26,38 +28,39 @@ let braces p = char '{' *> spaces *> p <* spaces <* char '}'
 
 (** This is a reserved word *)
 let is_keyword = function
-  | "let" | "in" | "fun" | "true" | "false" | "rec" | "else" | "if" | "then" | "_" -> true
+  | "let" | "in" | "fun" | "true" | "false" | "rec" | "else" | "if" | "then" | "_" | "fix"
+    -> true
   | _ -> false
 ;;
 
 let integer =
   spaces
-  *> take_while1 (function
-    | '1' .. '9' -> true
-    | _ -> false)
-  >>= fun s -> return (Int (int_of_string s))
+  *> (char '-'
+      *> take_while1 (function
+        | '0' .. '9' -> true
+        | _ -> false)
+      >>= fun s -> return (Int (-int_of_string s)))
+  <|> (take_while1 (function
+         | '0' .. '9' -> true
+         | _ -> false)
+       >>= fun s -> return (Int (int_of_string s)))
 ;;
 
 let identifier =
+  (* let is_first = function
+     | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
+     | _ -> false
+     in
+     let is_other = function
+     | 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' -> true
+     | _ -> false
+     in *)
   spaces
   *> take_while1 (function
     | 'a' .. 'z' -> true
     | _ -> false)
   >>= fun s -> if is_keyword s then fail "is keyword" else return (Var s)
 ;;
-
-(* let keyword_parsers () =
-   let kw s = spaces *> string s <* spaces in
-   let let_ = kw "let"
-   and in_ = kw "in"
-   and fun_ = kw "fun"
-   and if_ = kw "if"
-   and then_ = kw "then"
-   and else_ = kw "else"
-   and rec_ = kw "rec"
-   and fix_ = kw "fix" in
-   let_, in_, fun_, if_, then_, else_, rec_, fix_
-   ;; *)
 
 let kw s = spaces *> string s <* spaces
 let kw_let = kw "let"
@@ -84,17 +87,6 @@ let op =
        ]
 ;;
 
-(* *_* *)
-let atom expr = choice [ integer; identifier; parens expr ]
-
-(* sugar: f x y *)
-let application expr =
-  atom expr
-  >>= fun f ->
-  many1 (atom expr)
-  >>= fun args -> return (List.fold_left (fun acc a -> App (acc, a)) f args) <|> atom expr
-;;
-
 (* fun *)
 let fun_expr expr =
   kw_fun *> many1 identifier
@@ -112,6 +104,17 @@ let fun_expr expr =
        , budy ))
 ;;
 
+(* *_* *)
+let atom expr = choice [ integer; identifier; fun_expr expr; parens expr ]
+
+(* sugar: f x y *)
+let application expr =
+  atom expr
+  >>= fun f ->
+  many (atom expr)
+  >>= fun args -> return (List.fold_left (fun acc a -> App (acc, a)) f args)
+;;
+
 (* if *)
 let if_expr expr =
   kw_if *> expr
@@ -121,4 +124,100 @@ let if_expr expr =
   kw_else *> expr
   >>= (fun e -> return (If (cond, t, Some e)))
   <|> return (If (cond, t, None))
+;;
+
+(* let Надо подумать, возможно косяк*)
+let let_expr expr =
+  let without_in =
+    spaces *> kw_let *> (spaces *> kw_rec *> return Rec <|> return NonRec)
+    >>= fun rec_flag ->
+    spaces *> identifier
+    >>= fun name ->
+    char '=' *> spaces *> expr
+    >>= fun bound_expr ->
+    match name with
+    | Var name_str -> return (Let (rec_flag, name_str, bound_expr, None))
+    | _ -> fail "Expected variable name"
+  in
+  let with_in =
+    spaces *> kw_let *> (spaces *> kw_rec *> return Rec <|> return NonRec)
+    >>= fun rec_flag ->
+    spaces *> identifier
+    >>= fun name ->
+    char '=' *> spaces *> expr
+    >>= fun bound_expr ->
+    kw_in *> expr
+    >>= fun body ->
+    match name with
+    | Var name_str -> return (Let (rec_flag, name_str, bound_expr, Some body))
+    | _ -> fail "Expected variable name"
+  in
+  choice [ with_in; without_in ]
+;;
+
+(* op - подумать *)
+let bin_ops expr =
+  let make_chain next ops =
+    next
+    >>= fun first ->
+    many (ops >>= fun op -> next >>= fun second -> return (op, second))
+    >>= fun rest ->
+    return (List.fold_left (fun acc (o, e) -> BinOp (o, acc, e)) first rest)
+  in
+  let app = application expr in
+  (* rec? *)
+  let mult_div =
+    make_chain
+      app
+      (choice [ spaces *> string "*" *> return Mult; spaces *> string "/" *> return Div ])
+  in
+  let add_sub =
+    make_chain
+      mult_div
+      (choice
+         [ spaces *> string "+" *> return Plus; spaces *> string "-" *> return Minus ])
+  in
+  let compare =
+    make_chain
+      add_sub
+      (choice
+         [ string ">=" *> return EMore
+         ; string "<=" *> return ELess
+         ; string "=" *> return Equal
+         ; string ">" *> return More
+         ; string "<" *> return Less
+         ])
+  in
+  compare
+;;
+
+(* seq *)
+let seq_expr expr =
+  sep_by1 (char ';' *> spaces) (bin_ops expr)
+  >>= function
+  | [ e ] -> return e
+  | lst -> return (Seq lst)
+;;
+
+let fix_expr expr = kw_fix *> expr >>= fun e -> return (Fix e)
+
+let expr =
+  (* Возможно нужно сделать rec *)
+  fix (fun expr ->
+    choice
+      [ let_expr expr
+      ; if_expr expr
+      ; fun_expr expr
+      ; fix_expr expr
+      ; seq_expr expr
+      ; bin_ops expr
+      ])
+;;
+
+let top = spaces *> expr <* spaces <* end_of_input (*костыль*)
+
+let parser str =
+  match Angstrom.parse_string ~consume:Angstrom.Consume.All top str with
+  | Result.Ok x -> Result.Ok x
+  | Error err -> Result.Error (`parse_error err)
 ;;
