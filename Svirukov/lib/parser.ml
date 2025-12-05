@@ -1,0 +1,170 @@
+(** Copyright 2021-2025, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+open Angstrom
+open Ast
+
+let is_keyword = function
+  | "let" | "in" | "fun" | "true" | "false" | "rec" | "else" | "if" | "then" | "_" -> true
+  | _ -> false
+;;
+
+let is_space = function
+  | ' ' | '\t' | '\n' | '\r' -> true
+  | _ -> false
+;;
+
+let skip_while1 p = satisfy p >>= fun c -> skip_while p >>| fun () -> c
+let skip_spaces = skip_while is_space
+let split_args = skip_while1 is_space
+
+let varname = function
+  | 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' -> true
+  | _ -> false
+;;
+
+let conde = function
+  | [] -> fail "empty conde"
+  | h :: tl -> List.fold_left ( <|> ) h tl
+;;
+
+type error = [ `Parsing_error of string ]
+
+let token p = skip_spaces *> p
+
+let is_digit = function
+  | '0' .. '9' -> true
+  | _ -> false
+;;
+
+let variable_name =
+  token (take_while1 varname)
+  >>= fun s ->
+  match s with
+  | _ when is_keyword s -> fail "cannot use keyword for varname"
+  | _ when String.for_all is_digit s -> fail "cannot use number as varname"
+  | _ -> return s
+;;
+
+let var = variable_name >>| fun s -> PVar s
+let var_expr = var >>| fun p -> Var p
+let skip_parens p = token (char '(') *> p <* token (char ')')
+
+let cmp =
+  choice
+    [ token (string ">=")
+    ; token (string "<=")
+    ; token (string "=")
+    ; token (string "<")
+    ; token (string ">")
+    ]
+;;
+
+let number =
+  let integer = take_while1 is_digit >>| int_of_string in
+  token
+    (option '+' (char '-')
+     >>= fun sign ->
+     integer
+     >>| fun num ->
+     match sign with
+     | '+' -> num
+     | '-' -> -num
+     | _ -> num)
+;;
+
+let plus_op = token (char '+') *> return Plus
+let minus_op = token (char '-') *> return Minus
+let asterisk_op = token (char '*') *> return Asteriks
+let slash_op = token (char '/') *> return Dash
+
+let cmp_op =
+  cmp
+  >>= function
+  | ">=" -> return EqMore
+  | "<=" -> return EqLess
+  | "=" -> return Equals
+  | ">" -> return MoreThan
+  | "<" -> return LessThan
+  | _ -> fail "invalid comparison operator"
+;;
+
+let rec build_curried_function args body =
+  match args with
+  | [] -> body
+  | arg :: rest_args -> Func (arg, build_curried_function rest_args body)
+;;
+
+let expr =
+  fix (fun expr ->
+    let atom =
+      let anonymous_fun =
+        token (string "fun") *> many1 (token var)
+        <* token (string "->")
+        >>= fun args -> expr >>= fun body -> return (build_curried_function args body)
+      in
+      let app =
+        choice [ skip_parens anonymous_fun; var_expr ]
+        >>= fun func ->
+        many1
+          (split_args
+           *> choice
+                [ (number >>| fun n -> Constant (CInt n)); skip_parens expr; var_expr ])
+        >>| fun args -> List.fold_left (fun func arg -> App (func, arg)) func args
+      in
+      choice
+        [ (number >>| fun n -> Constant (CInt n))
+        ; app
+        ; var_expr
+        ; skip_parens expr
+        ; anonymous_fun
+        ]
+    in
+    let binopr =
+      let mul_div =
+        atom
+        >>= fun first ->
+        many
+          (conde [ asterisk_op; slash_op ] >>= fun op -> atom >>| fun right -> op, right)
+        >>| List.fold_left (fun left (op, right) -> Binop (op, left, right)) first
+      in
+      let add_sub =
+        mul_div
+        >>= fun first ->
+        many (conde [ plus_op; minus_op ] >>= fun op -> mul_div >>| fun right -> op, right)
+        >>| List.fold_left (fun left (op, right) -> Binop (op, left, right)) first
+      in
+      add_sub
+      >>= fun left ->
+      option left (cmp_op >>= fun op -> add_sub >>| fun right -> Binop (op, left, right))
+    in
+    let conditional =
+      token (string "if") *> binopr
+      >>= fun cond ->
+      token (string "then") *> expr
+      >>= fun main ->
+      option None (token (string "else") *> expr >>| fun alt -> Some alt)
+      >>| fun alt -> Conditional (cond, main, alt)
+    in
+    let let_binding =
+      token (string "let") *> option NonRec (token (string "rec") >>| fun _ -> Rec)
+      >>= fun recurs ->
+      var
+      >>= fun name ->
+      many var
+      >>= fun args ->
+      token (char '=') *> expr
+      >>= fun ex ->
+      let body = build_curried_function args ex in
+      option None (token (string "in") *> expr >>| fun cont -> Some cont)
+      >>= fun skope -> return (Let (recurs, name, body, skope))
+    in
+    choice [ let_binding; conditional; binopr ])
+;;
+
+let parse str =
+  match Angstrom.parse_string expr ~consume:Angstrom.Consume.All str with
+  | Result.Ok x -> Result.Ok x
+  | Error er -> Result.Error (`Parsing_error er)
+;;
