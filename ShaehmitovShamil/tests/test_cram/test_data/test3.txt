@@ -1,0 +1,2 @@
+let fact = fix (fun slf n -> if n then n * slf (n - 1) else 1) ;;
+let () = print_int (fact 10)
