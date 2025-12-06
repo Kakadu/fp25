@@ -4,20 +4,6 @@ type error =
   | TypeError
   | DivisionByZero
   | NoVariable of identificator
-  | One
-  | Two
-  | Tree
-  | Four
-  | Five
-  | Six
-
-type value =
-  | ValInt of int
-  | ValUnit
-  | ValFun of identificator * expression * env
-  | RecClosure of identificator * identificator * expression * env
-
-and env = (identificator, value, Base.String.comparator_witness) Base.Map.t
 
 module Res = struct
   open Base
@@ -36,6 +22,15 @@ module Res = struct
   let ( let* ) = ( >>= )
 end
 
+type value =
+  | ValInt of int
+  | ValUnit
+  | ValFun of identificator * expression * env
+  | RecClosure of identificator * identificator * expression * env
+  | Builtin of (value -> value Res.t)
+
+and env = (identificator, value, Base.String.comparator_witness) Base.Map.t
+
 module EvalEnv = struct
   open Base
 
@@ -53,6 +48,19 @@ module EvalEnv = struct
   ;;
 end
 
+let empty_with_builtins =
+  EvalEnv.extend
+    EvalEnv.empty
+    "print_int"
+    (Builtin
+       (function
+         | ValInt n ->
+           print_int n;
+           print_newline ();
+           Res.return ValUnit
+         | _ -> Res.fail TypeError))
+;;
+
 module Inter = struct
   open Res
   open EvalEnv
@@ -65,7 +73,7 @@ module Inter = struct
     | Div, _, ValInt 0 -> fail DivisionByZero
     | Plus, ValInt val1, ValInt val2 -> eval_arith ( + ) val1 val2
     | Sub, ValInt val1, ValInt val2 -> eval_arith ( - ) val1 val2
-    | _ -> fail One
+    | _ -> fail TypeError
   ;;
 
   let rec eval_expression env = function
@@ -82,14 +90,18 @@ module Inter = struct
             | ValFun _ -> return f_val
             | RecClosure (id, param, body, closure_env) ->
               return (ValFun (param, body, EvalEnv.extend closure_env id f_val))
-            | _ -> fail Two
+            | Builtin f ->
+              let* _ = f arg_val in
+              return f_val
+            | _ -> fail TypeError
           in
           (match f_val with
            | ValFun (param, body, closure_env) ->
              let call_env = EvalEnv.extend closure_env param arg_val in
              let* res = eval_expression call_env body in
              apply res rest
-           | _ -> fail Tree)
+           | Builtin _ -> apply f_val rest
+           | _ -> fail TypeError)
       in
       apply f_val args
     | Expr_let_rec_in (id, Expr_fun (param, body), expr2) ->
@@ -126,8 +138,8 @@ module Inter = struct
       (match value1 with
        | ValInt n ->
          if n <> 0 then eval_expression env expr2 else eval_expression env expr3
-       | _ -> fail Four)
-    | _ -> fail Five
+       | _ -> fail TypeError)
+    | _ -> fail TypeError
   ;;
 
   let eval_top_let env = function
@@ -139,7 +151,7 @@ module Inter = struct
       let closure_value = RecClosure (id, param, body, env) in
       let env' = EvalEnv.extend env id closure_value in
       return env'
-    | _ -> fail Six
+    | _ -> fail TypeError
   ;;
 
   let rec eval_program env = function
@@ -150,4 +162,4 @@ module Inter = struct
   ;;
 end
 
-let run_interpreter program = Inter.eval_program EvalEnv.empty program
+let run_interpreter program = Inter.eval_program empty_with_builtins program
