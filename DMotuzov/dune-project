@@ -6,19 +6,19 @@
 
 (license "LGPL-3.0-or-later WITH OCaml-LGPL-linking-exception")
 
-(authors "Dmitrii Motuzov <dimamotuzov@gmail.com>")
+(authors "Dmitrii Motuzov dimamotuzov07@gmail.com")
 
-(maintainers "Dmitrii Motuzov <dimamotuzov@gmail.com>")
+(maintainers "Dmitrii Motuzov dimamotuzov07@gmail.com")
 
-(bug_reports "Dmitrii Motuzov <dimamotuzov@gmail.com>")
+(bug_reports "https://github.com/Kakadu/fp25")
 
 (homepage "https://github.com/Kakadu/fp25")
 
 (package
  (name DMotuzov) ; FIXME and regenerate .opam file using 'dune build @install'
- (synopsis "FIXME An interpreter for language")
+ (synopsis "DMotuzov MiniML")
  (description
-  "FIXME. A longer description, for example, which are the most interesing features being supported, etc.")
+  "An interpreter for a small functional programming language similar to OCaml.")
  (documentation "https://kakadu.github.io/fp25/docs/Lambda")
  (version 0.1)
  (depends
