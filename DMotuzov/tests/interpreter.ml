@@ -161,3 +161,10 @@ let%expect_test "print_int" =
     val x = <builtin_fun>
     val y = 40 |}]
 ;;
+
+let%expect_test "incorrect_print_int" =
+  run "let x = print_int (fun x -> x );;";
+  [%expect
+    {|
+    Interpreter error: Type error |}]
+;;

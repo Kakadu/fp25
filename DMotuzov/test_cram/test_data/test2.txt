@@ -1,0 +1,2 @@
+let rec fac = fun n -> if n then n * fac (n - 1) else 1 ;;
+let result = print_int (fac 10);;

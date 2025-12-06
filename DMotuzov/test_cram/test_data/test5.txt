@@ -1,0 +1,2 @@
+let div = fun x y -> x / y ;;
+let result = print_int (div 20 0);;
