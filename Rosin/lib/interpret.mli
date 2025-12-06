@@ -28,4 +28,4 @@ type error =
   | LetWithoutBody
   | LetrecWithoutBody
 
-val run_interpret : expr -> int -> (value, error) result
+val run_interpret : expr -> int -> (value, error) Result.t

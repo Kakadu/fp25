@@ -7,7 +7,6 @@
 [@@@ocaml.text "/*"]
 
 open Ast
-open Base
 
 type value =
   | VUnit
@@ -30,7 +29,7 @@ type error =
   | LetrecWithoutBody
 
 module ResultM = struct
-  type 'a t = ('a, error) result
+  type 'a t = ('a, error) Result.t
 
   let return x = Ok x
   let fail e = Error e
@@ -43,8 +42,6 @@ module ResultM = struct
 
   let ( let* ) = ( >>= )
 end
-
-let ( let* ) = ResultM.( >>= )
 
 open ResultM
 
@@ -136,8 +133,8 @@ let rec eval env steps e =
       let* v, st = eval env (steps - 1) e in
       (match v with
        | VNum n ->
-         print_int n;
-         print_newline ();
+         Base.print_int n;
+         Base.print_newline ();
          return (v, st)
        | _ -> return (v, st)))
 ;;
