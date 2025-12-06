@@ -8,4 +8,4 @@
 
 type error = [ `Parsing_error of string ]
 
-val parse : string -> (Ast.expr, [> error ]) result
+val parse : string -> (Ast.expr, error) result

@@ -80,14 +80,14 @@ let rec eval env steps e =
        | _ -> fail (InvalidUnop (op, v)))
     | Binop (op, e1, e2) ->
       let* v1, st1 = eval env (steps - 1) e1 in
-      let* v2, st2 = eval env st1 e2 in
+      let* v2, st2 = eval env (st1 - 1) e2 in
       (match v1, v2 with
        | VNum n1, VNum n2 ->
          (match op with
-          | Plus -> return (VNum (n1 + n2), st2)
-          | Minus -> return (VNum (n1 - n2), st2)
-          | Mult -> return (VNum (n1 * n2), st2)
-          | Div -> if n2 = 0 then fail DivisionByZero else return (VNum (n1 / n2), st2))
+          | Plus -> return (VNum (n1 + n2), st2 - 1)
+          | Minus -> return (VNum (n1 - n2), st2 - 1)
+          | Mult -> return (VNum (n1 * n2), st2 - 1)
+          | Div -> if n2 = 0 then fail DivisionByZero else return (VNum (n1 / n2), st2 - 1))
        | _ -> fail (InvalidBinop (op, v1, v2)))
     | If (e1, e2, e3_opt) ->
       let* cond, st1 = eval env (steps - 1) e1 in
@@ -117,12 +117,12 @@ let rec eval env steps e =
          (match body with
           | Fun (n_param, inner_body) ->
             let rec_closure = VRecClosure (f_param, n_param, inner_body, closure_env) in
-            return (rec_closure, st)
+            return (rec_closure, st - 1)
           | _ ->
             let rec_closure = VRecClosure (f_param, f_param, body, closure_env) in
-            return (rec_closure, st))
+            return (rec_closure, st - 1))
        | VRecClosure (f_name, param, body, closure_env) ->
-         return (VRecClosure (f_name, param, body, closure_env), st)
+         return (VRecClosure (f_name, param, body, closure_env), st - 1)
        | _ -> fail (NonFunctionApplication f))
     | App (e1, e2) ->
       let* f, st1 = eval env (steps - 1) e1 in
@@ -130,9 +130,7 @@ let rec eval env steps e =
       (match f with
        | VClosure (x, body, env') -> eval ((x, arg) :: env') (st2 - 1) body
        | VRecClosure (f_name, x, body, env') ->
-         let new_env =
-           (x, arg) :: (f_name, VRecClosure (f_name, x, body, env')) :: env'
-         in
+         let new_env = (x, arg) :: (f_name, f) :: env' in
          eval new_env (st2 - 1) body
        | _ -> fail (NonFunctionApplication f))
     | Print e ->

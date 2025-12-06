@@ -8,15 +8,17 @@
 
 type varname = string
 
+(** integer binary operations *)
 type unop =
-  | Inc (** incrementing value [++x]*)
+  | Inc (** incrementing value [++x] *)
   | Dec (** decrementing value [--x]*)
 
+(** integer binary operations *)
 type binop =
-  | Plus (** addition of two argumanets [x + y]*)
-  | Minus (** subtraction of two argumanets [x - y]*)
-  | Mult (** mulitplication of two argumanets [x * y]*)
-  | Div (** division of two argumanets [x / y]*)
+  | Plus (** addition of two arguments [x + y] *)
+  | Minus (** subtraction of two arguments [x - y] *)
+  | Mult (** mulitplication of two arguments [x * y] *)
+  | Div (** division of two arguments [x / y] *)
 
 (** The main type for AST *)
 type expr =
@@ -24,11 +26,11 @@ type expr =
   | Var of varname (** variable *)
   | Unop of unop * expr (** unary operation *)
   | Binop of binop * expr * expr (** binary operation *)
-  | If of expr * expr * expr option (** if-then-else *)
+  | If of expr * expr * expr option (** if-then-(else) *)
   | Fun of varname * expr (** function definitions *)
   | Let of varname * expr * expr (** local naming [let varname = expr in expr] *)
   | Letrec of varname * expr * expr
   (** recursive local naming [letrec varname = expr in expr] *)
-  | Fix of expr (** fix point *)
+  | Fix of expr (** fix point of function *)
   | App of expr * expr (** function applications *)
   | Print of expr (** integer printer *)

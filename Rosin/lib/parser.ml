@@ -60,19 +60,16 @@ let expr =
     let fun_expr =
       token (string "fun") *> many1 varname
       >>= fun args ->
-      token (string "->") *> expr
-      >>= fun body ->
-      (* Десугаризация: fun x y -> e => fun x -> fun y -> e *)
-      return @@ multi_fun args body
+      token (string "->") *> expr >>= fun body -> return @@ multi_fun args body
     in
     let app_expr =
       choice [ fun_expr; varname_expr ]
       >>= fun name ->
-      many1 (choice [ number_expr; parens fun_expr; varname_expr; parens expr ])
+      many1 (choice [ number_expr; varname_expr; parens expr ])
       >>| fun args -> List.fold_left (fun f arg -> Ast.App (f, arg)) name args
     in
     let unary_expr =
-      choice [ number_expr; app_expr; varname_expr; unop_expr; parens expr; fun_expr ]
+      choice [ number_expr; app_expr; varname_expr; unop_expr; parens expr ]
     in
     let mult_expr =
       unary_expr
@@ -95,7 +92,7 @@ let expr =
       >>= fun else_branch -> return @@ Ast.If (cond, then_branch, else_branch)
     in
     let fix_expr =
-      token (string "fix") *> token (parens fun_expr) >>= fun fn -> return @@ Ast.Fix fn
+      token (string "fix") *> parens fun_expr >>= fun fn -> return @@ Ast.Fix fn
     in
     let let_expr =
       token (string "let") *> (token (string "rec") *> return true <|> return false)
@@ -112,7 +109,6 @@ let expr =
         | _ -> multi_fun args value
       in
       token (string "in") *> expr
-      >>| (fun cont -> cont)
       >>= fun res ->
       if is_rec
       then return @@ Ast.Letrec (name, body, res)
