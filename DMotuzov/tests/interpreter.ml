@@ -18,26 +18,27 @@ let print_env env =
 ;;
 
 (* Запуск интерпретатора на строке кода *)
-let run input =
+let run input maxsteps =
   match parse input with
   | Ok ast ->
-    (match Inter.eval_program empty_with_builtins ast with
+    (match run_interpreter ast maxsteps with
      | Ok env -> print_env env
      | Error e ->
        let err_str =
          match e with
-         | TypeError -> "Type error"
-         | DivisionByZero -> "Division by zero"
-         | NoVariable id -> "No such variable: " ^ id
+         | TypeError -> "Error: Type error"
+         | DivisionByZero -> "Error: Division by zero"
+         | NoVariable id -> "Error: Unknown variable: " ^ id
+         | OutOfMaxSteps -> "Error: Out of maximum allowed evaluation steps"
        in
-       Format.printf "Interpreter error: %s\n" err_str)
-  | Error err -> Format.printf "Parse error: %s\n" err
+       Format.printf "%s\n" err_str)
+  | Error err -> Format.printf "Parse Error: %s\n" err
 ;;
 
 (* ==================== тесты ==================== *)
 
 let%expect_test "simple let binding" =
-  run "let a = 4 + 4;;";
+  run "let a = 4 + 4;;" 1000;
   [%expect {|
   val a = 8
   val print_int = <builtin_fun>
@@ -45,7 +46,7 @@ let%expect_test "simple let binding" =
 ;;
 
 let%expect_test "let in expression" =
-  run "let f = let x = 3 in x + 2;;";
+  run "let f = let x = 3 in x + 2;;" 1000;
   [%expect {|
   val f = 5
   val print_int = <builtin_fun>
@@ -53,7 +54,7 @@ let%expect_test "let in expression" =
 ;;
 
 let%expect_test "conditional expression" =
-  run "let a = if 1 then 10 else 20;;";
+  run "let a = if 1 then 10 else 20;;" 1000;
   [%expect {|
   val a = 10
   val print_int = <builtin_fun>
@@ -61,7 +62,7 @@ let%expect_test "conditional expression" =
 ;;
 
 let%expect_test "conditional expression with bin op" =
-  run "let a =20 + if 1 then 10 else 20;;";
+  run "let a =20 + if 1 then 10 else 20;;" 1000;
   [%expect {|
   val a = 30
   val print_int = <builtin_fun>
@@ -69,7 +70,7 @@ let%expect_test "conditional expression with bin op" =
 ;;
 
 let%expect_test "nested if" =
-  run "let x = if 1 then if 0 then 2 else 3 else 4 ;;";
+  run "let x = if 1 then if 0 then 2 else 3 else 4 ;;" 1000;
   [%expect {|
   val print_int = <builtin_fun>
   val x = 3
@@ -77,7 +78,7 @@ let%expect_test "nested if" =
 ;;
 
 let%expect_test "nested if" =
-  run "let x = if 1 then if 0 then 2 else 3 else 4 ;;let y = 2 + x;;";
+  run "let x = if 1 then if 0 then 2 else 3 else 4 ;;let y = 2 + x;;" 1000;
   [%expect {|
     val print_int = <builtin_fun>
     val x = 3
@@ -87,7 +88,7 @@ let%expect_test "nested if" =
 "let x = (fun x y -> x + y) 3 4 ;;"
 
 let%expect_test "application" =
-  run "let x = (fun x y -> x + y) 3 4 ;;";
+  run "let x = (fun x y -> x + y) 3 4 ;;" 1000;
   [%expect {|
     val print_int = <builtin_fun>
     val x = 7 |}]
@@ -96,7 +97,8 @@ let%expect_test "application" =
 let%expect_test "fact" =
   run
     "let f = let rec fact = fun n -> if n then n * fact (n - 1) else 1 in fact ;; let y \
-     = f 10;;";
+     = f 10;;"
+    1000;
   [%expect
     {|
     val f = <rec-fun>
@@ -110,7 +112,8 @@ let%expect_test "fact" =
 let%expect_test "fib" =
   run
     "let rec fib = fun n -> if n then if n - 1 then fib (n - 1) + fib (n - 2) else 1 \
-     else 0 ;; let y = fib 10;;";
+     else 0 ;; let y = fib 10;;"
+    10000;
   [%expect {|
     val fib = <rec-fun>
     val print_int = <builtin_fun>
@@ -123,7 +126,8 @@ let%expect_test "local let rec fact" =
     \       let rec fact = fun n ->\n\
     \         if n then n * fact (n - 1) else 1\n\
     \       in fact\n\
-    \     ;; let y = f 5 ;;";
+    \     ;; let y = f 5 ;;"
+    1000;
   [%expect {|
     val f = <rec-fun>
     val print_int = <builtin_fun>
@@ -131,7 +135,7 @@ let%expect_test "local let rec fact" =
 ;;
 
 let%expect_test "fix" =
-  run "let id = fix (fun f -> fun x -> x) ;;let y = id 10;;";
+  run "let id = fix (fun f -> fun x -> x) ;;let y = id 10;;" 1000;
   [%expect {|
     val id = <rec-fun>
     val print_int = <builtin_fun>
@@ -141,7 +145,8 @@ let%expect_test "fix" =
 let%expect_test "fix factorial" =
   run
     "let fact = fix (fun f n -> if n then n * (f (n - 1)) else 1) ;;\n\
-    \       let y = fact 6 ;;";
+    \       let y = fact 6 ;;"
+    1000;
   [%expect
     {|
     val fact = <rec-fun>
@@ -150,7 +155,7 @@ let%expect_test "fix factorial" =
 ;;
 
 let%expect_test "print_int" =
-  run "let y = 40;;let x = print_int 1 y ((fun x -> x ) 5) (if 1 then 10 else 20);;";
+  run "let y = 40;;let x = print_int 1 y ((fun x -> x ) 5) (if 1 then 10 else 20);;" 1000;
   [%expect
     {|
     1
@@ -163,8 +168,13 @@ let%expect_test "print_int" =
 ;;
 
 let%expect_test "incorrect_print_int" =
-  run "let x = print_int (fun x -> x );;";
-  [%expect
-    {|
-    Interpreter error: Type error |}]
+  run "let x = print_int (fun x -> x );;" 1000;
+  [%expect {|
+    Error: Type error |}]
+;;
+
+let%expect_test "infinity_steps" =
+  run "let rec x = fun n -> x n;; let y = x 5;;" 1000;
+  [%expect {|
+    Error: Out of maximum allowed evaluation steps |}]
 ;;

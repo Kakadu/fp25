@@ -4,6 +4,7 @@ type error =
   | TypeError
   | DivisionByZero
   | NoVariable of identificator
+  | OutOfMaxSteps
 
 module Res = struct
   open Base
@@ -37,7 +38,7 @@ module EvalEnv = struct
   let empty = Map.empty (module String)
   let extend env key value = Map.update env key ~f:(fun _ -> value)
 
-  let find_exn env key =
+  let find_expr env key =
     match Map.find env key with
     | Some value -> Res.return value
     | None -> Res.fail (NoVariable key)
@@ -72,90 +73,107 @@ module Inter = struct
     | _ -> fail TypeError
   ;;
 
-  let rec eval_expression env = function
-    | Expr_fun (param, body) -> return (ValFun (param, body, env))
-    | Expr_ap (fun_expr, args) ->
-      let* f_val = eval_expression env fun_expr in
-      let rec apply f_val args =
-        match args with
-        | [] -> return f_val
-        | arg :: rest ->
-          let* arg_val = eval_expression env arg in
-          let* f_val =
-            match f_val with
-            | ValFun _ -> return f_val
-            | RecClosure (id, param, body, closure_env) ->
-              return (ValFun (param, body, EvalEnv.extend closure_env id f_val))
-            | Builtin f ->
-              let* _ = f arg_val in
-              return f_val
-            | _ -> fail TypeError
-          in
-          (match f_val with
-           | ValFun (param, body, closure_env) ->
-             let call_env = EvalEnv.extend closure_env param arg_val in
-             let* res = eval_expression call_env body in
-             apply res rest
-           | Builtin _ -> apply f_val rest
-           | _ -> fail TypeError)
-      in
-      apply f_val args
-    | Expr_let_rec_in (id, Expr_fun (param, body), expr2) ->
-      let closure_value = RecClosure (id, param, body, env) in
-      let env' = EvalEnv.extend env id closure_value in
-      eval_expression env' expr2
-    | Expr_fix expr ->
-      let* f_val = eval_expression env expr in
-      (match f_val with
-       | ValFun (f, f_body, f_env) ->
-         let* inner = eval_expression f_env f_body in
-         (match inner with
-          | ValFun (x, body, body_env) ->
-            let closure = RecClosure (f, x, body, body_env) in
-            let closure_env = EvalEnv.extend body_env f closure in
-            return (RecClosure (f, x, body, closure_env))
-          | _ -> fail TypeError)
-       | _ -> fail TypeError)
-    | Expr_var id -> find_exn env id
-    | Expr_const const ->
-      (match const with
-       | Const_int int -> return (ValInt int)
-       | Const_unit -> return ValUnit)
-    | Expr_let_in (id, expr1, expr2) ->
-      let* value = eval_expression env expr1 in
-      let env' = EvalEnv.extend env id value in
-      eval_expression env' expr2
-    | Expr_binary_op (bin_op, expr1, expr2) ->
-      let* value1 = eval_expression env expr1 in
-      let* value2 = eval_expression env expr2 in
-      eval_bin_op (bin_op, value1, value2)
-    | Expr_conditional (expr1, expr2, expr3) ->
-      let* value1 = eval_expression env expr1 in
-      (match value1 with
-       | ValInt n ->
-         if n <> 0 then eval_expression env expr2 else eval_expression env expr3
-       | _ -> fail TypeError)
-    | _ -> fail TypeError
+  let rec eval_expression env expr steps =
+    if steps <= 0
+    then Res.fail OutOfMaxSteps
+    else (
+      let steps = steps - 1 in
+      match expr with
+      | Expr_fun (param, body) -> return (ValFun (param, body, env), steps)
+      | Expr_ap (fun_expr, args) ->
+        let* f_val, steps = eval_expression env fun_expr steps in
+        let rec apply f_val args steps =
+          match args with
+          | [] -> return (f_val, steps)
+          | arg :: rest ->
+            let* arg_val, steps = eval_expression env arg steps in
+            let* f_val =
+              match f_val with
+              | ValFun _ -> return f_val
+              | RecClosure (id, param, body, closure_env) ->
+                return (ValFun (param, body, EvalEnv.extend closure_env id f_val))
+              | Builtin f ->
+                let* _ = f arg_val in
+                return f_val
+              | _ -> fail TypeError
+            in
+            (match f_val with
+             | ValFun (param, body, closure_env) ->
+               let call_env = EvalEnv.extend closure_env param arg_val in
+               let* res, steps = eval_expression call_env body steps in
+               apply res rest steps
+             | Builtin _ -> apply f_val rest steps
+             | _ -> fail TypeError)
+        in
+        apply f_val args steps
+      | Expr_let_rec_in (id, Expr_fun (param, body), expr2) ->
+        let closure_value = RecClosure (id, param, body, env) in
+        let env' = EvalEnv.extend env id closure_value in
+        eval_expression env' expr2 steps
+      | Expr_fix expr ->
+        let* f_val, steps = eval_expression env expr steps in
+        (match f_val with
+         | ValFun (f, f_body, f_env) ->
+           let* inner, steps = eval_expression f_env f_body steps in
+           (match inner with
+            | ValFun (x, body, body_env) ->
+              let closure = RecClosure (f, x, body, body_env) in
+              let closure_env = EvalEnv.extend body_env f closure in
+              return (RecClosure (f, x, body, closure_env), steps)
+            | _ -> fail TypeError)
+         | _ -> fail TypeError)
+      | Expr_var id ->
+        let* expr = find_expr env id in
+        return (expr, steps)
+      | Expr_const const ->
+        let const =
+          match const with
+          | Const_int int -> ValInt int
+          | Const_unit -> ValUnit
+        in
+        return (const, steps)
+      | Expr_let_in (id, expr1, expr2) ->
+        let* value, steps = eval_expression env expr1 steps in
+        let env' = EvalEnv.extend env id value in
+        eval_expression env' expr2 steps
+      | Expr_binary_op (bin_op, expr1, expr2) ->
+        let* value1, steps = eval_expression env expr1 steps in
+        let* value2, steps = eval_expression env expr2 steps in
+        let* result = eval_bin_op (bin_op, value1, value2) in
+        return (result, steps)
+      | Expr_conditional (expr1, expr2, expr3) ->
+        let* value1, steps = eval_expression env expr1 steps in
+        (match value1 with
+         | ValInt n ->
+           if n <> 0
+           then eval_expression env expr2 steps
+           else eval_expression env expr3 steps
+         | _ -> fail TypeError)
+      | _ -> fail TypeError)
   ;;
 
-  let eval_top_let env = function
+  let eval_top_let env steps = function
     | Top_let (id, expr) ->
-      let* value = eval_expression env expr in
+      let* value, steps = eval_expression env expr steps in
       let env' = EvalEnv.extend env id value in
-      return env'
+      return (env', steps)
     | Top_let_rec (id, Expr_fun (param, body)) ->
       let closure_value = RecClosure (id, param, body, env) in
       let env' = EvalEnv.extend env id closure_value in
-      return env'
+      return (env', steps)
     | _ -> fail TypeError
   ;;
 
-  let rec eval_program env = function
-    | [] -> Res.return env
+  let rec eval_program env steps = function
+    | [] -> Res.return (env, steps)
     | top :: rest ->
-      let* env' = eval_top_let env top in
-      eval_program env' rest
+      let* env', steps = eval_top_let env steps top in
+      eval_program env' steps rest
   ;;
 end
 
-let run_interpreter program = Inter.eval_program empty_with_builtins program
+let run_interpreter program maxsteps =
+  match Inter.eval_program empty_with_builtins maxsteps program with
+  | Ok (env, _) -> Res.return env
+  | Error e -> Error e
+;;

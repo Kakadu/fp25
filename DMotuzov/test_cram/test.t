@@ -19,3 +19,6 @@
   $ main test
   File error: test: No such file or directory
   [1]
+
+  $ main test_data/test2.txt --maxsteps=10
+  Error: Maximum evaluation steps exceeded
