@@ -10,7 +10,6 @@ let is_space = function
 ;;
 
 let spaces = skip_while is_space
-let split_arg = satisfy is_space >>= fun c -> spaces >>| fun () -> c
 let token p = p <* spaces
 let parens p = token (char '(') *> p <* token (char ')')
 

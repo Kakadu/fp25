@@ -9,16 +9,6 @@
 open Format
 open Ast
 
-let parens ppf f =
-  fprintf ppf "(";
-  f ppf ();
-  fprintf ppf ")"
-;;
-
-let pp_error fmt = function
-  | `Parsing_error msg -> fprintf fmt "Parsing error: %s" msg
-;;
-
 let rec pp fmt = function
   | Num n -> fprintf fmt "%d" n
   | Var v -> fprintf fmt "%s" v
