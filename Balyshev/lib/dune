@@ -1,0 +1,12 @@
+(library
+ (name MiniML)
+ (public_name Balyshev.MiniML)
+ (modules Parsetree Typedtree Monads Parser Interpreter Ident Inferencer)
+ (modes native byte)
+ (flags
+  (:standard -g))
+ (libraries base angstrom str)
+ (preprocess
+  (pps ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx)))
