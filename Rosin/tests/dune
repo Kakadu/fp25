@@ -1,0 +1,9 @@
+(test
+ (name parser_test)
+ (libraries miniml_lib qcheck)
+ (instrumentation
+  (backend bisect_ppx)))
+
+(cram
+ (applies_to interpret_test)
+ (deps ../bin/REPL.exe))
