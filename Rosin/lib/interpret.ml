@@ -28,19 +28,25 @@ type error =
   | LetWithoutBody
   | LetrecWithoutBody
 
-module ResultM = struct
+module type MONAD = sig
+  type 'a t
+
+  val return : 'a -> 'a t
+  val fail : error -> 'a t
+  val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
+end
+
+module ResultM : MONAD with type 'a t = ('a, error) Result.t = struct
   type 'a t = ('a, error) Result.t
 
   let return x = Ok x
-  let fail e = Error e
+  let fail msg = Error msg
 
-  let ( >>= ) res f =
-    match res with
+  let ( let* ) m f =
+    match m with
     | Ok x -> f x
     | Error e -> Error e
   ;;
-
-  let ( let* ) = ( >>= )
 end
 
 open ResultM
@@ -133,8 +139,7 @@ let rec eval env steps e =
       let* v, st = eval env (steps - 1) e in
       (match v with
        | VNum n ->
-         Base.print_int n;
-         Base.print_newline ();
+         Stdio.printf "%d\n" n;
          return (v, st)
        | _ -> return (v, st)))
 ;;
