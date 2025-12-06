@@ -10,8 +10,6 @@ let is_keyword = function
   | _ -> false
 ;;
 
-(* ================= вспомогательные парсеры ================= *)
-
 let parse_identifier =
   let* fst_char =
     satisfy (function
@@ -33,8 +31,6 @@ let parse_constant =
   take_while1 Char.is_digit >>| fun s -> Expr_const (Const_int (Int.of_string s))
 ;;
 
-(* ================= бинарные операции ================= *)
-
 let parse_additive_operator =
   skip_opt_spaces *> take 1
   >>= function
@@ -51,11 +47,8 @@ let parse_multiplicative_operator =
   | _ -> fail "not multiplicative operator"
 ;;
 
-(* ================= главный парсер через fix ================= *)
-
 let parse_expression =
   fix (fun expr ->
-    (* атомы *)
     let parse_identifier_expression = parse_identifier >>| fun id -> Expr_var id in
     let parse_parens =
       char '(' *> skip_opt_spaces *> expr <* skip_opt_spaces <* char ')'
@@ -91,7 +84,6 @@ let parse_expression =
     in
     let parse_fix_expression = string "fix" *> spaces *> expr >>| fun e -> Expr_fix e in
     let parse_atomic_expression =
-      (* порядок важен: специальные ключевые слова и парсер скобок сначала *)
       parse_parens
       <|> parse_if_expression
       <|> parse_function_expression
@@ -101,7 +93,6 @@ let parse_expression =
       <|> parse_constant
       <|> parse_identifier_expression
     in
-    (* application: обязать прогресс — между функцией и аргументом требуется по крайней мере один пробел *)
     let parse_function_application =
       let* func = parse_atomic_expression in
       let* args = many (spaces *> parse_atomic_expression) in
@@ -109,7 +100,6 @@ let parse_expression =
       | [] -> return func
       | _ -> return (Expr_ap (func, args))
     in
-    (* multiplicative *)
     let parse_multiplicative_expression =
       let* left = parse_function_application in
       let* rest =
@@ -124,7 +114,6 @@ let parse_expression =
         (List.fold_left rest ~init:left ~f:(fun acc (op, r) ->
            Expr_binary_op (op, acc, r)))
     in
-    (* additive *)
     let parse_additive_expression =
       let* left = parse_multiplicative_expression in
       let* rest =
@@ -141,8 +130,6 @@ let parse_expression =
     in
     parse_additive_expression)
 ;;
-
-(* ================= парсеры верхнего уровня ================= *)
 
 let parse_toplevel_let =
   string "let" *> spaces *> parse_identifier

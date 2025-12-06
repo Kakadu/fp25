@@ -13,8 +13,6 @@ let run_parse_expr input =
   | Error err -> Stdlib.Format.printf "%s\n" err
 ;;
 
-(* --- BASIC CONSTANTS & IDENTIFIERS --- *)
-
 let%expect_test "parse_simple_constant" =
   run_parse_top_let "let x = 42 ;;";
   [%expect {| [(Top_let ("x", (Expr_const (Const_int 42))))] |}]
@@ -24,8 +22,6 @@ let%expect_test "parse_simple_identifier" =
   run_parse_top_let "let x = y ;;";
   [%expect {| [(Top_let ("x", (Expr_var "y")))] |}]
 ;;
-
-(* --- ARITHMETIC --- *)
 
 let%expect_test "parse_add" =
   run_parse_top_let "let x = 1 + 2 ;;";
@@ -321,8 +317,7 @@ let%expect_test "fix" =
 
 let%expect_test "fix" =
   run_parse_top_let "";
-  [%expect
-    {|
+  [%expect {|
     []
     |}]
 ;;

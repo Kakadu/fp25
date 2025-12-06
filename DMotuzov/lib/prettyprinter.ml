@@ -2,7 +2,6 @@ open Ast
 
 let pp =
   let rec pp_expr fmt expr =
-    (* функция, которая оборачивает выражение в скобки, если это не атом *)
     let pp_wrapped fmt e =
       match e with
       | Expr_var _ | Expr_const _ -> pp_expr fmt e

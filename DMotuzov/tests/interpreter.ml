@@ -2,7 +2,6 @@ open Base
 open DMotuzov_lib.Parser
 open DMotuzov_lib.Interpreter
 
-(* Вспомогательная функция для печати value *)
 let string_of_value = function
   | ValInt n -> string_of_int n
   | ValUnit -> "()"
@@ -11,13 +10,11 @@ let string_of_value = function
   | Builtin _ -> "<builtin_fun>"
 ;;
 
-(* Печать окружения *)
 let print_env env =
   Map.iteri env ~f:(fun ~key ~data ->
     Format.printf "val %s = %s\n" key (string_of_value data))
 ;;
 
-(* Запуск интерпретатора на строке кода *)
 let run input maxsteps =
   match parse input with
   | Ok ast ->
@@ -34,8 +31,6 @@ let run input maxsteps =
        Format.printf "%s\n" err_str)
   | Error err -> Format.printf "Parse Error: %s\n" err
 ;;
-
-(* ==================== тесты ==================== *)
 
 let%expect_test "simple let binding" =
   run "let a = 4 + 4;;" 1000;
