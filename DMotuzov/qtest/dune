@@ -1,0 +1,5 @@
+(test
+ (name qcheck_parser)
+ (libraries base qcheck DMotuzov_lib)
+ (instrumentation
+  (backend bisect_ppx)))

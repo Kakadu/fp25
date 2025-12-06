@@ -14,7 +14,7 @@ let%expect_test "fib" =
         else 0           ;; let y = fib 10;;");
   [%expect
     {|
-    let rec fib = fun n -> if n then if (n - 1) then (fib (n - 1) + fib (n - 2)) else 1 else 0;;
+    let rec fib = fun n -> if n then if (n - 1) then ((fib ((n - 1))) + (fib ((n - 2)))) else 1 else 0;;
     let y = fib 10;;
     |}]
 ;;
@@ -23,7 +23,7 @@ let%expect_test "fact" =
   print_endline (run_pp "let rec fact = fun n -> if n then n * fact (n - 1) else 1 ;;");
   [%expect
     {|
-    let rec fact = fun n -> if n then (n * fact (n - 1)) else 1;;
+    let rec fact = fun n -> if n then (n * (fact ((n - 1)))) else 1;;
     |}]
 ;;
 
@@ -33,6 +33,6 @@ let%expect_test "let_rec" =
        "let f = let rec fact = fun n -> if n then n * fact (n - 1) else 1 in fact ;;");
   [%expect
     {|
-    let f = let rec fact = fun n -> if n then (n * fact (n - 1)) else 1 in fact;;
+    let f = let rec fact = fun n -> if n then (n * (fact ((n - 1)))) else 1 in fact;;
     |}]
 ;;

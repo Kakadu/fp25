@@ -132,9 +132,9 @@ let%expect_test "fix" =
 
 let%expect_test "fix factorial" =
   run
-    "let fact = fix (fun f -> fun n -> if n then n * (f (n - 1)) else 1) ;;\n\
-    \       let y = fact 5 ;;";
+    "let fact = fix (fun f n -> if n then n * (f (n - 1)) else 1) ;;\n\
+    \       let y = fact 6 ;;";
   [%expect {|
     val fact = <rec-fun>
-    val y = 120 |}]
+    val y = 720 |}]
 ;;
