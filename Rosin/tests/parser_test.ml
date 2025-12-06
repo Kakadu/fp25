@@ -6,10 +6,9 @@
 
 [@@@ocaml.text "/*"]
 
-open QCheck
 open Miniml_lib
 open Ast
-open Gen
+open QCheck.Gen
 
 let expr_to_string e = Format.asprintf "%a" Pprintast.pp e
 let varname_gen = string_size (int_range 1 3)
@@ -37,7 +36,7 @@ let gen_expr =
               (triple (expr next_depth) (expr next_depth) (option (expr next_depth))) )
         ; ( 1
           , map
-              (fun (name, body) -> Ast.Fun (name, body))
+              (fun (name, body) -> Fun (name, body))
               (pair varname_gen (expr next_depth)) )
         ; ( 1
           , map
@@ -59,7 +58,7 @@ let gen_expr =
 ;;
 
 let arb_expr =
-  make
+  QCheck.make
     ~print:(fun e ->
       try expr_to_string e with
       | _ -> "<too large to print>")
@@ -67,7 +66,7 @@ let arb_expr =
 ;;
 
 let test_printer_safety =
-  Test.make ~name:"Printer safety" ~count:50 arb_expr (fun e ->
+  QCheck.Test.make ~name:"Printer safety" ~count:50 arb_expr (fun e ->
     try
       let _ = expr_to_string e in
       true
@@ -92,8 +91,8 @@ let test_simple_roundtrip =
     ; "print 42", Print (Num 42)
     ]
   in
-  let arb_simple = make ~print:(fun (s, _) -> s) (oneofl simple_cases) in
-  Test.make
+  let arb_simple = QCheck.make ~print:(fun (s, _) -> s) (oneofl simple_cases) in
+  QCheck.Test.make
     ~name:"Simple round-trip"
     ~count:(List.length simple_cases)
     arb_simple
@@ -143,8 +142,8 @@ let test_parser_on_valid =
     ; "f x y"
     ]
   in
-  let arb_valid = make ~print:(fun s -> s) (oneofl valid_strings) in
-  Test.make
+  let arb_valid = QCheck.make ~print:(fun s -> s) (oneofl valid_strings) in
+  QCheck.Test.make
     ~name:"Parser on valid syntax"
     ~count:(List.length valid_strings)
     arb_valid
@@ -178,8 +177,8 @@ let test_parser_negative =
     ; "print"
     ]
   in
-  let arb_invalid = make ~print:(fun s -> s) (oneofl invalid_strings) in
-  Test.make
+  let arb_invalid = QCheck.make ~print:(fun s -> s) (oneofl invalid_strings) in
+  QCheck.Test.make
     ~name:"Parser negative tests"
     ~count:(List.length invalid_strings)
     arb_invalid
@@ -224,8 +223,8 @@ let test_parser_ast =
         | _ -> false )
     ]
   in
-  let arb_case = make ~print:(fun (s, _) -> s) (oneofl test_cases) in
-  Test.make
+  let arb_case = QCheck.make ~print:(fun (s, _) -> s) (oneofl test_cases) in
+  QCheck.Test.make
     ~name:"Parser AST structure"
     ~count:(List.length test_cases)
     arb_case
