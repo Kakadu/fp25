@@ -1,11 +1,10 @@
 (library
  (name miniml_lib)
  (public_name Rosin.Lib)
- (modules Ast Lambda Interpret Parser Printast Pprintast utils)
+ (modules Ast Interpret Parser Pprintast)
  (modules_without_implementation ast)
  (libraries base angstrom)
  (preprocess
   (pps ppx_deriving.show))
  (instrumentation
   (backend bisect_ppx)))
-

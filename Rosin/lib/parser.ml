@@ -14,7 +14,6 @@ let split_arg = satisfy is_space >>= fun c -> spaces >>| fun () -> c
 let token p = p <* spaces
 let parens p = token (char '(') *> p <* token (char ')')
 
-(** Парсер целых чисел *)
 let number =
   let positive =
     token
@@ -34,9 +33,7 @@ let number =
 
 let number_expr = number >>| fun num -> Ast.Num num
 
-(** Пареср названий переменных *)
 let varname =
-  (* В названии переменной допускаются только символы из латинского алфавит и _ *)
   let is_var_char = function
     | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
     | _ -> false
@@ -127,10 +124,6 @@ let expr =
 ;;
 
 type error = [ `Parsing_error of string ]
-
-let pp_error ppf = function
-  | `Parsing_error s -> Format.fprintf ppf "%s" s
-;;
 
 let parse str =
   match Angstrom.parse_string ~consume:Consume.All (spaces *> expr <* spaces) str with
