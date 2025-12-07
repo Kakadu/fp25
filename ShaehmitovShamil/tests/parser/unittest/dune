@@ -2,7 +2,7 @@
  (name parser_test)
  (package ShaehmitovShamil)
  (modules parser_test)
- (libraries base parser ast)
+ (libraries parser ast)
  (instrumentation
   (backend bisect_ppx))
  (preprocess

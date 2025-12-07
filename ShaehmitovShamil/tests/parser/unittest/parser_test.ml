@@ -6,7 +6,6 @@
 
 [@@@ocaml.text "/*"]
 
-open Base
 open Parser
 open Ast
 
