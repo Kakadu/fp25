@@ -12,6 +12,7 @@ bug-reports: "https://github.com/Kakadu/fp25"
 depends: [
   "dune" {>= "3.7" & = "3.19.1"}
   "angstrom" {= "0.16.0"}
+  "qcheck"
   "base"
   "ppx_inline_test" {with-test}
   "ppx_expect"

@@ -24,7 +24,8 @@ type expr =
   | Ident of ident (* some variable name to lookup *)
   | Binexpr of binop * expr * expr (* arithmetic or comparison of 2 expressions *)
   | Ite of expr * expr * expr (* condition (false is 0 otherwise true), then, else *)
-  | Abs of expr * expr (* curried lambda abstraction (fun name -> expr) *)
-  | App of expr * expr (* application *)
-  | Let of recflag * expr * expr list * expr * expr option
-(* let binding, might be recursive, might be just a function definition *)
+  | Abs of expr * expr (* curried lambda abstraction (name and expr) *)
+  | App of expr * expr (* application, fun and arg *)
+  | Let of recflag * expr * expr * expr
+(* let binding, might be recursive, might be just a function definition, let "rec" "name" =
+   "expression" in "expression" *)

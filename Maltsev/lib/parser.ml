@@ -18,7 +18,7 @@ let conde = function
   | h :: tl -> List.fold_left ( <|> ) h tl
 ;;
 
-let parens p = char '(' *> p <* char ')'
+let parens p = spaces *> char '(' *> p <* spaces <* char ')'
 
 let is_digit c =
   match c with
@@ -85,13 +85,15 @@ let parse_expr =
     let abstr =
       spaces *> string "fun"
       >>= fun _ ->
-      parse_varname
-      >>= fun arg_name ->
+      many1 parse_varname
+      >>= fun args ->
       spaces *> string "->"
-      >>= fun _ -> spaces *> parse_expr >>| fun body -> Ast.Abs (arg_name, body)
+      >>= fun _ ->
+      spaces *> parse_expr
+      >>| fun body -> List.fold_right (fun arg f -> Ast.Abs (arg, f)) args body
     in
     let app =
-      spaces *> (parens abstr <|> parse_varname)
+      spaces *> (parens abstr <|> parse_varname <|> parens parse_varname)
       >>= fun func ->
       many1
         (spaces *> conde [ parse_number; parse_varname; parens parse_expr ]
@@ -148,11 +150,14 @@ let parse_expr =
       >>= fun _ ->
       spaces *> parse_expr
       >>= fun letexpr ->
-      option
-        None
-        (spaces *> string "in"
-         >>= fun _ -> spaces *> parse_expr >>| fun bound -> Some bound)
-      >>| fun inexpr -> Ast.Let (recbool, name, args, letexpr, inexpr)
+      let body =
+        match args with
+        | [] -> letexpr
+        | _ -> List.fold_right (fun arg f -> Ast.Abs (arg, f)) args letexpr
+      in
+      spaces *> string "in"
+      >>= (fun _ -> spaces *> parse_expr >>| fun bound -> bound)
+      >>| fun inexpr -> Ast.Let (recbool, name, body, inexpr)
     in
     conde [ letbind; comp; conditional; abstr ])
 ;;
@@ -160,5 +165,5 @@ let parse_expr =
 let parse str =
   match Angstrom.parse_string parse_expr ~consume:Angstrom.Consume.All str with
   | Result.Ok x -> Result.Ok x
-  | Error _ -> Result.Error (`Parsing_error "Failed to parse")
+  | Error err -> Result.Error (`Parsing_error err)
 ;;

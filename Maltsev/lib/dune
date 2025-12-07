@@ -1,7 +1,7 @@
 (library
  (name lambda_lib)
  (public_name Maltsev.Lib)
- (modules Ast Parser)
+ (modules Ast Parser Interpret Pprintast)
  (modules_without_implementation ast)
  (libraries base angstrom)
  (preprocess

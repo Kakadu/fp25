@@ -25,6 +25,7 @@
    (= "3.19.1"))
   (angstrom
    (= "0.16.0"))
+  qcheck
   base
   (ppx_inline_test :with-test)
   ppx_expect
