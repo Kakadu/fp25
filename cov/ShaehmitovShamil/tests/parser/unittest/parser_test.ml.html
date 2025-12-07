@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>parser_test.ml &mdash; Coverage report</title>
-    <meta name="description" content="98.95% coverage in tests/parser/unittest/parser_test.ml">
+    <meta name="description" content="98.98% coverage in tests/parser/unittest/parser_test.ml">
     <link rel="stylesheet" href="../../../coverage.css"/>
     <script src="../../../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,10 +15,10 @@
           <span class="dirname">tests/parser/unittest/</span>parser_test.ml
         </a>
       </h1>
-      <h2>98.95%</h2>
+      <h2>98.98%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="bottom:41.15%"></span>
+      <span class="unvisited" style="bottom:43.54%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -283,6 +283,17 @@
 <a id="L258"></a><span > </span>
 <a id="L259"></a><span class="visited"> </span>
 <a id="L260"></a><span > </span>
+<a id="L261"></a><span > </span>
+<a id="L262"></a><span > </span>
+<a id="L263"></a><span class="visited"> </span>
+<a id="L264"></a><span class="visited"> </span>
+<a id="L265"></a><span > </span>
+<a id="L266"></a><span > </span>
+<a id="L267"></a><span > </span>
+<a id="L268"></a><span > </span>
+<a id="L269"></a><span > </span>
+<a id="L270"></a><span class="visited"> </span>
+<a id="L271"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -547,6 +558,17 @@
 <a href="#L258">258</a>
 <a href="#L259">259</a>
 <a href="#L260">260</a>
+<a href="#L261">261</a>
+<a href="#L262">262</a>
+<a href="#L263">263</a>
+<a href="#L264">264</a>
+<a href="#L265">265</a>
+<a href="#L266">266</a>
+<a href="#L267">267</a>
+<a href="#L268">268</a>
+<a href="#L269">269</a>
+<a href="#L270">270</a>
+<a href="#L271">271</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -698,8 +720,8 @@ let%expect_test "fun with two arguments" =
 ;;
 
 let run_program_parser input =
-  <span data-count="9">m</span>atch parse_structure_items input with
-  | <span data-count="9">O</span>k expr -&gt; Stdlib.print_endline (show_progra<span data-count="9">m</span> expr)
+  <span data-count="10">m</span>atch parse_structure_items input with
+  | <span data-count="10">O</span>k expr -&gt; Stdlib.print_endline (show_progra<span data-count="10">m</span> expr)
   | <span data-count="0">E</span>rror msg -&gt; Stdlib.Printf.printf "Error: %s\n" msg
 ;;
 
@@ -806,6 +828,17 @@ let%expect_test "unit pattern in let with body" =
             (Let (NonRec, PUnit, (App ((Var "print_int"), (Var "a"))),
                (App ((Var "print_int"), (Var "b")))))
             ))))
+      ] |}<span data-count="5">]</span>
+;;
+
+let%expect_test "let in in let in" =
+  <span data-count="1">r</span>un_program_parser "let f = let x = let y = 10 in y in x ;;";
+  <span data-count="1">[</span>%expect
+    {|
+    [(Value
+        (NonRec, (PVar "f"),
+         (Let (NonRec, (PVar "x"),
+            (Let (NonRec, (PVar "y"), (Const (CInt 10)), (Var "y"))), (Var "x")))))
       ] |}<span data-count="5">]</span>
 ;;
 </code></pre>
