@@ -360,87 +360,87 @@ open Angstrom
 open Ast
 open Base
 
-let spaces = take_while<span data-count="13">1</span> Char.is_whitespace &gt;&gt;<span data-count="13">|</span> fun _ -&gt; <span data-count="62300">(</span>)
+let spaces = take_while<span data-count="13">1</span> Char.is_whitespace &gt;&gt;<span data-count="13">|</span> fun _ -&gt; <span data-count="59853">(</span>)
 let skip_opt_spaces = skip_whil<span data-count="13">e</span> Char.is_whitespace
 
 let is_keyword = function
-  | <span data-count="0">"</span>let" | <span data-count="2">"</span>rec" | <span data-count="0">"</span>if" | <span data-count="3106">"</span>then" | <span data-count="3056">"</span>else" | <span data-count="0">"</span>fun" | <span data-count="0">"</span>fix" | <span data-count="6397">"</span>in" -&gt; true
-  | <span data-count="17459">_</span> -&gt; false
+  | <span data-count="0">"</span>let" | <span data-count="2">"</span>rec" | <span data-count="0">"</span>if" | <span data-count="3014">"</span>then" | <span data-count="3121">"</span>else" | <span data-count="0">"</span>fun" | <span data-count="0">"</span>fix" | <span data-count="5889">"</span>in" -&gt; true
+  | <span data-count="16844">_</span> -&gt; false
 ;;
 
 let parse_identifier =
   let* fst_char =
     satisf<span data-count="13">y</span> (function
-      | <span data-count="30020">'</span>a' .. 'z' | <span data-count="0">'</span>_' -&gt; true
-      | <span data-count="5806">_</span> -&gt; false)
+      | <span data-count="28870">'</span>a' .. 'z' | <span data-count="0">'</span>_' -&gt; true
+      | <span data-count="5591">_</span> -&gt; false)
     &gt;&gt;<span data-count="13">|</span> String.of_char
   in
-  <span data-count="30020">l</span>et* rest =
-    take_whil<span data-count="30020">e</span> (function
-      | <span data-count="0">'</span>A' .. 'Z' | <span data-count="43092">'</span>a' .. 'z' | <span data-count="0">'</span>0' .. '9' | <span data-count="11">'</span>_' | <span data-count="0">'</span>\'' -&gt; true
-      | <span data-count="30020">_</span> -&gt; false)
+  <span data-count="28870">l</span>et* rest =
+    take_whil<span data-count="28870">e</span> (function
+      | <span data-count="0">'</span>A' .. 'Z' | <span data-count="42055">'</span>a' .. 'z' | <span data-count="0">'</span>0' .. '9' | <span data-count="11">'</span>_' | <span data-count="0">'</span>\'' -&gt; true
+      | <span data-count="28870">_</span> -&gt; false)
   in
-  <span data-count="30020">l</span>et id = fst_char ^ rest in
+  <span data-count="28870">l</span>et id = fst_char ^ rest in
   let is_key = is_keyword id in
-  <span data-count="30020">i</span>f is_key then <span data-count="12561">f</span>ail ("keyword cannot be identifier: " ^ id) else <span data-count="17459">r</span>eturn (fst_char ^ rest)
+  <span data-count="28870">i</span>f is_key then <span data-count="12026">f</span>ail ("keyword cannot be identifier: " ^ id) else <span data-count="16844">r</span>eturn (fst_char ^ rest)
 ;;
 
 let parse_constant =
-  take_while<span data-count="13">1</span> Char.is_digit &gt;&gt;<span data-count="13">|</span> fun s -&gt; <span data-count="8438">E</span>xpr_const (Const_int (Int.of_strin<span data-count="8438">g</span> s))
+  take_while<span data-count="13">1</span> Char.is_digit &gt;&gt;<span data-count="13">|</span> fun s -&gt; <span data-count="8108">E</span>xpr_const (Const_int (Int.of_strin<span data-count="8108">g</span> s))
 ;;
 
 let parse_additive_operator =
   skip_opt_spaces *<span data-count="13">&gt;</span> tak<span data-count="13">e</span> 1
   &gt;&gt;<span data-count="13">=</span> function
-  | <span data-count="869">"</span>+" -&gt; return Plus
-  | <span data-count="852">"</span>-" -&gt; return Sub
-  | <span data-count="30921">_</span> -&gt; fail "not additive operator"
+  | <span data-count="819">"</span>+" -&gt; return Plus
+  | <span data-count="784">"</span>-" -&gt; return Sub
+  | <span data-count="29677">_</span> -&gt; fail "not additive operator"
 ;;
 
 let parse_multiplicative_operator =
   skip_opt_spaces *<span data-count="13">&gt;</span> tak<span data-count="13">e</span> 1
   &gt;&gt;<span data-count="13">=</span> function
-  | <span data-count="890">"</span>*" -&gt; return Mul
-  | <span data-count="772">"</span>/" -&gt; return Div
-  | <span data-count="32642">_</span> -&gt; fail "not multiplicative operator"
+  | <span data-count="825">"</span>*" -&gt; return Mul
+  | <span data-count="851">"</span>/" -&gt; return Div
+  | <span data-count="31280">_</span> -&gt; fail "not multiplicative operator"
 ;;
 
 let parse_expression =
   fi<span data-count="13">x</span> (fun expr -&gt;
-    <span data-count="10">l</span>et parse_identifier_expression = parse_identifier &gt;&gt;| fun id -&gt; <span data-count="9522">E</span>xpr_var id in
+    <span data-count="10">l</span>et parse_identifier_expression = parse_identifier &gt;&gt;| fun id -&gt; <span data-count="9286">E</span>xpr_var id in
     <span data-count="10">l</span>et parse_parens =
       cha<span data-count="10">r</span> '(' *<span data-count="10">&gt;</span> skip_opt_spaces *<span data-count="10">&gt;</span> expr &lt;<span data-count="10">*</span> skip_opt_spaces &lt;* cha<span data-count="10">r</span> ')'
     in
     <span data-count="10">l</span>et parse_if_expression =
       strin<span data-count="10">g</span> "if" *<span data-count="10">&gt;</span> spaces *<span data-count="10">&gt;</span> expr
       &gt;&gt;= fun cond -&gt;
-      <span data-count="2204">s</span>paces *<span data-count="2204">&gt;</span> strin<span data-count="2204">g</span> "then" *<span data-count="2204">&gt;</span> spaces *<span data-count="2204">&gt;</span> expr
+      <span data-count="2187">s</span>paces *<span data-count="2187">&gt;</span> strin<span data-count="2187">g</span> "then" *<span data-count="2187">&gt;</span> spaces *<span data-count="2187">&gt;</span> expr
       &gt;&gt;= fun t -&gt;
-      <span data-count="2204">s</span>paces *<span data-count="2204">&gt;</span> strin<span data-count="2204">g</span> "else" *<span data-count="2204">&gt;</span> spaces *<span data-count="2204">&gt;</span> expr &gt;&gt;| fun e -&gt; <span data-count="2204">E</span>xpr_conditional (cond, t, e)
+      <span data-count="2187">s</span>paces *<span data-count="2187">&gt;</span> strin<span data-count="2187">g</span> "else" *<span data-count="2187">&gt;</span> spaces *<span data-count="2187">&gt;</span> expr &gt;&gt;| fun e -&gt; <span data-count="2187">E</span>xpr_conditional (cond, t, e)
     in
     <span data-count="10">l</span>et parse_function_expression =
       strin<span data-count="10">g</span> "fun" *<span data-count="10">&gt;</span> many<span data-count="10">1</span> (spaces *<span data-count="10">&gt;</span> parse_identifier)
       &gt;&gt;= fun args -&gt;
-      <span data-count="2344">s</span>paces *<span data-count="2344">&gt;</span> strin<span data-count="2344">g</span> "-&gt;" *<span data-count="2344">&gt;</span> spaces *<span data-count="2344">&gt;</span> expr
+      <span data-count="2233">s</span>paces *<span data-count="2233">&gt;</span> strin<span data-count="2233">g</span> "-&gt;" *<span data-count="2233">&gt;</span> spaces *<span data-count="2233">&gt;</span> expr
       &gt;&gt;| fun body -&gt;
-      <span data-count="2344">L</span>ist.fold_right args ~init:body ~f:(fun arg acc -&gt; <span data-count="2352">E</span>xpr_fun (arg, acc))
+      <span data-count="2233">L</span>ist.fold_right args ~init:body ~f:(fun arg acc -&gt; <span data-count="2241">E</span>xpr_fun (arg, acc))
     in
     <span data-count="10">l</span>et parse_let_in_expression =
       strin<span data-count="10">g</span> "let" *<span data-count="10">&gt;</span> spaces *<span data-count="10">&gt;</span> parse_identifier
       &gt;&gt;= fun id -&gt;
-      <span data-count="2229">s</span>kip_opt_spaces *<span data-count="2229">&gt;</span> cha<span data-count="2229">r</span> '=' *<span data-count="2229">&gt;</span> skip_opt_spaces *<span data-count="2229">&gt;</span> expr
+      <span data-count="2134">s</span>kip_opt_spaces *<span data-count="2134">&gt;</span> cha<span data-count="2134">r</span> '=' *<span data-count="2134">&gt;</span> skip_opt_spaces *<span data-count="2134">&gt;</span> expr
       &gt;&gt;= fun value -&gt;
-      <span data-count="2229">s</span>paces *<span data-count="2229">&gt;</span> strin<span data-count="2229">g</span> "in" *<span data-count="2229">&gt;</span> spaces *<span data-count="2229">&gt;</span> expr &gt;&gt;| fun body -&gt; <span data-count="2229">E</span>xpr_let_in (id, value, body)
+      <span data-count="2134">s</span>paces *<span data-count="2134">&gt;</span> strin<span data-count="2134">g</span> "in" *<span data-count="2134">&gt;</span> spaces *<span data-count="2134">&gt;</span> expr &gt;&gt;| fun body -&gt; <span data-count="2134">E</span>xpr_let_in (id, value, body)
     in
     <span data-count="10">l</span>et parse_let_rec_in_expression =
       strin<span data-count="10">g</span> "let" *<span data-count="10">&gt;</span> spaces *<span data-count="10">&gt;</span> strin<span data-count="10">g</span> "rec" *<span data-count="10">&gt;</span> spaces *<span data-count="10">&gt;</span> parse_identifier
       &gt;&gt;= fun id -&gt;
-      <span data-count="2293">s</span>kip_opt_spaces *<span data-count="2293">&gt;</span> cha<span data-count="2293">r</span> '=' *<span data-count="2293">&gt;</span> skip_opt_spaces *<span data-count="2293">&gt;</span> expr
+      <span data-count="2120">s</span>kip_opt_spaces *<span data-count="2120">&gt;</span> cha<span data-count="2120">r</span> '=' *<span data-count="2120">&gt;</span> skip_opt_spaces *<span data-count="2120">&gt;</span> expr
       &gt;&gt;= fun value -&gt;
-      <span data-count="2293">s</span>paces *<span data-count="2293">&gt;</span> strin<span data-count="2293">g</span> "in" *<span data-count="2293">&gt;</span> spaces *<span data-count="2293">&gt;</span> expr
-      &gt;&gt;| fun body -&gt; <span data-count="2293">E</span>xpr_let_rec_in (id, value, body)
+      <span data-count="2120">s</span>paces *<span data-count="2120">&gt;</span> strin<span data-count="2120">g</span> "in" *<span data-count="2120">&gt;</span> spaces *<span data-count="2120">&gt;</span> expr
+      &gt;&gt;| fun body -&gt; <span data-count="2120">E</span>xpr_let_rec_in (id, value, body)
     in
-    <span data-count="10">l</span>et parse_fix_expression = strin<span data-count="10">g</span> "fix" *<span data-count="10">&gt;</span> spaces *<span data-count="10">&gt;</span> expr &gt;&gt;| fun e -&gt; <span data-count="1076">E</span>xpr_fix e in
+    <span data-count="10">l</span>et parse_fix_expression = strin<span data-count="10">g</span> "fix" *<span data-count="10">&gt;</span> spaces *<span data-count="10">&gt;</span> expr &gt;&gt;| fun e -&gt; <span data-count="1029">E</span>xpr_fix e in
     <span data-count="10">l</span>et parse_atomic_expression =
       parse_parens
       &lt;|<span data-count="10">&gt;</span> parse_if_expression
@@ -453,38 +453,38 @@ let parse_expression =
     in
     <span data-count="10">l</span>et parse_function_application =
       let* func = parse_atomic_expression in
-      <span data-count="34307">l</span>et* args = man<span data-count="34307">y</span> (spaces *<span data-count="34307">&gt;</span> parse_atomic_expression) in
-      <span data-count="34307">m</span>atch args with
-      | <span data-count="32013">[</span>] -&gt; return func
-      | <span data-count="2294">_</span> -&gt; return (Expr_ap (func, args))
+      <span data-count="32959">l</span>et* args = man<span data-count="32959">y</span> (spaces *<span data-count="32959">&gt;</span> parse_atomic_expression) in
+      <span data-count="32959">m</span>atch args with
+      | <span data-count="30724">[</span>] -&gt; return func
+      | <span data-count="2235">_</span> -&gt; return (Expr_ap (func, args))
     in
     let parse_multiplicative_expression =
       let* left = parse_function_application in
-      <span data-count="32645">l</span>et* rest =
-        man<span data-count="32645">y</span>
+      <span data-count="31283">l</span>et* rest =
+        man<span data-count="31283">y</span>
           (let* op = parse_multiplicative_operator in
-           <span data-count="1662">s</span>kip_opt_spaces
+           <span data-count="1676">s</span>kip_opt_spaces
            *&gt;
            let* right = parse_function_application in
-           <span data-count="1662">r</span>eturn (op, right))
+           <span data-count="1676">r</span>eturn (op, right))
       in
-      <span data-count="32645">r</span>eturn
-        (List.fold_lef<span data-count="32645">t</span> rest ~init:left ~f:(fun acc (op, r) -&gt;
-           <span data-count="1662">E</span>xpr_binary_op (op, acc, r)))
+      <span data-count="31283">r</span>eturn
+        (List.fold_lef<span data-count="31283">t</span> rest ~init:left ~f:(fun acc (op, r) -&gt;
+           <span data-count="1676">E</span>xpr_binary_op (op, acc, r)))
     in
     let parse_additive_expression =
       let* left = parse_multiplicative_expression in
-      <span data-count="30924">l</span>et* rest =
-        man<span data-count="30924">y</span>
+      <span data-count="29680">l</span>et* rest =
+        man<span data-count="29680">y</span>
           (let* op = parse_additive_operator in
-           <span data-count="1721">s</span>kip_opt_spaces
+           <span data-count="1603">s</span>kip_opt_spaces
            *&gt;
            let* right = parse_multiplicative_expression in
-           <span data-count="1721">r</span>eturn (op, right))
+           <span data-count="1603">r</span>eturn (op, right))
       in
-      <span data-count="30924">r</span>eturn
-        (List.fold_lef<span data-count="30924">t</span> rest ~init:left ~f:(fun acc (op, r) -&gt;
-           <span data-count="1721">E</span>xpr_binary_op (op, acc, r)))
+      <span data-count="29680">r</span>eturn
+        (List.fold_lef<span data-count="29680">t</span> rest ~init:left ~f:(fun acc (op, r) -&gt;
+           <span data-count="1603">E</span>xpr_binary_op (op, acc, r)))
     in
     parse_additive_expression)
 ;;

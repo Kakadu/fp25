@@ -265,35 +265,35 @@ let gen_ident =
 
 let gen_const =
   let open Gen in
-  oneo<span data-count="1">f</span> [ small_int |&gt; ma<span data-count="1">p</span> (fun i -&gt; <span data-count="8314">C</span>onst_int i) ]
+  oneo<span data-count="1">f</span> [ small_int |&gt; ma<span data-count="1">p</span> (fun i -&gt; <span data-count="7984">C</span>onst_int i) ]
 ;;
 
 let rec gen_expr size =
-  <span data-count="6195">l</span>et open Gen in
-  let gen_var = gen_ident |&gt; map (fun s -&gt; <span data-count="9400">E</span>xpr_var s) in
-  <span data-count="6195">l</span>et gen_const_expr = gen_const |&gt; map (fun c -&gt; <span data-count="8314">E</span>xpr_const c) in
-  <span data-count="6195">i</span>f size &lt;= 0
+  <span data-count="6043">l</span>et open Gen in
+  let gen_var = gen_ident |&gt; map (fun s -&gt; <span data-count="9164">E</span>xpr_var s) in
+  <span data-count="6043">l</span>et gen_const_expr = gen_const |&gt; map (fun c -&gt; <span data-count="7984">E</span>xpr_const c) in
+  <span data-count="6043">i</span>f size &lt;= 0
   then <span data-count="1000">o</span>neof [ gen_var; gen_const_expr ]
-  else <span data-count="5195">(</span>
+  else <span data-count="5043">(</span>
     let sub = gen_expr (size / 2) in
-    <span data-count="5195">l</span>et gen_bin =
+    <span data-count="5043">l</span>et gen_bin =
       map3
-        (fun op e1 e2 -&gt; <span data-count="3325">E</span>xpr_binary_op (op, e1, e2))
-        (oneof<span data-count="5195">l</span> [ Plus; Sub; Mul; Div ])
+        (fun op e1 e2 -&gt; <span data-count="3221">E</span>xpr_binary_op (op, e1, e2))
+        (oneof<span data-count="5043">l</span> [ Plus; Sub; Mul; Div ])
         sub
         sub
     in
-    <span data-count="5195">l</span>et gen_if = map3 (fun c t f -&gt; <span data-count="2174">E</span>xpr_conditional (c, t, f)) sub sub sub in
-    <span data-count="5195">l</span>et gen_let = map3 (fun id e1 e2 -&gt; <span data-count="2227">E</span>xpr_let_in (id, e1, e2)) gen_ident sub sub in
-    <span data-count="5195">l</span>et gen_let_rec =
-      map3 (fun id e1 e2 -&gt; <span data-count="2287">E</span>xpr_let_rec_in (id, e1, e2)) gen_ident sub sub
+    <span data-count="5043">l</span>et gen_if = map3 (fun c t f -&gt; <span data-count="2157">E</span>xpr_conditional (c, t, f)) sub sub sub in
+    <span data-count="5043">l</span>et gen_let = map3 (fun id e1 e2 -&gt; <span data-count="2132">E</span>xpr_let_in (id, e1, e2)) gen_ident sub sub in
+    <span data-count="5043">l</span>et gen_let_rec =
+      map3 (fun id e1 e2 -&gt; <span data-count="2114">E</span>xpr_let_rec_in (id, e1, e2)) gen_ident sub sub
     in
-    <span data-count="5195">l</span>et gen_fun = map2 (fun id e -&gt; <span data-count="2312">E</span>xpr_fun (id, e)) gen_ident sub in
-    <span data-count="5195">l</span>et gen_app =
-      map2 (fun f args -&gt; <span data-count="2250">E</span>xpr_ap (f, args)) sub (list_siz<span data-count="5195">e</span> (int_rang<span data-count="5195">e</span> 1 3) sub)
+    <span data-count="5043">l</span>et gen_fun = map2 (fun id e -&gt; <span data-count="2201">E</span>xpr_fun (id, e)) gen_ident sub in
+    <span data-count="5043">l</span>et gen_app =
+      map2 (fun f args -&gt; <span data-count="2191">E</span>xpr_ap (f, args)) sub (list_siz<span data-count="5043">e</span> (int_rang<span data-count="5043">e</span> 1 3) sub)
     in
-    <span data-count="5195">l</span>et gen_fix = sub |&gt; map (fun e -&gt; <span data-count="1072">E</span>xpr_fix e) in
-    <span data-count="5195">f</span>requency
+    <span data-count="5043">l</span>et gen_fix = sub |&gt; map (fun e -&gt; <span data-count="1025">E</span>xpr_fix e) in
+    <span data-count="5043">f</span>requency
       [ 4, gen_var
       ; 3, gen_const_expr
       ; 3, gen_bin

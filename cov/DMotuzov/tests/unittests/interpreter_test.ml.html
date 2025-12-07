@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>interpreter_test.ml &mdash; Coverage report</title>
+    <meta name="description" content="91.94% coverage in tests/unittests/interpreter_test.ml">
+    <link rel="stylesheet" href="../../coverage.css"/>
+    <script src="../../highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </head>
+  <body>
+    <div id="header">
+      <h1>
+        <a href="../../index.html">
+          <span class="dirname">tests/unittests/</span>interpreter_test.ml
+        </a>
+      </h1>
+      <h2>91.94%</h2>
+    </div>
+    <div id="navbar">
+      <span class="unvisited" style="top:8.20%"></span>
+      <span class="unvisited" style="top:8.74%"></span>
+      <span class="unvisited" style="top:19.13%"></span>
+      <span class="unvisited" style="top:19.67%"></span>
+      <span class="unvisited" style="top:21.86%"></span>
+    </div>
+    <div id="report">
+      <div id="lines-layer">
+        <pre>
+<a id="L1"></a><span > </span>
+<a id="L2"></a><span > </span>
+<a id="L3"></a><span > </span>
+<a id="L4"></a><span > </span>
+<a id="L5"></a><span > </span>
+<a id="L6"></a><span > </span>
+<a id="L7"></a><span > </span>
+<a id="L8"></a><span > </span>
+<a id="L9"></a><span > </span>
+<a id="L10"></a><span > </span>
+<a id="L11"></a><span > </span>
+<a id="L12"></a><span > </span>
+<a id="L13"></a><span > </span>
+<a id="L14"></a><span class="visited"> </span>
+<a id="L15"></a><span class="unvisited"> </span>
+<a id="L16"></a><span class="unvisited"> </span>
+<a id="L17"></a><span class="visited"> </span>
+<a id="L18"></a><span class="visited"> </span>
+<a id="L19"></a><span > </span>
+<a id="L20"></a><span > </span>
+<a id="L21"></a><span > </span>
+<a id="L22"></a><span class="visited"> </span>
+<a id="L23"></a><span class="visited"> </span>
+<a id="L24"></a><span > </span>
+<a id="L25"></a><span > </span>
+<a id="L26"></a><span > </span>
+<a id="L27"></a><span class="visited"> </span>
+<a id="L28"></a><span class="visited"> </span>
+<a id="L29"></a><span > </span>
+<a id="L30"></a><span class="visited"> </span>
+<a id="L31"></a><span class="visited"> </span>
+<a id="L32"></a><span > </span>
+<a id="L33"></a><span > </span>
+<a id="L34"></a><span class="visited"> </span>
+<a id="L35"></a><span class="unvisited"> </span>
+<a id="L36"></a><span class="unvisited"> </span>
+<a id="L37"></a><span class="visited"> </span>
+<a id="L38"></a><span > </span>
+<a id="L39"></a><span > </span>
+<a id="L40"></a><span class="unvisited"> </span>
+<a id="L41"></a><span > </span>
+<a id="L42"></a><span > </span>
+<a id="L43"></a><span > </span>
+<a id="L44"></a><span class="visited"> </span>
+<a id="L45"></a><span class="visited"> </span>
+<a id="L46"></a><span > </span>
+<a id="L47"></a><span > </span>
+<a id="L48"></a><span class="visited"> </span>
+<a id="L49"></a><span > </span>
+<a id="L50"></a><span > </span>
+<a id="L51"></a><span > </span>
+<a id="L52"></a><span class="visited"> </span>
+<a id="L53"></a><span class="visited"> </span>
+<a id="L54"></a><span > </span>
+<a id="L55"></a><span > </span>
+<a id="L56"></a><span class="visited"> </span>
+<a id="L57"></a><span > </span>
+<a id="L58"></a><span > </span>
+<a id="L59"></a><span > </span>
+<a id="L60"></a><span class="visited"> </span>
+<a id="L61"></a><span class="visited"> </span>
+<a id="L62"></a><span > </span>
+<a id="L63"></a><span > </span>
+<a id="L64"></a><span class="visited"> </span>
+<a id="L65"></a><span > </span>
+<a id="L66"></a><span > </span>
+<a id="L67"></a><span > </span>
+<a id="L68"></a><span class="visited"> </span>
+<a id="L69"></a><span class="visited"> </span>
+<a id="L70"></a><span > </span>
+<a id="L71"></a><span > </span>
+<a id="L72"></a><span class="visited"> </span>
+<a id="L73"></a><span > </span>
+<a id="L74"></a><span > </span>
+<a id="L75"></a><span > </span>
+<a id="L76"></a><span class="visited"> </span>
+<a id="L77"></a><span class="visited"> </span>
+<a id="L78"></a><span > </span>
+<a id="L79"></a><span > </span>
+<a id="L80"></a><span class="visited"> </span>
+<a id="L81"></a><span > </span>
+<a id="L82"></a><span > </span>
+<a id="L83"></a><span > </span>
+<a id="L84"></a><span class="visited"> </span>
+<a id="L85"></a><span class="visited"> </span>
+<a id="L86"></a><span > </span>
+<a id="L87"></a><span > </span>
+<a id="L88"></a><span class="visited"> </span>
+<a id="L89"></a><span > </span>
+<a id="L90"></a><span > </span>
+<a id="L91"></a><span > </span>
+<a id="L92"></a><span > </span>
+<a id="L93"></a><span > </span>
+<a id="L94"></a><span class="visited"> </span>
+<a id="L95"></a><span class="visited"> </span>
+<a id="L96"></a><span > </span>
+<a id="L97"></a><span class="visited"> </span>
+<a id="L98"></a><span > </span>
+<a id="L99"></a><span > </span>
+<a id="L100"></a><span > </span>
+<a id="L101"></a><span class="visited"> </span>
+<a id="L102"></a><span > </span>
+<a id="L103"></a><span > </span>
+<a id="L104"></a><span > </span>
+<a id="L105"></a><span class="visited"> </span>
+<a id="L106"></a><span > </span>
+<a id="L107"></a><span > </span>
+<a id="L108"></a><span > </span>
+<a id="L109"></a><span class="visited"> </span>
+<a id="L110"></a><span > </span>
+<a id="L111"></a><span > </span>
+<a id="L112"></a><span > </span>
+<a id="L113"></a><span > </span>
+<a id="L114"></a><span > </span>
+<a id="L115"></a><span > </span>
+<a id="L116"></a><span class="visited"> </span>
+<a id="L117"></a><span > </span>
+<a id="L118"></a><span > </span>
+<a id="L119"></a><span > </span>
+<a id="L120"></a><span class="visited"> </span>
+<a id="L121"></a><span > </span>
+<a id="L122"></a><span > </span>
+<a id="L123"></a><span class="visited"> </span>
+<a id="L124"></a><span > </span>
+<a id="L125"></a><span > </span>
+<a id="L126"></a><span > </span>
+<a id="L127"></a><span class="visited"> </span>
+<a id="L128"></a><span > </span>
+<a id="L129"></a><span > </span>
+<a id="L130"></a><span > </span>
+<a id="L131"></a><span > </span>
+<a id="L132"></a><span > </span>
+<a id="L133"></a><span > </span>
+<a id="L134"></a><span class="visited"> </span>
+<a id="L135"></a><span > </span>
+<a id="L136"></a><span > </span>
+<a id="L137"></a><span class="visited"> </span>
+<a id="L138"></a><span > </span>
+<a id="L139"></a><span > </span>
+<a id="L140"></a><span > </span>
+<a id="L141"></a><span class="visited"> </span>
+<a id="L142"></a><span class="visited"> </span>
+<a id="L143"></a><span > </span>
+<a id="L144"></a><span > </span>
+<a id="L145"></a><span class="visited"> </span>
+<a id="L146"></a><span > </span>
+<a id="L147"></a><span > </span>
+<a id="L148"></a><span > </span>
+<a id="L149"></a><span class="visited"> </span>
+<a id="L150"></a><span > </span>
+<a id="L151"></a><span > </span>
+<a id="L152"></a><span > </span>
+<a id="L153"></a><span class="visited"> </span>
+<a id="L154"></a><span > </span>
+<a id="L155"></a><span > </span>
+<a id="L156"></a><span > </span>
+<a id="L157"></a><span class="visited"> </span>
+<a id="L158"></a><span > </span>
+<a id="L159"></a><span > </span>
+<a id="L160"></a><span > </span>
+<a id="L161"></a><span class="visited"> </span>
+<a id="L162"></a><span class="visited"> </span>
+<a id="L163"></a><span > </span>
+<a id="L164"></a><span > </span>
+<a id="L165"></a><span > </span>
+<a id="L166"></a><span > </span>
+<a id="L167"></a><span > </span>
+<a id="L168"></a><span > </span>
+<a id="L169"></a><span > </span>
+<a id="L170"></a><span class="visited"> </span>
+<a id="L171"></a><span > </span>
+<a id="L172"></a><span > </span>
+<a id="L173"></a><span > </span>
+<a id="L174"></a><span class="visited"> </span>
+<a id="L175"></a><span class="visited"> </span>
+<a id="L176"></a><span class="visited"> </span>
+<a id="L177"></a><span > </span>
+<a id="L178"></a><span > </span>
+<a id="L179"></a><span > </span>
+<a id="L180"></a><span class="visited"> </span>
+<a id="L181"></a><span class="visited"> </span>
+<a id="L182"></a><span class="visited"> </span>
+<a id="L183"></a><span > </span>
+</pre>
+      </div>
+      <div id="text-layer">
+        <pre id="line-numbers">
+<a href="#L1">  1</a>
+<a href="#L2">  2</a>
+<a href="#L3">  3</a>
+<a href="#L4">  4</a>
+<a href="#L5">  5</a>
+<a href="#L6">  6</a>
+<a href="#L7">  7</a>
+<a href="#L8">  8</a>
+<a href="#L9">  9</a>
+<a href="#L10"> 10</a>
+<a href="#L11"> 11</a>
+<a href="#L12"> 12</a>
+<a href="#L13"> 13</a>
+<a href="#L14"> 14</a>
+<a href="#L15"> 15</a>
+<a href="#L16"> 16</a>
+<a href="#L17"> 17</a>
+<a href="#L18"> 18</a>
+<a href="#L19"> 19</a>
+<a href="#L20"> 20</a>
+<a href="#L21"> 21</a>
+<a href="#L22"> 22</a>
+<a href="#L23"> 23</a>
+<a href="#L24"> 24</a>
+<a href="#L25"> 25</a>
+<a href="#L26"> 26</a>
+<a href="#L27"> 27</a>
+<a href="#L28"> 28</a>
+<a href="#L29"> 29</a>
+<a href="#L30"> 30</a>
+<a href="#L31"> 31</a>
+<a href="#L32"> 32</a>
+<a href="#L33"> 33</a>
+<a href="#L34"> 34</a>
+<a href="#L35"> 35</a>
+<a href="#L36"> 36</a>
+<a href="#L37"> 37</a>
+<a href="#L38"> 38</a>
+<a href="#L39"> 39</a>
+<a href="#L40"> 40</a>
+<a href="#L41"> 41</a>
+<a href="#L42"> 42</a>
+<a href="#L43"> 43</a>
+<a href="#L44"> 44</a>
+<a href="#L45"> 45</a>
+<a href="#L46"> 46</a>
+<a href="#L47"> 47</a>
+<a href="#L48"> 48</a>
+<a href="#L49"> 49</a>
+<a href="#L50"> 50</a>
+<a href="#L51"> 51</a>
+<a href="#L52"> 52</a>
+<a href="#L53"> 53</a>
+<a href="#L54"> 54</a>
+<a href="#L55"> 55</a>
+<a href="#L56"> 56</a>
+<a href="#L57"> 57</a>
+<a href="#L58"> 58</a>
+<a href="#L59"> 59</a>
+<a href="#L60"> 60</a>
+<a href="#L61"> 61</a>
+<a href="#L62"> 62</a>
+<a href="#L63"> 63</a>
+<a href="#L64"> 64</a>
+<a href="#L65"> 65</a>
+<a href="#L66"> 66</a>
+<a href="#L67"> 67</a>
+<a href="#L68"> 68</a>
+<a href="#L69"> 69</a>
+<a href="#L70"> 70</a>
+<a href="#L71"> 71</a>
+<a href="#L72"> 72</a>
+<a href="#L73"> 73</a>
+<a href="#L74"> 74</a>
+<a href="#L75"> 75</a>
+<a href="#L76"> 76</a>
+<a href="#L77"> 77</a>
+<a href="#L78"> 78</a>
+<a href="#L79"> 79</a>
+<a href="#L80"> 80</a>
+<a href="#L81"> 81</a>
+<a href="#L82"> 82</a>
+<a href="#L83"> 83</a>
+<a href="#L84"> 84</a>
+<a href="#L85"> 85</a>
+<a href="#L86"> 86</a>
+<a href="#L87"> 87</a>
+<a href="#L88"> 88</a>
+<a href="#L89"> 89</a>
+<a href="#L90"> 90</a>
+<a href="#L91"> 91</a>
+<a href="#L92"> 92</a>
+<a href="#L93"> 93</a>
+<a href="#L94"> 94</a>
+<a href="#L95"> 95</a>
+<a href="#L96"> 96</a>
+<a href="#L97"> 97</a>
+<a href="#L98"> 98</a>
+<a href="#L99"> 99</a>
+<a href="#L100">100</a>
+<a href="#L101">101</a>
+<a href="#L102">102</a>
+<a href="#L103">103</a>
+<a href="#L104">104</a>
+<a href="#L105">105</a>
+<a href="#L106">106</a>
+<a href="#L107">107</a>
+<a href="#L108">108</a>
+<a href="#L109">109</a>
+<a href="#L110">110</a>
+<a href="#L111">111</a>
+<a href="#L112">112</a>
+<a href="#L113">113</a>
+<a href="#L114">114</a>
+<a href="#L115">115</a>
+<a href="#L116">116</a>
+<a href="#L117">117</a>
+<a href="#L118">118</a>
+<a href="#L119">119</a>
+<a href="#L120">120</a>
+<a href="#L121">121</a>
+<a href="#L122">122</a>
+<a href="#L123">123</a>
+<a href="#L124">124</a>
+<a href="#L125">125</a>
+<a href="#L126">126</a>
+<a href="#L127">127</a>
+<a href="#L128">128</a>
+<a href="#L129">129</a>
+<a href="#L130">130</a>
+<a href="#L131">131</a>
+<a href="#L132">132</a>
+<a href="#L133">133</a>
+<a href="#L134">134</a>
+<a href="#L135">135</a>
+<a href="#L136">136</a>
+<a href="#L137">137</a>
+<a href="#L138">138</a>
+<a href="#L139">139</a>
+<a href="#L140">140</a>
+<a href="#L141">141</a>
+<a href="#L142">142</a>
+<a href="#L143">143</a>
+<a href="#L144">144</a>
+<a href="#L145">145</a>
+<a href="#L146">146</a>
+<a href="#L147">147</a>
+<a href="#L148">148</a>
+<a href="#L149">149</a>
+<a href="#L150">150</a>
+<a href="#L151">151</a>
+<a href="#L152">152</a>
+<a href="#L153">153</a>
+<a href="#L154">154</a>
+<a href="#L155">155</a>
+<a href="#L156">156</a>
+<a href="#L157">157</a>
+<a href="#L158">158</a>
+<a href="#L159">159</a>
+<a href="#L160">160</a>
+<a href="#L161">161</a>
+<a href="#L162">162</a>
+<a href="#L163">163</a>
+<a href="#L164">164</a>
+<a href="#L165">165</a>
+<a href="#L166">166</a>
+<a href="#L167">167</a>
+<a href="#L168">168</a>
+<a href="#L169">169</a>
+<a href="#L170">170</a>
+<a href="#L171">171</a>
+<a href="#L172">172</a>
+<a href="#L173">173</a>
+<a href="#L174">174</a>
+<a href="#L175">175</a>
+<a href="#L176">176</a>
+<a href="#L177">177</a>
+<a href="#L178">178</a>
+<a href="#L179">179</a>
+<a href="#L180">180</a>
+<a href="#L181">181</a>
+<a href="#L182">182</a>
+<a href="#L183">183</a>
+</pre>
+<pre><code class="ocaml">[@@@ocaml.text "/*"]
+
+(** Copyright 2021-2024, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+[@@@ocaml.text "/*"]
+
+open Base
+open DMotuzov_lib.Parser
+open DMotuzov_lib.Interpreter
+
+let string_of_value = function
+  | <span data-count="14">V</span>alInt n -&gt; Int.to_string n
+  | <span data-count="0">V</span>alUnit -&gt; "()"
+  | <span data-count="0">V</span>alFun (_, _, _) -&gt; "&lt;fun&gt;"
+  | <span data-count="5">R</span>ecClosure (_, _, _, _) -&gt; "&lt;rec-fun&gt;"
+  | <span data-count="14">B</span>uiltin _ -&gt; "&lt;builtin_fun&gt;"
+;;
+
+let print_env env =
+  <span data-count="13">M</span>ap.iteri env ~f:(fun ~key ~data -&gt;
+    <span data-count="33">S</span>tdlib.Format.printf "val %s = %s\n" key (string_of_valu<span data-count="33">e</span> data))
+;;
+
+let run input maxsteps =
+  <span data-count="15">m</span>atch parse input with
+  | <span data-count="15">O</span>k ast -&gt;
+    (match run_interpreter ast maxsteps with
+     | <span data-count="13">O</span>k env -&gt; print_env env
+     | <span data-count="2">E</span>rror e -&gt;
+       let err_str =
+         match e with
+         | <span data-count="1">T</span>ypeError -&gt; "Error: Type error"
+         | <span data-count="0">D</span>ivisionByZero -&gt; "Error: Division by zero"
+         | <span data-count="0">N</span>oVariable id -&gt; "Error: Unknown variable: " ^ id
+         | <span data-count="1">O</span>utOfMaxSteps -&gt; "Error: Out of maximum allowed evaluation steps"
+       in
+       Stdlib.Format.printf "%s\n" err_str)
+  | <span data-count="0">E</span>rror err -&gt; Stdlib.Format.printf "Parse Error: %s\n" err
+;;
+
+let%expect_test "simple let binding" =
+  <span data-count="1">r</span>un "let a = 4 + 4;;" 1000;
+  <span data-count="1">[</span>%expect {|
+  val a = 8
+  val print_int = &lt;builtin_fun&gt;
+  |}<span data-count="9">]</span>
+;;
+
+let%expect_test "let in expression" =
+  <span data-count="1">r</span>un "let f = let x = 3 in x + 2;;" 1000;
+  <span data-count="1">[</span>%expect {|
+  val f = 5
+  val print_int = &lt;builtin_fun&gt;
+  |}<span data-count="9">]</span>
+;;
+
+let%expect_test "conditional expression" =
+  <span data-count="1">r</span>un "let a = if 1 then 10 else 20;;" 1000;
+  <span data-count="1">[</span>%expect {|
+  val a = 10
+  val print_int = &lt;builtin_fun&gt;
+  |}<span data-count="9">]</span>
+;;
+
+let%expect_test "conditional expression with bin op" =
+  <span data-count="1">r</span>un "let a =20 + if 1 then 10 else 20;;" 1000;
+  <span data-count="1">[</span>%expect {|
+  val a = 30
+  val print_int = &lt;builtin_fun&gt;
+  |}<span data-count="9">]</span>
+;;
+
+let%expect_test "nested if" =
+  <span data-count="1">r</span>un "let x = if 1 then if 0 then 2 else 3 else 4 ;;" 1000;
+  <span data-count="1">[</span>%expect {|
+  val print_int = &lt;builtin_fun&gt;
+  val x = 3
+  |}<span data-count="9">]</span>
+;;
+
+let%expect_test "nested if" =
+  <span data-count="1">r</span>un "let x = if 1 then if 0 then 2 else 3 else 4 ;;let y = 2 + x;;" 1000;
+  <span data-count="1">[</span>%expect {|
+    val print_int = &lt;builtin_fun&gt;
+    val x = 3
+    val y = 5 |}<span data-count="9">]</span>
+;;
+
+"let x = (fun x y -&gt; x + y) 3 4 ;;"
+
+let%expect_test "application" =
+  <span data-count="1">r</span>un "let x = (fun x y -&gt; x + y) 3 4 ;;" 1000;
+  <span data-count="1">[</span>%expect {|
+    val print_int = &lt;builtin_fun&gt;
+    val x = 7 |}<span data-count="9">]</span>
+;;
+
+let%expect_test "fact" =
+  <span data-count="1">r</span>un
+    "let f = let rec fact = fun n -&gt; if n then n * fact (n - 1) else 1 in fact ;; let y \
+     = f 10;;"
+    1000;
+  <span data-count="1">[</span>%expect
+    {|
+    val f = &lt;rec-fun&gt;
+    val print_int = &lt;builtin_fun&gt;
+    val y = 3628800 |}<span data-count="9">]</span>
+;;
+
+"let rec fib = fun n -&gt; if n then if n - 1 then fib (n - 1) + fib (n - 2) else 1 else 0 \
+ ;;"
+
+let%expect_test "fib" =
+  <span data-count="1">r</span>un
+    "let rec fib = fun n -&gt; if n then if n - 1 then fib (n - 1) + fib (n - 2) else 1 \
+     else 0 ;; let y = fib 10;;"
+    10000;
+  <span data-count="1">[</span>%expect {|
+    val fib = &lt;rec-fun&gt;
+    val print_int = &lt;builtin_fun&gt;
+    val y = 55 |}<span data-count="9">]</span>
+;;
+
+let%expect_test "local let rec fact" =
+  <span data-count="1">r</span>un
+    "let f =\n\
+    \       let rec fact = fun n -&gt;\n\
+    \         if n then n * fact (n - 1) else 1\n\
+    \       in fact\n\
+    \     ;; let y = f 5 ;;"
+    1000;
+  <span data-count="1">[</span>%expect {|
+    val f = &lt;rec-fun&gt;
+    val print_int = &lt;builtin_fun&gt;
+    val y = 120 |}<span data-count="9">]</span>
+;;
+
+let%expect_test "fix" =
+  <span data-count="1">r</span>un "let id = fix (fun f -&gt; fun x -&gt; x) ;;let y = id 10;;" 1000;
+  <span data-count="1">[</span>%expect {|
+    val id = &lt;rec-fun&gt;
+    val print_int = &lt;builtin_fun&gt;
+    val y = 10 |}<span data-count="9">]</span>
+;;
+
+let%expect_test "fix factorial" =
+  <span data-count="1">r</span>un
+    "let fact = fix (fun f n -&gt; if n then n * (f (n - 1)) else 1) ;;\n\
+    \       let y = fact 6 ;;"
+    1000;
+  <span data-count="1">[</span>%expect
+    {|
+    val fact = &lt;rec-fun&gt;
+    val print_int = &lt;builtin_fun&gt;
+    val y = 720 |}<span data-count="9">]</span>
+;;
+
+let%expect_test "print_int" =
+  <span data-count="1">r</span>un "let y = 40;;let x = print_int 1 y ((fun x -&gt; x ) 5) (if 1 then 10 else 20);;" 1000;
+  <span data-count="1">[</span>%expect
+    {|
+    1
+    40
+    5
+    10
+    val print_int = &lt;builtin_fun&gt;
+    val x = &lt;builtin_fun&gt;
+    val y = 40 |}<span data-count="9">]</span>
+;;
+
+let%expect_test "incorrect_print_int" =
+  <span data-count="1">r</span>un "let x = print_int (fun x -&gt; x );;" 1000;
+  <span data-count="1">[</span>%expect {|
+    Error: Type error |}<span data-count="9">]</span>
+;;
+
+let%expect_test "infinity_steps" =
+  <span data-count="1">r</span>un "let rec x = fun n -&gt; x n;; let y = x 5;;" 1000;
+  <span data-count="1">[</span>%expect {|
+    Error: Out of maximum allowed evaluation steps |}<span data-count="9">]</span>
+;;
+</code></pre>
+      </div>
+    </div>
+    <script src="../../coverage.js"></script>
+  </body>
+</html>
