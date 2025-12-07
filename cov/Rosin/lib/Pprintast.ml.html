@@ -111,29 +111,29 @@ open Format
 open Ast
 
 let rec pp fmt = function
-  | <span data-count="2401">N</span>um n -&gt; fprintf fmt "%d" n
-  | <span data-count="2686">V</span>ar v -&gt; fprintf fmt "%s" v
-  | <span data-count="365">U</span>nop (Inc, e) -&gt; fprintf fmt "++%a" pp e
-  | <span data-count="354">U</span>nop (Dec, e) -&gt; fprintf fmt "--%a" pp e
-  | <span data-count="777">B</span>inop (op, left, right) -&gt;
+  | <span data-count="2452">N</span>um n -&gt; fprintf fmt "%d" n
+  | <span data-count="2590">V</span>ar v -&gt; fprintf fmt "%s" v
+  | <span data-count="339">U</span>nop (Inc, e) -&gt; fprintf fmt "++%a" pp e
+  | <span data-count="347">U</span>nop (Dec, e) -&gt; fprintf fmt "--%a" pp e
+  | <span data-count="761">B</span>inop (op, left, right) -&gt;
     let op_str =
       match op with
-      | <span data-count="199">P</span>lus -&gt; "+"
-      | <span data-count="196">M</span>inus -&gt; "-"
-      | <span data-count="183">M</span>ult -&gt; "*"
-      | <span data-count="199">D</span>iv -&gt; "/"
+      | <span data-count="201">P</span>lus -&gt; "+"
+      | <span data-count="215">M</span>inus -&gt; "-"
+      | <span data-count="181">M</span>ult -&gt; "*"
+      | <span data-count="164">D</span>iv -&gt; "/"
     in
     fprintf fmt "%a %s %a" pp left op_str pp right
-  | <span data-count="351">I</span>f (cond, then_e, else_e) -&gt;
+  | <span data-count="357">I</span>f (cond, then_e, else_e) -&gt;
     fprintf fmt "if %a then %a" pp cond pp then_e;
-    <span data-count="351">(</span>match else_e with
-     | <span data-count="295">S</span>ome e -&gt; fprintf fmt " else %a" pp e
-     | <span data-count="56">N</span>one -&gt; ())
-  | <span data-count="413">F</span>un (name, e) -&gt; fprintf fmt "fun %s -&gt; %a" name pp e
-  | <span data-count="386">L</span>et (name, rhs, body) -&gt; fprintf fmt "let %s = %a in %a" name pp rhs pp body
-  | <span data-count="361">L</span>etrec (name, rhs, body) -&gt; fprintf fmt "let rec %s = %a in %a" name pp rhs pp body
-  | <span data-count="599">A</span>pp (f, x) -&gt; fprintf fmt "%a %a" pp f pp x
-  | <span data-count="334">P</span>rint e -&gt; fprintf fmt "print %a" pp e
+    <span data-count="357">(</span>match else_e with
+     | <span data-count="286">S</span>ome e -&gt; fprintf fmt " else %a" pp e
+     | <span data-count="71">N</span>one -&gt; ())
+  | <span data-count="419">F</span>un (name, e) -&gt; fprintf fmt "fun %s -&gt; %a" name pp e
+  | <span data-count="328">L</span>et (name, rhs, body) -&gt; fprintf fmt "let %s = %a in %a" name pp rhs pp body
+  | <span data-count="360">L</span>etrec (name, rhs, body) -&gt; fprintf fmt "let rec %s = %a in %a" name pp rhs pp body
+  | <span data-count="573">A</span>pp (f, x) -&gt; fprintf fmt "%a %a" pp f pp x
+  | <span data-count="336">P</span>rint e -&gt; fprintf fmt "print %a" pp e
 ;;
 </code></pre>
       </div>

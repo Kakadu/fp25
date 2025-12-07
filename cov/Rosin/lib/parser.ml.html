@@ -285,68 +285,68 @@
 open Angstrom
 
 let is_space = function
-  | <span data-count="5944">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\n' | <span data-count="0">'</span>\r' -&gt; true
-  | <span data-count="8870">_</span> -&gt; false
+  | <span data-count="5908">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\n' | <span data-count="0">'</span>\r' -&gt; true
+  | <span data-count="8796">_</span> -&gt; false
 ;;
 
 let spaces = skip_whil<span data-count="25">e</span> is_space
-let token p = <span data-count="3842">p</span> &lt;* spaces
-let parens p = <span data-count="1176">t</span>oke<span data-count="1176">n</span> (cha<span data-count="1176">r</span> '(') *<span data-count="1176">&gt;</span> p &lt;* toke<span data-count="1176">n</span> (cha<span data-count="1176">r</span> ')')
+let token p = <span data-count="3771">p</span> &lt;* spaces
+let parens p = <span data-count="1148">t</span>oke<span data-count="1148">n</span> (cha<span data-count="1148">r</span> '(') *<span data-count="1148">&gt;</span> p &lt;* toke<span data-count="1148">n</span> (cha<span data-count="1148">r</span> ')')
 
 let number =
   let positive =
     token
       (take_while<span data-count="25">1</span> (function
-        | <span data-count="2281">'</span>0' .. '9' -&gt; true
-        | <span data-count="3363">_</span> -&gt; false))
+        | <span data-count="2398">'</span>0' .. '9' -&gt; true
+        | <span data-count="3257">_</span> -&gt; false))
   in
   <span data-count="25">t</span>oke<span data-count="25">n</span>
     (optio<span data-count="25">n</span> '+' (cha<span data-count="25">r</span> '-')
      &gt;&gt;<span data-count="25">=</span> fun sign -&gt;
-     <span data-count="4619">p</span>ositive
+     <span data-count="4581">p</span>ositive
      &gt;&gt;| fun num -&gt;
-     <span data-count="1208">m</span>atch sign with
-     | <span data-count="563">'</span>-' -&gt; -int_of_strin<span data-count="563">g</span> num
-     | <span data-count="645">_</span> -&gt; int_of_string num)
+     <span data-count="1268">m</span>atch sign with
+     | <span data-count="598">'</span>-' -&gt; -int_of_strin<span data-count="598">g</span> num
+     | <span data-count="670">_</span> -&gt; int_of_string num)
 ;;
 
-let number_expr = number &gt;&gt;<span data-count="25">|</span> fun num -&gt; <span data-count="1208">A</span>st.Num num
+let number_expr = number &gt;&gt;<span data-count="25">|</span> fun num -&gt; <span data-count="1268">A</span>st.Num num
 
 let varname =
   let is_var_char = function
-    | <span data-count="6897">'</span>a' .. 'z' | <span data-count="0">'</span>A' .. 'Z' | <span data-count="2">'</span>_' -&gt; true
-    | <span data-count="4413">_</span> -&gt; false
+    | <span data-count="6889">'</span>a' .. 'z' | <span data-count="0">'</span>A' .. 'Z' | <span data-count="2">'</span>_' -&gt; true
+    | <span data-count="4328">_</span> -&gt; false
   in
   toke<span data-count="25">n</span> (take_while<span data-count="25">1</span> is_var_char)
   &gt;&gt;<span data-count="25">=</span> fun s -&gt;
-  <span data-count="4050">m</span>atch s with
-  | <span data-count="121">"</span>if" | <span data-count="65">"</span>then" | <span data-count="56">"</span>else" | <span data-count="67">"</span>fun" | <span data-count="279">"</span>let" | <span data-count="0">"</span>rec" | <span data-count="0">"</span>letrec" | <span data-count="163">"</span>in" | <span data-count="357">"</span>print" -&gt;
+  <span data-count="3969">m</span>atch s with
+  | <span data-count="134">"</span>if" | <span data-count="75">"</span>then" | <span data-count="36">"</span>else" | <span data-count="53">"</span>fun" | <span data-count="253">"</span>let" | <span data-count="0">"</span>rec" | <span data-count="0">"</span>letrec" | <span data-count="143">"</span>in" | <span data-count="405">"</span>print" -&gt;
     fail ("reserved keyword: " ^ s)
-  | <span data-count="2942">_</span> -&gt; return s
+  | <span data-count="2870">_</span> -&gt; return s
 ;;
 
-let varname_expr = varname &gt;&gt;<span data-count="25">|</span> fun v -&gt; <span data-count="2360">A</span>st.Var v
+let varname_expr = varname &gt;&gt;<span data-count="25">|</span> fun v -&gt; <span data-count="2281">A</span>st.Var v
 let unop = toke<span data-count="25">n</span> (strin<span data-count="25">g</span> "++" *<span data-count="25">&gt;</span> retur<span data-count="25">n</span> Ast.Inc &lt;|<span data-count="25">&gt;</span> strin<span data-count="25">g</span> "--" *<span data-count="25">&gt;</span> retur<span data-count="25">n</span> Ast.Dec)
 let mult_div_op = toke<span data-count="25">n</span> (cha<span data-count="25">r</span> '*' *<span data-count="25">&gt;</span> retur<span data-count="25">n</span> Ast.Mult &lt;|<span data-count="25">&gt;</span> cha<span data-count="25">r</span> '/' *<span data-count="25">&gt;</span> retur<span data-count="25">n</span> Ast.Div)
 let add_sub_op = toke<span data-count="25">n</span> (cha<span data-count="25">r</span> '+' *<span data-count="25">&gt;</span> retur<span data-count="25">n</span> Ast.Plus &lt;|<span data-count="25">&gt;</span> cha<span data-count="25">r</span> '-' *<span data-count="25">&gt;</span> retur<span data-count="25">n</span> Ast.Minus)
-let multi_fun args = <span data-count="189">L</span>ist.fold_right (fun arg body -&gt; <span data-count="193">A</span>st.Fun (arg, body)) args
+let multi_fun args = <span data-count="229">L</span>ist.fold_right (fun arg body -&gt; <span data-count="233">A</span>st.Fun (arg, body)) args
 
 let expr =
   fi<span data-count="25">x</span> (fun expr -&gt;
     <span data-count="24">l</span>et unop_expr =
       unop
-      &gt;&gt;= fun op -&gt; <span data-count="403">c</span>hoic<span data-count="403">e</span> [ number_expr; varname_expr ] &gt;&gt;| fun var -&gt; <span data-count="276">A</span>st.Unop (op, var)
+      &gt;&gt;= fun op -&gt; <span data-count="380">c</span>hoic<span data-count="380">e</span> [ number_expr; varname_expr ] &gt;&gt;| fun var -&gt; <span data-count="277">A</span>st.Unop (op, var)
     in
     <span data-count="24">l</span>et fun_expr =
       toke<span data-count="24">n</span> (strin<span data-count="24">g</span> "fun") *<span data-count="24">&gt;</span> many<span data-count="24">1</span> varname
       &gt;&gt;= fun args -&gt;
-      <span data-count="212">t</span>oke<span data-count="212">n</span> (strin<span data-count="212">g</span> "-&gt;") *<span data-count="212">&gt;</span> expr &gt;&gt;= fun body -&gt; <span data-count="188">r</span>eturn @@ multi_fu<span data-count="188">n</span> args body
+      <span data-count="244">t</span>oke<span data-count="244">n</span> (strin<span data-count="244">g</span> "-&gt;") *<span data-count="244">&gt;</span> expr &gt;&gt;= fun body -&gt; <span data-count="228">r</span>eturn @@ multi_fu<span data-count="228">n</span> args body
     in
     <span data-count="24">l</span>et app_expr =
       choic<span data-count="24">e</span> [ fun_expr; varname_expr ]
       &gt;&gt;= fun name -&gt;
-      <span data-count="1152">m</span>any<span data-count="1152">1</span> (choic<span data-count="1152">e</span> [ number_expr; varname_expr; paren<span data-count="1152">s</span> expr ])
-      &gt;&gt;| fun args -&gt; <span data-count="113">L</span>ist.fold_left (fun f arg -&gt; <span data-count="136">A</span>st.App (f, arg)) name args
+      <span data-count="1124">m</span>any<span data-count="1124">1</span> (choic<span data-count="1124">e</span> [ number_expr; varname_expr; paren<span data-count="1124">s</span> expr ])
+      &gt;&gt;| fun args -&gt; <span data-count="123">L</span>ist.fold_left (fun f arg -&gt; <span data-count="142">A</span>st.App (f, arg)) name args
     in
     <span data-count="24">l</span>et unary_expr =
       choice [ number_expr; app_expr; varname_expr; unop_expr; paren<span data-count="24">s</span> expr ]
@@ -354,53 +354,53 @@ let expr =
     <span data-count="24">l</span>et mult_expr =
       unary_expr
       &gt;&gt;= fun first -&gt;
-      <span data-count="2159">m</span>an<span data-count="2159">y</span> (mult_div_op &gt;&gt;<span data-count="2159">=</span> fun op -&gt; <span data-count="181">u</span>nary_expr &gt;&gt;| fun right -&gt; <span data-count="146">o</span>p, right)
-      &gt;&gt;| List.fold_lef<span data-count="2159">t</span> (fun left (op, right) -&gt; <span data-count="146">A</span>st.Binop (op, left, right)) first
+      <span data-count="2173">m</span>an<span data-count="2173">y</span> (mult_div_op &gt;&gt;<span data-count="2173">=</span> fun op -&gt; <span data-count="151">u</span>nary_expr &gt;&gt;| fun right -&gt; <span data-count="129">o</span>p, right)
+      &gt;&gt;| List.fold_lef<span data-count="2173">t</span> (fun left (op, right) -&gt; <span data-count="129">A</span>st.Binop (op, left, right)) first
     in
     <span data-count="24">l</span>et add_expr =
       mult_expr
       &gt;&gt;= fun first -&gt;
-      <span data-count="1978">m</span>an<span data-count="1978">y</span> (add_sub_op &gt;&gt;<span data-count="1978">=</span> fun op -&gt; <span data-count="232">m</span>ult_expr &gt;&gt;| fun right -&gt; <span data-count="181">o</span>p, right)
-      &gt;&gt;| List.fold_lef<span data-count="1978">t</span> (fun left (op, right) -&gt; <span data-count="181">A</span>st.Binop (op, left, right)) first
+      <span data-count="1982">m</span>an<span data-count="1982">y</span> (add_sub_op &gt;&gt;<span data-count="1982">=</span> fun op -&gt; <span data-count="237">m</span>ult_expr &gt;&gt;| fun right -&gt; <span data-count="191">o</span>p, right)
+      &gt;&gt;| List.fold_lef<span data-count="1982">t</span> (fun left (op, right) -&gt; <span data-count="191">A</span>st.Binop (op, left, right)) first
     in
     <span data-count="24">l</span>et if_expr =
       toke<span data-count="24">n</span> (strin<span data-count="24">g</span> "if") *<span data-count="24">&gt;</span> expr
       &gt;&gt;= fun cond -&gt;
       <span data-count="163">t</span>oke<span data-count="163">n</span> (strin<span data-count="163">g</span> "then") *<span data-count="163">&gt;</span> expr
       &gt;&gt;= fun then_branch -&gt;
-      <span data-count="137">o</span>ptio<span data-count="137">n</span> None (toke<span data-count="137">n</span> (strin<span data-count="137">g</span> "else") *<span data-count="137">&gt;</span> expr &gt;&gt;<span data-count="137">|</span> fun e -&gt; <span data-count="103">S</span>ome e)
-      &gt;&gt;= fun else_branch -&gt; <span data-count="137">r</span>eturn @@ Ast.If (cond, then_branch, else_branch)
+      <span data-count="141">o</span>ptio<span data-count="141">n</span> None (toke<span data-count="141">n</span> (strin<span data-count="141">g</span> "else") *<span data-count="141">&gt;</span> expr &gt;&gt;<span data-count="141">|</span> fun e -&gt; <span data-count="103">S</span>ome e)
+      &gt;&gt;= fun else_branch -&gt; <span data-count="141">r</span>eturn @@ Ast.If (cond, then_branch, else_branch)
     in
     <span data-count="24">l</span>et let_expr =
       toke<span data-count="24">n</span> (strin<span data-count="24">g</span> "let") *<span data-count="24">&gt;</span> (toke<span data-count="24">n</span> (strin<span data-count="24">g</span> "rec") *<span data-count="24">&gt;</span> retur<span data-count="24">n</span> true &lt;|<span data-count="24">&gt;</span> retur<span data-count="24">n</span> false)
       &gt;&gt;= fun is_rec -&gt;
-      <span data-count="365">v</span>arname
+      <span data-count="340">v</span>arname
       &gt;&gt;= fun name -&gt;
-      <span data-count="365">m</span>an<span data-count="365">y</span> varname
+      <span data-count="340">m</span>an<span data-count="340">y</span> varname
       &gt;&gt;= fun args -&gt;
-      <span data-count="365">t</span>oke<span data-count="365">n</span> (cha<span data-count="365">r</span> '=') *<span data-count="365">&gt;</span> expr
+      <span data-count="340">t</span>oke<span data-count="340">n</span> (cha<span data-count="340">r</span> '=') *<span data-count="340">&gt;</span> expr
       &gt;&gt;= fun value -&gt;
-      <span data-count="343">l</span>et body =
+      <span data-count="317">l</span>et body =
         match args with
-        | <span data-count="342">[</span>] -&gt; value
+        | <span data-count="316">[</span>] -&gt; value
         | <span data-count="1">_</span> -&gt; multi_fu<span data-count="1">n</span> args value
       in
-      toke<span data-count="343">n</span> (strin<span data-count="343">g</span> "in") *<span data-count="343">&gt;</span> expr
+      toke<span data-count="317">n</span> (strin<span data-count="317">g</span> "in") *<span data-count="317">&gt;</span> expr
       &gt;&gt;= fun res -&gt;
-      <span data-count="285">i</span>f is_rec
-      then <span data-count="137">r</span>eturn @@ Ast.Letrec (name, body, res)
-      else <span data-count="148">r</span>eturn @@ Ast.Let (name, body, res)
+      <span data-count="272">i</span>f is_rec
+      then <span data-count="143">r</span>eturn @@ Ast.Letrec (name, body, res)
+      else <span data-count="129">r</span>eturn @@ Ast.Let (name, body, res)
     in
-    <span data-count="24">l</span>et print_expr = toke<span data-count="24">n</span> (strin<span data-count="24">g</span> "print") *<span data-count="24">&gt;</span> unary_expr &gt;&gt;| fun var -&gt; <span data-count="115">A</span>st.Print var in
+    <span data-count="24">l</span>et print_expr = toke<span data-count="24">n</span> (strin<span data-count="24">g</span> "print") *<span data-count="24">&gt;</span> unary_expr &gt;&gt;| fun var -&gt; <span data-count="134">A</span>st.Print var in
     <span data-count="24">c</span>hoice [ if_expr; fun_expr; let_expr; add_expr; print_expr ])
 ;;
 
 type error = [ `Parsing_error of string ]
 
 let parse str =
-  <span data-count="1652">m</span>atch Angstrom.parse_string ~consume:Consume.All (spaces *<span data-count="1652">&gt;</span> expr &lt;<span data-count="1652">*</span> spaces) str with
-  | <span data-count="1268">R</span>esult.Ok x -&gt; Result.Ok x
-  | <span data-count="384">E</span>rror msg -&gt; Result.Error (`Parsing_error msg)
+  <span data-count="1683">m</span>atch Angstrom.parse_string ~consume:Consume.All (spaces *<span data-count="1683">&gt;</span> expr &lt;<span data-count="1683">*</span> spaces) str with
+  | <span data-count="1327">R</span>esult.Ok x -&gt; Result.Ok x
+  | <span data-count="356">E</span>rror msg -&gt; Result.Error (`Parsing_error msg)
 ;;
 </code></pre>
       </div>
