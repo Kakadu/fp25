@@ -7,7 +7,6 @@
 [@@@ocaml.text "/*"]
 
 open Miniml_lib
-open Stdio
 open Interpret
 
 let string_of_value = function
@@ -38,17 +37,21 @@ type args =
 let () =
   let pr_args = { ast = true; steps = max_int } in
   let arg_list =
-    [ "--ast", Arg.Unit (fun () -> pr_args.ast <- false), ""
-    ; "--steps", Arg.Int (fun n -> pr_args.steps <- n), ""
+    [ "--ast", Arg.Unit (fun () -> pr_args.ast <- false), "turn off AST printing"
+    ; ( "--steps"
+      , Arg.Int (fun n -> pr_args.steps <- n)
+      , "specify the number of intrpreter steps" )
     ]
   in
   let usage_msg = "miniMl starts...\n" in
   Arg.parse arg_list (fun _ -> ()) usage_msg;
-  Format.printf "AST here:\n";
   let expr =
-    match Parser.parse (In_channel.(input_all stdin) |> Base.String.rstrip) with
+    match Parser.parse (String.trim @@ In_channel.(input_all stdin)) with
     | Ok expr ->
-      let _ = if pr_args.ast then Pprintast.pp Format.std_formatter expr in
+      let _ =
+        if pr_args.ast then Format.printf "AST here:\n";
+        Pprintast.pp Format.std_formatter expr
+      in
       expr
     | Error (`Parsing_error msg) -> failwith msg
   in
