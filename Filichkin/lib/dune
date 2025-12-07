@@ -1,0 +1,10 @@
+(library
+ (name Filichkin_lib)
+ (public_name Filichkin.Lib)
+ (modules Ast Parser Print)
+ (modules_without_implementation ast)
+ (libraries base angstrom)
+ (preprocess
+  (pps ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx)))
