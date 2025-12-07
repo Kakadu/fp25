@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>parser.ml &mdash; Coverage report</title>
+    <meta name="description" content="95.60% coverage in lib/parser.ml">
+    <link rel="stylesheet" href="../coverage.css"/>
+    <script src="../highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </head>
+  <body>
+    <div id="header">
+      <h1>
+        <a href="../index.html">
+          <span class="dirname">lib/</span>parser.ml
+        </a>
+      </h1>
+      <h2>95.60%</h2>
+    </div>
+    <div id="navbar">
+      <span class="some-visited" style="top:5.96%"></span>
+      <span class="some-visited" style="top:10.60%"></span>
+      <span class="some-visited" style="top:14.57%"></span>
+    </div>
+    <div id="report">
+      <div id="lines-layer">
+        <pre>
+<a id="L1"></a><span > </span>
+<a id="L2"></a><span > </span>
+<a id="L3"></a><span > </span>
+<a id="L4"></a><span > </span>
+<a id="L5"></a><span class="visited"> </span>
+<a id="L6"></a><span class="visited"> </span>
+<a id="L7"></a><span > </span>
+<a id="L8"></a><span > </span>
+<a id="L9"></a><span class="some-visited"> </span>
+<a id="L10"></a><span class="visited"> </span>
+<a id="L11"></a><span > </span>
+<a id="L12"></a><span > </span>
+<a id="L13"></a><span > </span>
+<a id="L14"></a><span > </span>
+<a id="L15"></a><span class="visited"> </span>
+<a id="L16"></a><span class="some-visited"> </span>
+<a id="L17"></a><span class="visited"> </span>
+<a id="L18"></a><span class="visited"> </span>
+<a id="L19"></a><span > </span>
+<a id="L20"></a><span class="visited"> </span>
+<a id="L21"></a><span class="visited"> </span>
+<a id="L22"></a><span class="some-visited"> </span>
+<a id="L23"></a><span class="visited"> </span>
+<a id="L24"></a><span > </span>
+<a id="L25"></a><span class="visited"> </span>
+<a id="L26"></a><span > </span>
+<a id="L27"></a><span class="visited"> </span>
+<a id="L28"></a><span > </span>
+<a id="L29"></a><span > </span>
+<a id="L30"></a><span > </span>
+<a id="L31"></a><span class="visited"> </span>
+<a id="L32"></a><span > </span>
+<a id="L33"></a><span > </span>
+<a id="L34"></a><span > </span>
+<a id="L35"></a><span class="visited"> </span>
+<a id="L36"></a><span class="visited"> </span>
+<a id="L37"></a><span class="visited"> </span>
+<a id="L38"></a><span class="visited"> </span>
+<a id="L39"></a><span class="visited"> </span>
+<a id="L40"></a><span > </span>
+<a id="L41"></a><span > </span>
+<a id="L42"></a><span > </span>
+<a id="L43"></a><span class="visited"> </span>
+<a id="L44"></a><span class="visited"> </span>
+<a id="L45"></a><span class="visited"> </span>
+<a id="L46"></a><span class="visited"> </span>
+<a id="L47"></a><span class="visited"> </span>
+<a id="L48"></a><span > </span>
+<a id="L49"></a><span > </span>
+<a id="L50"></a><span > </span>
+<a id="L51"></a><span class="visited"> </span>
+<a id="L52"></a><span class="visited"> </span>
+<a id="L53"></a><span class="visited"> </span>
+<a id="L54"></a><span class="visited"> </span>
+<a id="L55"></a><span > </span>
+<a id="L56"></a><span class="visited"> </span>
+<a id="L57"></a><span class="visited"> </span>
+<a id="L58"></a><span > </span>
+<a id="L59"></a><span class="visited"> </span>
+<a id="L60"></a><span > </span>
+<a id="L61"></a><span class="visited"> </span>
+<a id="L62"></a><span > </span>
+<a id="L63"></a><span class="visited"> </span>
+<a id="L64"></a><span class="visited"> </span>
+<a id="L65"></a><span > </span>
+<a id="L66"></a><span class="visited"> </span>
+<a id="L67"></a><span > </span>
+<a id="L68"></a><span class="visited"> </span>
+<a id="L69"></a><span > </span>
+<a id="L70"></a><span class="visited"> </span>
+<a id="L71"></a><span class="visited"> </span>
+<a id="L72"></a><span > </span>
+<a id="L73"></a><span class="visited"> </span>
+<a id="L74"></a><span > </span>
+<a id="L75"></a><span class="visited"> </span>
+<a id="L76"></a><span > </span>
+<a id="L77"></a><span class="visited"> </span>
+<a id="L78"></a><span class="visited"> </span>
+<a id="L79"></a><span > </span>
+<a id="L80"></a><span class="visited"> </span>
+<a id="L81"></a><span > </span>
+<a id="L82"></a><span class="visited"> </span>
+<a id="L83"></a><span class="visited"> </span>
+<a id="L84"></a><span > </span>
+<a id="L85"></a><span class="visited"> </span>
+<a id="L86"></a><span class="visited"> </span>
+<a id="L87"></a><span > </span>
+<a id="L88"></a><span class="visited"> </span>
+<a id="L89"></a><span class="visited"> </span>
+<a id="L90"></a><span class="visited"> </span>
+<a id="L91"></a><span class="visited"> </span>
+<a id="L92"></a><span class="visited"> </span>
+<a id="L93"></a><span class="visited"> </span>
+<a id="L94"></a><span > </span>
+<a id="L95"></a><span > </span>
+<a id="L96"></a><span class="visited"> </span>
+<a id="L97"></a><span > </span>
+<a id="L98"></a><span class="visited"> </span>
+<a id="L99"></a><span class="visited"> </span>
+<a id="L100"></a><span class="visited"> </span>
+<a id="L101"></a><span class="visited"> </span>
+<a id="L102"></a><span > </span>
+<a id="L103"></a><span > </span>
+<a id="L104"></a><span > </span>
+<a id="L105"></a><span class="visited"> </span>
+<a id="L106"></a><span class="visited"> </span>
+<a id="L107"></a><span > </span>
+<a id="L108"></a><span class="visited"> </span>
+<a id="L109"></a><span > </span>
+<a id="L110"></a><span > </span>
+<a id="L111"></a><span class="visited"> </span>
+<a id="L112"></a><span > </span>
+<a id="L113"></a><span class="visited"> </span>
+<a id="L114"></a><span class="visited"> </span>
+<a id="L115"></a><span class="visited"> </span>
+<a id="L116"></a><span > </span>
+<a id="L117"></a><span > </span>
+<a id="L118"></a><span > </span>
+<a id="L119"></a><span class="visited"> </span>
+<a id="L120"></a><span class="visited"> </span>
+<a id="L121"></a><span > </span>
+<a id="L122"></a><span class="visited"> </span>
+<a id="L123"></a><span > </span>
+<a id="L124"></a><span > </span>
+<a id="L125"></a><span class="visited"> </span>
+<a id="L126"></a><span > </span>
+<a id="L127"></a><span class="visited"> </span>
+<a id="L128"></a><span class="visited"> </span>
+<a id="L129"></a><span class="visited"> </span>
+<a id="L130"></a><span > </span>
+<a id="L131"></a><span > </span>
+<a id="L132"></a><span > </span>
+<a id="L133"></a><span > </span>
+<a id="L134"></a><span > </span>
+<a id="L135"></a><span class="visited"> </span>
+<a id="L136"></a><span class="visited"> </span>
+<a id="L137"></a><span class="visited"> </span>
+<a id="L138"></a><span > </span>
+<a id="L139"></a><span class="visited"> </span>
+<a id="L140"></a><span > </span>
+<a id="L141"></a><span > </span>
+<a id="L142"></a><span > </span>
+<a id="L143"></a><span class="visited"> </span>
+<a id="L144"></a><span class="visited"> </span>
+<a id="L145"></a><span class="visited"> </span>
+<a id="L146"></a><span > </span>
+<a id="L147"></a><span class="visited"> </span>
+<a id="L148"></a><span > </span>
+<a id="L149"></a><span > </span>
+<a id="L150"></a><span class="visited"> </span>
+<a id="L151"></a><span class="visited"> </span>
+</pre>
+      </div>
+      <div id="text-layer">
+        <pre id="line-numbers">
+<a href="#L1">  1</a>
+<a href="#L2">  2</a>
+<a href="#L3">  3</a>
+<a href="#L4">  4</a>
+<a href="#L5">  5</a>
+<a href="#L6">  6</a>
+<a href="#L7">  7</a>
+<a href="#L8">  8</a>
+<a href="#L9">  9</a>
+<a href="#L10"> 10</a>
+<a href="#L11"> 11</a>
+<a href="#L12"> 12</a>
+<a href="#L13"> 13</a>
+<a href="#L14"> 14</a>
+<a href="#L15"> 15</a>
+<a href="#L16"> 16</a>
+<a href="#L17"> 17</a>
+<a href="#L18"> 18</a>
+<a href="#L19"> 19</a>
+<a href="#L20"> 20</a>
+<a href="#L21"> 21</a>
+<a href="#L22"> 22</a>
+<a href="#L23"> 23</a>
+<a href="#L24"> 24</a>
+<a href="#L25"> 25</a>
+<a href="#L26"> 26</a>
+<a href="#L27"> 27</a>
+<a href="#L28"> 28</a>
+<a href="#L29"> 29</a>
+<a href="#L30"> 30</a>
+<a href="#L31"> 31</a>
+<a href="#L32"> 32</a>
+<a href="#L33"> 33</a>
+<a href="#L34"> 34</a>
+<a href="#L35"> 35</a>
+<a href="#L36"> 36</a>
+<a href="#L37"> 37</a>
+<a href="#L38"> 38</a>
+<a href="#L39"> 39</a>
+<a href="#L40"> 40</a>
+<a href="#L41"> 41</a>
+<a href="#L42"> 42</a>
+<a href="#L43"> 43</a>
+<a href="#L44"> 44</a>
+<a href="#L45"> 45</a>
+<a href="#L46"> 46</a>
+<a href="#L47"> 47</a>
+<a href="#L48"> 48</a>
+<a href="#L49"> 49</a>
+<a href="#L50"> 50</a>
+<a href="#L51"> 51</a>
+<a href="#L52"> 52</a>
+<a href="#L53"> 53</a>
+<a href="#L54"> 54</a>
+<a href="#L55"> 55</a>
+<a href="#L56"> 56</a>
+<a href="#L57"> 57</a>
+<a href="#L58"> 58</a>
+<a href="#L59"> 59</a>
+<a href="#L60"> 60</a>
+<a href="#L61"> 61</a>
+<a href="#L62"> 62</a>
+<a href="#L63"> 63</a>
+<a href="#L64"> 64</a>
+<a href="#L65"> 65</a>
+<a href="#L66"> 66</a>
+<a href="#L67"> 67</a>
+<a href="#L68"> 68</a>
+<a href="#L69"> 69</a>
+<a href="#L70"> 70</a>
+<a href="#L71"> 71</a>
+<a href="#L72"> 72</a>
+<a href="#L73"> 73</a>
+<a href="#L74"> 74</a>
+<a href="#L75"> 75</a>
+<a href="#L76"> 76</a>
+<a href="#L77"> 77</a>
+<a href="#L78"> 78</a>
+<a href="#L79"> 79</a>
+<a href="#L80"> 80</a>
+<a href="#L81"> 81</a>
+<a href="#L82"> 82</a>
+<a href="#L83"> 83</a>
+<a href="#L84"> 84</a>
+<a href="#L85"> 85</a>
+<a href="#L86"> 86</a>
+<a href="#L87"> 87</a>
+<a href="#L88"> 88</a>
+<a href="#L89"> 89</a>
+<a href="#L90"> 90</a>
+<a href="#L91"> 91</a>
+<a href="#L92"> 92</a>
+<a href="#L93"> 93</a>
+<a href="#L94"> 94</a>
+<a href="#L95"> 95</a>
+<a href="#L96"> 96</a>
+<a href="#L97"> 97</a>
+<a href="#L98"> 98</a>
+<a href="#L99"> 99</a>
+<a href="#L100">100</a>
+<a href="#L101">101</a>
+<a href="#L102">102</a>
+<a href="#L103">103</a>
+<a href="#L104">104</a>
+<a href="#L105">105</a>
+<a href="#L106">106</a>
+<a href="#L107">107</a>
+<a href="#L108">108</a>
+<a href="#L109">109</a>
+<a href="#L110">110</a>
+<a href="#L111">111</a>
+<a href="#L112">112</a>
+<a href="#L113">113</a>
+<a href="#L114">114</a>
+<a href="#L115">115</a>
+<a href="#L116">116</a>
+<a href="#L117">117</a>
+<a href="#L118">118</a>
+<a href="#L119">119</a>
+<a href="#L120">120</a>
+<a href="#L121">121</a>
+<a href="#L122">122</a>
+<a href="#L123">123</a>
+<a href="#L124">124</a>
+<a href="#L125">125</a>
+<a href="#L126">126</a>
+<a href="#L127">127</a>
+<a href="#L128">128</a>
+<a href="#L129">129</a>
+<a href="#L130">130</a>
+<a href="#L131">131</a>
+<a href="#L132">132</a>
+<a href="#L133">133</a>
+<a href="#L134">134</a>
+<a href="#L135">135</a>
+<a href="#L136">136</a>
+<a href="#L137">137</a>
+<a href="#L138">138</a>
+<a href="#L139">139</a>
+<a href="#L140">140</a>
+<a href="#L141">141</a>
+<a href="#L142">142</a>
+<a href="#L143">143</a>
+<a href="#L144">144</a>
+<a href="#L145">145</a>
+<a href="#L146">146</a>
+<a href="#L147">147</a>
+<a href="#L148">148</a>
+<a href="#L149">149</a>
+<a href="#L150">150</a>
+<a href="#L151">151</a>
+</pre>
+<pre><code class="ocaml">open Angstrom
+open Ast
+open Base
+
+let spaces = take_while<span data-count="13">1</span> Char.is_whitespace &gt;&gt;<span data-count="13">|</span> fun _ -&gt; <span data-count="57861">(</span>)
+let skip_opt_spaces = skip_whil<span data-count="13">e</span> Char.is_whitespace
+
+let is_keyword = function
+  | <span data-count="0">"</span>let" | <span data-count="2">"</span>rec" | <span data-count="0">"</span>if" | <span data-count="2948">"</span>then" | <span data-count="2932">"</span>else" | <span data-count="0">"</span>fun" | <span data-count="0">"</span>fix" | <span data-count="5836">"</span>in" -&gt; true
+  | <span data-count="16118">_</span> -&gt; false
+;;
+
+let parse_identifier =
+  let* fst_char =
+    satisf<span data-count="13">y</span> (function
+      | <span data-count="27836">'</span>a' .. 'z' | <span data-count="0">'</span>_' -&gt; true
+      | <span data-count="5442">_</span> -&gt; false)
+    &gt;&gt;<span data-count="13">|</span> String.of_char
+  in
+  <span data-count="27836">l</span>et* rest =
+    take_whil<span data-count="27836">e</span> (function
+      | <span data-count="0">'</span>A' .. 'Z' | <span data-count="40503">'</span>a' .. 'z' | <span data-count="0">'</span>0' .. '9' | <span data-count="11">'</span>_' | <span data-count="0">'</span>\'' -&gt; true
+      | <span data-count="27836">_</span> -&gt; false)
+  in
+  <span data-count="27836">l</span>et id = fst_char ^ rest in
+  let is_key = is_keyword id in
+  <span data-count="27836">i</span>f is_key then <span data-count="11718">f</span>ail ("keyword cannot be identifier: " ^ id) else <span data-count="16118">r</span>eturn (fst_char ^ rest)
+;;
+
+let parse_constant =
+  take_while<span data-count="13">1</span> Char.is_digit &gt;&gt;<span data-count="13">|</span> fun s -&gt; <span data-count="7938">E</span>xpr_const (Const_int (Int.of_strin<span data-count="7938">g</span> s))
+;;
+
+let parse_additive_operator =
+  skip_opt_spaces *<span data-count="13">&gt;</span> tak<span data-count="13">e</span> 1
+  &gt;&gt;<span data-count="13">=</span> function
+  | <span data-count="825">"</span>+" -&gt; return Plus
+  | <span data-count="797">"</span>-" -&gt; return Sub
+  | <span data-count="28786">_</span> -&gt; fail "not additive operator"
+;;
+
+let parse_multiplicative_operator =
+  skip_opt_spaces *<span data-count="13">&gt;</span> tak<span data-count="13">e</span> 1
+  &gt;&gt;<span data-count="13">=</span> function
+  | <span data-count="809">"</span>*" -&gt; return Mul
+  | <span data-count="805">"</span>/" -&gt; return Div
+  | <span data-count="30408">_</span> -&gt; fail "not multiplicative operator"
+;;
+
+let parse_expression =
+  fi<span data-count="13">x</span> (fun expr -&gt;
+    <span data-count="10">l</span>et parse_identifier_expression = parse_identifier &gt;&gt;| fun id -&gt; <span data-count="8794">E</span>xpr_var id in
+    <span data-count="10">l</span>et parse_parens =
+      cha<span data-count="10">r</span> '(' *<span data-count="10">&gt;</span> skip_opt_spaces *<span data-count="10">&gt;</span> expr &lt;<span data-count="10">*</span> skip_opt_spaces &lt;* cha<span data-count="10">r</span> ')'
+    in
+    <span data-count="10">l</span>et parse_if_expression =
+      strin<span data-count="10">g</span> "if" *<span data-count="10">&gt;</span> spaces *<span data-count="10">&gt;</span> expr
+      &gt;&gt;= fun cond -&gt;
+      <span data-count="2114">s</span>paces *<span data-count="2114">&gt;</span> strin<span data-count="2114">g</span> "then" *<span data-count="2114">&gt;</span> spaces *<span data-count="2114">&gt;</span> expr
+      &gt;&gt;= fun t -&gt;
+      <span data-count="2114">s</span>paces *<span data-count="2114">&gt;</span> strin<span data-count="2114">g</span> "else" *<span data-count="2114">&gt;</span> spaces *<span data-count="2114">&gt;</span> expr &gt;&gt;| fun e -&gt; <span data-count="2114">E</span>xpr_conditional (cond, t, e)
+    in
+    <span data-count="10">l</span>et parse_function_expression =
+      strin<span data-count="10">g</span> "fun" *<span data-count="10">&gt;</span> many<span data-count="10">1</span> (spaces *<span data-count="10">&gt;</span> parse_identifier)
+      &gt;&gt;= fun args -&gt;
+      <span data-count="2127">s</span>paces *<span data-count="2127">&gt;</span> strin<span data-count="2127">g</span> "-&gt;" *<span data-count="2127">&gt;</span> spaces *<span data-count="2127">&gt;</span> expr
+      &gt;&gt;| fun body -&gt;
+      <span data-count="2127">L</span>ist.fold_right args ~init:body ~f:(fun arg acc -&gt; <span data-count="2135">E</span>xpr_fun (arg, acc))
+    in
+    <span data-count="10">l</span>et parse_let_in_expression =
+      strin<span data-count="10">g</span> "let" *<span data-count="10">&gt;</span> spaces *<span data-count="10">&gt;</span> parse_identifier
+      &gt;&gt;= fun id -&gt;
+      <span data-count="2091">s</span>kip_opt_spaces *<span data-count="2091">&gt;</span> cha<span data-count="2091">r</span> '=' *<span data-count="2091">&gt;</span> skip_opt_spaces *<span data-count="2091">&gt;</span> expr
+      &gt;&gt;= fun value -&gt;
+      <span data-count="2091">s</span>paces *<span data-count="2091">&gt;</span> strin<span data-count="2091">g</span> "in" *<span data-count="2091">&gt;</span> spaces *<span data-count="2091">&gt;</span> expr &gt;&gt;| fun body -&gt; <span data-count="2091">E</span>xpr_let_in (id, value, body)
+    in
+    <span data-count="10">l</span>et parse_let_rec_in_expression =
+      strin<span data-count="10">g</span> "let" *<span data-count="10">&gt;</span> spaces *<span data-count="10">&gt;</span> strin<span data-count="10">g</span> "rec" *<span data-count="10">&gt;</span> spaces *<span data-count="10">&gt;</span> parse_identifier
+      &gt;&gt;= fun id -&gt;
+      <span data-count="2035">s</span>kip_opt_spaces *<span data-count="2035">&gt;</span> cha<span data-count="2035">r</span> '=' *<span data-count="2035">&gt;</span> skip_opt_spaces *<span data-count="2035">&gt;</span> expr
+      &gt;&gt;= fun value -&gt;
+      <span data-count="2035">s</span>paces *<span data-count="2035">&gt;</span> strin<span data-count="2035">g</span> "in" *<span data-count="2035">&gt;</span> spaces *<span data-count="2035">&gt;</span> expr
+      &gt;&gt;| fun body -&gt; <span data-count="2035">E</span>xpr_let_rec_in (id, value, body)
+    in
+    <span data-count="10">l</span>et parse_fix_expression = strin<span data-count="10">g</span> "fix" *<span data-count="10">&gt;</span> spaces *<span data-count="10">&gt;</span> expr &gt;&gt;| fun e -&gt; <span data-count="1034">E</span>xpr_fix e in
+    <span data-count="10">l</span>et parse_atomic_expression =
+      parse_parens
+      &lt;|<span data-count="10">&gt;</span> parse_if_expression
+      &lt;|<span data-count="10">&gt;</span> parse_function_expression
+      &lt;|<span data-count="10">&gt;</span> parse_let_rec_in_expression
+      &lt;|<span data-count="10">&gt;</span> parse_let_in_expression
+      &lt;|<span data-count="10">&gt;</span> parse_fix_expression
+      &lt;|<span data-count="10">&gt;</span> parse_constant
+      &lt;|&gt; parse_identifier_expression
+    in
+    <span data-count="10">l</span>et parse_function_application =
+      let* func = parse_atomic_expression in
+      <span data-count="32025">l</span>et* args = man<span data-count="32025">y</span> (spaces *<span data-count="32025">&gt;</span> parse_atomic_expression) in
+      <span data-count="32025">m</span>atch args with
+      | <span data-count="29944">[</span>] -&gt; return func
+      | <span data-count="2081">_</span> -&gt; return (Expr_ap (func, args))
+    in
+    let parse_multiplicative_expression =
+      let* left = parse_function_application in
+      <span data-count="30411">l</span>et* rest =
+        man<span data-count="30411">y</span>
+          (let* op = parse_multiplicative_operator in
+           <span data-count="1614">s</span>kip_opt_spaces
+           *&gt;
+           let* right = parse_function_application in
+           <span data-count="1614">r</span>eturn (op, right))
+      in
+      <span data-count="30411">r</span>eturn
+        (List.fold_lef<span data-count="30411">t</span> rest ~init:left ~f:(fun acc (op, r) -&gt;
+           <span data-count="1614">E</span>xpr_binary_op (op, acc, r)))
+    in
+    let parse_additive_expression =
+      let* left = parse_multiplicative_expression in
+      <span data-count="28789">l</span>et* rest =
+        man<span data-count="28789">y</span>
+          (let* op = parse_additive_operator in
+           <span data-count="1622">s</span>kip_opt_spaces
+           *&gt;
+           let* right = parse_multiplicative_expression in
+           <span data-count="1622">r</span>eturn (op, right))
+      in
+      <span data-count="28789">r</span>eturn
+        (List.fold_lef<span data-count="28789">t</span> rest ~init:left ~f:(fun acc (op, r) -&gt;
+           <span data-count="1622">E</span>xpr_binary_op (op, acc, r)))
+    in
+    parse_additive_expression)
+;;
+
+let parse_toplevel_let =
+  strin<span data-count="13">g</span> "let" *<span data-count="13">&gt;</span> spaces *<span data-count="13">&gt;</span> parse_identifier
+  &gt;&gt;<span data-count="13">=</span> fun id -&gt;
+  <span data-count="1055">s</span>kip_opt_spaces *<span data-count="1055">&gt;</span> cha<span data-count="1055">r</span> '=' *<span data-count="1055">&gt;</span> skip_opt_spaces *<span data-count="1055">&gt;</span> parse_expression
+  &gt;&gt;= fun expr -&gt;
+  <span data-count="1055">s</span>kip_opt_spaces *<span data-count="1055">&gt;</span> strin<span data-count="1055">g</span> ";;" *<span data-count="1055">&gt;</span> skip_opt_spaces &gt;&gt;| fun () -&gt; <span data-count="1055">T</span>op_let (id, expr)
+;;
+
+let parse_toplevel_let_rec =
+  strin<span data-count="13">g</span> "let" *<span data-count="13">&gt;</span> spaces *<span data-count="13">&gt;</span> strin<span data-count="13">g</span> "rec" *<span data-count="13">&gt;</span> spaces *<span data-count="13">&gt;</span> parse_identifier
+  &gt;&gt;<span data-count="13">=</span> fun id -&gt;
+  <span data-count="8">s</span>kip_opt_spaces *<span data-count="8">&gt;</span> cha<span data-count="8">r</span> '=' *<span data-count="8">&gt;</span> skip_opt_spaces *<span data-count="8">&gt;</span> parse_expression
+  &gt;&gt;= fun expr -&gt;
+  <span data-count="8">s</span>kip_opt_spaces *<span data-count="8">&gt;</span> strin<span data-count="8">g</span> ";;" *<span data-count="8">&gt;</span> skip_opt_spaces &gt;&gt;| fun () -&gt; <span data-count="8">T</span>op_let_rec (id, expr)
+;;
+
+let parse_structure = man<span data-count="13">y</span> (parse_toplevel_let_rec &lt;|<span data-count="13">&gt;</span> parse_toplevel_let)
+let parse = parse_strin<span data-count="13">g</span> ~consume:All parse_structure
+</code></pre>
+      </div>
+    </div>
+    <script src="../coverage.js"></script>
+  </body>
+</html>
