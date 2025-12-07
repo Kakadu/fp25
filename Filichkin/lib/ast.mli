@@ -22,12 +22,19 @@ type rec_flag =
   | Rec
 
 type expr =
-  | Int of int
-  | Var of string
+  | Int of int (** Integer literal *)
+  | Var of string (** Variable name *)
   | BinOp of binop * expr * expr
-  | If of expr * expr * expr option (** if c then t [else e] *)
+  (** Binary operation: operator, left and right operands *)
+  | If of expr * expr * expr option
+  (** Conditional expression: condition, then branch, optional else branch *)
   | Let of rec_flag * string * expr * expr option
-  | Abs of string list * expr (** sugar: fun x y -> ... *)
-  | App of expr * expr
-  | Seq of expr list
+  (** Let expression: recursiveness flag, name, bound expression, body (optional)
+      The last parameter is the optional expression body (for parsing convenience) *)
+  | Abs of string list * expr
+  (** Abstraction (lambda function): parameter list, function body
+      Syntactic sugar for functions with multiple arguments *)
+  | App of expr * expr (** Application (function call): function, argument *)
+  | Seq of expr list (** Expression sequence: execute a list of expressions in order *)
   | Fix of expr
+  (** Fixed-point operator (for recursion): Fix f computes the fixed point of f *)
