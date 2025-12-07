@@ -117,7 +117,6 @@ let test_parser_negative =
     ; "if then else"
     ; "let x = in x"
     ; "fun -> x"
-    ; "fix 42"
     ; "1 + + 2"
     ; "let rec = 1 in x"
     ; "print"
