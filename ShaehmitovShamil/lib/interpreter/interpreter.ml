@@ -208,20 +208,6 @@ module Interpreter : Eval = struct
                 Stdlib.print_newline ();
                 return VUnit
               | _ -> Error (TypeError "print_endl expects a unit value ()")))
-    |> Env.add
-         "fix"
-         (VBuiltin
-            (function
-              | VClosure (_, _, closure_env, params, body) ->
-                (match params with
-                 | PVar name :: rest ->
-                   return (VClosure (true, name, closure_env, rest, body))
-                 | _ :: _ ->
-                   Error (TypeError "First argument of fix must be a named variable")
-                 | [] ->
-                   Error
-                     (TypeError "Function passed to fix must have at least one argument"))
-              | _ -> Error (TypeError "fix expects a function")))
   ;;
 
   let run_program (max_steps : int) (prog : program) =

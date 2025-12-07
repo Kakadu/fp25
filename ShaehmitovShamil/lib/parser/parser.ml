@@ -21,7 +21,7 @@ let parse_integer =
 ;;
 
 let is_name_start = function
-  | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
+  | 'a' .. 'z' | 'A' .. 'Z' -> true
   | _ -> false
 ;;
 

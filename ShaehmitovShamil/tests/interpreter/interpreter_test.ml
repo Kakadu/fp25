@@ -69,6 +69,7 @@ let%expect_test "lambda binding" =
 let%expect_test "factorial with fix" =
   run_interpreter_test
     "\n\
+    \    let rec fix f x = f (fix f) x ;; \n\
     \    let fact = fix (fun slf n -> if n = 0 then 1 else n * slf (n - 1)) ;;\n\
     \    let () = print_int (fact 10)\n\
     \  ";
@@ -185,17 +186,6 @@ let%expect_test "remaining comparison operators" =
   [%expect {| 11 |}]
 ;;
 
-let%expect_test "fix error: non-function" =
-  run_interpreter_test "let _ = fix 5";
-  [%expect {| Runtime Error: Error: Type error - fix expects a function |}]
-;;
-
-let%expect_test "fix error: first arg not variable" =
-  run_interpreter_test "let _ = fix (fun () -> 1)";
-  [%expect
-    {| Runtime Error: Error: Type error - First argument of fix must be a named variable |}]
-;;
-
 let%expect_test "recursive let wildcard error" =
   run_interpreter_test "let rec _ = fun x -> x";
   [%expect
@@ -233,14 +223,8 @@ let%expect_test "let rec with non-function error" =
     {| Runtime Error: Error: Type error - Recursive value definition must be a function |}]
 ;;
 
-let%expect_test "fix fun with no arguments error" =
-  run_interpreter_test "let _ = fix (fun () -> 42)";
-  [%expect
-    {| Runtime Error: Error: Type error - First argument of fix must be a named variable |}]
-;;
-
 let%expect_test "applying argument to function with no parameters (fix)" =
-  run_interpreter_test "let g = let f = fix (fun x -> 10) in f 1";
-  [%expect
-    {| Runtime Error: Error: Type error - Applying argument to a function with no parameters |}]
+  run_interpreter_test
+    "let rec fix f x = f (fix f) x ;; let g = let f = fix (fun x -> 10) in f 1";
+  [%expect {| Runtime Error: Error: Type error - Cannot apply a non-function |}]
 ;;
