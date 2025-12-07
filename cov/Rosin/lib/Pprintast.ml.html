@@ -57,8 +57,7 @@
 <a id="L33"></a><span class="visited"> </span>
 <a id="L34"></a><span class="visited"> </span>
 <a id="L35"></a><span class="visited"> </span>
-<a id="L36"></a><span class="visited"> </span>
-<a id="L37"></a><span > </span>
+<a id="L36"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -99,7 +98,6 @@
 <a href="#L34">34</a>
 <a href="#L35">35</a>
 <a href="#L36">36</a>
-<a href="#L37">37</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -113,30 +111,29 @@ open Format
 open Ast
 
 let rec pp fmt = function
-  | <span data-count="2352">N</span>um n -&gt; fprintf fmt "%d" n
-  | <span data-count="2250">V</span>ar v -&gt; fprintf fmt "%s" v
-  | <span data-count="283">U</span>nop (Inc, e) -&gt; fprintf fmt "++%a" pp e
-  | <span data-count="343">U</span>nop (Dec, e) -&gt; fprintf fmt "--%a" pp e
-  | <span data-count="683">B</span>inop (op, left, right) -&gt;
+  | <span data-count="2401">N</span>um n -&gt; fprintf fmt "%d" n
+  | <span data-count="2686">V</span>ar v -&gt; fprintf fmt "%s" v
+  | <span data-count="365">U</span>nop (Inc, e) -&gt; fprintf fmt "++%a" pp e
+  | <span data-count="354">U</span>nop (Dec, e) -&gt; fprintf fmt "--%a" pp e
+  | <span data-count="777">B</span>inop (op, left, right) -&gt;
     let op_str =
       match op with
-      | <span data-count="169">P</span>lus -&gt; "+"
-      | <span data-count="161">M</span>inus -&gt; "-"
-      | <span data-count="156">M</span>ult -&gt; "*"
-      | <span data-count="197">D</span>iv -&gt; "/"
+      | <span data-count="199">P</span>lus -&gt; "+"
+      | <span data-count="196">M</span>inus -&gt; "-"
+      | <span data-count="183">M</span>ult -&gt; "*"
+      | <span data-count="199">D</span>iv -&gt; "/"
     in
     fprintf fmt "%a %s %a" pp left op_str pp right
-  | <span data-count="281">I</span>f (cond, then_e, else_e) -&gt;
+  | <span data-count="351">I</span>f (cond, then_e, else_e) -&gt;
     fprintf fmt "if %a then %a" pp cond pp then_e;
-    <span data-count="281">(</span>match else_e with
-     | <span data-count="243">S</span>ome e -&gt; fprintf fmt " else %a" pp e
-     | <span data-count="38">N</span>one -&gt; ())
-  | <span data-count="570">F</span>un (name, e) -&gt; fprintf fmt "fun %s -&gt; %a" name pp e
-  | <span data-count="274">L</span>et (name, rhs, body) -&gt; fprintf fmt "let %s = %a in %a" name pp rhs pp body
-  | <span data-count="338">L</span>etrec (name, rhs, body) -&gt; fprintf fmt "let rec %s = %a in %a" name pp rhs pp body
-  | <span data-count="214">F</span>ix e -&gt; fprintf fmt "fix %a" pp e
-  | <span data-count="552">A</span>pp (f, x) -&gt; fprintf fmt "%a %a" pp f pp x
-  | <span data-count="283">P</span>rint e -&gt; fprintf fmt "print %a" pp e
+    <span data-count="351">(</span>match else_e with
+     | <span data-count="295">S</span>ome e -&gt; fprintf fmt " else %a" pp e
+     | <span data-count="56">N</span>one -&gt; ())
+  | <span data-count="413">F</span>un (name, e) -&gt; fprintf fmt "fun %s -&gt; %a" name pp e
+  | <span data-count="386">L</span>et (name, rhs, body) -&gt; fprintf fmt "let %s = %a in %a" name pp rhs pp body
+  | <span data-count="361">L</span>etrec (name, rhs, body) -&gt; fprintf fmt "let rec %s = %a in %a" name pp rhs pp body
+  | <span data-count="599">A</span>pp (f, x) -&gt; fprintf fmt "%a %a" pp f pp x
+  | <span data-count="334">P</span>rint e -&gt; fprintf fmt "print %a" pp e
 ;;
 </code></pre>
       </div>
