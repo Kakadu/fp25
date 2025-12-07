@@ -466,53 +466,53 @@ open Ast
 open QCheck
 
 let gen_pattern size =
-  <span data-count="10118">l</span>et open Gen in
+  <span data-count="10226">l</span>et open Gen in
   if size &lt;= 0
   then
-    <span data-count="1953">o</span>neof
-      [ ma<span data-count="1953">p</span> (fun s -&gt; <span data-count="467">P</span>Var s) (string_siz<span data-count="1953">e</span> ~gen:(char_rang<span data-count="1953">e</span> 'a' 'z') (retur<span data-count="1953">n</span> 1))
-      ; retur<span data-count="1953">n</span> PAny
-      ; retur<span data-count="1953">n</span> PUnit
+    <span data-count="1940">o</span>neof
+      [ ma<span data-count="1940">p</span> (fun s -&gt; <span data-count="476">P</span>Var s) (string_siz<span data-count="1940">e</span> ~gen:(char_rang<span data-count="1940">e</span> 'a' 'z') (retur<span data-count="1940">n</span> 1))
+      ; retur<span data-count="1940">n</span> PAny
+      ; retur<span data-count="1940">n</span> PUnit
       ]
   else
-    <span data-count="8165">f</span>requency
-      [ 5, ma<span data-count="8165">p</span> (fun s -&gt; <span data-count="3491">P</span>Var s) (string_siz<span data-count="8165">e</span> ~gen:(char_rang<span data-count="8165">e</span> 'a' 'z') (retur<span data-count="8165">n</span> 1))
-      ; 2, retur<span data-count="8165">n</span> PAny
-      ; 2, retur<span data-count="8165">n</span> PUnit
+    <span data-count="8286">f</span>requency
+      [ 5, ma<span data-count="8286">p</span> (fun s -&gt; <span data-count="3731">P</span>Var s) (string_siz<span data-count="8286">e</span> ~gen:(char_rang<span data-count="8286">e</span> 'a' 'z') (retur<span data-count="8286">n</span> 1))
+      ; 2, retur<span data-count="8286">n</span> PAny
+      ; 2, retur<span data-count="8286">n</span> PUnit
       ]
 ;;
 
 let rec gen_expr size =
-  <span data-count="11118">l</span>et open Gen in
-  let gen_var = map (fun s -&gt; <span data-count="6219">V</span>ar s) (string_siz<span data-count="11118">e</span> ~gen:(char_rang<span data-count="11118">e</span> 'a' 'z') (retur<span data-count="11118">n</span> 1)) in
-  <span data-count="11118">l</span>et gen_const_int = map (fun i -&gt; <span data-count="6276">C</span>onst (CInt i)) small_int in
-  <span data-count="11118">i</span>f size &lt;= 0
+  <span data-count="11226">l</span>et open Gen in
+  let gen_var = map (fun s -&gt; <span data-count="6500">V</span>ar s) (string_siz<span data-count="11226">e</span> ~gen:(char_rang<span data-count="11226">e</span> 'a' 'z') (retur<span data-count="11226">n</span> 1)) in
+  <span data-count="11226">l</span>et gen_const_int = map (fun i -&gt; <span data-count="6555">C</span>onst (CInt i)) small_int in
+  <span data-count="11226">i</span>f size &lt;= 0
   then <span data-count="2000">o</span>neof [ gen_var; gen_const_int ]
-  else <span data-count="9118">(</span>
+  else <span data-count="9226">(</span>
     let sub_gen = gen_expr (size / 2) in
-    <span data-count="9118">l</span>et sub_pat = gen_pattern (size / 2) in
-    <span data-count="9118">l</span>et gen_unop = map2 (fun op e -&gt; <span data-count="2343">U</span>nOp (op, e)) (oneof<span data-count="9118">l</span> [ Neg ]) sub_gen in
-    <span data-count="9118">l</span>et gen_binop =
+    <span data-count="9226">l</span>et sub_pat = gen_pattern (size / 2) in
+    <span data-count="9226">l</span>et gen_unop = map2 (fun op e -&gt; <span data-count="2535">U</span>nOp (op, e)) (oneof<span data-count="9226">l</span> [ Neg ]) sub_gen in
+    <span data-count="9226">l</span>et gen_binop =
       map3
-        (fun op e1 e2 -&gt; <span data-count="2284">B</span>inOp (op, e1, e2))
-        (oneof<span data-count="9118">l</span> [ Add; Sub; Mul; Div; Eq; Neq; Lt; Le; Gt; Ge ])
+        (fun op e1 e2 -&gt; <span data-count="2448">B</span>inOp (op, e1, e2))
+        (oneof<span data-count="9226">l</span> [ Add; Sub; Mul; Div; Eq; Neq; Lt; Le; Gt; Ge ])
         sub_gen
         sub_gen
     in
-    <span data-count="9118">l</span>et gen_if = map3 (fun c t f -&gt; <span data-count="1570">I</span>f (c, t, f)) sub_gen sub_gen sub_gen in
-    <span data-count="9118">l</span>et gen_app = map2 (fun f arg -&gt; <span data-count="1522">A</span>pp (f, arg)) sub_gen sub_gen in
-    <span data-count="9118">l</span>et gen_let =
+    <span data-count="9226">l</span>et gen_if = map3 (fun c t f -&gt; <span data-count="1618">I</span>f (c, t, f)) sub_gen sub_gen sub_gen in
+    <span data-count="9226">l</span>et gen_app = map2 (fun f arg -&gt; <span data-count="1684">A</span>pp (f, arg)) sub_gen sub_gen in
+    <span data-count="9226">l</span>et gen_let =
       map4
-        (fun rf p e1 e2 -&gt; <span data-count="1637">L</span>et (rf, p, e1, e2))
-        (oneof<span data-count="9118">l</span> [ NonRec; Rec ])
+        (fun rf p e1 e2 -&gt; <span data-count="1608">L</span>et (rf, p, e1, e2))
+        (oneof<span data-count="9226">l</span> [ NonRec; Rec ])
         sub_pat
         sub_gen
         sub_gen
     in
-    <span data-count="9118">l</span>et gen_fun =
-      map2 (fun ps e -&gt; <span data-count="1567">F</span>unExpr (ps, e)) (list_siz<span data-count="9118">e</span> (int_rang<span data-count="9118">e</span> 1 3) sub_pat) sub_gen
+    <span data-count="9226">l</span>et gen_fun =
+      map2 (fun ps e -&gt; <span data-count="1730">F</span>unExpr (ps, e)) (list_siz<span data-count="9226">e</span> (int_rang<span data-count="9226">e</span> 1 3) sub_pat) sub_gen
     in
-    <span data-count="9118">f</span>requency
+    <span data-count="9226">f</span>requency
       [ 5, gen_const_int
       ; 5, gen_var
       ; 3, gen_unop
@@ -558,7 +558,7 @@ let rec shrink_expr = function
 let gen_binding size =
   <span data-count="1000">l</span>et open Gen in
   map3
-    (fun rf p e -&gt; <span data-count="2912">r</span>f, p, e)
+    (fun rf p e -&gt; <span data-count="3079">r</span>f, p, e)
     (oneof<span data-count="1000">l</span> [ NonRec; Rec ])
     (gen_patter<span data-count="1000">n</span> (size / 2))
     (gen_exp<span data-count="1000">r</span> (size / 2))
@@ -566,7 +566,7 @@ let gen_binding size =
 
 let gen_structure_item size =
   <span data-count="1000">l</span>et open Gen in
-  map (fun b -&gt; <span data-count="2912">V</span>alue b) (gen_bindin<span data-count="1000">g</span> size)
+  map (fun b -&gt; <span data-count="3079">V</span>alue b) (gen_bindin<span data-count="1000">g</span> size)
 ;;
 
 let gen_program =
