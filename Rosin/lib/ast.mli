@@ -31,6 +31,5 @@ type expr =
   | Let of varname * expr * expr (** local naming [let varname = expr in expr] *)
   | Letrec of varname * expr * expr
   (** recursive local naming [letrec varname = expr in expr] *)
-  | Fix of expr (** fix point of function *)
   | App of expr * expr (** function applications *)
   | Print of expr (** integer printer *)

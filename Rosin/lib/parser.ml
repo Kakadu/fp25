@@ -40,7 +40,7 @@ let varname =
   token (take_while1 is_var_char)
   >>= fun s ->
   match s with
-  | "if" | "then" | "else" | "fun" | "let" | "rec" | "letrec" | "in" | "fix" | "print" ->
+  | "if" | "then" | "else" | "fun" | "let" | "rec" | "letrec" | "in" | "print" ->
     fail ("reserved keyword: " ^ s)
   | _ -> return s
 ;;
@@ -91,9 +91,6 @@ let expr =
       option None (token (string "else") *> expr >>| fun e -> Some e)
       >>= fun else_branch -> return @@ Ast.If (cond, then_branch, else_branch)
     in
-    let fix_expr =
-      token (string "fix") *> parens fun_expr >>= fun fn -> return @@ Ast.Fix fn
-    in
     let let_expr =
       token (string "let") *> (token (string "rec") *> return true <|> return false)
       >>= fun is_rec ->
@@ -115,7 +112,7 @@ let expr =
       else return @@ Ast.Let (name, body, res)
     in
     let print_expr = token (string "print") *> unary_expr >>| fun var -> Ast.Print var in
-    choice [ if_expr; fun_expr; let_expr; add_expr; fix_expr; print_expr ])
+    choice [ if_expr; fun_expr; let_expr; add_expr; print_expr ])
 ;;
 
 type error = [ `Parsing_error of string ]

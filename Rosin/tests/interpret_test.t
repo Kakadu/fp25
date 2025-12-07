@@ -166,8 +166,8 @@ in the dune file
   Error!: StepLimitExceeded
 
   $ ../bin/REPL.exe <<EOF
-  > let fact = fix (fun f n -> if n then n * (f (n - 1)) else 1) in fact 5
+  > let rec fix f eta = f (fix f) eta in let fact_gen = fun fact n -> if 1-n then 1 else (n * (fact (n - 1))) in let fact = fix fact_gen in fact 5
   AST here:
-  let fact = fix fun f -> fun n -> if n then n * f n - 1 else 1 in fact 5
+  let rec fix = fun f -> fun eta -> f fix f eta in let fact_gen = fun fact -> fun n -> if 1 - n then 1 else n * fact n - 1 in let fact = fix fact_gen in fact 5
   Interpretation result here:
   Ok: 120

@@ -31,7 +31,6 @@ let rec pp fmt = function
   | Fun (name, e) -> fprintf fmt "fun %s -> %a" name pp e
   | Let (name, rhs, body) -> fprintf fmt "let %s = %a in %a" name pp rhs pp body
   | Letrec (name, rhs, body) -> fprintf fmt "let rec %s = %a in %a" name pp rhs pp body
-  | Fix e -> fprintf fmt "fix %a" pp e
   | App (f, x) -> fprintf fmt "%a %a" pp f pp x
   | Print e -> fprintf fmt "print %a" pp e
 ;;

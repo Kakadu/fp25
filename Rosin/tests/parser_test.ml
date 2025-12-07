@@ -64,10 +64,6 @@ let gen_expr =
           , map
               (fun (name, rhs, body) -> Letrec (name, rhs, body))
               (triple varname_gen (expr next_depth) (expr next_depth)) )
-        ; ( 1
-          , map
-              (fun (name, body) -> Fix (Fun (name, body)))
-              (pair varname_gen (expr next_depth)) )
         ; 2, map (fun (f, x) -> App (f, x)) (pair (expr next_depth) (expr next_depth))
         ; 1, map (fun e -> Print e) (expr next_depth)
         ])

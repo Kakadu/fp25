@@ -110,20 +110,6 @@ let rec eval env steps e =
         | _ -> fail TypeError
       in
       eval new_env (steps - 1) e2
-    | Fix e ->
-      let* f, st = eval env (steps - 1) e in
-      (match f with
-       | VClosure (f_param, body, closure_env) ->
-         (match body with
-          | Fun (n_param, inner_body) ->
-            let rec_closure = VRecClosure (f_param, n_param, inner_body, closure_env) in
-            return (rec_closure, st - 1)
-          | _ ->
-            let rec_closure = VRecClosure (f_param, f_param, body, closure_env) in
-            return (rec_closure, st - 1))
-       | VRecClosure (f_name, param, body, closure_env) ->
-         return (VRecClosure (f_name, param, body, closure_env), st - 1)
-       | _ -> fail (NonFunctionApplication f))
     | App (e1, e2) ->
       let* f, st1 = eval env (steps - 1) e1 in
       let* arg, st2 = eval env st1 e2 in
