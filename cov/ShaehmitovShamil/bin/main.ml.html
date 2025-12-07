@@ -169,11 +169,11 @@
 open Interpreter
 
 let read_file filename =
-  <span data-count="8">l</span>et ic = open_in filename in
-  <span data-count="7">l</span>et n = in_channel_length ic in
-  <span data-count="7">l</span>et s = really_input_string ic n in
-  <span data-count="7">c</span>lose_in ic;
-  <span data-count="7">s</span>
+  <span data-count="9">l</span>et ic = open_in filename in
+  <span data-count="8">l</span>et n = in_channel_length ic in
+  <span data-count="8">l</span>et s = really_input_string ic n in
+  <span data-count="8">c</span>lose_in ic;
+  <span data-count="8">s</span>
 ;;
 
 type config =
@@ -184,9 +184,9 @@ type config =
 let default_config = { filename = None; max_steps = max_int }
 
 let rec parse_args args config =
-  <span data-count="17">m</span>atch args with
-  | <span data-count="8">[</span>] -&gt; Ok config
-  | <span data-count="9">a</span>rg :: rest -&gt;
+  <span data-count="19">m</span>atch args with
+  | <span data-count="9">[</span>] -&gt; Ok config
+  | <span data-count="10">a</span>rg :: rest -&gt;
     if String.starts_with ~prefix:"--maxsteps=" arg
     then <span data-count="1">(</span>
       let prefix_len = String.length "--maxsteps=" in
@@ -194,25 +194,25 @@ let rec parse_args args config =
       <span data-count="1">m</span>atch int_of_string_opt num_str with
       | <span data-count="1">S</span>ome n -&gt; parse_args rest { config with max_steps = n }
       | <span data-count="0">N</span>one -&gt; Error "Invalid integer for --maxsteps")
-    else <span data-count="8">i</span>f config.filename = None
-    then <span data-count="8">p</span>arse_args rest { config with filename = Some arg }
+    else <span data-count="9">i</span>f config.filename = None
+    then <span data-count="9">p</span>arse_args rest { config with filename = Some arg }
     else <span data-count="0">E</span>rror "Multiple filenames provided"
 ;;
 
 let () =
-  let args = List.tl (Array.to_lis<span data-count="8">t</span> Sys.argv) in
-  <span data-count="8">m</span>atch parse_args args default_config with
-  | <span data-count="8">O</span>k { filename = Some filename; max_steps } -&gt;
+  let args = List.tl (Array.to_lis<span data-count="9">t</span> Sys.argv) in
+  <span data-count="9">m</span>atch parse_args args default_config with
+  | <span data-count="9">O</span>k { filename = Some filename; max_steps } -&gt;
     let source_code =
-      try read_fil<span data-count="7">e</span> filename with
+      try read_fil<span data-count="8">e</span> filename with
       | <span data-count="1">S</span>ys_error msg -&gt;
         Printf.eprintf "File error: %s\n" msg;
         <span data-count="1">e</span>xi<span data-count="0">t</span> 1
     in
     (match Parser.parse_structure_items source_code with
-     | <span data-count="6">O</span>k program -&gt;
+     | <span data-count="7">O</span>k program -&gt;
        (match Interpreter.run_program max_steps program with
-        | <span data-count="4">O</span>k _ -&gt; ()
+        | <span data-count="5">O</span>k _ -&gt; ()
         | <span data-count="2">E</span>rror err -&gt; Printf.eprint<span data-count="2">f</span> "%s\n" (Interpreter.show_erro<span data-count="2">r</span> err))
      | <span data-count="1">E</span>rror msg -&gt; Printf.eprint<span data-count="1">f</span> "Parse Error: %s\n" msg)
   | <span data-count="0">O</span>k { filename = None; _ } -&gt;

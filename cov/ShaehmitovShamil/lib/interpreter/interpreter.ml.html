@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>interpreter.ml &mdash; Coverage report</title>
-    <meta name="description" content="87.26% coverage in lib/interpreter/interpreter.ml">
+    <meta name="description" content="87.90% coverage in lib/interpreter/interpreter.ml">
     <link rel="stylesheet" href="../../coverage.css"/>
     <script src="../../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,11 +15,10 @@
           <span class="dirname">lib/interpreter/</span>interpreter.ml
         </a>
       </h1>
-      <h2>87.26%</h2>
+      <h2>87.90%</h2>
     </div>
     <div id="navbar">
       <span class="some-visited" style="top:35.98%"></span>
-      <span class="some-visited" style="top:36.40%"></span>
       <span class="some-visited" style="top:36.82%"></span>
       <span class="some-visited" style="top:37.24%"></span>
       <span class="some-visited" style="top:37.66%"></span>
@@ -125,7 +124,7 @@
 <a id="L84"></a><span class="visited"> </span>
 <a id="L85"></a><span class="visited"> </span>
 <a id="L86"></a><span class="some-visited"> </span>
-<a id="L87"></a><span class="some-visited"> </span>
+<a id="L87"></a><span class="visited"> </span>
 <a id="L88"></a><span class="some-visited"> </span>
 <a id="L89"></a><span class="some-visited"> </span>
 <a id="L90"></a><span class="some-visited"> </span>
@@ -564,60 +563,60 @@ module Interpreter : Eval = struct
   and env = value Env.t
 
   let ( let* ) res f =
-    <span data-count="25319">m</span>atch res with
-    | <span data-count="25247">O</span>k v -&gt; f v
+    <span data-count="49988">m</span>atch res with
+    | <span data-count="49916">O</span>k v -&gt; f v
     | <span data-count="72">E</span>rror e -&gt; Error e
   ;;
 
-  let return v = <span data-count="25271">O</span>k v
+  let return v = <span data-count="49941">O</span>k v
 
   let lookup_env (env : env) (x : name) : value eval_result =
-    <span data-count="8316">m</span>atch Env.find_opt x env with
-    | <span data-count="8315">S</span>ome v -&gt; return v
+    <span data-count="15222">m</span>atch Env.find_opt x env with
+    | <span data-count="15221">S</span>ome v -&gt; return v
     | <span data-count="1">N</span>one -&gt; Error (UnboundVariable x)
   ;;
 
-  let extend env key value = <span data-count="4186">E</span>nv.add key value env
+  let extend env key value = <span data-count="8133">E</span>nv.add key value env
 
   let rec eval_expr (env : env) (e : expr) (steps : int) : (value * int) eval_result =
-    <span data-count="18821">i</span>f steps &lt;= 0
+    <span data-count="38551">i</span>f steps &lt;= 0
     then <span data-count="1">E</span>rror OutOfMaxSteps
-    else <span data-count="18820">(</span>
+    else <span data-count="38550">(</span>
       let steps = steps - 1 in
       match e with
-      | <span data-count="2129">C</span>onst (CInt i) -&gt; return (VInt i, steps)
+      | <span data-count="6075">C</span>onst (CInt i) -&gt; return (VInt i, steps)
       | <span data-count="5">C</span>onst CUnit -&gt; return (VUnit, steps)
-      | <span data-count="8316">V</span>ar name -&gt;
-        let* v = lookup_en<span data-count="8316">v</span> env name in
-        <span data-count="8315">r</span>eturn (v, steps)
+      | <span data-count="15222">V</span>ar name -&gt;
+        let* v = lookup_en<span data-count="15222">v</span> env name in
+        <span data-count="15221">r</span>eturn (v, steps)
       | <span data-count="2">U</span>nOp (Neg, e) -&gt;
         let* v, steps = eval_exp<span data-count="2">r</span> env e steps in
         <span data-count="2">(</span>match v with
          | <span data-count="1">V</span>Int i -&gt; return (VInt (<span data-count="1">-</span>i), steps)
          | <span data-count="1">_</span> -&gt; Error (TypeError "Expected integer for negation"))
-      | <span data-count="4128">B</span>inOp (op, e1, e2) -&gt;
-        let* v1, steps = eval_exp<span data-count="4128">r</span> env e1 steps in
-        <span data-count="4128">l</span>et* v2, steps = eval_exp<span data-count="4128">r</span> env e2 steps in
-        <span data-count="4127">(</span>match v1, v2 with
-         | <span data-count="4126">V</span>Int i1, VInt i2 -&gt;
+      | <span data-count="9059">B</span>inOp (op, e1, e2) -&gt;
+        let* v1, steps = eval_exp<span data-count="9059">r</span> env e1 steps in
+        <span data-count="9059">l</span>et* v2, steps = eval_exp<span data-count="9059">r</span> env e2 steps in
+        <span data-count="9058">(</span>match v1, v2 with
+         | <span data-count="9057">V</span>Int i1, VInt i2 -&gt;
            (match op with
-            | <span data-count="24">A</span>dd -&gt; return (VInt (i1 + i2), steps)
-            | <span data-count="2049">S</span>ub -&gt; return (VInt (i1 - i2), steps)
+            | <span data-count="1010">A</span>dd -&gt; return (VInt (i1 + i2), steps)
+            | <span data-count="4021">S</span>ub -&gt; return (VInt (i1 - i2), steps)
             | <span data-count="2033">M</span>ul -&gt; return (VInt (i1 * i2), steps)
             | <span data-count="3">D</span>iv -&gt;
               if i2 = 0 then <span data-count="2">E</span>rror DivisionByZero else <span data-count="1">r</span>eturn (VInt (i1 / i2), steps)
             | <span data-count="12">E</span>q -&gt; return (VInt (if i1 = i2 then <span data-count="2">1</span> else <span data-count="10">0</span>), steps)
             | <span data-count="1">N</span>eq -&gt; return (VInt (if i1 &lt;&gt; i2 then <span data-count="1">1</span> else <span data-count="0">0</span>), steps)
-            | <span data-count="1">L</span>t -&gt; return (VInt (if i1 &lt; i2 then <span data-count="1">1</span> else <span data-count="0">0</span>), steps)
+            | <span data-count="1974">L</span>t -&gt; return (VInt (if i1 &lt; i2 then <span data-count="988">1</span> else <span data-count="986">0</span>), steps)
             | <span data-count="1">L</span>e -&gt; return (VInt (if i1 &lt;= i2 then <span data-count="1">1</span> else <span data-count="0">0</span>), steps)
             | <span data-count="1">G</span>t -&gt; return (VInt (if i1 &gt; i2 then <span data-count="1">1</span> else <span data-count="0">0</span>), steps)
             | <span data-count="1">G</span>e -&gt; return (VInt (if i1 &gt;= i2 then <span data-count="1">1</span> else <span data-count="0">0</span>), steps))
          | <span data-count="1">_</span> -&gt; Error (TypeError "Cannot apply binary operator to non-integers"))
-      | <span data-count="2062">I</span>f (cond, t, f) -&gt;
-        let* v, steps = eval_exp<span data-count="2062">r</span> env cond steps in
-        <span data-count="2062">(</span>match v with
-         | <span data-count="15">V</span>Int 0 -&gt; eval_expr env f steps
-         | <span data-count="2046">V</span>Int _ -&gt; eval_expr env t steps
+      | <span data-count="4035">I</span>f (cond, t, f) -&gt;
+        let* v, steps = eval_exp<span data-count="4035">r</span> env cond steps in
+        <span data-count="4035">(</span>match v with
+         | <span data-count="1001">V</span>Int 0 -&gt; eval_expr env f steps
+         | <span data-count="3033">V</span>Int _ -&gt; eval_expr env t steps
          | <span data-count="1">_</span> -&gt; Error (TypeError "Expected integer in if condition"))
       | <span data-count="16">F</span>unExpr (params, body) -&gt; return (VClosure (false, "", env, params, body), steps)
       | <span data-count="4">L</span>et (NonRec, p, e1, e2) -&gt;
@@ -640,10 +639,10 @@ module Interpreter : Eval = struct
          | <span data-count="0">P</span>Var _, _ -&gt; Error (TypeError "Recursive let binding must be a function")
          | <span data-count="0">P</span>Any, _ -&gt; Error (TypeError "Recursive let binding cannot be a wildcard")
          | <span data-count="0">P</span>Unit, _ -&gt; Error (TypeError "Recursive let binding cannot be unit"))
-      | <span data-count="2156">A</span>pp (f, arg) -&gt;
-        let* func, steps = eval_exp<span data-count="2156">r</span> env f steps in
-        <span data-count="2155">l</span>et* arg_val, steps = eval_exp<span data-count="2155">r</span> env arg steps in
-        <span data-count="2147">(</span>match func with
+      | <span data-count="4130">A</span>pp (f, arg) -&gt;
+        let* func, steps = eval_exp<span data-count="4130">r</span> env f steps in
+        <span data-count="4129">l</span>et* arg_val, steps = eval_exp<span data-count="4129">r</span> env arg steps in
+        <span data-count="4121">(</span>match func with
          | <span data-count="56">V</span>Closure (false, name, closure_env, params, body) -&gt;
            (match params with
             | <span data-count="0">[</span>] -&gt; Error (TypeError "Applying argument to a function with no parameters")
@@ -660,48 +659,48 @@ module Interpreter : Eval = struct
               <span data-count="55">i</span>f List.is_empty rest
               then <span data-count="29">e</span>val_expr new_env body steps
               else <span data-count="26">r</span>eturn (VClosure (false, name, new_env, rest, body), steps))
-         | <span data-count="2056">V</span>Closure (true, name, closure_env, params, body) -&gt;
+         | <span data-count="4029">V</span>Closure (true, name, closure_env, params, body) -&gt;
            let recursive_env = extend closure_env name func in
-           <span data-count="2056">(</span>match params with
+           <span data-count="4029">(</span>match params with
             | <span data-count="1">[</span>] -&gt; Error (TypeError "Applying argument to a function with no parameters")
-            | <span data-count="2055">p</span> :: rest -&gt;
+            | <span data-count="4028">p</span> :: rest -&gt;
               let* new_env =
                 match p with
-                | <span data-count="2055">P</span>Var name -&gt; retur<span data-count="2055">n</span> (exten<span data-count="2055">d</span> recursive_env name arg_val)
+                | <span data-count="4028">P</span>Var name -&gt; retur<span data-count="4028">n</span> (exten<span data-count="4028">d</span> recursive_env name arg_val)
                 | <span data-count="0">P</span>Any -&gt; retur<span data-count="0">n</span> recursive_env
                 | <span data-count="0">P</span>Unit -&gt;
                   (match arg_val with
                    | <span data-count="0">V</span>Unit -&gt; retur<span data-count="0">n</span> recursive_env
                    | <span data-count="0">_</span> -&gt; Error (TypeError "Expected unit value for unit pattern"))
               in
-              <span data-count="2055">i</span>f List.is_empty rest
-              then <span data-count="2035">e</span>val_expr new_env body steps
+              <span data-count="4028">i</span>f List.is_empty rest
+              then <span data-count="4008">e</span>val_expr new_env body steps
               else <span data-count="20">r</span>eturn (VClosure (false, name, new_env, rest, body), steps))
-         | <span data-count="34">V</span>Builtin builtin_fn -&gt;
-           let* res = builtin_f<span data-count="34">n</span> arg_val in
-           <span data-count="29">r</span>eturn (res, steps)
+         | <span data-count="35">V</span>Builtin builtin_fn -&gt;
+           let* res = builtin_f<span data-count="35">n</span> arg_val in
+           <span data-count="30">r</span>eturn (res, steps)
          | <span data-count="1">_</span> -&gt; Error (TypeError "Cannot apply a non-function")))
   ;;
 
   let eval_program_item (env : env) (item : structure_item) (steps : int)
     : ((env * value option) * int) eval_result
     =
-    <span data-count="62">m</span>atch item with
-    | <span data-count="55">V</span>alue (NonRec, p, expr) -&gt;
-      let* v, steps = eval_exp<span data-count="55">r</span> env expr steps in
-      <span data-count="40">(</span>match p with
+    <span data-count="64">m</span>atch item with
+    | <span data-count="56">V</span>alue (NonRec, p, expr) -&gt;
+      let* v, steps = eval_exp<span data-count="56">r</span> env expr steps in
+      <span data-count="41">(</span>match p with
        | <span data-count="14">P</span>Var name -&gt; return ((exten<span data-count="14">d</span> env name v, None), steps)
        | <span data-count="1">P</span>Any -&gt; return ((env, None), steps)
-       | <span data-count="25">P</span>Unit -&gt;
+       | <span data-count="26">P</span>Unit -&gt;
          (match v with
-          | <span data-count="24">V</span>Unit -&gt; return ((env, None), steps)
+          | <span data-count="25">V</span>Unit -&gt; return ((env, None), steps)
           | <span data-count="1">_</span> -&gt; Error (TypeError "Expected unit value for unit pattern")))
-    | <span data-count="7">V</span>alue (Rec, p, expr) -&gt;
+    | <span data-count="8">V</span>alue (Rec, p, expr) -&gt;
       (match p, expr with
-       | <span data-count="3">P</span>Var name, FunExpr (params, body) -&gt;
+       | <span data-count="4">P</span>Var name, FunExpr (params, body) -&gt;
          let rec_closure = VClosure (true, name, env, params, body) in
          let new_env = extend env name rec_closure in
-         <span data-count="3">r</span>eturn ((new_env, None), steps)
+         <span data-count="4">r</span>eturn ((new_env, None), steps)
        | <span data-count="1">P</span>Var _, _ -&gt; Error (TypeError "Recursive value definition must be a function")
        | <span data-count="1">P</span>Any, _ -&gt; Error (TypeError "Recursive value definition cannot be a wildcard")
        | <span data-count="2">P</span>Unit, _ -&gt; Error (TypeError "Recursive value definition cannot be unit"))
@@ -720,11 +719,11 @@ module Interpreter : Eval = struct
          "print_int"
          (VBuiltin
             (function
-              | <span data-count="25">V</span>Int i -&gt;
+              | <span data-count="26">V</span>Int i -&gt;
                 Stdlib.print_int i;
-                <span data-count="25">r</span>eturn VUnit
+                <span data-count="26">r</span>eturn VUnit
               | <span data-count="1">_</span> -&gt; Error (TypeError "print_int expects an integer")))
-    |&gt; <span data-count="10">E</span>nv.add
+    |&gt; <span data-count="11">E</span>nv.add
          "print_endl"
          (VBuiltin
             (function
@@ -732,7 +731,7 @@ module Interpreter : Eval = struct
                 Stdlib.print_newline ();
                 <span data-count="1">r</span>eturn VUnit
               | <span data-count="1">_</span> -&gt; Error (TypeError "print_endl expects a unit value ()")))
-    |&gt; <span data-count="10">E</span>nv.ad<span data-count="10">d</span>
+    |&gt; <span data-count="11">E</span>nv.ad<span data-count="11">d</span>
          "fix"
          (VBuiltin
             (function
@@ -749,16 +748,16 @@ module Interpreter : Eval = struct
   ;;
 
   let run_program (max_steps : int) (prog : program) =
-    <span data-count="44">l</span>et* final_env, final_val, _ =
-      Stdlib.List.fold_lef<span data-count="44">t</span>
+    <span data-count="45">l</span>et* final_env, final_val, _ =
+      Stdlib.List.fold_lef<span data-count="45">t</span>
         (fun acc item -&gt;
-          <span data-count="62">l</span>et* env, _, steps = acc in
-          <span data-count="62">l</span>et* (new_env, v_opt), steps' = eval_program_ite<span data-count="62">m</span> env item steps in
-          <span data-count="42">r</span>eturn (new_env, v_opt, steps'))
-        (retur<span data-count="44">n</span> (initial_env, None, max_steps))
+          <span data-count="64">l</span>et* env, _, steps = acc in
+          <span data-count="64">l</span>et* (new_env, v_opt), steps' = eval_program_ite<span data-count="64">m</span> env item steps in
+          <span data-count="44">r</span>eturn (new_env, v_opt, steps'))
+        (retur<span data-count="45">n</span> (initial_env, None, max_steps))
         prog
     in
-    <span data-count="24">r</span>eturn (final_env, final_val)
+    <span data-count="25">r</span>eturn (final_env, final_val)
   ;;
 end
 </code></pre>
