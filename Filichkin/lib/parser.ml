@@ -57,15 +57,16 @@ let is_other = function
 ;;
 
 let identifier =
-  spaces *> peek_char_fail
-  >>= fun first_char ->
-  if is_first first_char
-  then
-    take_while1 is_other
-    >>= fun s -> if is_keyword s then fail "is keyword" else return (Var s)
-  else fail "invalid identifier"
+  spaces
+  *> lift2
+       (fun h t -> String.make 1 h ^ t)
+       (satisfy is_first <?> "identifier first character")
+       (take_while is_other)
+  >>= fun s -> if is_keyword s then fail ("keyword: " ^ s) else return s
 ;;
 
+(* var: convenience parser that returns AST Var *)
+let var = identifier >>= fun s -> return (Var s)
 let kw s = spaces *> string s <* spaces
 let kw_let = kw "let"
 let kw_in = kw "in"
@@ -76,40 +77,15 @@ let kw_else = kw "else"
 let kw_rec = kw "rec"
 let kw_fix = kw "fix"
 
-let op =
-  spaces
-  *> choice
-       [ string "+" *> return Plus
-       ; string "-" *> return Minus
-       ; string "*" *> return Mult
-       ; string "/" *> return Div
-       ; string "=" *> return Equal
-       ; string ">" *> return More
-       ; string "<" *> return Less
-       ; string ">=" *> return EMore
-       ; string "<=" *> return ELess
-       ]
-;;
-
-(* fun *)
+(* fun (with multi-arg sugar) *)
 let fun_expr expr =
   kw_fun *> many1 identifier
   <* kw "->"
-  >>= fun params ->
-  expr
-  >>= fun budy ->
-  return
-    (Abs
-       ( List.map
-           (function
-             | Var x -> x
-             | _ -> failwith "impossible")
-           params
-       , budy ))
+  >>= fun params -> expr >>= fun body -> return (Abs (params, body))
 ;;
 
 (* *_* *)
-let atom expr = choice [ integer; identifier; fun_expr expr; parens expr ]
+let atom expr = choice [ integer; var; fun_expr expr; parens expr ]
 
 (* sugar: f x y *)
 let application expr =
@@ -130,33 +106,27 @@ let if_expr expr =
   <|> return (If (cond, t, None))
 ;;
 
-(* let Надо подумать, возможно косяк*)
+(* let: either `let [rec]? name = bound` or `let [rec]? name = bound in body` *)
 let let_expr expr =
-  let without_in =
-    spaces *> kw_let *> (spaces *> kw_rec *> return Rec <|> return NonRec)
-    >>= fun rec_flag ->
-    spaces *> identifier
+  let rec_flag = spaces *> kw_rec *> return Rec <|> return NonRec in
+  let make_without_in =
+    kw_let *> rec_flag
+    >>= fun rf ->
+    identifier
     >>= fun name ->
-    char '=' *> spaces *> expr
-    >>= fun bound_expr ->
-    match name with
-    | Var name_str -> return (Let (rec_flag, name_str, bound_expr, None))
-    | _ -> fail "Expected variable name"
+    spaces *> char '=' *> spaces *> expr
+    >>= fun bound_expr -> return (Let (rf, name, bound_expr, None))
   in
-  let with_in =
-    spaces *> kw_let *> (spaces *> kw_rec *> return Rec <|> return NonRec)
-    >>= fun rec_flag ->
-    spaces *> identifier
+  let make_with_in =
+    kw_let *> rec_flag
+    >>= fun rf ->
+    identifier
     >>= fun name ->
-    char '=' *> spaces *> expr
+    spaces *> char '=' *> spaces *> expr
     >>= fun bound_expr ->
-    kw_in *> expr
-    >>= fun body ->
-    match name with
-    | Var name_str -> return (Let (rec_flag, name_str, bound_expr, Some body))
-    | _ -> fail "Expected variable name"
+    kw_in *> expr >>= fun body -> return (Let (rf, name, bound_expr, Some body))
   in
-  choice [ with_in; without_in ]
+  choice [ make_with_in; make_without_in ]
 ;;
 
 (* op - подумать *)
@@ -169,12 +139,13 @@ let bin_ops expr =
     return (List.fold_left (fun acc (o, e) -> BinOp (o, acc, e)) first rest)
   in
   let app = application expr in
-  (* rec? *)
+  (* multiplicative *)
   let mult_div =
     make_chain
       app
       (choice [ spaces *> string "*" *> return Mult; spaces *> string "/" *> return Div ])
   in
+  (* additive *)
   let add_sub =
     make_chain
       mult_div
@@ -185,11 +156,11 @@ let bin_ops expr =
     make_chain
       add_sub
       (choice
-         [ string ">=" *> return EMore
-         ; string "<=" *> return ELess
-         ; string "=" *> return Equal
-         ; string ">" *> return More
-         ; string "<" *> return Less
+         [ spaces *> string ">=" *> return EMore
+         ; spaces *> string "<=" *> return ELess
+         ; spaces *> string "=" *> return Equal
+         ; spaces *> string ">" *> return More
+         ; spaces *> string "<" *> return Less
          ])
   in
   compare
@@ -206,14 +177,13 @@ let seq_expr expr =
 let fix_expr expr = kw_fix *> expr >>= fun e -> return (Fix e)
 
 let expr =
-  (* Возможно нужно сделать rec *)
   fix (fun expr ->
     choice
-      [ seq_expr expr
-      ; let_expr expr
+      [ let_expr expr
       ; if_expr expr
       ; fun_expr expr
       ; fix_expr expr
+      ; seq_expr expr
       ; bin_ops expr
       ])
 ;;
