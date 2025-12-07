@@ -52,13 +52,13 @@ let rec gen_expr size =
       ])
 ;;
 
-let show_expr expr = Format.asprintf "%a" pp expr
+let show_expr expr = Stdlib.Format.asprintf "%a" pp expr
 let arb_expr = make ~print:show_expr (Gen.sized gen_expr)
 let wrap_for_parser expr_str = Printf.sprintf "let tmp = %s;;" expr_str
 
 let parser_roundtrip_test =
   Test.make ~count:1000 ~name:"parser round-trip property" arb_expr (fun expr ->
-    let code_string = wrap_for_parser (Format.asprintf "%a" pp expr) in
+    let code_string = wrap_for_parser (Stdlib.Format.asprintf "%a" pp expr) in
     match parse code_string with
     | Ok [ Top_let ("tmp", parsed_expr) ] ->
       if Stdlib.( = ) expr parsed_expr

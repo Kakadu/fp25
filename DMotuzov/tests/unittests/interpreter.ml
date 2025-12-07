@@ -3,7 +3,7 @@ open DMotuzov_lib.Parser
 open DMotuzov_lib.Interpreter
 
 let string_of_value = function
-  | ValInt n -> string_of_int n
+  | ValInt n -> Int.to_string n
   | ValUnit -> "()"
   | ValFun (_, _, _) -> "<fun>"
   | RecClosure (_, _, _, _) -> "<rec-fun>"
@@ -12,7 +12,7 @@ let string_of_value = function
 
 let print_env env =
   Map.iteri env ~f:(fun ~key ~data ->
-    Format.printf "val %s = %s\n" key (string_of_value data))
+    Stdlib.Format.printf "val %s = %s\n" key (string_of_value data))
 ;;
 
 let run input maxsteps =
@@ -28,8 +28,8 @@ let run input maxsteps =
          | NoVariable id -> "Error: Unknown variable: " ^ id
          | OutOfMaxSteps -> "Error: Out of maximum allowed evaluation steps"
        in
-       Format.printf "%s\n" err_str)
-  | Error err -> Format.printf "Parse Error: %s\n" err
+       Stdlib.Format.printf "%s\n" err_str)
+  | Error err -> Stdlib.Format.printf "Parse Error: %s\n" err
 ;;
 
 let%expect_test "simple let binding" =
