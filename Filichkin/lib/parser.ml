@@ -35,31 +35,35 @@ let is_keyword = function
 
 let integer =
   spaces
-  *> (char '-'
-      *> take_while1 (function
+  *> (take_while1 (function
         | '0' .. '9' -> true
         | _ -> false)
-      >>= fun s -> return (Int (-int_of_string s)))
-  <|> (take_while1 (function
+      >>= fun s -> return (Int (int_of_string s)))
+  <|> (char '-'
+       *> take_while1 (function
          | '0' .. '9' -> true
          | _ -> false)
-       >>= fun s -> return (Int (int_of_string s)))
+       >>= fun s -> return (Int (-int_of_string s)))
+;;
+
+let is_first = function
+  | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
+  | _ -> false
+;;
+
+let is_other = function
+  | 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' -> true
+  | _ -> false
 ;;
 
 let identifier =
-  (* let is_first = function
-     | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
-     | _ -> false
-     in
-     let is_other = function
-     | 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' -> true
-     | _ -> false
-     in *)
-  spaces
-  *> take_while1 (function
-    | 'a' .. 'z' -> true
-    | _ -> false)
-  >>= fun s -> if is_keyword s then fail "is keyword" else return (Var s)
+  spaces *> peek_char_fail
+  >>= fun first_char ->
+  if is_first first_char
+  then
+    take_while1 is_other
+    >>= fun s -> if is_keyword s then fail "is keyword" else return (Var s)
+  else fail "invalid identifier"
 ;;
 
 let kw s = spaces *> string s <* spaces
@@ -205,11 +209,11 @@ let expr =
   (* Возможно нужно сделать rec *)
   fix (fun expr ->
     choice
-      [ let_expr expr
+      [ seq_expr expr
+      ; let_expr expr
       ; if_expr expr
       ; fun_expr expr
       ; fix_expr expr
-      ; seq_expr expr
       ; bin_ops expr
       ])
 ;;
