@@ -23,3 +23,6 @@
   $ main test_data/test2.txt --maxsteps=10
   Error: Out of maximum allowed evaluation steps
 
+  $ main test_data/test7.txt
+  610
+
