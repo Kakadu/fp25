@@ -41,7 +41,7 @@ let rec gen_expr size =
     let gen_binop =
       map3
         (fun op e1 e2 -> BinOp (op, e1, e2))
-        (oneofl [ Add; Sub; Mul; Div ])
+        (oneofl [ Add; Sub; Mul; Div; Eq; Neq; Lt; Le; Gt; Ge ])
         sub_gen
         sub_gen
     in
@@ -101,6 +101,36 @@ let rec shrink_expr = function
     return e <+> (shrink_expr e >|= fun e' -> FunExpr ([ PVar "x" ], e'))
 ;;
 
+let gen_binding size =
+  let open Gen in
+  map3
+    (fun rf p e -> rf, p, e)
+    (oneofl [ NonRec; Rec ])
+    (gen_pattern (size / 2))
+    (gen_expr (size / 2))
+;;
+
+let gen_structure_item size =
+  let open Gen in
+  map (fun b -> Value b) (gen_binding size)
+;;
+
+let gen_program =
+  let open Gen in
+  sized (fun size -> list_size (int_range 1 5) (gen_structure_item size))
+;;
+
+let shrink_binding (rf, p, e) =
+  let open Iter in
+  shrink_expr e >|= fun e' -> rf, p, e'
+;;
+
+let shrink_structure_item = function
+  | Value b -> Iter.map (fun b' -> Value b') (shrink_binding b)
+;;
+
+let shrink_program items = Shrink.list ~shrink:shrink_structure_item items
+let arb_program = make ~print:show_program ~shrink:shrink_program gen_program
 let arb_expr = make ~print:show_expr ~shrink:shrink_expr (Gen.sized gen_expr)
 
 let parser_test =
@@ -130,4 +160,35 @@ let parser_test =
         msg)
 ;;
 
-let () = QCheck_runner.run_tests_main [ parser_test ]
+let program_test =
+  Test.make
+    ~count:1000
+    ~name:"parser round-trip property (program)"
+    arb_program
+    (fun prog ->
+       let code_string = pretty_print_program prog in
+       match parse_structure_items code_string with
+       | Ok parsed_prog ->
+         if Stdlib.( = ) prog parsed_prog
+         then true
+         else
+           Test.fail_reportf
+             "Program AST mismatch after round-trip.\n\
+              Original AST:   %s\n\
+              Generated Code: %s\n\
+              Parsed AST:     %s"
+             (show_program prog)
+             code_string
+             (show_program parsed_prog)
+       | Error msg ->
+         Test.fail_reportf
+           "Parse failed on generated program code.\n\
+            Original AST:   %s\n\
+            Code:           %s\n\
+            Error:          %s"
+           (show_program prog)
+           code_string
+           msg)
+;;
+
+let () = QCheck_runner.run_tests_main [ parser_test; program_test ]

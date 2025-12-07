@@ -258,3 +258,14 @@ let%expect_test "unit pattern in let with body" =
             ))))
       ] |}]
 ;;
+
+let%expect_test "let in in let in" =
+  run_program_parser "let f = let x = let y = 10 in y in x ;;";
+  [%expect
+    {|
+    [(Value
+        (NonRec, (PVar "f"),
+         (Let (NonRec, (PVar "x"),
+            (Let (NonRec, (PVar "y"), (Const (CInt 10)), (Var "y"))), (Var "x")))))
+      ] |}]
+;;

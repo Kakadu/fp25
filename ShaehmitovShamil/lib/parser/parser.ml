@@ -135,15 +135,15 @@ let parse_operators base_parser =
       choice [ (neg_op *> unary_rec >>| fun e -> UnOp (Neg, e)); token base_parser ])
   in
   (* helper for left accociativity *)
-  let chainl1 p op =
+  let helper p op =
     let rec loop acc = lift2 (fun f x -> f acc x) op p >>= loop <|> return acc in
     p >>= loop
   in
   (* Priority of binary operators *)
-  let mul_div = chainl1 unary (choice [ mul_op; div_op ] >>| parse_binary_op) in
-  let add_sub = chainl1 mul_div (choice [ add_op; sub_op ] >>| parse_binary_op) in
+  let mul_div = helper unary (choice [ mul_op; div_op ] >>| parse_binary_op) in
+  let add_sub = helper mul_div (choice [ add_op; sub_op ] >>| parse_binary_op) in
   let compare_ops =
-    chainl1
+    helper
       add_sub
       (choice [ eq_op; neq_op; le_op; lt_op; ge_op; gt_op ] >>| parse_binary_op)
   in

@@ -29,13 +29,15 @@ module Interpreter : Eval = struct
   type 'a eval_result = ('a, error) Result.t
   type is_rec = bool
 
+  module Env = Stdlib.Map.Make (String)
+
   type value =
     | VInt of int
     | VUnit
     | VClosure of is_rec * name * env * pattern list * expr
     | VBuiltin of (value -> value eval_result)
 
-  and env = (name, value, String.comparator_witness) Map.t
+  and env = value Env.t
 
   let ( let* ) res f =
     match res with
@@ -46,12 +48,12 @@ module Interpreter : Eval = struct
   let return v = Ok v
 
   let lookup_env (env : env) (x : name) : value eval_result =
-    match Map.find env x with
+    match Env.find_opt x env with
     | Some v -> return v
     | None -> Error (UnboundVariable x)
   ;;
 
-  let extend env key value = Map.update env key ~f:(fun _ -> value)
+  let extend env key value = Env.add key value env
 
   let rec eval_expr (env : env) (e : expr) (steps : int) : (value * int) eval_result =
     if steps <= 0
@@ -189,52 +191,48 @@ module Interpreter : Eval = struct
   ;;
 
   let initial_env : env =
-    let open Base.Map in
-    empty (module String)
-    |> set
-         ~key:"print_int"
-         ~data:
-           (VBuiltin
-              (function
-                | VInt i ->
-                  Stdlib.print_int i;
-                  return VUnit
-                | _ -> Error (TypeError "print_int expects an integer")))
-    |> set
-         ~key:"print_endl"
-         ~data:
-           (VBuiltin
-              (function
-                | VUnit ->
-                  Stdlib.print_newline ();
-                  return VUnit
-                | _ -> Error (TypeError "print_endl expects a unit value ()")))
-    |> set
-         ~key:"fix"
-         ~data:
-           (VBuiltin
-              (function
-                | VClosure (_, _, closure_env, params, body) ->
-                  (match params with
-                   | PVar name :: rest ->
-                     return (VClosure (true, name, closure_env, rest, body))
-                   | _ :: _ ->
-                     Error (TypeError "First argument of fix must be a named variable")
-                   | [] ->
-                     Error
-                       (TypeError "Function passed to fix must have at least one argument"))
-                | _ -> Error (TypeError "fix expects a function")))
+    Env.empty
+    |> Env.add
+         "print_int"
+         (VBuiltin
+            (function
+              | VInt i ->
+                Stdlib.print_int i;
+                return VUnit
+              | _ -> Error (TypeError "print_int expects an integer")))
+    |> Env.add
+         "print_endl"
+         (VBuiltin
+            (function
+              | VUnit ->
+                Stdlib.print_newline ();
+                return VUnit
+              | _ -> Error (TypeError "print_endl expects a unit value ()")))
+    |> Env.add
+         "fix"
+         (VBuiltin
+            (function
+              | VClosure (_, _, closure_env, params, body) ->
+                (match params with
+                 | PVar name :: rest ->
+                   return (VClosure (true, name, closure_env, rest, body))
+                 | _ :: _ ->
+                   Error (TypeError "First argument of fix must be a named variable")
+                 | [] ->
+                   Error
+                     (TypeError "Function passed to fix must have at least one argument"))
+              | _ -> Error (TypeError "fix expects a function")))
   ;;
 
   let run_program (max_steps : int) (prog : program) =
     let* final_env, final_val, _ =
-      List.fold_left
-        prog
-        ~init:(return (initial_env, None, max_steps))
-        ~f:(fun acc item ->
+      Stdlib.List.fold_left
+        (fun acc item ->
           let* env, _, steps = acc in
           let* (new_env, v_opt), steps' = eval_program_item env item steps in
           return (new_env, v_opt, steps'))
+        (return (initial_env, None, max_steps))
+        prog
     in
     return (final_env, final_val)
   ;;
