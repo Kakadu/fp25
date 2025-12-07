@@ -163,10 +163,10 @@ let parse_expr =
       ])
 ;;
 
-let parse_program = whitespace *> parse_expr <* whitespace <* end_of_input
+let parse_full_expr = whitespace *> parse_expr <* whitespace <* end_of_input
 
 let parse s =
-  match Angstrom.parse_string ~consume:All parse_program s with
+  match Angstrom.parse_string ~consume:All parse_full_expr s with
   | Ok result -> Ok result
   | Error msg -> Error msg
 ;;
@@ -185,7 +185,7 @@ let parse_binding expr =
 
 let parse_program_item expr = parse_binding expr >>| fun e -> Value e
 
-let parse_program1 =
+let parse_program =
   let items = sep_by (token (string ";;")) (parse_program_item parse_expr) in
   whitespace *> items
   <* option () (token (string ";;") *> return ())
@@ -194,7 +194,7 @@ let parse_program1 =
 ;;
 
 let parse_structure_items s =
-  match Angstrom.parse_string ~consume:All parse_program1 s with
+  match Angstrom.parse_string ~consume:All parse_program s with
   | Ok result -> Ok result
   | Error msg -> Error msg
 ;;
