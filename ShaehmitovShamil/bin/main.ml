@@ -32,7 +32,10 @@ let rec parse_args args config =
       let prefix_len = String.length "--maxsteps=" in
       let num_str = String.sub arg prefix_len (String.length arg - prefix_len) in
       match int_of_string_opt num_str with
-      | Some n -> parse_args rest { config with max_steps = n }
+      | Some n ->
+        if n > 0
+        then parse_args rest { config with max_steps = n }
+        else Error "Invalid integer for --maxsteps"
       | None -> Error "Invalid integer for --maxsteps")
     else if config.filename = None
     then parse_args rest { config with filename = Some arg }

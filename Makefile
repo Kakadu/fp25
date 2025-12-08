@@ -1,6 +1,6 @@
 .PHONY: copy_template
 
-NEW_NAME ?= ShaehmitovShamil
+NEW_NAME ?= Lambda2
 OLD_NAME = Lambda
 copy_template:
 	@$(RM) -r $(NEW_NAME)

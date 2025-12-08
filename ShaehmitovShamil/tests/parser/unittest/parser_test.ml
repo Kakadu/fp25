@@ -268,3 +268,17 @@ let%expect_test "let in in let in" =
             (Let (NonRec, (PVar "y"), (Const (CInt 10)), (Var "y"))), (Var "x")))))
       ] |}]
 ;;
+
+let%expect_test "application bin op" =
+  run_program_parser "let f x = x + 1 ;; let y = f 10 + f 20;;";
+  [%expect
+    {|
+    [(Value
+        (NonRec, (PVar "f"),
+         (FunExpr ([(PVar "x")], (BinOp (Add, (Var "x"), (Const (CInt 1))))))));
+      (Value
+         (NonRec, (PVar "y"),
+          (BinOp (Add, (App ((Var "f"), (Const (CInt 10)))),
+             (App ((Var "f"), (Const (CInt 20))))))))
+      ] |}]
+;;
