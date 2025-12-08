@@ -6,14 +6,39 @@
 
 [@@@ocaml.text "/*"]
 
+(* Name of variable or function *)
 type name = string
 
-(** The main type for our AST (дерева абстрактного синтаксиса) *)
-type 'name t =
-  | Var of 'name (** Variable [x] *)
-  | Abs of 'name * 'name t (** Abstraction [λx.t] *)
-  | App of 'name t * 'name t
+(* Binary arithmetic operations *)
+type binop =
+  | Add
+  | Mul
+  | Sub
+  | Div
 
-(* Application [f g ] *)
-(** In type definition above the 3rd constructor is intentionally without documentation
-    to test linter *)
+(* Comparison operations *)
+type cmpop =
+  | Eq
+  | Neq
+  | Lt
+  | Le
+  | Gt
+  | Ge
+
+(* AST for miniML expressions *)
+type 'name t =
+  | Var of 'name
+  | Int of int
+  | Abs of 'name * 'name t
+  | App of 'name t * 'name t
+  | Let of 'name * 'name t * 'name t
+  | Let_rec of 'name * 'name t * 'name t
+  | If of 'name t * 'name t * 'name t
+  | Binop of binop * 'name t * 'name t
+  | Cmp of cmpop * 'name t * 'name t
+
+(* Expression with string names *)
+type expr = name t
+
+(* Whole program is one expression *)
+type program = expr
