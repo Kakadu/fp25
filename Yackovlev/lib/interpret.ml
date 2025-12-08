@@ -6,30 +6,235 @@
 
 [@@@ocaml.text "/*"]
 
-(** Real monadic interpreter goes here *)
+open Ast
 
-open Utils
+type prim =
+  | Print_int
+  | Fix
+;;
 
-type error = [ `UnknownVariable of string (** just for example *) ]
+type value =
+  | VInt of int
+  | VClosure of closure
+  | VPrim of prim
+  | VUnit
 
-module Interpret (M : MONAD_FAIL) : sig
-  val run : _ Ast.t -> (int, [> error ]) M.t
-end = struct
-  let run _ =
-    (* TODO: implement interpreter here *)
-    if true then M.fail (`UnknownVariable "var") else failwith "not implemented"
-  ;;
-end
+and closure =
+  { param : name
+  ; body : expr
+  ; env : env
+  }
 
-let parse_and_run str =
-  let module I = Interpret (Base.Result) in
-  let rez = Base.Result.(Parser.parse str >>= I.run) in
-  match rez with
-  | Result.Ok n -> Printf.printf "Success: %d\n" n
-  | Result.Error #Parser.error ->
-    Format.eprintf "Parsing error\n%!";
-    exit 1
-  | Result.Error #error ->
-    Format.eprintf "Interpreter error\n%!";
-    exit 1
+and env = (name * value) list
+;;
+
+type error =
+  [ `Unknown_variable of name
+  | `Not_a_function of value
+  | `Division_by_zero
+  | `Type_error of string
+  | `Out_of_fuel
+  ]
+;;
+
+type 'a eval_result = ('a, error) result
+
+let ok x = Ok x
+let error e = Error e
+
+let ( let* ) m f =
+  match m with
+  | Ok v -> f v
+  | Error e -> Error e
+;;
+
+type fuel = int
+
+let tick (fuel : fuel) : (unit * fuel, error) result =
+  if fuel <= 0 then error `Out_of_fuel else ok ((), fuel - 1)
+;;
+
+let lookup (env : env) (x : name) : value option = List.assoc_opt x env
+
+let rec string_of_value = function
+  | VInt n -> string_of_int n
+  | VUnit -> "()"
+  | VClosure _ -> "<fun>"
+  | VPrim Print_int -> "<prim print_int>"
+  | VPrim Fix -> "<prim fix>"
+;;
+
+let string_of_error : error -> string = function
+  | `Unknown_variable x -> "Unknown variable: " ^ x
+  | `Not_a_function v -> "Not a function: " ^ string_of_value v
+  | `Division_by_zero -> "Division by zero"
+  | `Type_error msg -> "Type error: " ^ msg
+  | `Out_of_fuel -> "Out of fuel"
+;;
+
+let eval_int_binop (op : binop) (n1 : int) (n2 : int) : (int, error) result =
+  match op with
+  | Add -> ok (n1 + n2)
+  | Sub -> ok (n1 - n2)
+  | Mul -> ok (n1 * n2)
+  | Div ->
+    if n2 = 0 then error `Division_by_zero else ok (n1 / n2)
+;;
+
+let eval_cmpop (op : cmpop) (n1 : int) (n2 : int) : (int, error) result =
+  let b =
+    match op with
+    | Eq -> n1 = n2
+    | Neq -> n1 <> n2
+    | Lt -> n1 < n2
+    | Le -> n1 <= n2
+    | Gt -> n1 > n2
+    | Ge -> n1 >= n2
+  in
+  let as_int = if b then 1 else 0 in
+  ok as_int
+;;
+
+let apply_prim (fuel : fuel) (p : prim) (arg : value)
+  : (value * fuel, error) result
+  =
+  match p, arg with
+  | Print_int, VInt n ->
+    (* Print the integer during evaluation and return unit *)
+    print_endline (string_of_int n);
+    ok (VUnit, fuel)
+  | Print_int, v ->
+    error (`Type_error ("print_int expects int, got " ^ string_of_value v))
+  | Fix, VClosure { param = self; body; env } ->
+    (* [fix f] expects [f] to be a function of one argument [self]
+       that returns the actual recursive function.
+       Typical usage: [fix (fun self -> fun n -> ...)] *)
+    (match body with
+     | Abs (arg, inner_body) ->
+       let rec rec_closure =
+         VClosure { param = arg; body = inner_body; env = (self, rec_closure) :: env }
+       in
+       ok (rec_closure, fuel)
+     | _ ->
+       error (`Type_error "fix expects a function that returns a function"))
+  | Fix, v ->
+    error (`Type_error ("fix expects a function, got " ^ string_of_value v))
+;;
+
+(* The mutually recursive evaluator helpers follow *)
+let rec apply (fuel : fuel) (f : value) (arg : value)
+  : (value * fuel, error) result
+  =
+  match f with
+  | VClosure { param; body; env } ->
+    let env' = (param, arg) :: env in
+    eval env' fuel body
+  | VPrim p -> apply_prim fuel p arg
+  | v -> error (`Not_a_function v)
+
+and eval_if (env : env) (fuel : fuel) (cond : expr) (e_then : expr) (e_else : expr)
+  : (value * fuel, error) result
+  =
+  let* (v_cond, fuel1) = eval env fuel cond in
+  match v_cond with
+  | VInt n ->
+    (* Integers as booleans: 0 is false, any non-zero is true *)
+    if n <> 0 then eval env fuel1 e_then else eval env fuel1 e_else
+  | _ -> error (`Type_error "if condition must be an int")
+
+and eval_let (env : env) (fuel : fuel) (x : name) (e1 : expr) (e2 : expr)
+  : (value * fuel, error) result
+  =
+  (* Call-by-value let: evaluate [e1], bind, then evaluate [e2] *)
+  let* (v1, fuel1) = eval env fuel e1 in
+  let env' = (x, v1) :: env in
+  eval env' fuel1 e2
+
+and eval_let_rec (env : env) (fuel : fuel) (f : name) (rhs : expr) (body : expr)
+  : (value * fuel, error) result
+  =
+  match rhs with
+  | Abs (x, fun_body) ->
+    (* Recursive function binding: [f] is available inside [fun_body] *)
+    let rec closure = VClosure { param = x; body = fun_body; env = env' }
+    and env' = (f, closure) :: env in
+    eval env' fuel body
+  | _ ->
+    error (`Type_error "let rec expects a function on the right-hand side")
+
+and eval_binop (env : env) (fuel : fuel) (op : binop) (e1 : expr) (e2 : expr)
+  : (value * fuel, error) result
+  =
+  (* Call-by-value for arithmetic: evaluate left operand, then right operand *)
+  let* (v1, fuel1) = eval env fuel e1 in
+  let* (v2, fuel2) = eval env fuel1 e2 in
+  match v1, v2 with
+  | VInt n1, VInt n2 ->
+    let* n = eval_int_binop op n1 n2 in
+    ok (VInt n, fuel2)
+  | _ ->
+    (* Trying to add/multiply/etc non-integers is a runtime type error *)
+    error (`Type_error "integer operands expected in arithmetic")
+
+and eval_cmp (env : env) (fuel : fuel) (op : cmpop) (e1 : expr) (e2 : expr)
+  : (value * fuel, error) result
+  =
+  (* Call-by-value for comparisons: evaluate left operand, then right operand *)
+  let* (v1, fuel1) = eval env fuel e1 in
+  let* (v2, fuel2) = eval env fuel1 e2 in
+  match v1, v2 with
+  | VInt n1, VInt n2 ->
+    let* n = eval_cmpop op n1 n2 in
+    (* Comparison result is encoded as an int: 1 is true, 0 is false *)
+    ok (VInt n, fuel2)
+  | _ -> error (`Type_error "comparison expects integer operands")
+
+and eval (env : env) (fuel : fuel) (e : expr)
+  : (value * fuel, error) result
+  =
+  (* Each call to [eval] consumes one unit of fuel *)
+  let* ((), fuel) = tick fuel in
+  match e with
+  | Var x ->
+    (* Look up variable in the current environment *)
+    (match lookup env x with
+     | Some v -> ok (v, fuel)
+     | None -> error (`Unknown_variable x))
+  | Int n -> ok (VInt n, fuel)
+  | Abs (x, body) ->
+    (* Closures capture the current environment *)
+    ok (VClosure { param = x; body; env }, fuel)
+  | App (e1, e2) ->
+    (* Call-by-value: first evaluate the function expression, then the argument *)
+    let* (f, fuel1) = eval env fuel e1 in
+    let* (arg, fuel2) = eval env fuel1 e2 in
+    apply fuel2 f arg
+  | Let (x, e1, e2) ->
+    eval_let env fuel x e1 e2
+  | Let_rec (f, rhs, body) ->
+    eval_let_rec env fuel f rhs body
+  | If (cond, e_then, e_else) ->
+    eval_if env fuel cond e_then e_else
+  | Binop (op, e1, e2) ->
+    eval_binop env fuel op e1 e2
+  | Cmp (op, e1, e2) ->
+    eval_cmp env fuel op e1 e2
+;;
+
+let initial_env : env =
+  [ "print_int", VPrim Print_int
+  ; "fix", VPrim Fix
+  ]
+;;
+
+let parse_and_run ?(fuel = 100_000) (str : string) : unit =
+  match Parser.parse str with
+  | Result.Error e ->
+    Format.eprintf "Parsing error: %a\n%!" Parser.pp_error e
+  | Result.Ok ast ->
+    (match eval initial_env fuel ast with
+     | Ok (v, _fuel_left) ->
+       Format.printf "Success: %s\n%!" (string_of_value v)
+     | Error err ->
+       Format.eprintf "Runtime error: %s\n%!" (string_of_error err))
 ;;
