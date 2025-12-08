@@ -74,11 +74,11 @@ let rec shrink_expr = function
   | UnOp (_, e) ->
     let open Iter in
     return e <+> (shrink_expr e >|= fun e' -> UnOp (Neg, e'))
-  | BinOp (_, e1, e2) ->
+  | BinOp (binop, e1, e2) ->
     let open Iter in
     of_list [ e1; e2 ]
-    <+> (shrink_expr e1 >|= fun e1' -> BinOp (Add, e1', e2))
-    <+> (shrink_expr e2 >|= fun e2' -> BinOp (Add, e1, e2'))
+    <+> (shrink_expr e1 >|= fun e1' -> BinOp (binop, e1', e2))
+    <+> (shrink_expr e2 >|= fun e2' -> BinOp (binop, e1, e2'))
   | If (c, t, f) ->
     let open Iter in
     of_list [ t; f ]

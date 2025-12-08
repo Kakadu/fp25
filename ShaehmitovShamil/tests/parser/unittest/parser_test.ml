@@ -201,7 +201,7 @@ let%expect_test "binding and expression" =
     ] |}]
 ;;
 
-let%expect_test "multiple structure items" =
+let%expect_test "few let in" =
   run_program_parser "let f = \n      let x = 6 in\n      let y = 7 in\n      x + y ;;";
   [%expect
     {|
