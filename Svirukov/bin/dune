@@ -1,0 +1,21 @@
+(executable
+ (name REPL)
+ (public_name REPL)
+ (modules REPL)
+ (libraries lambda_lib stdio)
+ (instrumentation
+  (backend bisect_ppx)))
+
+(executable
+ (name inference_test)
+ (public_name inference_test)
+ (modules inference_test)
+ (libraries lambda_lib stdio)
+ (instrumentation
+  (backend bisect_ppx)))
+
+(cram
+ (deps ./REPL.exe %{bin:REPL}))
+
+(cram
+ (deps ./inference_test.exe %{bin:inference_test}))

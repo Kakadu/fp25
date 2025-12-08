@@ -1,0 +1,17 @@
+(library
+ (name parser_test)
+ (libraries lambda_lib qcheck)
+ (modules parser_test parser_gentest)
+ (inline_tests)
+ (preprocess
+  (pps ppx_expect ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx)))
+
+(cram
+ (applies_to interpret_tests)
+ (deps ../bin/REPL.exe))
+
+(cram
+ (applies_to inference)
+ (deps ../bin/inference_test.exe))
