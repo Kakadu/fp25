@@ -655,24 +655,24 @@ module Interpreter : Eval = struct
   ;;
 
   let eval_program_item (env : env) (item : structure_item) (steps : int)
-    : ((env * value option) * int) eval_result
+    : (env * int) eval_result
     =
     <span data-count="64">m</span>atch item with
     | <span data-count="53">V</span>alue (NonRec, p, expr) -&gt;
       let* v, steps = eval_exp<span data-count="53">r</span> env expr steps in
       <span data-count="41">(</span>match p with
-       | <span data-count="14">P</span>Var name -&gt; return ((exten<span data-count="14">d</span> env name v, None), steps)
-       | <span data-count="1">P</span>Any -&gt; return ((env, None), steps)
+       | <span data-count="14">P</span>Var name -&gt; return (exten<span data-count="14">d</span> env name v, steps)
+       | <span data-count="1">P</span>Any -&gt; return (env, steps)
        | <span data-count="26">P</span>Unit -&gt;
          (match v with
-          | <span data-count="25">V</span>Unit -&gt; return ((env, None), steps)
+          | <span data-count="25">V</span>Unit -&gt; return (env, steps)
           | <span data-count="1">_</span> -&gt; Error (TypeError "Expected unit value for unit pattern")))
     | <span data-count="11">V</span>alue (Rec, p, expr) -&gt;
       (match p, expr with
        | <span data-count="7">P</span>Var name, FunExpr (params, body) -&gt;
          let rec_closure = VClosure (true, name, env, params, body) in
          let new_env = extend env name rec_closure in
-         <span data-count="7">r</span>eturn ((new_env, None), steps)
+         <span data-count="7">r</span>eturn (new_env, steps)
        | <span data-count="1">P</span>Var _, _ -&gt; Error (TypeError "Recursive value definition must be a function")
        | <span data-count="1">P</span>Any, _ -&gt; Error (TypeError "Recursive value definition cannot be a wildcard")
        | <span data-count="2">P</span>Unit, _ -&gt; Error (TypeError "Recursive value definition cannot be unit"))
@@ -706,16 +706,16 @@ module Interpreter : Eval = struct
   ;;
 
   let run_program (max_steps : int) (prog : program) =
-    <span data-count="42">l</span>et* final_env, final_val, _ =
+    <span data-count="42">l</span>et* final_env, _ =
       Stdlib.List.fold_lef<span data-count="42">t</span>
         (fun acc item -&gt;
-          <span data-count="64">l</span>et* env, _, steps = acc in
-          <span data-count="64">l</span>et* (new_env, v_opt), steps' = eval_program_ite<span data-count="64">m</span> env item steps in
-          <span data-count="47">r</span>eturn (new_env, v_opt, steps'))
-        (retur<span data-count="42">n</span> (initial_env, None, max_steps))
+          <span data-count="64">l</span>et* env, steps = acc in
+          <span data-count="64">l</span>et* new_env, steps' = eval_program_ite<span data-count="64">m</span> env item steps in
+          <span data-count="47">r</span>eturn (new_env, steps'))
+        (retur<span data-count="42">n</span> (initial_env, max_steps))
         prog
     in
-    <span data-count="25">r</span>eturn (final_env, final_val)
+    <span data-count="25">r</span>eturn (final_env, None)
   ;;
 end
 </code></pre>
