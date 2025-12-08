@@ -771,7 +771,7 @@ let%expect_test "binding and expression" =
     ] |}<span data-count="5">]</span>
 ;;
 
-let%expect_test "multiple structure items" =
+let%expect_test "few let in" =
   <span data-count="1">r</span>un_program_parser "let f = \n      let x = 6 in\n      let y = 7 in\n      x + y ;;";
   <span data-count="1">[</span>%expect
     {|

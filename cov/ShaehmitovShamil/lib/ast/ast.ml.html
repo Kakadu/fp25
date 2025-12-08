@@ -358,72 +358,72 @@
 <span data-count="10">t</span>ype program = <span data-count="58">s</span>tructure_item lis<span data-count="12">t</span> [@@deriving show { with_path = false }]
 
 let pretty_print_pattern = function
-  | <span data-count="4199">P</span>Var s -&gt; s
-  | <span data-count="1980">P</span>Any -&gt; "_"
-  | <span data-count="2075">P</span>Unit -&gt; "()"
+  | <span data-count="3955">P</span>Var s -&gt; s
+  | <span data-count="1876">P</span>Any -&gt; "_"
+  | <span data-count="1817">P</span>Unit -&gt; "()"
 ;;
 
 let rec pretty_print_expr = function
-  | <span data-count="6521">C</span>onst (CInt i) -&gt; string_of_int i
+  | <span data-count="6173">C</span>onst (CInt i) -&gt; string_of_int i
   | <span data-count="0">C</span>onst CUnit -&gt; "()"
-  | <span data-count="6503">V</span>ar s -&gt; s
-  | <span data-count="2467">U</span>nOp (op, e) -&gt;
+  | <span data-count="6149">V</span>ar s -&gt; s
+  | <span data-count="2388">U</span>nOp (op, e) -&gt;
     let op_str =
       match op with
-      | <span data-count="2467">N</span>eg -&gt; "-"
+      | <span data-count="2388">N</span>eg -&gt; "-"
     in
-    "(" ^ op_str ^ pretty_print_exp<span data-count="2467">r</span> e ^ ")"
-  | <span data-count="2433">B</span>inOp (op, e1, e2) -&gt;
+    "(" ^ op_str ^ pretty_print_exp<span data-count="2388">r</span> e ^ ")"
+  | <span data-count="2302">B</span>inOp (op, e1, e2) -&gt;
     let op_str =
       match op with
-      | <span data-count="246">A</span>dd -&gt; " + "
-      | <span data-count="247">S</span>ub -&gt; " - "
-      | <span data-count="245">M</span>ul -&gt; " * "
-      | <span data-count="255">D</span>iv -&gt; " / "
-      | <span data-count="240">E</span>q -&gt; " = "
-      | <span data-count="247">N</span>eq -&gt; " &lt;&gt; "
-      | <span data-count="241">L</span>t -&gt; " &lt; "
-      | <span data-count="243">L</span>e -&gt; " &lt;= "
-      | <span data-count="226">G</span>t -&gt; " &gt; "
-      | <span data-count="243">G</span>e -&gt; " &gt;= "
+      | <span data-count="233">A</span>dd -&gt; " + "
+      | <span data-count="219">S</span>ub -&gt; " - "
+      | <span data-count="238">M</span>ul -&gt; " * "
+      | <span data-count="228">D</span>iv -&gt; " / "
+      | <span data-count="236">E</span>q -&gt; " = "
+      | <span data-count="237">N</span>eq -&gt; " &lt;&gt; "
+      | <span data-count="221">L</span>t -&gt; " &lt; "
+      | <span data-count="230">L</span>e -&gt; " &lt;= "
+      | <span data-count="236">G</span>t -&gt; " &gt; "
+      | <span data-count="224">G</span>e -&gt; " &gt;= "
     in
-    "(" ^ pretty_print_exp<span data-count="2433">r</span> e1 ^ op_str ^ pretty_print_exp<span data-count="2433">r</span> e2 ^ ")"
-  | <span data-count="1613">I</span>f (cond, t, f) -&gt;
+    "(" ^ pretty_print_exp<span data-count="2302">r</span> e1 ^ op_str ^ pretty_print_exp<span data-count="2302">r</span> e2 ^ ")"
+  | <span data-count="1458">I</span>f (cond, t, f) -&gt;
     "(if "
-    ^ pretty_print_exp<span data-count="1613">r</span> cond
+    ^ pretty_print_exp<span data-count="1458">r</span> cond
     ^ " then "
-    ^ pretty_print_exp<span data-count="1613">r</span> t
+    ^ pretty_print_exp<span data-count="1458">r</span> t
     ^ " else "
-    ^ pretty_print_exp<span data-count="1613">r</span> f
+    ^ pretty_print_exp<span data-count="1458">r</span> f
     ^ ")"
-  | <span data-count="1712">F</span>unExpr (param, body) -&gt;
+  | <span data-count="1550">F</span>unExpr (param, body) -&gt;
     "(fun "
-    ^ String.conca<span data-count="1712">t</span> " " (List.ma<span data-count="1712">p</span> pretty_print_pattern param)
+    ^ String.conca<span data-count="1550">t</span> " " (List.ma<span data-count="1550">p</span> pretty_print_pattern param)
     ^ " -&gt; "
-    ^ pretty_print_exp<span data-count="1712">r</span> body
+    ^ pretty_print_exp<span data-count="1550">r</span> body
     ^ ")"
-  | <span data-count="1597">A</span>pp (f, arg) -&gt; "(" ^ pretty_print_exp<span data-count="1597">r</span> f ^ " " ^ pretty_print_exp<span data-count="1597">r</span> arg ^ ")"
-  | <span data-count="845">L</span>et (NonRec, p, e1, e2) -&gt;
+  | <span data-count="1619">A</span>pp (f, arg) -&gt; "(" ^ pretty_print_exp<span data-count="1619">r</span> f ^ " " ^ pretty_print_exp<span data-count="1619">r</span> arg ^ ")"
+  | <span data-count="768">L</span>et (NonRec, p, e1, e2) -&gt;
     "(let "
-    ^ pretty_print_patter<span data-count="845">n</span> p
+    ^ pretty_print_patter<span data-count="768">n</span> p
     ^ " = "
-    ^ pretty_print_exp<span data-count="845">r</span> e1
+    ^ pretty_print_exp<span data-count="768">r</span> e1
     ^ " in "
-    ^ pretty_print_exp<span data-count="845">r</span> e2
+    ^ pretty_print_exp<span data-count="768">r</span> e2
     ^ ")"
-  | <span data-count="825">L</span>et (Rec, p, e1, e2) -&gt;
+  | <span data-count="773">L</span>et (Rec, p, e1, e2) -&gt;
     "(let rec "
-    ^ pretty_print_patter<span data-count="825">n</span> p
+    ^ pretty_print_patter<span data-count="773">n</span> p
     ^ " = "
-    ^ pretty_print_exp<span data-count="825">r</span> e1
+    ^ pretty_print_exp<span data-count="773">r</span> e1
     ^ " in "
-    ^ pretty_print_exp<span data-count="825">r</span> e2
+    ^ pretty_print_exp<span data-count="773">r</span> e2
     ^ ")"
 ;;
 
 let pretty_print_program_item = function
-  | <span data-count="1574">V</span>alue (NonRec, p, e) -&gt; "let " ^ pretty_print_patter<span data-count="1574">n</span> p ^ " = " ^ pretty_print_exp<span data-count="1574">r</span> e
-  | <span data-count="1524">V</span>alue (Rec, p, e) -&gt; "let rec " ^ pretty_print_patter<span data-count="1524">n</span> p ^ " = " ^ pretty_print_exp<span data-count="1524">r</span> e
+  | <span data-count="1528">V</span>alue (NonRec, p, e) -&gt; "let " ^ pretty_print_patter<span data-count="1528">n</span> p ^ " = " ^ pretty_print_exp<span data-count="1528">r</span> e
+  | <span data-count="1416">V</span>alue (Rec, p, e) -&gt; "let rec " ^ pretty_print_patter<span data-count="1416">n</span> p ^ " = " ^ pretty_print_exp<span data-count="1416">r</span> e
 ;;
 
 let pretty_print_program p =
