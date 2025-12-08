@@ -22,14 +22,14 @@ include struct
   let ao_small_step_strat =
     let rec helper = function
       | Var _ as l -> fin l
-      | Abs (x, b) ->
+      | Fun (x, b) ->
         (match helper b with
          | WIP b2 -> wip (abs x b2)
          | Done b2 -> fin (abs x b2))
       | App (f, arg) ->
         (match helper f with
          | WIP f2 -> wip (app f2 arg)
-         | Done (Abs (x, body)) ->
+         | Done (Fun (x, body)) ->
            (match helper arg with
             | Done arg -> wip (Lambda.subst x ~by:arg body)
             | WIP arg -> wip (app f arg))

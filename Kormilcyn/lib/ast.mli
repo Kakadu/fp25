@@ -8,13 +8,25 @@
 
 type name = string
 
+type binop =
+  | Add
+  | Mul
+  | Sub
+  | Div
+  | Leq
+
 (** The main type for our AST (дерева абстрактного синтаксиса) *)
 type 'name t =
-  (* здесь t - это основное название типа, а 'name - название обобщающего типа, подобно 'a *)
   | Var of 'name (** Variable [x] *)
-  | Abs of 'name * 'name t (** Abstraction [λx.t] *)
+  | Fun of 'name * 'name t
   | App of 'name t * 'name t
-
-(* Application [f g ] *)
-(** In type definition above the 3rd constructor is intentionally without documentation
+  | Int of int
+  | Neg of 'name t
+  | Bin of binop * 'name t * 'name t
+  | Let of 'name * 'name t * 'name t
+  | If of 'name t * 'name t * 'name t
+  (* TODO: meaningful exceptions *)
+  | Exn
+  (** In type definition above the 3rd constructor is intentionally without documentation
     to test linter *)
+(* Application [f g ] *)

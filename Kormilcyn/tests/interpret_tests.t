@@ -11,7 +11,7 @@ in the dune file
 
   $ ../bin/REPL.exe -cbv -dparsetree <<EOF
   > \f.x
-  Parsed result: (Abs (f, (Var x)))
+  Parsed result: (Fun (f, (Var x)))
   Evaluated result: (λ _ . x)
   $ ../bin/REPL.exe -dparsetree <<EOF
   > garbage242
@@ -22,18 +22,18 @@ in the dune file
   $ ../bin/REPL.exe -no -dparsetree <<EOF
   > (\x.\y.x)(\u.u)((\x. x x)(\x.x x))
   Parsed result: (App (
-                    (App ((Abs (x, (Abs (y, (Var x))))), (Abs (u, (Var u))))),
-                    (App ((Abs (x, (App ((Var x), (Var x))))),
-                       (Abs (x, (App ((Var x), (Var x)))))))
+                    (App ((Fun (x, (Fun (y, (Var x))))), (Fun (u, (Var u))))),
+                    (App ((Fun (x, (App ((Var x), (Var x))))),
+                       (Fun (x, (App ((Var x), (Var x)))))))
                     ))
   Evaluated result: (λ u . u)
 Below we redirect contents of the file to the evaluator
   $ ../bin/REPL.exe -dparsetree -stop-after parsing   < lam_1+1.txt
   Parsed result: (App (
-                    (Abs (m,
-                       (Abs (n,
-                          (Abs (f,
-                             (Abs (x,
+                    (Fun (m,
+                       (Fun (n,
+                          (Fun (f,
+                             (Fun (x,
                                 (App ((Var m),
                                    (App ((Var f),
                                       (App ((Var n), (App ((Var f), (Var x)))))
@@ -43,8 +43,8 @@ Below we redirect contents of the file to the evaluator
                              ))
                           ))
                        )),
-                    (App ((Abs (f, (Abs (x, (App ((Var f), (Var x))))))),
-                       (Abs (f, (Abs (x, (App ((Var f), (Var x)))))))))
+                    (App ((Fun (f, (Fun (x, (App ((Var f), (Var x))))))),
+                       (Fun (f, (Fun (x, (App ((Var f), (Var x)))))))))
                     ))
 
   $ ../bin/REPL.exe -ao   < lam_1+1.txt

@@ -35,12 +35,12 @@ let%expect_test _ =
 
 let%expect_test _ =
   Format.printf "%a" pp (parse_optimistically "(\\x . x x)");
-  [%expect {| (Abs (x, (App ((Var x), (Var x))))) |}]
+  [%expect {| (Fun (x, (App ((Var x), (Var x))))) |}]
 ;;
 
 let%expect_test _ =
   Format.printf "%a" pp (parse_optimistically "(λf.λx. f (x x))");
-  [%expect {| (Abs (f, (Abs (x, (App ((Var f), (App ((Var x), (Var x))))))))) |}]
+  [%expect {| (Fun (f, (Fun (x, (App ((Var f), (App ((Var x), (Var x))))))))) |}]
 ;;
 
 let _ = Lambda_lib.Interpret.parse_and_run
@@ -51,6 +51,6 @@ let _ = Lambda_lib.Lambda.three
 let _ = Lambda_lib.Lambda.two
 let _ = Lambda_lib.Lambda.without_strat
 let _ = Lambda_lib.Lambda.zero
-let _ = Lambda_lib.Parser.parse_lam
+let _ = Lambda_lib.Parser.parse_miniml
 let _ = Lambda_lib.Printast.pp
 let _ = Lambda_lib.Printast.show

@@ -8,7 +8,7 @@ open Utils
 
 (* Smart constructors *)
 let var x = Var x
-let abs x y = Abs (x, y)
+let abs x y = Fun (x, y)
 let app x y = App (x, y)
 
 let replace_name x ~by =
@@ -16,14 +16,13 @@ let replace_name x ~by =
     | Var y when String.equal x y -> Var by
     | Var t -> Var t
     | App (l, r) -> App (helper l, helper r)
-    | Abs (y, t) when String.equal x y -> Abs (by, helper t)
-    | Abs (z, t) -> Abs (z, helper t)
+    | Fun (y, t) when String.equal x y -> Fun (by, helper t)
+    | Fun (z, t) -> Fun (z, helper t)
   in
   helper
 ;;
 
 let rec next_name s old =
-  (* спавнит подчёркивания перед именем переменной *)
   if List.mem ~equal:String.equal old s then next_name ("_" ^ s) old else s
 ;;
 
@@ -33,12 +32,12 @@ let subst x ~by:v =
     | Var y when String.equal y x -> v
     | Var y -> Var y
     | App (l, r) -> app (helper l) (helper r)
-    | Abs (y, b) when String.equal y x -> abs y b
-    | Abs (y, t) when is_free_in y v ->
+    | Fun (y, b) when String.equal y x -> abs y b
+    | Fun (y, t) when is_free_in y v ->
       let frees = free_vars v @ free_vars t in
       let w = next_name y frees in
       helper (abs w (replace_name y ~by:w t))
-    | Abs (y, b) -> abs y (helper b)
+    | Fun (y, b) -> abs y (helper b)
   in
   helper
 ;;
@@ -51,7 +50,7 @@ type strat =
 
 let apply_strat st = function
   | Var name -> st.on_var st name
-  | Abs (x, b) -> st.on_abs st x b
+  | Fun (x, b) -> st.on_abs st x b
   | App (l, r) -> st.on_app st l r
 ;;
 
@@ -65,7 +64,7 @@ let without_strat =
 let cbn_strat =
   let on_app st f arg =
     match apply_strat st f with
-    | Abs (x, e) -> apply_strat st (subst x ~by:arg e)
+    | Fun (x, e) -> apply_strat st (subst x ~by:arg e)
     | f2 -> App (f2, arg)
   in
   { without_strat with on_app }
@@ -79,7 +78,7 @@ let under_abstraction st x b = abs x (apply_strat st b)
 let nor_strat =
   let on_app st f arg =
     match apply_strat cbn_strat f with
-    | Abs (x, e) -> apply_strat st @@ subst x ~by:arg e
+    | Fun (x, e) -> apply_strat st @@ subst x ~by:arg e
     | f1 ->
       let f2 = apply_strat st f1 in
       let arg2 = apply_strat st arg in
@@ -92,7 +91,7 @@ let nor_strat =
 let cbv_strat =
   let on_app st f arg =
     match apply_strat st f with
-    | Abs (x, e) ->
+    | Fun (x, e) ->
       let arg2 = apply_strat st arg in
       apply_strat st @@ subst x ~by:arg2 e
     | f2 -> App (f2, apply_strat st arg)
@@ -113,8 +112,6 @@ let h = var "h"
 let m = var "m"
 let n = var "n"
 let p = var "p"
-let v = var "v"
-let u = var "u"
 let zero = abs "f" @@ abs "x" x
 let one = abs "f" @@ abs "x" @@ app f x
 let two = abs "f" @@ abs "x" @@ app f (app f x)

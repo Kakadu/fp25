@@ -7,10 +7,10 @@
 (license "LGPL-3.0-or-later WITH OCaml-LGPL-linking-exception")
 
 (authors
- "FIXME Vasya Pupkin <vasya@pupkin.ru>"
- "FIXME Pupkin Vasya <vasya@pupkin.ru>")
+ "FIXME Kormilcyn Roman <romkor2006@gmail.com>"
+ "FIXME Kormilcyn Roman <romkor2006@gmail.com>")
 
-(maintainers "FIXME Vasya Pupkin <vasya@pupkin.ru>")
+(maintainers "FIXME Kormilcyn Roman <romkor2006@gmail.com>")
 
 (bug_reports "https://github.com/Kakadu/fp25")
 
@@ -18,7 +18,7 @@
 
 (package
  (name Lambda) ; FIXME and regenerate .opam file using 'dune build @install'
- (synopsis "FIXME An interpreter for language")
+ (synopsis "An interpreter for MiniML (shMeL)")
  (description
   "FIXME. A longer description, for example, which are the most interesing features being supported, etc.")
  (documentation "https://kakadu.github.io/fp25/docs/Lambda")
