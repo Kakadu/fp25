@@ -31,9 +31,16 @@ let varname =
 ;;
 
 let integer =
-  take_while1 (function
-    | '0' .. '9' -> true
-    | _ -> false)
+  let* h =
+    satisfy (function
+      | '1' .. '9' -> true
+      | _ -> false)
+  and+ t =
+    take_while1 (function
+      | '0' .. '9' -> true
+      | _ -> false)
+  in
+  return (String.make 1 h ^ t)
 ;;
 
 type dispatch =
@@ -58,12 +65,6 @@ type error = [ `Parsing_error of string ]
 
 let pp_error ppf = function
   | `Parsing_error s -> Format.fprintf ppf "%s" s
-;;
-
-let rec parse_fun pack =
-  let* var = no_ws varname
-  and+ body = no_ws (parse_fun pack) <|> no_ws (string "->") *> pack.add_sub pack in
-  return (Ast.Fun (var, body))
 ;;
 
 (* TODO: negation parsing *)

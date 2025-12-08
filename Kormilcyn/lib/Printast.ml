@@ -21,6 +21,7 @@ type 'name t = 'name Ast.t =
   | Fun of 'name * 'name t
   | App of 'name t * 'name t
   | Int of int
+  | Neg of 'name t
   | Bin of binop * 'name t * 'name t
   | Let of 'name * 'name t * 'name t
   | If of 'name t * 'name t * 'name t
