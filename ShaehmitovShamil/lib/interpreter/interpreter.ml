@@ -16,7 +16,7 @@ module type Eval = sig
   type 'a eval_result = ('a, error) Result.t
 
   val show_error : error -> string
-  val run_program : int -> program -> (env * value option, error) Result.t
+  val run_program : int -> program -> (env, error) Result.t
 end
 
 module Interpreter : Eval = struct
@@ -220,6 +220,6 @@ module Interpreter : Eval = struct
         (return (initial_env, max_steps))
         prog
     in
-    return (final_env, None)
+    return final_env
   ;;
 end

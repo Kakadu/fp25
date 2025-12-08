@@ -228,3 +228,11 @@ let%expect_test "applying argument to function with no parameters (fix)" =
     "let rec fix f x = f (fix f) x ;; let g = let f = fix (fun x -> 10) in f 1";
   [%expect {| Runtime Error: Error: Type error - Cannot apply a non-function |}]
 ;;
+
+let%expect_test "inc" = 
+  run_interpreter_test
+    "let inc x = 
+      let add = fun x y -> x + y in
+      add x 1 ;;
+     let () = print_int (inc 41)";
+  [%expect {| 42 |}]
