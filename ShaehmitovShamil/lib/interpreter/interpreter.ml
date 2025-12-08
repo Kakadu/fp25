@@ -160,24 +160,24 @@ module Interpreter : Eval = struct
   ;;
 
   let eval_program_item (env : env) (item : structure_item) (steps : int)
-    : ((env * value option) * int) eval_result
+    : (env * int) eval_result
     =
     match item with
     | Value (NonRec, p, expr) ->
       let* v, steps = eval_expr env expr steps in
       (match p with
-       | PVar name -> return ((extend env name v, None), steps)
-       | PAny -> return ((env, None), steps)
+       | PVar name -> return (extend env name v, steps)
+       | PAny -> return (env, steps)
        | PUnit ->
          (match v with
-          | VUnit -> return ((env, None), steps)
+          | VUnit -> return (env, steps)
           | _ -> Error (TypeError "Expected unit value for unit pattern")))
     | Value (Rec, p, expr) ->
       (match p, expr with
        | PVar name, FunExpr (params, body) ->
          let rec_closure = VClosure (true, name, env, params, body) in
          let new_env = extend env name rec_closure in
-         return ((new_env, None), steps)
+         return (new_env, steps)
        | PVar _, _ -> Error (TypeError "Recursive value definition must be a function")
        | PAny, _ -> Error (TypeError "Recursive value definition cannot be a wildcard")
        | PUnit, _ -> Error (TypeError "Recursive value definition cannot be unit"))
@@ -211,15 +211,15 @@ module Interpreter : Eval = struct
   ;;
 
   let run_program (max_steps : int) (prog : program) =
-    let* final_env, final_val, _ =
+    let* final_env, _ =
       Stdlib.List.fold_left
         (fun acc item ->
-          let* env, _, steps = acc in
-          let* (new_env, v_opt), steps' = eval_program_item env item steps in
-          return (new_env, v_opt, steps'))
-        (return (initial_env, None, max_steps))
+          let* env, steps = acc in
+          let* new_env, steps' = eval_program_item env item steps in
+          return (new_env, steps'))
+        (return (initial_env, max_steps))
         prog
     in
-    return (final_env, final_val)
+    return (final_env, None)
   ;;
 end
