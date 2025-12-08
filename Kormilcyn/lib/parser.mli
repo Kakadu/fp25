@@ -16,6 +16,7 @@ val parse : string -> (Ast.name Ast.t, [> error ]) result
 type dispatch =
   { apps : dispatch -> Ast.name Ast.t Angstrom.t
   ; atom : dispatch -> Ast.name Ast.t Angstrom.t
+  ; unary : dispatch -> Ast.name Ast.t Angstrom.t
   ; mul_div : dispatch -> Ast.name Ast.t Angstrom.t
   ; add_sub : dispatch -> Ast.name Ast.t Angstrom.t
   }

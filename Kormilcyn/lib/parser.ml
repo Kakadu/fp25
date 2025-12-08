@@ -31,34 +31,33 @@ let varname =
 ;;
 
 let integer =
-  let* h =
-    satisfy (function
-      | '1' .. '9' -> true
-      | _ -> false)
-  and+ t =
+  let* i =
     take_while1 (function
       | '0' .. '9' -> true
       | _ -> false)
   in
-  return (String.make 1 h ^ t)
+  if String.length i > 1 && String.starts_with ~prefix:"0" i
+  then fail "Incorrect integer"
+  else return i
 ;;
 
 type dispatch =
   { apps : dispatch -> string Ast.t Angstrom.t
   ; atom : dispatch -> string Ast.t Angstrom.t
+  ; unary : dispatch -> string Ast.t Angstrom.t
   ; mul_div : dispatch -> string Ast.t Angstrom.t
   ; add_sub : dispatch -> string Ast.t Angstrom.t
   }
 
 let chainl1 p op =
-  let rec loop acc =
+  let rec iter acc =
     (let* f = op
      and+ y = p in
-     loop (f acc y))
+     iter (f acc y))
     <|> return acc
   in
   let* x = p in
-  loop x
+  iter x
 ;;
 
 type error = [ `Parsing_error of string ]
@@ -67,7 +66,7 @@ let pp_error ppf = function
   | `Parsing_error s -> Format.fprintf ppf "%s" s
 ;;
 
-(* TODO: negation parsing *)
+(* TODO: recursion *)
 (* TODO: meainingful errors *)
 let parse_miniml =
   let atom pack =
@@ -116,6 +115,20 @@ let parse_miniml =
     match app with
     | [] -> fail "bad syntax"
     | x :: xs -> return @@ List.fold_left (fun l r -> Ast.App (l, r)) x xs
+  and unary pack =
+    fix (fun _ ->
+      (* унарный плюс *)
+      (let* _ = no_ws (char '+')
+       and+ e = pack.unary pack in
+       return e)
+      <|>
+      (* унарный минус *)
+      (let* _ = no_ws (char '-')
+       and+ e = pack.unary pack in
+       return (Ast.Neg e))
+      <|>
+      let* e = pack.apps pack in
+      return e)
   and mul_div pack =
     let op =
       choice
@@ -123,7 +136,7 @@ let parse_miniml =
         ; no_ws (char '/') *> return (fun l r -> Ast.Bin (Ast.Div, l, r))
         ]
     in
-    chainl1 (pack.apps pack) op
+    chainl1 (pack.unary pack) op
   and add_sub pack =
     let op =
       choice
@@ -133,7 +146,7 @@ let parse_miniml =
     in
     chainl1 (pack.mul_div pack) op
   in
-  { atom; apps; mul_div; add_sub }
+  { atom; apps; unary; mul_div; add_sub }
 ;;
 
 let parse str =
