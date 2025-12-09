@@ -132,7 +132,7 @@ and eval (env : env) (e : expression) : value eval =
        | _ ->
            error (Not_an_int v_cond))
 
-  | Let (scope, kind, name, rhs, body_opt) ->
+  | Let (_scope, kind, name, rhs, body_opt) ->
       (match kind with
        | NonRec ->
            (** non recursive binding **)
