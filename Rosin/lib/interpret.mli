@@ -22,10 +22,7 @@ type error =
   | StepLimitExceeded
   | NonFunctionApplication of value
   | NonIntegerCondition of value
-  | InvalidUnop of unop * value
+  | NonFunctionRecursive
   | InvalidBinop of binop * value * value
-  | TypeError
-  | LetWithoutBody
-  | LetrecWithoutBody
 
 val run_interpret : expr -> int -> (value, error) Result.t

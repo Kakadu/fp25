@@ -13,14 +13,14 @@ in the dune file
   > ++42
   Fatal error: exception Failure(": no more choices")
   Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
-  Called from Dune__exe__REPL in file "bin/REPL.ml", line 56, characters 36-48
+  Called from Dune__exe__REPL in file "bin/REPL.ml", line 53, characters 36-48
   [2]
 
   $ ../bin/REPL.exe <<EOF
   > --42
   Fatal error: exception Failure(": no more choices")
   Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
-  Called from Dune__exe__REPL in file "bin/REPL.ml", line 56, characters 36-48
+  Called from Dune__exe__REPL in file "bin/REPL.ml", line 53, characters 36-48
   [2]
 
   $ ../bin/REPL.exe <<EOF

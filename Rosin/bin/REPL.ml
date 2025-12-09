@@ -21,12 +21,9 @@ let string_of_error = function
   | DivisionByZero -> "DivisionByZero"
   | StepLimitExceeded -> "StepLimitExceeded"
   | NonFunctionApplication v -> "NonFunctionApplication " ^ string_of_value v
-  | InvalidUnop _ -> "InvalidUnop"
   | InvalidBinop _ -> "InvalidBinop"
-  | TypeError -> "TypeError"
-  | LetWithoutBody -> "LetWithoutBody"
-  | LetrecWithoutBody -> "LetrecWithoutBody"
   | NonIntegerCondition _ -> "NonIntegerCondition"
+  | NonFunctionRecursive -> "NonFunctionRecursive"
 ;;
 
 type args =
