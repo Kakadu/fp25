@@ -6,7 +6,7 @@
 open Angstrom
 open Ast
 
-(** common type **)
+(** polymorphic variant with one constructor **)
 type error = [ `Parsing_error of string ]
 
 (** spaces and lexis **)
@@ -18,24 +18,33 @@ let spaces = skip_while is_space
 let spaces1 = satisfy is_space *> spaces
 
 let lexeme p = spaces *> p
+(** parser for one specific character c **)
 let sym c = lexeme (char c)
+(** parser for one specific key word s **)
 let kwd s = lexeme (string s)
 
-
+(** predicate function for identifiers **)
 let is_ident_start = function
   | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
   | _ -> false
 
+(** predicate functions for identifiers **)
 let is_ident_char = function
   | 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' -> true
   | _ -> false
 
+(** list of key words **)
 let keywords =
   [ "let"; "in"; "fun"; "rec"; "if"; "then"; "else"; "true"; "false" ]
 
 let is_keyword s = List.mem s keywords
 
 
+(** 
+in parse case: "foo123"
+ -> Ok "foo123" 
+in parse case: "let"
+ -> Error "keyword cannot be used as an identifier" **)
 let identifier : name Angstrom.t =
   let open Angstrom in
   spaces
@@ -110,12 +119,10 @@ let parse_cmp_op : operation_id Angstrom.t =
        ]
 
 (** syntax suger for fun x y -> e **)
-
 let curry_fun (args : name list) (body : expression) : expression =
   List.fold_right (fun x e -> Fun (x, e)) args body
 
 (** left-associative chain combinator **)
-
 let chainl1 p op =
   let open Angstrom in
   let rec loop acc =
@@ -124,11 +131,10 @@ let chainl1 p op =
   p >>= loop
 
 (** basic grammar levels **)
-
 let expr : expression Angstrom.t =
   fix (fun expr ->
 
-    (* fun x y -> e *)
+    (** fun x y -> e **)
     let lambda =
       let args =
         kwd "fun" *> spaces
@@ -166,7 +172,7 @@ let expr : expression Angstrom.t =
       application <|> atom0
     in
 
-    (* level * and / *)
+    (** level * and / **)
     let mul_div =
       let op =
         (parse_op_mul <|> parse_op_div)
@@ -175,7 +181,7 @@ let expr : expression Angstrom.t =
       chainl1 atom op
     in
 
-    (* level + and - *)
+    (** level + and - **)
     let add_sub =
       let op =
         (parse_op_add <|> parse_op_sub)
@@ -184,9 +190,8 @@ let expr : expression Angstrom.t =
       chainl1 mul_div op
     in
 
-    (* comparisons we allow only one comparison in the chain:
-       a + b < c * d
-    *)
+    (** comparisons we allow only one comparison in the chain:
+       a + b < c * d **)
     let cmp_level =
       let open Angstrom in
       add_sub
@@ -196,7 +201,7 @@ let expr : expression Angstrom.t =
          add_sub >>| fun right -> BinOp (op, left, right))
     in
 
-    (* if ... then ... else ... *)
+    (** if ... then ... else ... **)
     let if_expr =
       let open Angstrom in
       kwd "if" *> cmp_level
@@ -208,7 +213,7 @@ let expr : expression Angstrom.t =
       >>| fun els -> If (cond, thn, els)
     in
 
-    (* let / let rec *)
+    (** let / let rec **)
     let let_expr =
       let open Angstrom in
       kwd "let"
@@ -217,7 +222,7 @@ let expr : expression Angstrom.t =
       >>= fun kind ->
       identifier
       >>= fun name ->
-      (* function parameters: let f x y = e *)
+      (** function parameters: let f x y = e **)
       many identifier
       >>= fun args ->
       sym '=' *> expr
@@ -234,7 +239,7 @@ let expr : expression Angstrom.t =
       return (Let (scope, kind, name, value, body_opt))
     in
 
-    (* top level: first let/if, then regular expressions *)
+    (** top level: first let/if, then regular expressions **)
     choice
       [ let_expr
       ; if_expr
