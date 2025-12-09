@@ -22,7 +22,6 @@ type error =
   | StepLimitExceeded
   | NonFunctionApplication of value
   | NonIntegerCondition of value
-  | NonFunctionRecursive
   | InvalidBinop of binop * value * value
 
 val run_interpret : expr -> int -> (value, error) Result.t

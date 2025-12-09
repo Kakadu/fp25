@@ -23,7 +23,6 @@ let string_of_error = function
   | NonFunctionApplication v -> "NonFunctionApplication " ^ string_of_value v
   | InvalidBinop _ -> "InvalidBinop"
   | NonIntegerCondition _ -> "NonIntegerCondition"
-  | NonFunctionRecursive -> "NonFunctionRecursive"
 ;;
 
 type args =
@@ -42,18 +41,15 @@ let () =
   in
   let usage_msg = "miniMl starts...\n" in
   Arg.parse arg_list (fun _ -> ()) usage_msg;
-  let expr =
-    match Parser.parse (String.trim @@ In_channel.(input_all stdin)) with
-    | Ok expr ->
-      let _ =
-        if pr_args.ast then Format.printf "AST here:\n";
-        Pprintast.pp Format.std_formatter expr
-      in
-      expr
-    | Error (`Parsing_error msg) -> failwith msg
-  in
-  Format.printf "\nInterpretation result here:\n";
-  match Interpret.run_interpret expr pr_args.steps with
-  | Ok expr -> Format.printf "Ok: %s\n" (string_of_value expr)
-  | Error er -> Format.printf "Error!: %s\n" (string_of_error er)
+  match Parser.parse (String.trim @@ In_channel.(input_all stdin)) with
+  | Ok expr ->
+    let _ =
+      if pr_args.ast then Format.printf "AST here:\n";
+      Pprintast.pp Format.std_formatter expr
+    in
+    Format.printf "\nInterpretation result here:\n";
+    (match Interpret.run_interpret expr pr_args.steps with
+     | Ok expr -> Format.printf "Ok: %s\n" (string_of_value expr)
+     | Error er -> Format.printf "Interpret Error!: %s\n" (string_of_error er))
+  | Error (`Parsing_error msg) -> Format.printf "Parser erorr!: %s\n" msg
 ;;

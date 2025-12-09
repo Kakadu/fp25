@@ -106,7 +106,8 @@ let expr =
       >>= fun else_branch -> return @@ Ast.If (cond, then_branch, else_branch)
     in
     let let_expr =
-      token (string "let") *> (token (string "rec") *> return true <|> return false)
+      (string "let" <* take_while1 is_space)
+      *> ((string "rec" <* take_while1 is_space) *> return true <|> return false)
       >>= fun is_rec ->
       varname
       >>= fun name ->

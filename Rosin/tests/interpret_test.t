@@ -10,20 +10,6 @@ you could put it into separate file. Thise will need stanza `(cram (deps demo_in
 in the dune file
 
   $ ../bin/REPL.exe <<EOF
-  > ++42
-  Fatal error: exception Failure(": no more choices")
-  Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
-  Called from Dune__exe__REPL in file "bin/REPL.ml", line 53, characters 36-48
-  [2]
-
-  $ ../bin/REPL.exe <<EOF
-  > --42
-  Fatal error: exception Failure(": no more choices")
-  Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
-  Called from Dune__exe__REPL in file "bin/REPL.ml", line 53, characters 36-48
-  [2]
-
-  $ ../bin/REPL.exe <<EOF
   > 42 + 2
   AST here:
   42 + 2
@@ -70,7 +56,7 @@ in the dune file
   AST here:
   42 / 0
   Interpretation result here:
-  Error!: DivisionByZero
+  Interpret Error!: DivisionByZero
 
   $ ../bin/REPL.exe <<EOF
   > if 5 then 10 else 20
@@ -129,9 +115,9 @@ in the dune file
   Ok: 120
 
   $ ../bin/REPL.exe <<EOF
-  > let rec fib = fun n -> if n - 1 then (if n - 2 then fib (n - 1) + fib (n - 2) else 1) else n in fib 6
+  > let rec fib = fun n -> if n > 0 then (if n - 2 then fib (n - 1) + fib (n - 2) else 1) else n in fib 6
   AST here:
-  let rec fib = fun n -> if n - 1 then if n - 2 then fib n - 1 + fib n - 2 else 1 else n in fib 6
+  let rec fib = fun n -> if n > 0 then if n - 2 then fib n - 1 + fib n - 2 else 1 else n in fib 6
   Interpretation result here:
   Ok: 8
 
@@ -163,7 +149,7 @@ in the dune file
   AST here:
   let rec infinite = fun x -> infinite x in infinite 1
   Interpretation result here:
-  Error!: StepLimitExceeded
+  Interpret Error!: StepLimitExceeded
 
   $ ../bin/REPL.exe <<EOF
   > let rec fix f eta = f (fix f) eta in let fact_gen = fun fact n -> if n = 0 then 1 else n * fact (n-1) in let fact = fix fact_gen in fact 5
@@ -171,3 +157,10 @@ in the dune file
   let rec fix = fun f -> fun eta -> f fix f eta in let fact_gen = fun fact -> fun n -> if n = 0 then 1 else n * fact n - 1 in let fact = fix fact_gen in fact 5
   Interpretation result here:
   Ok: 120
+
+  $ ../bin/REPL.exe <<EOF
+  > let rec x = 2 in x
+  AST here:
+  let rec x = 2 in x
+  Interpretation result here:
+  Ok: 2

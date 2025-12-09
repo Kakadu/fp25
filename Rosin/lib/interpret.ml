@@ -22,7 +22,6 @@ type error =
   | StepLimitExceeded
   | NonFunctionApplication of value
   | NonIntegerCondition of value
-  | NonFunctionRecursive
   | InvalidBinop of binop * value * value
 
 module type MONAD = sig
@@ -96,7 +95,9 @@ let rec eval env steps e =
       let* new_env =
         match e1 with
         | Fun (var, func) -> return ((x, VRecClosure (x, var, func, env)) :: env)
-        | _ -> fail NonFunctionRecursive
+        | _ ->
+          let* body, _ = eval env (steps - 1) e1 in
+          return ((x, body) :: env)
       in
       eval new_env (steps - 1) e2
     | App (e1, e2) ->
