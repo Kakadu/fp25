@@ -19,6 +19,9 @@ type binop =
   | Minus (** subtraction of two arguments [x - y] *)
   | Mult (** mulitplication of two arguments [x * y] *)
   | Div (** division of two arguments [x / y] *)
+  | Equal (** equality of two arguments [x = y] *)
+  | Less (** first argument less than second [x < y] *)
+  | More (** first argument more than second [x > y] *)
 
 (** The main type for AST *)
 type expr =

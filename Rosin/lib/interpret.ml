@@ -76,7 +76,10 @@ let rec eval env steps e =
           | Plus -> return (VNum (n1 + n2), st2 - 1)
           | Minus -> return (VNum (n1 - n2), st2 - 1)
           | Mult -> return (VNum (n1 * n2), st2 - 1)
-          | Div -> if n2 = 0 then fail DivisionByZero else return (VNum (n1 / n2), st2 - 1))
+          | Div -> if n2 = 0 then fail DivisionByZero else return (VNum (n1 / n2), st2 - 1)
+          | Equal -> if n1 = n2 then return (VNum 1, st2 - 1) else return (VNum 0, st2 - 1)
+          | Less -> if n1 < n2 then return (VNum 1, st2 - 1) else return (VNum 0, st2 - 1)
+          | More -> if n1 > n2 then return (VNum 1, st2 - 1) else return (VNum 0, st2 - 1))
        | _ -> fail (InvalidBinop (op, v1, v2)))
     | If (e1, e2, e3_opt) ->
       let* cond, st1 = eval env (steps - 1) e1 in
@@ -103,6 +106,12 @@ let rec eval env steps e =
       let* f, st1 = eval env (steps - 1) e1 in
       let* arg, st2 = eval env st1 e2 in
       (match f with
+       | VUnit ->
+         (match arg with
+          | VNum n ->
+            Stdio.printf "%d\n" n;
+            return (arg, st2 - 1)
+          | _ -> return (arg, st2 - 1))
        | VClosure (x, body, env') -> eval ((x, arg) :: env') (st2 - 1) body
        | VRecClosure (f_name, x, body, env') ->
          let new_env = (x, arg) :: (f_name, f) :: env' in
@@ -111,7 +120,7 @@ let rec eval env steps e =
 ;;
 
 let run_interpret program steps : (value, error) result =
-  match eval [] steps program with
+  match eval [ "print", VUnit ] steps program with
   | Ok (v, _) -> Ok v
   | Error e -> Error e
 ;;

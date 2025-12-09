@@ -50,8 +50,33 @@ let varname =
   | _ -> return s
 ;;
 
+let app_name =
+  let is_var_char = function
+    | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
+    | _ -> false
+  in
+  take_while1 is_var_char
+  <* take_while1 is_space
+  >>= fun s ->
+  match s with
+  | "if" | "then" | "else" | "fun" | "let" | "rec" | "in" ->
+    fail ("reserved keyword: " ^ s)
+  | _ -> return s
+;;
+
 let varname_expr = varname >>| fun v -> Ast.Var v
-let mult_div_op = token (char '*' *> return Ast.Mult <|> char '/' *> return Ast.Div)
+
+let mult_div_op =
+  token
+    (choice
+       [ char '*' *> return Ast.Mult
+       ; char '/' *> return Ast.Div
+       ; char '=' *> return Ast.Equal
+       ; char '<' *> return Ast.Less
+       ; char '>' *> return Ast.More
+       ])
+;;
+
 let add_sub_op = token (char '+' *> return Ast.Plus <|> char '-' *> return Ast.Minus)
 let multi_fun args = List.fold_right (fun arg body -> Ast.Fun (arg, body)) args
 
@@ -63,7 +88,7 @@ let expr =
       token (string "->") *> expr >>= fun body -> return @@ multi_fun args body
     in
     let app_expr =
-      choice [ fun_expr; varname_expr ]
+      choice [ fun_expr; (app_name >>| fun n -> Ast.Var n) ]
       >>= fun name ->
       many1 (choice [ number_expr; varname_expr; parens expr ])
       >>| fun args -> List.fold_left (fun f arg -> Ast.App (f, arg)) name args
@@ -90,7 +115,7 @@ let expr =
       >>= fun else_branch -> return @@ Ast.If (cond, then_branch, else_branch)
     in
     let let_expr =
-      token (string "let ") *> (token (string "rec ") *> return true <|> return false)
+      token (string "let") *> (token (string "rec") *> return true <|> return false)
       >>= fun is_rec ->
       varname
       >>= fun name ->
