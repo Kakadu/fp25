@@ -47,23 +47,14 @@ let number =
 
 let number_expr = number >>| fun num -> Ast.Num num
 
-let varname =
-  token (take_while1 is_var_char)
-  >>= fun s ->
+let req_not_keyword s =
   match is_keyword s with
   | true -> fail ("reserved keyword: " ^ s)
   | false -> return s
 ;;
 
-let fun_name =
-  take_while1 is_var_char
-  <* take_while1 is_space
-  >>= fun s ->
-  match is_keyword s with
-  | true -> fail ("reserved keyword: " ^ s)
-  | _ -> return s
-;;
-
+let varname = token (take_while1 is_var_char) >>= req_not_keyword
+let fun_name = take_while1 is_var_char <* take_while1 is_space >>= req_not_keyword
 let varname_expr = varname >>| fun v -> Ast.Var v
 
 let mult_div_op =
