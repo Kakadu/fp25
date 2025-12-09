@@ -2,7 +2,6 @@
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-(* TODO: implement parser here *)
 open Angstrom
 
 let is_space = function
@@ -98,6 +97,7 @@ let parse_miniml =
            and+ _ = no_ws (string "in")
            and+ e2 = pack.comp pack in
            return (Ast.Let (var, e1, e2)))
+          (* let rec *)
         ; (let* _ = no_ws (string "let")
            and+ _ = no_ws (string "rec")
            and+ fvar = no_ws varname
@@ -157,6 +157,7 @@ let parse_miniml =
       choice
         [ no_ws (string "<=") *> return (fun l r -> Ast.Bin (Ast.Leq, l, r))
         ; no_ws (char '=') *> return (fun l r -> Ast.Bin (Ast.Eq, l, r))
+        ; no_ws (string ">=") *> return (fun l r -> Ast.Bin (Ast.Geq, l, r))
         ]
     in
     chainl1 (pack.add_sub pack) op

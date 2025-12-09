@@ -15,8 +15,7 @@ type binop =
   | Div
   | Leq
   | Eq
-
-(* TODO: meaningful exceptions *)
+  | Geq
 
 (** The main type for our AST (дерева абстрактного синтаксиса) *)
 type 'name t =

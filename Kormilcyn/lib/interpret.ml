@@ -21,8 +21,6 @@ type error =
 module Interpret (M : MONAD_FAIL) : sig
   val run : _ Ast.t -> (int, [> error ]) M.t
 end = struct
-  (* TODO: step counting *)
-
   let ( let* ) m f = M.bind m ~f
   let return = M.return
   let fail = M.fail
@@ -39,33 +37,38 @@ end = struct
     | (y, v) :: rest -> if y = x then Some v else resolve rest x
   ;;
 
-  let rec eval (env : 'name env) (e : 'name Ast.t) : ('name value, [> error ]) M.t =
-    match e with
-    | Int i -> return (VInt i)
-    | Var x -> eval_var env x
-    | Neg e -> eval_neg env e
-    | Bin (bop, e1, e2) -> eval_bin env bop e1 e2
-    | Let (x, e1, e2) -> eval_let env x e1 e2
-    | If (e1, e2, e3) -> eval_if env e1 e2 e3
-    | Fun (x, e) -> return (VClosure (x, e, env))
-    | App (e1, e2) -> eval_app env e1 e2
-    | LetRec (f, Fun (x, b), e2) -> eval_letrec env f x b e2
-    | LetRec _ -> fail (`Type_error "let rec expects a function on the right")
+  let rec eval (env : 'name env) (e : 'name Ast.t) (steps : int)
+    : ('name value, [> error ]) M.t
+    =
+    if steps > 100000
+    then fail (`NotAValue "Steps limit exceeded")
+    else (
+      match e with
+      | Int i -> return (VInt i)
+      | Var x -> eval_var env x
+      | Neg e -> eval_neg env e (steps + 1)
+      | Bin (bop, e1, e2) -> eval_bin env bop e1 e2 (steps + 1)
+      | Let (x, e1, e2) -> eval_let env x e1 e2 (steps + 1)
+      | If (e1, e2, e3) -> eval_if env e1 e2 e3 (steps + 1)
+      | Fun (x, e) -> return (VClosure (x, e, env))
+      | App (e1, e2) -> eval_app env e1 e2 (steps + 1)
+      | LetRec (f, Fun (x, b), e2) -> eval_letrec env f x b e2 (steps + 1)
+      | LetRec _ -> fail (`Type_error "let rec expects a function on the right"))
 
   and eval_var env x =
     match resolve env x with
     | Some v -> return v
     | None -> fail (`Unbound "<unbound variable>")
 
-  and eval_neg env e : ('name value, [> error ]) M.t =
-    let* v = eval env e in
+  and eval_neg env e steps : ('name value, [> error ]) M.t =
+    let* v = eval env e (steps + 1) in
     match v with
     | VInt x -> return (VInt (-x))
     | _ -> fail (`Type_error "unary - expects an integer")
 
-  and eval_bin env bop e1 e2 : ('name value, [> error ]) M.t =
-    let* v1 = eval env e1 in
-    let* v2 = eval env e2 in
+  and eval_bin env bop e1 e2 steps : ('name value, [> error ]) M.t =
+    let* v1 = eval env e1 (steps + 1) in
+    let* v2 = eval env e2 (steps + 1) in
     match bop, v1, v2 with
     | Add, VInt a, VInt b -> return (VInt (a + b))
     | Sub, VInt a, VInt b -> return (VInt (a - b))
@@ -74,30 +77,31 @@ end = struct
     | Div, VInt a, VInt b -> return (VInt (a / b))
     | Leq, VInt a, VInt b -> return (VInt (if a <= b then 1 else 0))
     | Eq, VInt a, VInt b -> return (VInt (if a = b then 1 else 0))
+    | Geq, VInt a, VInt b -> return (VInt (if a >= b then 1 else 0))
     | _ -> fail (`Type_error "binary operation expects integers")
 
-  and eval_let env x e1 e2 : ('name value, [> error ]) M.t =
-    let* v1 = eval env e1 in
-    eval ((x, v1) :: env) e2
+  and eval_let env x e1 e2 steps : ('name value, [> error ]) M.t =
+    let* v1 = eval env e1 (steps + 1) in
+    eval ((x, v1) :: env) e2 (steps + 1)
 
-  and eval_if env e1 e2 e3 : ('name value, [> error ]) M.t =
-    let* vcond = eval env e1 in
+  and eval_if env e1 e2 e3 steps : ('name value, [> error ]) M.t =
+    let* vcond = eval env e1 (steps + 1) in
     match vcond with
-    | VInt 1 -> eval env e2
-    | VInt 0 -> eval env e3
+    | VInt 1 -> eval env e2 (steps + 1)
+    | VInt 0 -> eval env e3 (steps + 1)
     | _ -> fail (`Type_error "if expects an integer condition")
 
-  and eval_app env e1 e2 : ('name value, [> error ]) M.t =
-    let* vf = eval env e1 in
+  and eval_app env e1 e2 steps : ('name value, [> error ]) M.t =
+    let* vf = eval env e1 (steps + 1) in
     match vf with
     | VClosure (x, body, defenv) ->
-      let* varg = eval env e2 in
-      eval ((x, varg) :: defenv) body
+      let* varg = eval env e2 (steps + 1) in
+      eval ((x, varg) :: defenv) body (steps + 1)
     | _ -> fail (`Type_error "application of a non-function")
 
-  and eval_letrec env f x b e2 : ('name value, [> error ]) M.t =
+  and eval_letrec env f x b e2 steps : ('name value, [> error ]) M.t =
     let rec env' = (f, VClosure (x, b, env')) :: env in
-    eval env' e2
+    eval env' e2 (steps + 1)
   ;;
 
   let int_of_value = function
@@ -106,7 +110,7 @@ end = struct
   ;;
 
   let run e =
-    let* v = eval [] e in
+    let* v = eval [] e 0 in
     int_of_value v
   ;;
 end

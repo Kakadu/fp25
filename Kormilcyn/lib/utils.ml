@@ -9,7 +9,6 @@
 open Base
 open Ast
 
-(* TODO: use a set instead of list *)
 let list_remove x = List.filter ~f:(fun a -> not (String.equal a x))
 
 let free_vars =
@@ -17,6 +16,7 @@ let free_vars =
     | Var s -> s :: acc
     | Fun (s, l) -> acc @ list_remove s (helper [] l)
     | App (l, r) -> helper (helper acc r) l
+    | _ -> failwith "legacy"
   in
   helper []
 ;;
@@ -26,7 +26,6 @@ let var x = Var x
 let abs x l = Fun (x, l)
 let app l r = App (l, r)
 
-(* TODO: rework this *)
 module type MONAD_FAIL = sig
   include Base.Monad.S2
 
