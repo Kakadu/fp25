@@ -24,10 +24,15 @@ let number =
     (option '+' (char '-')
      >>= fun sign ->
      positive
-     >>| fun num ->
-     match sign with
-     | '-' -> -int_of_string num
-     | _ -> int_of_string num)
+     >>= fun num ->
+     let full_num =
+       match sign with
+       | '-' -> "-" ^ num
+       | _ -> num
+     in
+     match int_of_string_opt full_num with
+     | Some n -> return n
+     | None -> fail "integer overflow")
 ;;
 
 let number_expr = number >>| fun num -> Ast.Num num
@@ -40,23 +45,18 @@ let varname =
   token (take_while1 is_var_char)
   >>= fun s ->
   match s with
-  | "if" | "then" | "else" | "fun" | "let" | "rec" | "letrec" | "in" | "print" ->
+  | "if" | "then" | "else" | "fun" | "let" | "rec" | "in" ->
     fail ("reserved keyword: " ^ s)
   | _ -> return s
 ;;
 
 let varname_expr = varname >>| fun v -> Ast.Var v
-let unop = token (string "++" *> return Ast.Inc <|> string "--" *> return Ast.Dec)
 let mult_div_op = token (char '*' *> return Ast.Mult <|> char '/' *> return Ast.Div)
 let add_sub_op = token (char '+' *> return Ast.Plus <|> char '-' *> return Ast.Minus)
 let multi_fun args = List.fold_right (fun arg body -> Ast.Fun (arg, body)) args
 
 let expr =
   fix (fun expr ->
-    let unop_expr =
-      unop
-      >>= fun op -> choice [ number_expr; varname_expr ] >>| fun var -> Ast.Unop (op, var)
-    in
     let fun_expr =
       token (string "fun") *> many1 varname
       >>= fun args ->
@@ -68,9 +68,7 @@ let expr =
       many1 (choice [ number_expr; varname_expr; parens expr ])
       >>| fun args -> List.fold_left (fun f arg -> Ast.App (f, arg)) name args
     in
-    let unary_expr =
-      choice [ number_expr; app_expr; varname_expr; unop_expr; parens expr ]
-    in
+    let unary_expr = choice [ number_expr; app_expr; varname_expr; parens expr ] in
     let mult_expr =
       unary_expr
       >>= fun first ->
@@ -92,7 +90,7 @@ let expr =
       >>= fun else_branch -> return @@ Ast.If (cond, then_branch, else_branch)
     in
     let let_expr =
-      token (string "let") *> (token (string "rec") *> return true <|> return false)
+      token (string "let ") *> (token (string "rec ") *> return true <|> return false)
       >>= fun is_rec ->
       varname
       >>= fun name ->
@@ -111,8 +109,7 @@ let expr =
       then return @@ Ast.Letrec (name, body, res)
       else return @@ Ast.Let (name, body, res)
     in
-    let print_expr = token (string "print") *> unary_expr >>| fun var -> Ast.Print var in
-    choice [ if_expr; fun_expr; let_expr; add_expr; print_expr ])
+    choice [ if_expr; fun_expr; let_expr; add_expr ])
 ;;
 
 type error = [ `Parsing_error of string ]

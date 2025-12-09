@@ -67,17 +67,6 @@ let rec eval env steps e =
       (match find_var x env with
        | Some v -> return (v, steps - 1)
        | None -> fail (UnboundVariable x))
-    | Unop (op, e) ->
-      let* v, st = eval env (steps - 1) e in
-      (match v with
-       | VNum n ->
-         let result =
-           match op with
-           | Inc -> VNum (n + 1)
-           | Dec -> VNum (n - 1)
-         in
-         return (result, st)
-       | _ -> fail (InvalidUnop (op, v)))
     | Binop (op, e1, e2) ->
       let* v1, st1 = eval env (steps - 1) e1 in
       let* v2, st2 = eval env (st1 - 1) e2 in
@@ -118,14 +107,7 @@ let rec eval env steps e =
        | VRecClosure (f_name, x, body, env') ->
          let new_env = (x, arg) :: (f_name, f) :: env' in
          eval new_env (st2 - 1) body
-       | _ -> fail (NonFunctionApplication f))
-    | Print e ->
-      let* v, st = eval env (steps - 1) e in
-      (match v with
-       | VNum n ->
-         Stdio.printf "%d\n" n;
-         return (v, st)
-       | _ -> return (v, st)))
+       | _ -> fail (NonFunctionApplication f)))
 ;;
 
 let run_interpret program steps : (value, error) result =

@@ -24,7 +24,6 @@ type binop =
 type expr =
   | Num of int (** integer constant *)
   | Var of varname (** variable *)
-  | Unop of unop * expr (** unary operation *)
   | Binop of binop * expr * expr (** binary operation *)
   | If of expr * expr * expr option (** if-then-(else) *)
   | Fun of varname * expr (** function definitions *)
@@ -32,4 +31,3 @@ type expr =
   | Letrec of varname * expr * expr
   (** recursive local naming [letrec varname = expr in expr] *)
   | App of expr * expr (** function applications *)
-  | Print of expr (** integer printer *)

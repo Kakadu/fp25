@@ -43,7 +43,6 @@ let gen_expr =
       frequency
         [ 3, map (fun i -> Num i) int_gen
         ; 3, map (fun s -> Var s) varname_gen
-        ; 2, map (fun (op, e) -> Unop (op, e)) (pair unop_gen (expr next_depth))
         ; ( 2
           , map
               (fun (op, e1, e2) -> Binop (op, e1, e2))
@@ -65,7 +64,6 @@ let gen_expr =
               (fun (name, rhs, body) -> Letrec (name, rhs, body))
               (triple varname_gen (expr next_depth) (expr next_depth)) )
         ; 2, map (fun (f, x) -> App (f, x)) (pair (expr next_depth) (expr next_depth))
-        ; 1, map (fun e -> Print e) (expr next_depth)
         ])
   in
   sized (fun size -> expr (min size 4))

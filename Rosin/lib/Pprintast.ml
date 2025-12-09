@@ -12,8 +12,6 @@ open Ast
 let rec pp fmt = function
   | Num n -> fprintf fmt "%d" n
   | Var v -> fprintf fmt "%s" v
-  | Unop (Inc, e) -> fprintf fmt "++%a" pp e
-  | Unop (Dec, e) -> fprintf fmt "--%a" pp e
   | Binop (op, left, right) ->
     let op_str =
       match op with
@@ -32,5 +30,4 @@ let rec pp fmt = function
   | Let (name, rhs, body) -> fprintf fmt "let %s = %a in %a" name pp rhs pp body
   | Letrec (name, rhs, body) -> fprintf fmt "let rec %s = %a in %a" name pp rhs pp body
   | App (f, x) -> fprintf fmt "%a %a" pp f pp x
-  | Print e -> fprintf fmt "print %a" pp e
 ;;
