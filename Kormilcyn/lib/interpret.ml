@@ -18,6 +18,13 @@ type error =
   | `Division_by_zero
   ]
 
+let pp_error ppf = function
+  | `NotAValue msg -> Format.fprintf ppf "Not a value: %s" msg
+  | `Type_error msg -> Format.fprintf ppf "Type error: %s" msg
+  | `Unbound x -> Format.fprintf ppf "Unbound variable %s" x
+  | `Division_by_zero -> Format.fprintf ppf "Division by zero"
+;;
+
 module Interpret (M : MONAD_FAIL) : sig
   val run : _ Ast.t -> (int, [> error ]) M.t
 end = struct
@@ -120,10 +127,12 @@ let parse_and_run str =
   let rez = Base.Result.(Parser.parse str >>= I.run) in
   match rez with
   | Result.Ok n -> Printf.printf "Success: %d\n" n
-  | Result.Error #Parser.error ->
-    Format.eprintf "Parsing error\n%!";
-    exit 1
-  | Result.Error #error ->
-    Format.eprintf "Interpreter error\n%!";
-    exit 1
+  | Result.Error err ->
+    (match err with
+     | #Parser.error as e ->
+       Format.eprintf "Parsing error: %a\n%!" Parser.pp_error e;
+       exit 1
+     | #error as e ->
+       Format.eprintf "Interpreter error: %a\n%!" pp_error e;
+       exit 1)
 ;;
