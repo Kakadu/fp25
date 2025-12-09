@@ -67,7 +67,6 @@ let pp_error ppf = function
   | `Parsing_error s -> Format.fprintf ppf "%s" s
 ;;
 
-(* TODO: comparison operators *)
 let parse_miniml =
   let atom pack =
     fix (fun _ ->

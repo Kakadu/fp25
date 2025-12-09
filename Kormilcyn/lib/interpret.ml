@@ -11,88 +11,104 @@
 open Utils
 open Ast
 
-type error = [ `NotAValue of string ]
+type error =
+  [ `NotAValue of string
+  | `Type_error of string
+  | `Unbound of string
+  | `Division_by_zero
+  ]
 
 module Interpret (M : MONAD_FAIL) : sig
   val run : _ Ast.t -> (int, [> error ]) M.t
 end = struct
   (* TODO: step counting *)
-  (* TODO: exception handling *)
+
+  let ( let* ) m f = M.bind m ~f
+  let return = M.return
+  let fail = M.fail
 
   type 'name value =
     | VInt of int
     | VClosure of 'name * 'name Ast.t * 'name env
-    | VExn
 
   and 'name env = ('name * 'name value) list
 
-  let rec eval (env : 'name env) (e : 'name Ast.t) : 'name value =
+  let rec resolve env x =
+    match env with
+    | [] -> None
+    | (y, v) :: rest -> if y = x then Some v else resolve rest x
+  ;;
+
+  let rec eval (env : 'name env) (e : 'name Ast.t) : ('name value, [> error ]) M.t =
     match e with
-    | Int i -> VInt i
-    | Var x -> resolve env x
+    | Int i -> return (VInt i)
+    | Var x -> eval_var env x
     | Neg e -> eval_neg env e
-    | Bin (bop, e1, e2) -> eval_bin env eval bop e1 e2
+    | Bin (bop, e1, e2) -> eval_bin env bop e1 e2
     | Let (x, e1, e2) -> eval_let env x e1 e2
     | If (e1, e2, e3) -> eval_if env e1 e2 e3
-    | Fun (x, e) -> eval_fun env x e
+    | Fun (x, e) -> return (VClosure (x, e, env))
     | App (e1, e2) -> eval_app env e1 e2
-    | LetRec (f, Fun (x, e1), e2) -> eval_letrec env f x e1 e2
-    | LetRec _ -> VExn
+    | LetRec (f, Fun (x, b), e2) -> eval_letrec env f x b e2
+    | LetRec _ -> fail (`Type_error "let rec expects a function on the right")
 
-  and resolve env x =
-    match env with
-    | [] -> VExn
-    | h :: _ when fst h = x -> snd h
-    | _ :: t -> resolve t x
+  and eval_var env x =
+    match resolve env x with
+    | Some v -> return v
+    | None -> fail (`Unbound "<unbound variable>")
 
-  and eval_neg env e =
-    match eval env e with
-    | VInt x -> VInt (-x)
-    | _ -> VExn
+  and eval_neg env e : ('name value, [> error ]) M.t =
+    let* v = eval env e in
+    match v with
+    | VInt x -> return (VInt (-x))
+    | _ -> fail (`Type_error "unary - expects an integer")
 
-  and eval_bin env eval bop e1 e2 =
-    match bop, eval env e1, eval env e2 with
-    | Add, VInt a, VInt b -> VInt (a + b)
-    | Sub, VInt a, VInt b -> VInt (a - b)
-    | Mul, VInt a, VInt b -> VInt (a * b)
-    | Div, VInt a, VInt b -> VInt (a / b)
-    | Leq, VInt a, VInt b -> VInt (if a <= b then 1 else 0)
-    | Eq, VInt a, VInt b -> VInt (if a = b then 1 else 0)
-    | _ -> VExn
+  and eval_bin env bop e1 e2 : ('name value, [> error ]) M.t =
+    let* v1 = eval env e1 in
+    let* v2 = eval env e2 in
+    match bop, v1, v2 with
+    | Add, VInt a, VInt b -> return (VInt (a + b))
+    | Sub, VInt a, VInt b -> return (VInt (a - b))
+    | Mul, VInt a, VInt b -> return (VInt (a * b))
+    | Div, VInt _, VInt 0 -> fail `Division_by_zero
+    | Div, VInt a, VInt b -> return (VInt (a / b))
+    | Leq, VInt a, VInt b -> return (VInt (if a <= b then 1 else 0))
+    | Eq, VInt a, VInt b -> return (VInt (if a = b then 1 else 0))
+    | _ -> fail (`Type_error "binary operation expects integers")
 
-  and eval_let env x e1 e2 =
-    let v1 = eval env e1 in
-    let env' = (x, v1) :: env in
-    eval env' e2
+  and eval_let env x e1 e2 : ('name value, [> error ]) M.t =
+    let* v1 = eval env e1 in
+    eval ((x, v1) :: env) e2
 
-  and eval_if env e1 e2 e3 =
-    match eval env e1 with
+  and eval_if env e1 e2 e3 : ('name value, [> error ]) M.t =
+    let* vcond = eval env e1 in
+    match vcond with
     | VInt 1 -> eval env e2
     | VInt 0 -> eval env e3
-    | _ -> VExn
+    | _ -> fail (`Type_error "if expects an integer condition")
 
-  and eval_fun env x e = VClosure (x, e, env)
+  and eval_app env e1 e2 : ('name value, [> error ]) M.t =
+    let* vf = eval env e1 in
+    match vf with
+    | VClosure (x, body, defenv) ->
+      let* varg = eval env e2 in
+      eval ((x, varg) :: defenv) body
+    | _ -> fail (`Type_error "application of a non-function")
 
-  and eval_app env e1 e2 =
-    match eval env e1 with
-    | VClosure (x, e, defenv) ->
-      let v2 = eval env e2 in
-      let defenv' = (x, v2) :: defenv in
-      eval defenv' e
-    | _ -> VExn
-
-  and eval_letrec env f x b e =
+  and eval_letrec env f x b e2 : ('name value, [> error ]) M.t =
     let rec env' = (f, VClosure (x, b, env')) :: env in
-    eval env' e
+    eval env' e2
   ;;
 
   let int_of_value = function
-    | VInt i -> M.return i
-    | VClosure _ -> M.fail (`NotAValue "cannot represent function as integer")
-    | VExn -> M.fail (`NotAValue "interpretation exception")
+    | VInt i -> return i
+    | VClosure _ -> fail (`NotAValue "cannot represent function as integer")
   ;;
 
-  let run (e : 'a Ast.t) : (int, [> error ]) M.t = int_of_value (eval [] e)
+  let run e =
+    let* v = eval [] e in
+    int_of_value v
+  ;;
 end
 
 let parse_and_run str =
