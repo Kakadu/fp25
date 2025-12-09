@@ -1,0 +1,6 @@
+(library
+ (name lambda_lib)
+ (modules Ast Parser Printer Interpret)
+ (libraries angstrom)
+ (preprocess
+  (pps ppx_deriving.show)))
