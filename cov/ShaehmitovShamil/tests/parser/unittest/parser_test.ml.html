@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>parser_test.ml &mdash; Coverage report</title>
-    <meta name="description" content="99.01% coverage in tests/parser/unittest/parser_test.ml">
+    <meta name="description" content="100.00% coverage in tests/parser/unittest/parser_test.ml">
     <link rel="stylesheet" href="../../../coverage.css"/>
     <script src="../../../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,10 +15,9 @@
           <span class="dirname">tests/parser/unittest/</span>parser_test.ml
         </a>
       </h1>
-      <h2>99.01%</h2>
+      <h2>100.00%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="bottom:46.48%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -174,7 +173,7 @@
 <a id="L149"></a><span > </span>
 <a id="L150"></a><span class="visited"> </span>
 <a id="L151"></a><span class="visited"> </span>
-<a id="L152"></a><span class="unvisited"> </span>
+<a id="L152"></a><span class="visited"> </span>
 <a id="L153"></a><span > </span>
 <a id="L154"></a><span > </span>
 <a id="L155"></a><span > </span>
@@ -307,6 +306,27 @@
 <a id="L282"></a><span > </span>
 <a id="L283"></a><span class="visited"> </span>
 <a id="L284"></a><span > </span>
+<a id="L285"></a><span > </span>
+<a id="L286"></a><span > </span>
+<a id="L287"></a><span class="visited"> </span>
+<a id="L288"></a><span class="visited"> </span>
+<a id="L289"></a><span > </span>
+<a id="L290"></a><span > </span>
+<a id="L291"></a><span > </span>
+<a id="L292"></a><span class="visited"> </span>
+<a id="L293"></a><span class="visited"> </span>
+<a id="L294"></a><span > </span>
+<a id="L295"></a><span > </span>
+<a id="L296"></a><span > </span>
+<a id="L297"></a><span class="visited"> </span>
+<a id="L298"></a><span class="visited"> </span>
+<a id="L299"></a><span > </span>
+<a id="L300"></a><span > </span>
+<a id="L301"></a><span > </span>
+<a id="L302"></a><span > </span>
+<a id="L303"></a><span > </span>
+<a id="L304"></a><span class="visited"> </span>
+<a id="L305"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -595,6 +615,27 @@
 <a href="#L282">282</a>
 <a href="#L283">283</a>
 <a href="#L284">284</a>
+<a href="#L285">285</a>
+<a href="#L286">286</a>
+<a href="#L287">287</a>
+<a href="#L288">288</a>
+<a href="#L289">289</a>
+<a href="#L290">290</a>
+<a href="#L291">291</a>
+<a href="#L292">292</a>
+<a href="#L293">293</a>
+<a href="#L294">294</a>
+<a href="#L295">295</a>
+<a href="#L296">296</a>
+<a href="#L297">297</a>
+<a href="#L298">298</a>
+<a href="#L299">299</a>
+<a href="#L300">300</a>
+<a href="#L301">301</a>
+<a href="#L302">302</a>
+<a href="#L303">303</a>
+<a href="#L304">304</a>
+<a href="#L305">305</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -745,9 +786,9 @@ let%expect_test "fun with two arguments" =
 ;;
 
 let run_program_parser input =
-  <span data-count="11">m</span>atch parse_structure_items input with
-  | <span data-count="11">O</span>k expr -&gt; Stdlib.print_endline (show_progra<span data-count="11">m</span> expr)
-  | <span data-count="0">E</span>rror msg -&gt; Stdlib.Printf.printf "Error: %s\n" msg
+  <span data-count="14">m</span>atch parse_structure_items input with
+  | <span data-count="12">O</span>k expr -&gt; Stdlib.print_endline (show_progra<span data-count="12">m</span> expr)
+  | <span data-count="2">E</span>rror msg -&gt; Stdlib.Printf.printf "Error: %s\n" msg
 ;;
 
 let%expect_test "simple structure" =
@@ -878,6 +919,27 @@ let%expect_test "application bin op" =
          (NonRec, (PVar "y"),
           (BinOp (Add, (App ((Var "f"), (Const (CInt 10)))),
              (App ((Var "f"), (Const (CInt 20))))))))
+      ] |}<span data-count="5">]</span>
+;;
+
+let%expect_test "test1" =
+  <span data-count="1">r</span>un_program_parser "letrec f = 1";
+  <span data-count="1">[</span>%expect {| Error: : end_of_input |}<span data-count="5">]</span>
+;;
+
+let%expect_test "test1" =
+  <span data-count="1">r</span>un_program_parser "let rec f __= 1";
+  <span data-count="1">[</span>%expect {| Error: : end_of_input |}<span data-count="5">]</span>
+;;
+
+let%expect_test "test2" =
+  <span data-count="1">r</span>un_program_parser "let rec f = if(n) then 1 else f(n-1)";
+  <span data-count="1">[</span>%expect
+    {|
+    [(Value
+        (Rec, (PVar "f"),
+         (If ((Var "n"), (Const (CInt 1)),
+            (App ((Var "f"), (BinOp (Sub, (Var "n"), (Const (CInt 1))))))))))
       ] |}<span data-count="5">]</span>
 ;;
 </code></pre>
