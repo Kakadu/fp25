@@ -16,9 +16,10 @@ type error = [ `NotAValue of string ]
 module Interpret (M : MONAD_FAIL) : sig
   val run : _ Ast.t -> (int, [> error ]) M.t
 end = struct
-  (* TODO: negation *)
+  (* TODO: step counting *)
   (* TODO: recursion *)
   (* TODO: exception handling *)
+  (* TODO: comparing operators *)
 
   type 'name value =
     | VInt of int
@@ -31,18 +32,25 @@ end = struct
     match e with
     | Int i -> VInt i
     | Var x -> resolve env x
+    | Neg e -> eval_neg env e
     | Bin (bop, e1, e2) -> eval_bin env eval bop e1 e2
     | Let (x, e1, e2) -> eval_let env x e1 e2
     | If (e1, e2, e3) -> eval_if env e1 e2 e3
     | Fun (x, e) -> eval_fun env x e
     | App (e1, e2) -> eval_app env e1 e2
-    | Exn -> VExn
+    | LetRec (f, Fun (x, e1), e2) -> eval_letrec env f x e1 e2
+    | LetRec _ -> VExn
 
   and resolve env x =
     match env with
     | [] -> VExn
     | h :: _ when fst h = x -> snd h
     | _ :: t -> resolve t x
+
+  and eval_neg env e =
+    match eval env e with
+    | VInt x -> VInt (-x)
+    | _ -> VExn
 
   and eval_bin env eval bop e1 e2 =
     match bop, eval env e1, eval env e2 with
@@ -73,6 +81,10 @@ end = struct
       let defenv' = (x, v2) :: defenv in
       eval defenv' e
     | _ -> VExn
+
+  and eval_letrec env f x b e =
+    let rec env' = (f, VClosure (x, b, env')) :: env in
+    eval env' e
   ;;
 
   let int_of_value = function

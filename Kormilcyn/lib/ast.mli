@@ -15,6 +15,8 @@ type binop =
   | Div
   | Leq
 
+(* TODO: meaningful exceptions *)
+
 (** The main type for our AST (дерева абстрактного синтаксиса) *)
 type 'name t =
   | Var of 'name (** Variable [x] *)
@@ -25,8 +27,7 @@ type 'name t =
   | Bin of binop * 'name t * 'name t
   | Let of 'name * 'name t * 'name t
   | If of 'name t * 'name t * 'name t
-  (* TODO: meaningful exceptions *)
-  | Exn
+  | LetRec of 'name * 'name t * 'name t
   (** In type definition above the 3rd constructor is intentionally without documentation
     to test linter *)
 (* Application [f g ] *)

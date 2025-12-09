@@ -26,7 +26,7 @@ let varname =
       | _ -> false)
   in
   match var with
-  | "fun" | "if" | "then" | "else" | "let" | "in" -> fail "Name not permitted"
+  | "fun" | "if" | "then" | "else" | "let" | "in" | "rec" -> fail "Name not permitted"
   | _ -> return var
 ;;
 
@@ -67,16 +67,15 @@ let pp_error ppf = function
 ;;
 
 (* TODO: recursion *)
-(* TODO: meainingful errors *)
 let parse_miniml =
   let atom pack =
     fix (fun _ ->
       choice
         [ (* выражение в скобках *)
           (let* _ = no_ws (char '(')
-           and+ tokens = pack.add_sub pack
-           and+ _ = no_ws (char ')') <?> "Parentheses expected" in
-           return tokens)
+           and+ e = pack.add_sub pack
+           and+ _ = no_ws (char ')') in
+           return e)
           (* функция *)
         ; (let* _ = no_ws (string "fun") in
            fix (fun body ->
@@ -99,6 +98,14 @@ let parse_miniml =
            and+ _ = no_ws (string "in")
            and+ e2 = pack.add_sub pack in
            return (Ast.Let (var, e1, e2)))
+        ; (let* _ = no_ws (string "let")
+           and+ _ = no_ws (string "rec")
+           and+ fvar = no_ws varname
+           and+ _ = no_ws (char '=')
+           and+ f = pack.atom pack
+           and+ _ = no_ws (string "in")
+           and+ e = pack.add_sub pack in
+           return (Ast.LetRec (fvar, f, e)))
           (* переменная *)
         ; (let* s = no_ws varname in
            return (Ast.Var s))
@@ -109,8 +116,8 @@ let parse_miniml =
   and apps pack =
     let* app =
       many1
-        (let* token = no_ws (pack.atom pack) in
-         return token)
+        (let* e = no_ws (pack.atom pack) in
+         return e)
     in
     match app with
     | [] -> fail "bad syntax"
