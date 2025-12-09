@@ -77,115 +77,99 @@ let kw_else = kw "else"
 let kw_rec = kw "rec"
 let kw_fix = kw "fix"
 
-(* fun (with multi-arg sugar) *)
-let fun_expr expr =
-  kw_fun *> many1 identifier
-  <* kw "->"
-  >>= fun params -> expr >>= fun body -> return (Abs (params, body))
-;;
-
-(* *_* *)
-let atom expr = choice [ integer; var; fun_expr expr; parens expr ]
-
-(* sugar: f x y *)
-let application expr =
-  atom expr
-  >>= fun f ->
-  many (atom expr)
-  >>= fun args -> return (List.fold_left (fun acc a -> App (acc, a)) f args)
-;;
-
-(* if *)
-let if_expr expr =
-  kw_if *> expr
-  >>= fun cond ->
-  kw_then *> expr
-  >>= fun t ->
-  kw_else *> expr
-  >>= (fun e -> return (If (cond, t, Some e)))
-  <|> return (If (cond, t, None))
-;;
-
-(* let: either `let [rec]? name = bound` or `let [rec]? name = bound in body` *)
-let let_expr expr =
-  let rec_flag = spaces *> kw_rec *> return Rec <|> return NonRec in
-  let make_without_in =
-    kw_let *> rec_flag
-    >>= fun rf ->
-    identifier
-    >>= fun name ->
-    spaces *> char '=' *> spaces *> expr
-    >>= fun bound_expr -> return (Let (rf, name, bound_expr, None))
-  in
-  let make_with_in =
-    kw_let *> rec_flag
-    >>= fun rf ->
-    identifier
-    >>= fun name ->
-    spaces *> char '=' *> spaces *> expr
-    >>= fun bound_expr ->
-    kw_in *> expr >>= fun body -> return (Let (rf, name, bound_expr, Some body))
-  in
-  choice [ make_with_in; make_without_in ]
-;;
-
-(* op - подумать *)
-let bin_ops expr =
-  let make_chain next ops =
-    next
-    >>= fun first ->
-    many (ops >>= fun op -> next >>= fun second -> return (op, second))
-    >>= fun rest ->
-    return (List.fold_left (fun acc (o, e) -> BinOp (o, acc, e)) first rest)
-  in
-  let app = application expr in
-  (* multiplicative *)
-  let mult_div =
-    make_chain
-      app
-      (choice [ spaces *> string "*" *> return Mult; spaces *> string "/" *> return Div ])
-  in
-  (* additive *)
-  let add_sub =
-    make_chain
-      mult_div
-      (choice
-         [ spaces *> string "+" *> return Plus; spaces *> string "-" *> return Minus ])
-  in
-  let compare =
-    make_chain
-      add_sub
-      (choice
-         [ spaces *> string ">=" *> return EMore
-         ; spaces *> string "<=" *> return ELess
-         ; spaces *> string "=" *> return Equal
-         ; spaces *> string ">" *> return More
-         ; spaces *> string "<" *> return Less
-         ])
-  in
-  compare
-;;
-
-(* seq *)
-let seq_expr expr =
-  sep_by1 (char ';' *> spaces) (bin_ops expr)
-  >>= function
-  | [ e ] -> return e
-  | lst -> return (Seq lst)
-;;
-
-let fix_expr expr = kw_fix *> expr >>= fun e -> return (Fix e)
+(* fun (with multi-arg sugar) косяк *)
 
 let expr =
   fix (fun expr ->
-    choice
-      [ let_expr expr
-      ; if_expr expr
-      ; fun_expr expr
-      ; fix_expr expr
-      ; seq_expr expr
-      ; bin_ops expr
-      ])
+    let fun_expr =
+      kw_fun *> many1 var
+      >>= fun params ->
+      kw "->"
+      >>= fun _ ->
+      expr >>| fun body -> List.fold_right (fun arg f -> Abs (arg, f)) params body
+    in
+    (* *_* *)
+    let atom = choice [ integer; var; fun_expr; parens expr ] in
+    (* sugar: f x y *)
+    let application =
+      choice [ var; fun_expr ]
+      >>= fun f ->
+      many1 atom
+      >>= fun args -> return (List.fold_left (fun acc a -> App (acc, a)) f args)
+    in
+    (* if *)
+    let if_expr =
+      kw_if *> expr
+      >>= fun cond ->
+      kw_then *> expr
+      >>= fun t ->
+      kw_else *> expr
+      >>= (fun e -> return (If (cond, t, Some e)))
+      <|> return (If (cond, t, None))
+    in
+    (* let: either `let [rec]? name = bound` or `let [rec]? name = bound in body` *)
+    let let_expr =
+      let rec_flag = spaces *> kw_rec *> return Rec <|> return NonRec in
+      let make_without_in =
+        kw_let *> rec_flag
+        >>= fun rf ->
+        identifier
+        >>= fun name ->
+        spaces *> char '=' *> spaces *> expr
+        >>= fun bound_expr -> return (Let (rf, name, bound_expr, None))
+      in
+      let make_with_in =
+        kw_let *> rec_flag
+        >>= fun rf ->
+        identifier
+        >>= fun name ->
+        spaces *> char '=' *> spaces *> expr
+        >>= fun bound_expr ->
+        kw_in *> expr >>= fun body -> return (Let (rf, name, bound_expr, Some body))
+      in
+      choice [ make_with_in; make_without_in ]
+    in
+    (* op - подумать *)
+    let bin_ops expr =
+      let make_chain next ops =
+        next
+        >>= fun first ->
+        many (ops >>= fun op -> next >>= fun second -> return (op, second))
+        >>= fun rest ->
+        return (List.fold_left (fun acc (o, e) -> BinOp (o, acc, e)) first rest)
+      in
+      (* multiplicative *)
+      let mult_div =
+        make_chain
+          (choice [ integer; var; application; parens expr ])
+          (choice
+             [ spaces *> string "*" *> return Mult; spaces *> string "/" *> return Div ])
+      in
+      (* additive *)
+      let add_sub =
+        make_chain
+          mult_div
+          (choice
+             [ spaces *> string "+" *> return Plus; spaces *> string "-" *> return Minus ])
+      in
+      make_chain
+        add_sub
+        (choice
+           [ spaces *> string ">=" *> return EMore
+           ; spaces *> string "<=" *> return ELess
+           ; spaces *> string "=" *> return Equal
+           ; spaces *> string ">" *> return More
+           ; spaces *> string "<" *> return Less
+           ])
+    in
+    (* seq *)
+    let seq_expr expr =
+      sep_by1 (string ";;" *> spaces) (bin_ops expr)
+      >>= function
+      | [ e ] -> return e
+      | lst -> return (Seq lst)
+    in
+    choice [ seq_expr expr; application; let_expr; if_expr; fun_expr; bin_ops expr ])
 ;;
 
 let top = spaces *> expr <* spaces <* end_of_input (*костыль*)

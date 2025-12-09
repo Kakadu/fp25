@@ -35,18 +35,11 @@ let rec print_ast = function
   | Let (Rec, x, e, None) -> Printf.sprintf "Let (Rec, \"%s\", %s, None)" x (print_ast e)
   | Let (Rec, x, e, Some b) ->
     Printf.sprintf "Let (Rec, \"%s\", %s, Some %s)" x (print_ast e) (print_ast b)
-  | Abs (params, body) ->
-    let params_str =
-      List.map (fun p -> Printf.sprintf "\"%s\"" p) params
-      |> String.concat "; "
-      |> Printf.sprintf "[%s]"
-    in
-    Printf.sprintf "Abs (%s, %s)" params_str (print_ast body)
+  | Abs (_, body) -> Printf.sprintf "Abs (%s, %s)" "hui" (print_ast body)
   | App (f, a) -> Printf.sprintf "App (%s, %s)" (print_ast f) (print_ast a)
   | Seq lst ->
     let lst_str = List.map print_ast lst |> String.concat "; " |> Printf.sprintf "[%s]" in
     Printf.sprintf "Seq %s" lst_str
-  | Fix e -> Printf.sprintf "Fix %s" (print_ast e)
 ;;
 
 let rec print_expr = function
@@ -86,11 +79,14 @@ let rec print_expr = function
     in
     Printf.sprintf "let %s%s = %s%s" rec_branch name (print_expr value) body_branch
   | Abs (params, body) ->
-    let params_str = String.concat " " params in
-    Printf.sprintf "(fun %s -> %s)" params_str (print_expr body)
+    let param_str =
+      match params with
+      | Ast.Var s -> s
+      | _ -> failwith "Abs parameter must be a variable"
+    in
+    Printf.sprintf "(fun %s -> %s)" param_str (print_expr body)
   | App (func, arg) -> Printf.sprintf "(%s %s)" (print_expr func) (print_expr arg)
   | Seq exprs ->
     let exprs_str = List.map print_expr exprs |> String.concat "; " in
     Printf.sprintf "(%s)" exprs_str
-  | Fix expr -> Printf.sprintf "(fix %s)" (print_expr expr)
 ;;
