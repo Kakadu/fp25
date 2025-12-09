@@ -17,9 +17,7 @@ module Interpret (M : MONAD_FAIL) : sig
   val run : _ Ast.t -> (int, [> error ]) M.t
 end = struct
   (* TODO: step counting *)
-  (* TODO: recursion *)
   (* TODO: exception handling *)
-  (* TODO: comparing operators *)
 
   type 'name value =
     | VInt of int
@@ -59,6 +57,7 @@ end = struct
     | Mul, VInt a, VInt b -> VInt (a * b)
     | Div, VInt a, VInt b -> VInt (a / b)
     | Leq, VInt a, VInt b -> VInt (if a <= b then 1 else 0)
+    | Eq, VInt a, VInt b -> VInt (if a = b then 1 else 0)
     | _ -> VExn
 
   and eval_let env x e1 e2 =

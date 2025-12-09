@@ -19,6 +19,7 @@ type dispatch =
   ; unary : dispatch -> Ast.name Ast.t Angstrom.t
   ; mul_div : dispatch -> Ast.name Ast.t Angstrom.t
   ; add_sub : dispatch -> Ast.name Ast.t Angstrom.t
+  ; comp : dispatch -> string Ast.t Angstrom.t
   }
 
 (* A collection of miniparsers *)

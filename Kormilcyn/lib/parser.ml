@@ -47,6 +47,7 @@ type dispatch =
   ; unary : dispatch -> string Ast.t Angstrom.t
   ; mul_div : dispatch -> string Ast.t Angstrom.t
   ; add_sub : dispatch -> string Ast.t Angstrom.t
+  ; comp : dispatch -> string Ast.t Angstrom.t
   }
 
 let chainl1 p op =
@@ -66,37 +67,37 @@ let pp_error ppf = function
   | `Parsing_error s -> Format.fprintf ppf "%s" s
 ;;
 
-(* TODO: recursion *)
+(* TODO: comparison operators *)
 let parse_miniml =
   let atom pack =
     fix (fun _ ->
       choice
         [ (* выражение в скобках *)
           (let* _ = no_ws (char '(')
-           and+ e = pack.add_sub pack
+           and+ e = pack.comp pack
            and+ _ = no_ws (char ')') in
            return e)
           (* функция *)
         ; (let* _ = no_ws (string "fun") in
            fix (fun body ->
              let* var = no_ws varname
-             and+ b = no_ws body <|> no_ws (string "->") *> pack.add_sub pack in
+             and+ b = no_ws body <|> no_ws (string "->") *> pack.comp pack in
              return (Ast.Fun (var, b))))
           (* if *)
         ; (let* _ = no_ws (string "if")
-           and+ cond = pack.add_sub pack
+           and+ cond = pack.comp pack
            and+ _ = no_ws (string "then")
-           and+ e1 = pack.add_sub pack
+           and+ e1 = pack.comp pack
            and+ _ = no_ws (string "else")
-           and+ e2 = pack.add_sub pack in
+           and+ e2 = pack.comp pack in
            return (Ast.If (cond, e1, e2)))
           (* let *)
         ; (let* _ = no_ws (string "let")
            and+ var = no_ws varname
            and+ _ = no_ws (char '=')
-           and+ e1 = pack.add_sub pack
+           and+ e1 = pack.comp pack
            and+ _ = no_ws (string "in")
-           and+ e2 = pack.add_sub pack in
+           and+ e2 = pack.comp pack in
            return (Ast.Let (var, e1, e2)))
         ; (let* _ = no_ws (string "let")
            and+ _ = no_ws (string "rec")
@@ -104,7 +105,7 @@ let parse_miniml =
            and+ _ = no_ws (char '=')
            and+ f = pack.atom pack
            and+ _ = no_ws (string "in")
-           and+ e = pack.add_sub pack in
+           and+ e = pack.comp pack in
            return (Ast.LetRec (fvar, f, e)))
           (* переменная *)
         ; (let* s = no_ws varname in
@@ -152,14 +153,22 @@ let parse_miniml =
         ]
     in
     chainl1 (pack.mul_div pack) op
+  and comp pack =
+    let op =
+      choice
+        [ no_ws (string "<=") *> return (fun l r -> Ast.Bin (Ast.Leq, l, r))
+        ; no_ws (char '=') *> return (fun l r -> Ast.Bin (Ast.Eq, l, r))
+        ]
+    in
+    chainl1 (pack.add_sub pack) op
   in
-  { atom; apps; unary; mul_div; add_sub }
+  { atom; apps; unary; mul_div; add_sub; comp }
 ;;
 
 let parse str =
   match
     Angstrom.parse_string
-      (parse_miniml.add_sub parse_miniml)
+      (parse_miniml.comp parse_miniml)
       ~consume:Angstrom.Consume.All
       str
   with

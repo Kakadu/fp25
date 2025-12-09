@@ -14,6 +14,7 @@ type binop =
   | Sub
   | Div
   | Leq
+  | Eq
 
 (* TODO: meaningful exceptions *)
 

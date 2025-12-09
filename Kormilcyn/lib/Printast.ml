@@ -14,6 +14,7 @@ let pp_binop fmt = function
   | Sub -> Format.fprintf fmt "-"
   | Div -> Format.fprintf fmt "/"
   | Leq -> Format.fprintf fmt "<="
+  | Eq -> Format.fprintf fmt "="
 ;;
 
 type 'name t = 'name Ast.t =
