@@ -10,6 +10,7 @@ open Ast
 
 type prim =
   | Print_int
+  | Trace_int
   | Fix
 ;;
 
@@ -42,7 +43,7 @@ type 'a eval_result = ('a, error) result
 let ok x = Ok x
 let error e = Error e
 
-let ( let* ) m f =
+let ( let* ) (m : 'a eval_result) (f : 'a -> 'b eval_result) : 'b eval_result =
   match m with
   | Ok v -> f v
   | Error e -> Error e
@@ -61,6 +62,7 @@ let rec string_of_value = function
   | VUnit -> "()"
   | VClosure _ -> "<fun>"
   | VPrim Print_int -> "<prim print_int>"
+  | VPrim Trace_int -> "<prim trace_int>"
   | VPrim Fix -> "<prim fix>"
 ;;
 
@@ -105,6 +107,12 @@ let apply_prim (fuel : fuel) (p : prim) (arg : value)
     ok (VUnit, fuel)
   | Print_int, v ->
     error (`Type_error ("print_int expects int, got " ^ string_of_value v))
+  | Trace_int, VInt n ->
+    (* Print the integer and return it unchanged for debugging *)
+    print_endline (string_of_int n);
+    ok (VInt n, fuel)
+  | Trace_int, v ->
+    error (`Type_error ("trace_int expects int, got " ^ string_of_value v))
   | Fix, VClosure { param = self; body; env } ->
     (* [fix f] expects [f] to be a function of one argument [self]
        that returns the actual recursive function.
@@ -122,6 +130,7 @@ let apply_prim (fuel : fuel) (p : prim) (arg : value)
 ;;
 
 (* The mutually recursive evaluator helpers follow *)
+
 let rec apply (fuel : fuel) (f : value) (arg : value)
   : (value * fuel, error) result
   =
@@ -223,18 +232,31 @@ and eval (env : env) (fuel : fuel) (e : expr)
 
 let initial_env : env =
   [ "print_int", VPrim Print_int
+  ; "trace_int", VPrim Trace_int
   ; "fix", VPrim Fix
   ]
 ;;
 
-let parse_and_run ?(fuel = 100_000) (str : string) : unit =
+type run_error = [ error | Parser.error ]
+
+let string_of_run_error (err : run_error) : string =
+  match err with
+  | #error as e -> string_of_error e
+  | #Parser.error as e -> Format.asprintf "%a" Parser.pp_error e
+;;
+
+let run_program ?(fuel = 100_000) (str : string)
+  : (value * fuel, run_error) result
+  =
   match Parser.parse str with
-  | Result.Error e ->
-    Format.eprintf "Parsing error: %a\n%!" Parser.pp_error e
-  | Result.Ok ast ->
-    (match eval initial_env fuel ast with
-     | Ok (v, _fuel_left) ->
-       Format.printf "Success: %s\n%!" (string_of_value v)
-     | Error err ->
-       Format.eprintf "Runtime error: %s\n%!" (string_of_error err))
+  | Result.Error e -> Error e
+  | Result.Ok ast -> eval initial_env fuel ast
+;;
+
+let parse_and_run ?fuel (str : string) : unit =
+  match run_program ?fuel str with
+  | Ok (v, _fuel_left) ->
+    Format.printf "Success: %s\n%!" (string_of_value v)
+  | Error err ->
+    Format.eprintf "Error: %s\n%!" (string_of_run_error err)
 ;;

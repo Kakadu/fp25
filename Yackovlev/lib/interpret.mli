@@ -11,7 +11,9 @@ open Ast
 (** Built in primitives of miniML *)
 type prim =
   | Print_int
-  (** [print_int : int -> unit] *)
+  (** [print_int : int -> unit] prints integer to stdout and returns [unit]. *)
+  | Trace_int
+  (** [trace_int : int -> int] prints integer to stdout and returns it unchanged. *)
   | Fix
   (** [fix : (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b] fixed-point combinator *)
 
@@ -58,6 +60,28 @@ val eval : env -> fuel -> expr -> ((value * fuel), error) result
 (** Evaluate [e] in [env] with [fuel], return value and remaining fuel *)
 
 val initial_env : env
+(** Initial environment with standard primitives. *)
+
+val string_of_value : value -> string
+(** Human-readable representation of runtime values. *)
+
+val string_of_error : error -> string
+(** Human-readable representation of runtime errors. *)
+
+(** Errors that can happen when running a whole program:
+    either a parsing error or a runtime error. *)
+type run_error = [ error | Parser.error ]
+
+val string_of_run_error : run_error -> string
+(** Human-readable representation of [run_error]. *)
+
+val run_program
+  :  ?fuel:fuel
+  -> string
+  -> ((value * fuel), run_error) result
+(** [run_program ?fuel src] parses [src], evaluates it in [initial_env]
+    with given [fuel] (default: [100_000]) and returns either
+    [(value, remaining_fuel)] or a [run_error]. *)
 
 val parse_and_run : ?fuel:fuel -> string -> unit
-(** Parse, run in [initial_env], print result or error *)
+(** Convenience wrapper: run program from string and print result or error. *)
