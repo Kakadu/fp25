@@ -1,0 +1,7 @@
+(test
+ (name parser_tests)
+ (libraries lambda_lib))
+
+(test
+ (name printer_tests)
+ (libraries lambda_lib))
