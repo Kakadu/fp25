@@ -11,9 +11,21 @@ open Base
 open Angstrom
 
 let whitespace = take_while Char.is_whitespace
-let keyword s = string s <* whitespace
+let whitespace1 = take_while1 Char.is_whitespace
+let keyword s = string s <* whitespace1
+
+let keyword1 s =
+  string s
+  <* (whitespace1 *> return ()
+      <|> (peek_char
+           >>= function
+           | Some '(' -> return ()
+           | _ -> fail "expected whitespace or '('"))
+;;
+
 let parens p = char '(' *> whitespace *> p <* whitespace <* char ')' <* whitespace
 let token p = p <* whitespace
+let token1 p = p <* whitespace1
 
 (**Constatnts*)
 let parse_integer =
@@ -63,9 +75,9 @@ let neg_op = token (string "-") *> return Neg
 let kw_let = keyword "let"
 let kw_rec = keyword "rec"
 let kw_in = keyword "in"
-let kw_if = keyword "if"
-let kw_then = keyword "then"
-let kw_else = keyword "else"
+let kw_if = keyword1 "if"
+let kw_then = keyword1 "then"
+let kw_else = keyword1 "else"
 let kw_fun = keyword "fun"
 let parse_unit = token (string "()") *> return (Const CUnit)
 
@@ -82,8 +94,8 @@ let parse_pattern =
        if List.mem keywords name ~equal:String.equal || String.equal name "_"
        then fail ("keyword " ^ name ^ " cannot be an identifier")
        else return (PVar name))
-    ; (token (char '_') >>| fun _ -> PAny)
-    ; (token (string "()") >>| fun _ -> PUnit)
+    ; (token1 (char '_') >>| fun _ -> PAny)
+    ; (token1 (string "()") >>| fun _ -> PUnit)
     ]
 ;;
 

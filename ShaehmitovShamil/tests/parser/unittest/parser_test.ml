@@ -282,3 +282,24 @@ let%expect_test "application bin op" =
              (App ((Var "f"), (Const (CInt 20))))))))
       ] |}]
 ;;
+
+let%expect_test "test1" =
+  run_program_parser "letrec f = 1";
+  [%expect {| Error: : end_of_input |}]
+;;
+
+let%expect_test "test1" =
+  run_program_parser "let rec f __= 1";
+  [%expect {| Error: : end_of_input |}]
+;;
+
+let%expect_test "test2" =
+  run_program_parser "let rec f = if(n) then 1 else f(n-1)";
+  [%expect
+    {|
+    [(Value
+        (Rec, (PVar "f"),
+         (If ((Var "n"), (Const (CInt 1)),
+            (App ((Var "f"), (BinOp (Sub, (Var "n"), (Const (CInt 1))))))))))
+      ] |}]
+;;

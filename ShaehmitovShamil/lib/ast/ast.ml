@@ -58,22 +58,22 @@ type binding = rec_flag * pattern * expr [@@deriving show { with_path = false }]
 type structure_item = Value of binding [@@deriving show { with_path = false }]
 type program = structure_item list [@@deriving show { with_path = false }]
 
-let pretty_print_pattern = function
-  | PVar s -> s
-  | PAny -> "_"
-  | PUnit -> "()"
+let pp_pattern fmt = function
+  | PVar s -> Format.fprintf fmt "%s" s
+  | PAny -> Format.fprintf fmt "_"
+  | PUnit -> Format.fprintf fmt "()"
 ;;
 
-let rec pretty_print_expr = function
-  | Const (CInt i) -> string_of_int i
-  | Const CUnit -> "()"
-  | Var s -> s
+let rec pp_expr fmt = function
+  | Const (CInt i) -> Format.fprintf fmt "%d" i
+  | Const CUnit -> Format.fprintf fmt "()"
+  | Var s -> Format.fprintf fmt "%s" s
   | UnOp (op, e) ->
     let op_str =
       match op with
       | Neg -> "-"
     in
-    "(" ^ op_str ^ pretty_print_expr e ^ ")"
+    Format.fprintf fmt "(%s%a)" op_str pp_expr e
   | BinOp (op, e1, e2) ->
     let op_str =
       match op with
@@ -88,45 +88,39 @@ let rec pretty_print_expr = function
       | Gt -> " > "
       | Ge -> " >= "
     in
-    "(" ^ pretty_print_expr e1 ^ op_str ^ pretty_print_expr e2 ^ ")"
+    Format.fprintf fmt "(%a%s%a)" pp_expr e1 op_str pp_expr e2
   | If (cond, t, f) ->
-    "(if "
-    ^ pretty_print_expr cond
-    ^ " then "
-    ^ pretty_print_expr t
-    ^ " else "
-    ^ pretty_print_expr f
-    ^ ")"
-  | FunExpr (param, body) ->
-    "(fun "
-    ^ String.concat " " (List.map pretty_print_pattern param)
-    ^ " -> "
-    ^ pretty_print_expr body
-    ^ ")"
-  | App (f, arg) -> "(" ^ pretty_print_expr f ^ " " ^ pretty_print_expr arg ^ ")"
-  | Let (NonRec, p, e1, e2) ->
-    "(let "
-    ^ pretty_print_pattern p
-    ^ " = "
-    ^ pretty_print_expr e1
-    ^ " in "
-    ^ pretty_print_expr e2
-    ^ ")"
-  | Let (Rec, p, e1, e2) ->
-    "(let rec "
-    ^ pretty_print_pattern p
-    ^ " = "
-    ^ pretty_print_expr e1
-    ^ " in "
-    ^ pretty_print_expr e2
-    ^ ")"
+    Format.fprintf fmt "(if %a then %a else %a)" pp_expr cond pp_expr t pp_expr f
+  | FunExpr (params, body) ->
+    Format.fprintf
+      fmt
+      "(fun %a -> %a)"
+      (Format.pp_print_list ~pp_sep:Format.pp_print_space pp_pattern)
+      params
+      pp_expr
+      body
+  | App (f, arg) -> Format.fprintf fmt "(%a %a)" pp_expr f pp_expr arg
+  | Let (rec_flag, p, e1, e2) ->
+    let rec_str = if rec_flag = Rec then " rec" else "" in
+    Format.fprintf fmt "(let%s %a = %a in %a)" rec_str pp_pattern p pp_expr e1 pp_expr e2
 ;;
 
-let pretty_print_program_item = function
-  | Value (NonRec, p, e) -> "let " ^ pretty_print_pattern p ^ " = " ^ pretty_print_expr e
-  | Value (Rec, p, e) -> "let rec " ^ pretty_print_pattern p ^ " = " ^ pretty_print_expr e
+let pp_program_item fmt = function
+  | Value (rec_flag, p, e) ->
+    let rec_str = if rec_flag = Rec then " rec" else "" in
+    Format.fprintf fmt "let%s %a = %a" rec_str pp_pattern p pp_expr e
 ;;
 
-let pretty_print_program p =
-  String.concat ";;\n" (List.map pretty_print_program_item p) ^ ";;\n"
+let pp_program fmt p =
+  Format.pp_print_list
+    ~pp_sep:(fun fmt () -> Format.fprintf fmt ";;\n")
+    (fun fmt item -> Format.fprintf fmt "%a" pp_program_item item)
+    fmt
+    p;
+  if p <> [] then Format.fprintf fmt ";;\n"
 ;;
+
+let pretty_print_pattern p = Format.asprintf "%a" pp_pattern p
+let pretty_print_expr e = Format.asprintf "%a" pp_expr e
+let pretty_print_program_item item = Format.asprintf "%a" pp_program_item item
+let pretty_print_program p = Format.asprintf "%a" pp_program p
