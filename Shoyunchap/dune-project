@@ -36,4 +36,5 @@
     :build
     (= "0.26.2")))
   ; After adding dependencies to 'dune' files add the same dependecies here too
-  ))
+  )
+ (allow_empty))
