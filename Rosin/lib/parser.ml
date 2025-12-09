@@ -9,6 +9,16 @@ let is_space = function
   | _ -> false
 ;;
 
+let is_var_char = function
+  | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
+  | _ -> false
+;;
+
+let is_keyword = function
+  | "if" | "then" | "else" | "fun" | "let" | "rec" | "in" -> true
+  | _ -> false
+;;
+
 let spaces = skip_while is_space
 let token p = p <* spaces
 let parens p = token (char '(') *> p <* token (char ')')
@@ -38,29 +48,19 @@ let number =
 let number_expr = number >>| fun num -> Ast.Num num
 
 let varname =
-  let is_var_char = function
-    | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
-    | _ -> false
-  in
   token (take_while1 is_var_char)
   >>= fun s ->
-  match s with
-  | "if" | "then" | "else" | "fun" | "let" | "rec" | "in" ->
-    fail ("reserved keyword: " ^ s)
-  | _ -> return s
+  match is_keyword s with
+  | true -> fail ("reserved keyword: " ^ s)
+  | false -> return s
 ;;
 
-let app_name =
-  let is_var_char = function
-    | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
-    | _ -> false
-  in
+let fun_name =
   take_while1 is_var_char
   <* take_while1 is_space
   >>= fun s ->
-  match s with
-  | "if" | "then" | "else" | "fun" | "let" | "rec" | "in" ->
-    fail ("reserved keyword: " ^ s)
+  match is_keyword s with
+  | true -> fail ("reserved keyword: " ^ s)
   | _ -> return s
 ;;
 
@@ -88,7 +88,7 @@ let expr =
       token (string "->") *> expr >>= fun body -> return @@ multi_fun args body
     in
     let app_expr =
-      choice [ fun_expr; (app_name >>| fun n -> Ast.Var n) ]
+      choice [ fun_expr; (fun_name >>| fun n -> Ast.Var n) ]
       >>= fun name ->
       many1 (choice [ number_expr; varname_expr; parens expr ])
       >>| fun args -> List.fold_left (fun f arg -> Ast.App (f, arg)) name args

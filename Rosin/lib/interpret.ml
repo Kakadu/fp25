@@ -110,8 +110,8 @@ let rec eval env steps e =
          (match arg with
           | VNum n ->
             Stdio.printf "%d\n" n;
-            return (arg, st2 - 1)
-          | _ -> return (arg, st2 - 1))
+            return (VUnit, st2 - 1)
+          | _ -> return (VUnit, st2 - 1))
        | VClosure (x, body, env') -> eval ((x, arg) :: env') (st2 - 1) body
        | VRecClosure (f_name, x, body, env') ->
          let new_env = (x, arg) :: (f_name, f) :: env' in

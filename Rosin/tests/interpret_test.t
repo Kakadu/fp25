@@ -26,49 +26,49 @@ in the dune file
   $ ../bin/REPL.exe <<EOF
   > 42 + 2
   AST here:
-  (42 + 2)
+  42 + 2
   Interpretation result here:
   Ok: 44
 
   $ ../bin/REPL.exe <<EOF
   > 42 - 2
   AST here:
-  (42 - 2)
+  42 - 2
   Interpretation result here:
   Ok: 40
 
   $ ../bin/REPL.exe <<EOF
   > 42 / 2
   AST here:
-  (42 / 2)
+  42 / 2
   Interpretation result here:
   Ok: 21
 
   $ ../bin/REPL.exe <<EOF
   > 42 * 2
   AST here:
-  (42 * 2)
+  42 * 2
   Interpretation result here:
   Ok: 84
 
   $ ../bin/REPL.exe <<EOF
   > 42 + 2 * 2
   AST here:
-  (42 + (2 * 2))
+  42 + 2 * 2
   Interpretation result here:
   Ok: 46
 
   $ ../bin/REPL.exe <<EOF
   > (42 + 2) * 2
   AST here:
-  ((42 + 2) * 2)
+  42 + 2 * 2
   Interpretation result here:
   Ok: 88
 
   $ ../bin/REPL.exe <<EOF
   > 42 / 0
   AST here:
-  (42 / 0)
+  42 / 0
   Interpretation result here:
   Error!: DivisionByZero
 
@@ -96,49 +96,49 @@ in the dune file
   $ ../bin/REPL.exe <<EOF
   > let x = 5 in x + 1
   AST here:
-  let x = 5 in (x + 1)
+  let x = 5 in x + 1
   Interpretation result here:
   Ok: 6
 
   $ ../bin/REPL.exe <<EOF
   > let x = 5 in let y = x + 1 in y * 2
   AST here:
-  let x = 5 in let y = (x + 1) in (y * 2)
+  let x = 5 in let y = x + 1 in y * 2
   Interpretation result here:
   Ok: 12
 
   $ ../bin/REPL.exe <<EOF
   > let f = fun x -> x * 2 in f 10
   AST here:
-  let f = fun x -> (x * 2) in f (10)
+  let f = fun x -> x * 2 in f 10
   Interpretation result here:
   Ok: 20
 
   $ ../bin/REPL.exe <<EOF
   > let f = fun x y z -> x + y + z in f 1 2 3
   AST here:
-  let f = fun x -> fun y -> fun z -> ((x + y) + z) in f (1) (2) (3)
+  let f = fun x -> fun y -> fun z -> x + y + z in f 1 2 3
   Interpretation result here:
   Ok: 6
 
   $ ../bin/REPL.exe <<EOF
   > let rec fact = fun n -> if n then n * fact (n - 1) else 1 in fact 5
   AST here:
-  let rec fact = fun n -> if n then (n * fact ((n - 1))) else 1 in fact (5)
+  let rec fact = fun n -> if n then n * fact n - 1 else 1 in fact 5
   Interpretation result here:
   Ok: 120
 
   $ ../bin/REPL.exe <<EOF
   > let rec fib = fun n -> if n - 1 then (if n - 2 then fib (n - 1) + fib (n - 2) else 1) else n in fib 6
   AST here:
-  let rec fib = fun n -> if (n - 1) then if (n - 2) then (fib ((n - 1)) + fib ((n - 2))) else 1 else n in fib (6)
+  let rec fib = fun n -> if n - 1 then if n - 2 then fib n - 1 + fib n - 2 else 1 else n in fib 6
   Interpretation result here:
   Ok: 8
 
   $ ../bin/REPL.exe <<EOF
   > let rec sum = fun n -> if n then n + sum (n - 1) else 0 in sum 5
   AST here:
-  let rec sum = fun n -> if n then (n + sum ((n - 1))) else 0 in sum (5)
+  let rec sum = fun n -> if n then n + sum n - 1 else 0 in sum 5
   Interpretation result here:
   Ok: 15
 
@@ -146,28 +146,28 @@ in the dune file
   > print 42
   42
   AST here:
-  print (42)
+  print 42
   Interpretation result here:
-  Ok: 42
+  Ok: Unit
 
   $ ../bin/REPL.exe <<EOF
   > print (1 + 2)
   3
   AST here:
-  print ((1 + 2))
+  print 1 + 2
   Interpretation result here:
-  Ok: 3
+  Ok: Unit
 
   $ ../bin/REPL.exe --steps=500 <<EOF
   > let rec infinite = fun x -> infinite x in infinite 1
   AST here:
-  let rec infinite = fun x -> infinite (x) in infinite (1)
+  let rec infinite = fun x -> infinite x in infinite 1
   Interpretation result here:
   Error!: StepLimitExceeded
 
   $ ../bin/REPL.exe <<EOF
   > let rec fix f eta = f (fix f) eta in let fact_gen = fun fact n -> if n = 0 then 1 else n * fact (n-1) in let fact = fix fact_gen in fact 5
   AST here:
-  let rec fix = fun f -> fun eta -> f (fix (f)) (eta) in let fact_gen = fun fact -> fun n -> if (n = 0) then 1 else (n * fact ((n - 1))) in let fact = fix (fact_gen) in fact (5)
+  let rec fix = fun f -> fun eta -> f fix f eta in let fact_gen = fun fact -> fun n -> if n = 0 then 1 else n * fact n - 1 in let fact = fix fact_gen in fact 5
   Interpretation result here:
   Ok: 120

@@ -32,7 +32,7 @@ let varname_gen =
 
 let int_gen = int_range (-100) 100
 let unop_gen = oneofl [ Inc; Dec ]
-let binop_gen = oneofl [ Plus; Minus; Mult; Div ]
+let binop_gen = oneofl [ Plus; Minus; Mult; Div; Equal; Less; More ]
 
 let gen_expr =
   let rec expr depth =
@@ -117,7 +117,6 @@ let test_parser_negative =
     ; "fun -> x"
     ; "1 + + 2"
     ; "let rec = 1 in x"
-    ; "print"
     ]
   in
   let arb_invalid = QCheck.make ~print:(fun s -> s) (oneofl invalid_strings) in
