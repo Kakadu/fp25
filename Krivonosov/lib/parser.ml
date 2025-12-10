@@ -2,7 +2,6 @@
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-(* TODO: implement parser here *)
 open Angstrom
 
 let is_space = function
@@ -12,21 +11,33 @@ let is_space = function
 
 let spaces = skip_while is_space
 
-let varname =
-  satisfy (function
-    | 'a' .. 'z' -> true
-    | _ -> false)
+(* Keyword filtering *)
+let is_keyword = function
+  | "let" | "rec" | "if" | "then" | "else" | "in" | "fun" | "fix" -> true
+  | _ -> false
 ;;
 
-let conde = function
-  | [] -> fail "empty conde"
-  | h :: tl -> List.fold_left ( <|> ) h tl
+let is_ident_char = function
+  | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '\'' -> true
+  | _ -> false
 ;;
 
-type dispatch =
-  { apps : dispatch -> string Ast.t Angstrom.t
-  ; single : dispatch -> string Ast.t Angstrom.t
-  }
+(* Multi-character identifier parser *)
+let identifier =
+  let first_char_parser =
+    satisfy (function
+      | 'a' .. 'z' | '_' -> true
+      | _ -> false)
+  in
+  lift2
+    (fun fc rest -> String.make 1 fc ^ rest)
+    first_char_parser
+    (take_while is_ident_char)
+  >>= fun ident ->
+  if is_keyword ident
+  then fail ("Keyword '" ^ ident ^ "' cannot be used as identifier")
+  else return ident
+;;
 
 type error = [ `Parsing_error of string ]
 
@@ -34,32 +45,39 @@ let pp_error ppf = function
   | `Parsing_error s -> Format.fprintf ppf "%s" s
 ;;
 
-let parse_lam =
-  let single pack =
-    fix (fun _ ->
-      conde
-        [ char '(' *> pack.apps pack <* char ')' <?> "Parentheses expected"
-        ; ((string "λ" <|> string "\\") *> spaces *> varname
-           <* spaces
-           <* (return () <* char '.' <|> string "->" *> return ())
-           >>= fun var ->
-           pack.apps pack >>= fun b -> return (Ast.Abs (String.make 1 var, b)))
-        ; (varname <* spaces >>= fun c -> return (Ast.Var (String.make 1 c)))
-        ])
-  in
-  let apps pack =
-    many1 (spaces *> pack.single pack <* spaces)
-    >>= function
-    | [] -> fail "bad syntax"
-    | x :: xs -> return @@ List.fold_left (fun l r -> Ast.App (l, r)) x xs
-  in
-  { single; apps }
+(* Main parser using single fix point *)
+let pexpr =
+  fix (fun pexpr ->
+    (* Atomic expressions: variables and parenthesized expressions *)
+    let patom =
+      spaces
+      *> choice
+           [ char '(' *> pexpr <* char ')' <* spaces <?> "Parentheses expected"
+           ; (identifier <* spaces >>| fun name -> Ast.Var name)
+           ]
+    in
+    (* Lambda abstractions *)
+    let plambda =
+      (string "λ" <|> string "\\") *> spaces *> identifier
+      <* spaces
+      <* (char '.' <|> string "->" *> return ' ')
+      <* spaces
+      >>= fun param -> pexpr >>| fun body -> Ast.Abs (param, body)
+    in
+    (* Application: sequence of atoms *)
+    let papp =
+      many1 patom
+      >>| function
+      | [] -> failwith "impossible: many1 returned empty list"
+      | [ x ] -> x
+      | x :: xs -> List.fold_left (fun acc e -> Ast.App (acc, e)) x xs
+    in
+    (* Top level: try lambda first, then application *)
+    spaces *> (plambda <|> papp) <* spaces)
 ;;
 
 let parse str =
-  match
-    Angstrom.parse_string (parse_lam.apps parse_lam) ~consume:Angstrom.Consume.All str
-  with
+  match Angstrom.parse_string ~consume:Angstrom.Consume.All pexpr str with
   | Result.Ok x -> Result.Ok x
   | Error er -> Result.Error (`Parsing_error er)
 ;;
