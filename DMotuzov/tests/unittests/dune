@@ -8,7 +8,3 @@
  (inline_tests)
  (instrumentation
   (backend bisect_ppx)))
-
-(cram
- (applies_to *)
- (deps ../bin/REPL.exe))

@@ -19,7 +19,7 @@ let gen_ident =
 
 let gen_const =
   let open Gen in
-  oneof [ small_int |> map (fun i -> Const_int i) ]
+  small_int |> map (fun i -> Const_int i)
 ;;
 
 let rec gen_expr size =
@@ -60,44 +60,44 @@ let rec gen_expr size =
       ])
 ;;
 
-let show_expr expr = Stdlib.Format.asprintf "%a" pp expr
-let arb_expr = make ~print:show_expr (Gen.sized gen_expr)
-let wrap_for_parser expr_str = Printf.sprintf "let tmp = %s;;" expr_str
+let pp_expression expr = Stdlib.Format.asprintf "%a" pp expr
+let arb_expr = make ~print:pp_expression (Gen.sized gen_expr)
+let wrap_for_parser expr_str = Printf.sprintf "let p = %s;;" expr_str
 
 let parser_roundtrip_test =
   Test.make ~count:1000 ~name:"parser round-trip property" arb_expr (fun expr ->
     let code_string = wrap_for_parser (Stdlib.Format.asprintf "%a" pp expr) in
     match parse code_string with
-    | Ok [ Top_let ("tmp", parsed_expr) ] ->
+    | Ok [ Top_let ("p", parsed_expr) ] ->
       if Stdlib.( = ) expr parsed_expr
       then true
       else
         Test.fail_reportf
           "AST mismatch after round-trip.\n\
-           ===== Generated Source Code =====\n\
-           %s\n\
            ===== Pretty-printed Input Expr =====\n\
            %s\n\
            ===== Original AST =====\n\
            %s\n\
+           ===== Pretty-printed Parsed_Expr =====\n\
+           %s\n\
            ===== Parsed AST =====\n\
            %s\n"
-          code_string
-          (show_expr expr)
+          (pp_expression expr)
           (show_expression expr)
+          (pp_expression parsed_expr)
           (show_expression parsed_expr)
     | Ok _ -> Test.fail_reportf "Parser returned unexpected toplevel structure"
     | Error err ->
       Test.fail_reportf
         "Parsing failed.\n\
-         ===== Original AST =====\n\
+         ===== Pretty-printed Input Expr =====\n\
          %s\n\
-         ===== Code =====\n\
+         ===== Original AST =====\n\
          %s\n\
          ===== Error =====\n\
          %s\n"
+        (pp_expression expr)
         (show_expression expr)
-        code_string
         err)
 ;;
 

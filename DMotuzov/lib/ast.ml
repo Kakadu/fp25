@@ -10,7 +10,7 @@
 type identificator = string [@@deriving show { with_path = false }]
 
 type constant =
-  | Const_int of int (** Integer literal, e.g. `42`, `-7`, `0` *)
+  | Const_int of int (** Integer literal, e.g. `42`, `7`, `0` *)
   | Const_unit (** Unit value `()` representing absence of meaningful value *)
 [@@deriving show { with_path = false }]
 
