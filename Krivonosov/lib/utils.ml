@@ -16,6 +16,7 @@ let free_vars =
   let rec helper acc = function
     | Var s -> s :: acc
     | Int _ -> acc
+    | BinOp (_, l, r) -> helper (helper acc r) l
     | Abs (s, l) -> acc @ list_remove s (helper [] l)
     | App (l, r) -> helper (helper acc r) l
   in

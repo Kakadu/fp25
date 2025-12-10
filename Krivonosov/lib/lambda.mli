@@ -18,6 +18,7 @@ type strat =
   ; on_abs : strat -> Ast.name -> string Ast.t -> string Ast.t
   ; on_app : strat -> string Ast.t -> string Ast.t -> string Ast.t
   ; on_int : strat -> int -> string Ast.t
+  ; on_binop : strat -> Ast.binop -> string Ast.t -> string Ast.t -> string Ast.t
   }
 
 val apply_strat : strat -> string Ast.t -> string Ast.t

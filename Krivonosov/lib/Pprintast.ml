@@ -11,6 +11,20 @@
 open Ast
 open Utils
 
+let pp_binop fmt = function
+  | Add -> Format.fprintf fmt "+"
+  | Sub -> Format.fprintf fmt "-"
+  | Mul -> Format.fprintf fmt "*"
+  | Div -> Format.fprintf fmt "/"
+  | Mod -> Format.fprintf fmt "%%"
+  | Eq -> Format.fprintf fmt "="
+  | Neq -> Format.fprintf fmt "<>"
+  | Lt -> Format.fprintf fmt "<"
+  | Gt -> Format.fprintf fmt ">"
+  | Leq -> Format.fprintf fmt "<="
+  | Geq -> Format.fprintf fmt ">="
+;;
+
 let pp ?(compact = true) =
   let open Format in
   let mangle t fmt x =
@@ -19,6 +33,7 @@ let pp ?(compact = true) =
   let rec pp fmt = function
     | Var s -> Format.fprintf fmt "%s" s
     | Int n -> Format.fprintf fmt "%d" n
+    | BinOp (op, l, r) -> Format.fprintf fmt "(%a %a %a)" pp l pp_binop op pp r
     | App (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | Abs (x, Abs (y, Var z)) when x = z && y <> z && compact ->
       if compact then Format.fprintf fmt "⊤"

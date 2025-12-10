@@ -54,6 +54,12 @@ let pinteger =
   >>| fun n -> Ast.Int n
 ;;
 
+(* Chainl1: left-associative infix operator parser *)
+let chainl1 p op =
+  let rec go acc = op >>= (fun f -> p >>= fun x -> go (f acc x)) <|> return acc in
+  p >>= go
+;;
+
 (* Main parser using single fix point *)
 let pexpr =
   fix (fun pexpr ->
@@ -82,8 +88,45 @@ let pexpr =
       | [ x ] -> x
       | x :: xs -> List.fold_left (fun acc e -> Ast.App (acc, e)) x xs
     in
-    (* Top level: try lambda first, then application *)
-    spaces *> (plambda <|> papp) <* spaces)
+    (* Binary operators with precedence *)
+    (* Comparison operators: =, <>, <, >, <=, >= (lowest precedence) *)
+    let pcmp_op =
+      spaces
+      *> choice
+           [ string "<=" *> return (fun l r -> Ast.BinOp (Ast.Leq, l, r))
+           ; string ">=" *> return (fun l r -> Ast.BinOp (Ast.Geq, l, r))
+           ; string "<>" *> return (fun l r -> Ast.BinOp (Ast.Neq, l, r))
+           ; char '<' *> return (fun l r -> Ast.BinOp (Ast.Lt, l, r))
+           ; char '>' *> return (fun l r -> Ast.BinOp (Ast.Gt, l, r))
+           ; char '=' *> return (fun l r -> Ast.BinOp (Ast.Eq, l, r))
+           ]
+      <* spaces
+    in
+    (* Additive operators: +, - *)
+    let padd_op =
+      spaces
+      *> choice
+           [ char '+' *> return (fun l r -> Ast.BinOp (Ast.Add, l, r))
+           ; char '-' *> return (fun l r -> Ast.BinOp (Ast.Sub, l, r))
+           ]
+      <* spaces
+    in
+    (* Multiplicative operators: *, /, % (higher precedence) *)
+    let pmul_op =
+      spaces
+      *> choice
+           [ char '*' *> return (fun l r -> Ast.BinOp (Ast.Mul, l, r))
+           ; char '/' *> return (fun l r -> Ast.BinOp (Ast.Div, l, r))
+           ; char '%' *> return (fun l r -> Ast.BinOp (Ast.Mod, l, r))
+           ]
+      <* spaces
+    in
+    (* Precedence levels: mul > add > cmp > app > lambda *)
+    let pmul = chainl1 papp pmul_op in
+    let padd = chainl1 pmul padd_op in
+    let pcmp = chainl1 padd pcmp_op in
+    (* Top level: try lambda first, then comparison *)
+    spaces *> (plambda <|> pcmp) <* spaces)
 ;;
 
 let parse str =
