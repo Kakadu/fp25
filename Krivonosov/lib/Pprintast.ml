@@ -18,6 +18,7 @@ let pp ?(compact = true) =
   in
   let rec pp fmt = function
     | Var s -> Format.fprintf fmt "%s" s
+    | Int n -> Format.fprintf fmt "%d" n
     | App (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | Abs (x, Abs (y, Var z)) when x = z && y <> z && compact ->
       if compact then Format.fprintf fmt "⊤"

@@ -45,14 +45,24 @@ let pp_error ppf = function
   | `Parsing_error s -> Format.fprintf ppf "%s" s
 ;;
 
+(* Integer literal parser *)
+let pinteger =
+  take_while1 (function
+    | '0' .. '9' -> true
+    | _ -> false)
+  >>| int_of_string
+  >>| fun n -> Ast.Int n
+;;
+
 (* Main parser using single fix point *)
 let pexpr =
   fix (fun pexpr ->
-    (* Atomic expressions: variables and parenthesized expressions *)
+    (* Atomic expressions: integers, variables and parenthesized expressions *)
     let patom =
       spaces
       *> choice
            [ char '(' *> pexpr <* char ')' <* spaces <?> "Parentheses expected"
+           ; pinteger <* spaces
            ; (identifier <* spaces >>| fun name -> Ast.Var name)
            ]
     in

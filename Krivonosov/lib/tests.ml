@@ -51,6 +51,7 @@ let _ = Lambda_lib.Lambda.three
 let _ = Lambda_lib.Lambda.two
 let _ = Lambda_lib.Lambda.without_strat
 let _ = Lambda_lib.Lambda.zero
+
 (* parse_lam removed in new parser implementation *)
 let _ = Lambda_lib.Printast.pp
 let _ = Lambda_lib.Printast.show

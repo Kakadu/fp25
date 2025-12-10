@@ -15,6 +15,7 @@ let replace_name x ~by =
   let rec helper = function
     | Var y when String.equal x y -> Var by
     | Var t -> Var t
+    | Int n -> Int n
     | App (l, r) -> App (helper l, helper r)
     | Abs (y, t) when String.equal x y -> Abs (by, helper t)
     | Abs (z, t) -> Abs (z, helper t)
@@ -31,6 +32,7 @@ let subst x ~by:v =
   let rec helper = function
     | Var y when String.equal y x -> v
     | Var y -> Var y
+    | Int n -> Int n
     | App (l, r) -> app (helper l) (helper r)
     | Abs (y, b) when String.equal y x -> abs y b
     | Abs (y, t) when is_free_in y v ->
@@ -46,19 +48,22 @@ type strat =
   { on_var : strat -> name -> string Ast.t
   ; on_abs : strat -> name -> string Ast.t -> string Ast.t
   ; on_app : strat -> string Ast.t -> string Ast.t -> string Ast.t
+  ; on_int : strat -> int -> string Ast.t
   }
 
 let apply_strat st = function
   | Var name -> st.on_var st name
   | Abs (x, b) -> st.on_abs st x b
   | App (l, r) -> st.on_app st l r
+  | Int n -> st.on_int st n
 ;;
 
 let without_strat =
   let on_var _ = var in
   let on_abs _ = abs in
   let on_app _ = app in
-  { on_var; on_abs; on_app }
+  let on_int _ n = Int n in
+  { on_var; on_abs; on_app; on_int }
 ;;
 
 let cbn_strat =
