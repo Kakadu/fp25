@@ -31,7 +31,6 @@ let varname_gen =
 ;;
 
 let int_gen = int_range (-100) 100
-let unop_gen = oneofl [ Inc; Dec ]
 let binop_gen = oneofl [ Plus; Minus; Mult; Div; Equal; Less; More ]
 
 let gen_expr =

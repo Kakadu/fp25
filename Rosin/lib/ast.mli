@@ -9,11 +9,6 @@
 type varname = string
 
 (** integer binary operations *)
-type unop =
-  | Inc (** incrementing value [++x] *)
-  | Dec (** decrementing value [--x]*)
-
-(** integer binary operations *)
 type binop =
   | Plus (** addition of two arguments [x + y] *)
   | Minus (** subtraction of two arguments [x - y] *)
