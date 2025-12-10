@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>qcheck_parser.ml &mdash; Coverage report</title>
-    <meta name="description" content="82.69% coverage in tests/qtest/qcheck_parser.ml">
+    <meta name="description" content="79.25% coverage in tests/qtest/qcheck_parser.ml">
     <link rel="stylesheet" href="../../coverage.css"/>
     <script src="../../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,17 +15,19 @@
           <span class="dirname">tests/qtest/</span>qcheck_parser.ml
         </a>
       </h1>
-      <h2>82.69%</h2>
+      <h2>79.25%</h2>
     </div>
     <div id="navbar">
       <span class="unvisited" style="bottom:39.42%"></span>
       <span class="unvisited" style="bottom:27.88%"></span>
+      <span class="unvisited" style="bottom:18.27%"></span>
       <span class="unvisited" style="bottom:17.31%"></span>
       <span class="unvisited" style="bottom:16.35%"></span>
       <span class="unvisited" style="bottom:15.38%"></span>
       <span class="unvisited" style="bottom:14.42%"></span>
       <span class="unvisited" style="bottom:13.46%"></span>
       <span class="unvisited" style="bottom:4.81%"></span>
+      <span class="unvisited" style="bottom:3.85%"></span>
       <span class="unvisited" style="bottom:0.00%"></span>
     </div>
     <div id="report">
@@ -115,7 +117,7 @@
 <a id="L82"></a><span > </span>
 <a id="L83"></a><span > </span>
 <a id="L84"></a><span > </span>
-<a id="L85"></a><span > </span>
+<a id="L85"></a><span class="unvisited"> </span>
 <a id="L86"></a><span class="unvisited"> </span>
 <a id="L87"></a><span class="unvisited"> </span>
 <a id="L88"></a><span class="unvisited"> </span>
@@ -130,7 +132,7 @@
 <a id="L97"></a><span > </span>
 <a id="L98"></a><span > </span>
 <a id="L99"></a><span class="unvisited"> </span>
-<a id="L100"></a><span > </span>
+<a id="L100"></a><span class="unvisited"> </span>
 <a id="L101"></a><span > </span>
 <a id="L102"></a><span > </span>
 <a id="L103"></a><span > </span>
@@ -265,35 +267,35 @@ let gen_ident =
 
 let gen_const =
   let open Gen in
-  oneo<span data-count="1">f</span> [ small_int |&gt; ma<span data-count="1">p</span> (fun i -&gt; <span data-count="7984">C</span>onst_int i) ]
+  small_int |&gt; ma<span data-count="1">p</span> (fun i -&gt; <span data-count="7766">C</span>onst_int i)
 ;;
 
 let rec gen_expr size =
-  <span data-count="6043">l</span>et open Gen in
-  let gen_var = gen_ident |&gt; map (fun s -&gt; <span data-count="9164">E</span>xpr_var s) in
-  <span data-count="6043">l</span>et gen_const_expr = gen_const |&gt; map (fun c -&gt; <span data-count="7984">E</span>xpr_const c) in
-  <span data-count="6043">i</span>f size &lt;= 0
+  <span data-count="6143">l</span>et open Gen in
+  let gen_var = gen_ident |&gt; map (fun s -&gt; <span data-count="8757">E</span>xpr_var s) in
+  <span data-count="6143">l</span>et gen_const_expr = gen_const |&gt; map (fun c -&gt; <span data-count="7766">E</span>xpr_const c) in
+  <span data-count="6143">i</span>f size &lt;= 0
   then <span data-count="1000">o</span>neof [ gen_var; gen_const_expr ]
-  else <span data-count="5043">(</span>
+  else <span data-count="5143">(</span>
     let sub = gen_expr (size / 2) in
-    <span data-count="5043">l</span>et gen_bin =
+    <span data-count="5143">l</span>et gen_bin =
       map3
-        (fun op e1 e2 -&gt; <span data-count="3221">E</span>xpr_binary_op (op, e1, e2))
-        (oneof<span data-count="5043">l</span> [ Plus; Sub; Mul; Div ])
+        (fun op e1 e2 -&gt; <span data-count="3238">E</span>xpr_binary_op (op, e1, e2))
+        (oneof<span data-count="5143">l</span> [ Plus; Sub; Mul; Div ])
         sub
         sub
     in
-    <span data-count="5043">l</span>et gen_if = map3 (fun c t f -&gt; <span data-count="2157">E</span>xpr_conditional (c, t, f)) sub sub sub in
-    <span data-count="5043">l</span>et gen_let = map3 (fun id e1 e2 -&gt; <span data-count="2132">E</span>xpr_let_in (id, e1, e2)) gen_ident sub sub in
-    <span data-count="5043">l</span>et gen_let_rec =
-      map3 (fun id e1 e2 -&gt; <span data-count="2114">E</span>xpr_let_rec_in (id, e1, e2)) gen_ident sub sub
+    <span data-count="5143">l</span>et gen_if = map3 (fun c t f -&gt; <span data-count="2063">E</span>xpr_conditional (c, t, f)) sub sub sub in
+    <span data-count="5143">l</span>et gen_let = map3 (fun id e1 e2 -&gt; <span data-count="2042">E</span>xpr_let_in (id, e1, e2)) gen_ident sub sub in
+    <span data-count="5143">l</span>et gen_let_rec =
+      map3 (fun id e1 e2 -&gt; <span data-count="2072">E</span>xpr_let_rec_in (id, e1, e2)) gen_ident sub sub
     in
-    <span data-count="5043">l</span>et gen_fun = map2 (fun id e -&gt; <span data-count="2201">E</span>xpr_fun (id, e)) gen_ident sub in
-    <span data-count="5043">l</span>et gen_app =
-      map2 (fun f args -&gt; <span data-count="2191">E</span>xpr_ap (f, args)) sub (list_siz<span data-count="5043">e</span> (int_rang<span data-count="5043">e</span> 1 3) sub)
+    <span data-count="5143">l</span>et gen_fun = map2 (fun id e -&gt; <span data-count="2152">E</span>xpr_fun (id, e)) gen_ident sub in
+    <span data-count="5143">l</span>et gen_app =
+      map2 (fun f args -&gt; <span data-count="2022">E</span>xpr_ap (f, args)) sub (list_siz<span data-count="5143">e</span> (int_rang<span data-count="5143">e</span> 1 3) sub)
     in
-    <span data-count="5043">l</span>et gen_fix = sub |&gt; map (fun e -&gt; <span data-count="1025">E</span>xpr_fix e) in
-    <span data-count="5043">f</span>requency
+    <span data-count="5143">l</span>et gen_fix = sub |&gt; map (fun e -&gt; <span data-count="1011">E</span>xpr_fix e) in
+    <span data-count="5143">f</span>requency
       [ 4, gen_var
       ; 3, gen_const_expr
       ; 3, gen_bin
@@ -306,44 +308,44 @@ let rec gen_expr size =
       ])
 ;;
 
-let show_expr expr = <span data-count="0">S</span>tdlib.Format.asprintf "%a" pp expr
-let arb_expr = mak<span data-count="1">e</span> ~print:show_expr (Gen.size<span data-count="1">d</span> gen_expr)
-let wrap_for_parser expr_str = <span data-count="1000">P</span>rintf.sprintf "let tmp = %s;;" expr_str
+let pp_expression expr = <span data-count="0">S</span>tdlib.Format.asprintf "%a" pp expr
+let arb_expr = mak<span data-count="1">e</span> ~print:pp_expression (Gen.size<span data-count="1">d</span> gen_expr)
+let wrap_for_parser expr_str = <span data-count="1000">P</span>rintf.sprintf "let p = %s;;" expr_str
 
 let parser_roundtrip_test =
   Test.mak<span data-count="1">e</span> ~count:1000 ~name:"parser round-trip property" arb_expr (fun expr -&gt;
     <span data-count="1000">l</span>et code_string = wrap_for_parser (Stdlib.Format.asprint<span data-count="1000">f</span> "%a" pp expr) in
     <span data-count="1000">m</span>atch parse code_string with
-    | <span data-count="1000">O</span>k [ Top_let ("tmp", parsed_expr) ] -&gt;
+    | <span data-count="1000">O</span>k [ Top_let ("p", parsed_expr) ] -&gt;
       if Stdlib.( = ) expr parsed_expr
       then <span data-count="1000">t</span>rue
       else
         <span data-count="0">T</span>est.fail_reportf
           "AST mismatch after round-trip.\n\
-           ===== Generated Source Code =====\n\
-           %s\n\
            ===== Pretty-printed Input Expr =====\n\
            %s\n\
            ===== Original AST =====\n\
            %s\n\
+           ===== Pretty-printed Parsed_Expr =====\n\
+           %s\n\
            ===== Parsed AST =====\n\
            %s\n"
-          code_string
-          (show_exp<span data-count="0">r</span> expr)
+          (pp_expressio<span data-count="0">n</span> expr)
           (show_expressio<span data-count="0">n</span> expr)
+          (pp_expressio<span data-count="0">n</span> parsed_expr)
           (show_expressio<span data-count="0">n</span> parsed_expr)
     | <span data-count="0">O</span>k _ -&gt; Test.fail_reportf "Parser returned unexpected toplevel structure"
     | <span data-count="0">E</span>rror err -&gt;
       Test.fail_reportf
         "Parsing failed.\n\
-         ===== Original AST =====\n\
+         ===== Pretty-printed Input Expr =====\n\
          %s\n\
-         ===== Code =====\n\
+         ===== Original AST =====\n\
          %s\n\
          ===== Error =====\n\
          %s\n"
+        (pp_expressio<span data-count="0">n</span> expr)
         (show_expressio<span data-count="0">n</span> expr)
-        code_string
         err)
 ;;
 
