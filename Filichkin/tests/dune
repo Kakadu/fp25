@@ -1,0 +1,13 @@
+(library
+ (name tests)
+ (libraries Filichkin_lib)
+ (modules parser_test)
+ (inline_tests)
+ (preprocess
+  (pps ppx_expect ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx)))
+
+(cram
+ (applies_to interpret)
+ (deps ../bin/REPL.exe))

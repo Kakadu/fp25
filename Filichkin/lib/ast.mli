@@ -21,6 +21,12 @@ type rec_flag =
   | NonRec
   | Rec
 
+type patrn =
+  | Var of string
+  | Other of string
+
+(** Fixed-point operator (for recursion): Fix f computes the fixed point of f *)
+
 type expr =
   | Int of int (** Integer literal *)
   | Var of string (** Variable name *)
@@ -31,10 +37,7 @@ type expr =
   | Let of rec_flag * string * expr * expr option
   (** Let expression: recursiveness flag, name, bound expression, body (optional)
       The last parameter is the optional expression body (for parsing convenience) *)
-  | Abs of string list * expr
+  | Abs of expr * expr
   (** Abstraction (lambda function): parameter list, function body
       Syntactic sugar for functions with multiple arguments *)
   | App of expr * expr (** Application (function call): function, argument *)
-  | Seq of expr list (** Expression sequence: execute a list of expressions in order *)
-  | Fix of expr
-  (** Fixed-point operator (for recursion): Fix f computes the fixed point of f *)
