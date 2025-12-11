@@ -8,8 +8,8 @@
 
 type binop = Ast.binop =
   | Add
-  | Mul
   | Sub
+  | Mul
   | Div
 [@@deriving show { with_path = false }]
 
