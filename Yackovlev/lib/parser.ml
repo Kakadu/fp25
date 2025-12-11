@@ -44,8 +44,17 @@ let ident_raw =
   >>| fun rest -> String.make 1 first ^ rest
 ;;
 
-(* [ident] parses variable and function names, including [print_int] *)
-let ident = token ident_raw
+(* List of keywords that cannot be used as variable names *)
+let keywords = [ "let"; "rec"; "in"; "fun"; "if"; "then"; "else" ]
+
+(* [ident] parses variable and function names, rejecting keywords *)
+let ident =
+  token ident_raw
+  >>= fun s ->
+  if List.mem s keywords
+  then fail "Keyword cannot be used as identifier"
+  else return s
+;;
 
 let integer =
   let is_digit = function
@@ -89,8 +98,8 @@ let expr : string Ast.t Angstrom.t =
     let atom =
       choice
         [ parens expr
-        ; integer >>| fun n -> Int n
-        ; ident >>| fun x -> Var x
+        ; (integer >>| fun n -> Int n)
+        ; (ident >>| fun x -> Var x)
         ]
     in
 
@@ -171,11 +180,15 @@ let expr : string Ast.t Angstrom.t =
     (* [let] and [let rec] with optional curried arguments *)
     let let_expr =
       symbol "let"
-      *> peek_string 3
-      >>= fun s ->
-      let is_rec = s = "rec" in
-      (if is_rec then string "rec" *> spaces else return ())
-      *> ident
+      *> token ident_raw (* We read the next word, it could be 'rec' or a name *)
+      >>= fun next_token ->
+      let is_rec = next_token = "rec" in
+      (* If "rec" was read, then the function name comes next (parse using ident) *)
+      (* If "rec" wasn't read, then it's already a name (check that it's not a keyword) *)
+      (if is_rec then ident else (
+         if List.mem next_token keywords then fail "Keyword used as variable name"
+         else return next_token
+      ))
       >>= fun name ->
       many ident
       >>= fun params ->
