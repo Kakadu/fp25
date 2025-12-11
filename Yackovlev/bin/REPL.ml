@@ -12,34 +12,27 @@ module I = Interpret
 
 let prompt = "# "
 
-let is_quit_command (s : string) : bool =
-  String.equal s ":q" || String.equal s ":quit" || String.equal s "quit"
-;;
-
 let rec repl_loop () =
-  (* Print prompt and read a single line. *)
-  Stdlib.print_string prompt;
-  Stdlib.flush Stdlib.stdout;
-  match Stdlib.read_line_opt () with
-  | None ->
-    (* End of input, finish REPL. *)
+  (* Print prompt and flush stdout immediately using %! *)
+  Format.printf "%s%!" prompt;
+  match Stdlib.read_line () with
+  | exception End_of_file ->
+    (* Handle Ctrl+D (EOF) gracefully to exit the loop *)
     ()
-  | Some line ->
+  | line ->
     let line = String.trim line in
-    if String.equal line "" then
-      (* Ignore empty lines. *)
-      repl_loop ()
-    else if is_quit_command line then
-      (* Exit REPL on quit command. *)
+    if String.equal line "quit"
+    then
+      (* Exit on specific command *)
       ()
     else (
-      match I.run_program line with
-      | Ok (v, _fuel_left) ->
-        (* Print result in a simple OCaml-like form. *)
-        Format.printf "- : %s\n%!" (I.string_of_value v)
-      | Error err ->
-        Format.printf "Error: %s\n%!" (I.string_of_run_error err));
-      repl_loop ()
+      (* Process input if it's not empty *)
+      (if String.length line > 0
+       then
+         match I.run_program line with
+         | Ok (v, _fuel) -> Format.printf "- : %s\n%!" (I.string_of_value v)
+         | Error err -> Format.printf "Error: %s\n%!" (I.string_of_run_error err));
+      repl_loop ())
 ;;
 
 let () = repl_loop ()
