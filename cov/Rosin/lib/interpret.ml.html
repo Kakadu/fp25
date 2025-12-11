@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>interpret.ml &mdash; Coverage report</title>
-    <meta name="description" content="83.78% coverage in lib/interpret.ml">
+    <meta name="description" content="84.72% coverage in lib/interpret.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,19 +15,18 @@
           <span class="dirname">lib/</span>interpret.ml
         </a>
       </h1>
-      <h2>83.78%</h2>
+      <h2>84.72%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="top:35.48%"></span>
-      <span class="unvisited" style="top:41.13%"></span>
-      <span class="unvisited" style="bottom:47.58%"></span>
-      <span class="unvisited" style="bottom:37.90%"></span>
-      <span class="some-visited" style="bottom:37.10%"></span>
-      <span class="unvisited" style="bottom:36.29%"></span>
-      <span class="unvisited" style="bottom:29.84%"></span>
-      <span class="unvisited" style="bottom:29.03%"></span>
-      <span class="unvisited" style="bottom:9.68%"></span>
-      <span class="unvisited" style="bottom:5.65%"></span>
+      <span class="unvisited" style="top:36.36%"></span>
+      <span class="unvisited" style="top:42.15%"></span>
+      <span class="unvisited" style="bottom:46.28%"></span>
+      <span class="unvisited" style="bottom:36.36%"></span>
+      <span class="some-visited" style="bottom:35.54%"></span>
+      <span class="unvisited" style="bottom:34.71%"></span>
+      <span class="unvisited" style="bottom:29.75%"></span>
+      <span class="unvisited" style="bottom:9.92%"></span>
+      <span class="unvisited" style="bottom:5.79%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -116,46 +115,43 @@
 <a id="L82"></a><span class="visited"> </span>
 <a id="L83"></a><span class="visited"> </span>
 <a id="L84"></a><span class="visited"> </span>
-<a id="L85"></a><span > </span>
+<a id="L85"></a><span class="unvisited"> </span>
 <a id="L86"></a><span class="visited"> </span>
-<a id="L87"></a><span class="unvisited"> </span>
-<a id="L88"></a><span class="unvisited"> </span>
+<a id="L87"></a><span class="visited"> </span>
+<a id="L88"></a><span class="visited"> </span>
 <a id="L89"></a><span class="visited"> </span>
-<a id="L90"></a><span class="visited"> </span>
+<a id="L90"></a><span > </span>
 <a id="L91"></a><span class="visited"> </span>
-<a id="L92"></a><span class="visited"> </span>
+<a id="L92"></a><span > </span>
 <a id="L93"></a><span > </span>
 <a id="L94"></a><span class="visited"> </span>
-<a id="L95"></a><span > </span>
-<a id="L96"></a><span > </span>
+<a id="L95"></a><span class="visited"> </span>
+<a id="L96"></a><span class="visited"> </span>
 <a id="L97"></a><span class="visited"> </span>
-<a id="L98"></a><span class="visited"> </span>
+<a id="L98"></a><span > </span>
 <a id="L99"></a><span class="visited"> </span>
 <a id="L100"></a><span class="visited"> </span>
-<a id="L101"></a><span > </span>
+<a id="L101"></a><span class="visited"> </span>
 <a id="L102"></a><span class="visited"> </span>
 <a id="L103"></a><span class="visited"> </span>
 <a id="L104"></a><span class="visited"> </span>
-<a id="L105"></a><span class="visited"> </span>
+<a id="L105"></a><span > </span>
 <a id="L106"></a><span class="visited"> </span>
-<a id="L107"></a><span class="visited"> </span>
-<a id="L108"></a><span > </span>
-<a id="L109"></a><span class="visited"> </span>
-<a id="L110"></a><span > </span>
+<a id="L107"></a><span > </span>
+<a id="L108"></a><span class="visited"> </span>
+<a id="L109"></a><span class="unvisited"> </span>
+<a id="L110"></a><span class="visited"> </span>
 <a id="L111"></a><span class="visited"> </span>
-<a id="L112"></a><span class="unvisited"> </span>
-<a id="L113"></a><span class="visited"> </span>
-<a id="L114"></a><span class="visited"> </span>
+<a id="L112"></a><span > </span>
+<a id="L113"></a><span > </span>
+<a id="L114"></a><span class="unvisited"> </span>
 <a id="L115"></a><span > </span>
 <a id="L116"></a><span > </span>
-<a id="L117"></a><span class="unvisited"> </span>
-<a id="L118"></a><span > </span>
-<a id="L119"></a><span > </span>
-<a id="L120"></a><span > </span>
-<a id="L121"></a><span class="visited"> </span>
-<a id="L122"></a><span class="visited"> </span>
-<a id="L123"></a><span class="visited"> </span>
-<a id="L124"></a><span > </span>
+<a id="L117"></a><span > </span>
+<a id="L118"></a><span class="visited"> </span>
+<a id="L119"></a><span class="visited"> </span>
+<a id="L120"></a><span class="visited"> </span>
+<a id="L121"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -281,9 +277,6 @@
 <a href="#L119">119</a>
 <a href="#L120">120</a>
 <a href="#L121">121</a>
-<a href="#L122">122</a>
-<a href="#L123">123</a>
-<a href="#L124">124</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -322,12 +315,12 @@ end
 module ResultM : MONAD with type 'a t = ('a, error) Result.t = struct
   type 'a t = ('a, error) Result.t
 
-  let return x = <span data-count="657">O</span>k x
+  let return x = <span data-count="655">O</span>k x
   let fail msg = <span data-count="2">E</span>rror msg
 
   let ( let* ) m f =
-    <span data-count="637">m</span>atch m with
-    | <span data-count="637">O</span>k x -&gt; f x
+    <span data-count="636">m</span>atch m with
+    | <span data-count="636">O</span>k x -&gt; f x
     | <span data-count="0">E</span>rror e -&gt; Error e
   ;;
 end
@@ -341,11 +334,11 @@ let rec find_var x = function
 ;;
 
 let rec eval env steps e =
-  <span data-count="898">i</span>f steps &lt;= 0
+  <span data-count="895">i</span>f steps &lt;= 0
   then <span data-count="1">f</span>ail StepLimitExceeded
-  else <span data-count="897">(</span>
+  else <span data-count="894">(</span>
     match e with
-    | <span data-count="117">N</span>um n -&gt; return (VNum n, steps - 1)
+    | <span data-count="115">N</span>um n -&gt; return (VNum n, steps - 1)
     | <span data-count="412">V</span>ar x -&gt;
       (match find_var x env with
        | <span data-count="412">S</span>ome v -&gt; return (v, steps - 1)
@@ -364,14 +357,11 @@ let rec eval env steps e =
           | <span data-count="0">L</span>ess -&gt; if n1 &lt; n2 then <span data-count="0">r</span>eturn (VNum 1, st2 - 1) else <span data-count="0">r</span>eturn (VNum 0, st2 - 1)
           | <span data-count="15">M</span>ore -&gt; if n1 &gt; n2 then <span data-count="15">r</span>eturn (VNum 1, st2 - 1) else <span data-count="0">r</span>eturn (VNum 0, st2 - 1))
        | <span data-count="0">_</span> -&gt; fail (InvalidBinop (op, v1, v2)))
-    | <span data-count="51">I</span>f (e1, e2, e3_opt) -&gt;
-      let* cond, st1 = eva<span data-count="51">l</span> env (steps - 1) e1 in
-      <span data-count="51">(</span>match cond with
-       | <span data-count="51">V</span>Num n when n &gt; 0 -&gt; <span data-count="35">e</span>val env (st1 - 1) e2
-       | <span data-count="16">V</span>Num _ -&gt;
-         (match e3_opt with
-          | <span data-count="16">S</span>ome e3 -&gt; eval env (st1 - 1) e3
-          | <span data-count="0">N</span>one -&gt; return (VUnit, st1 - 1))
+    | <span data-count="50">I</span>f (e1, e2, e3) -&gt;
+      let* cond, st1 = eva<span data-count="50">l</span> env (steps - 1) e1 in
+      <span data-count="50">(</span>match cond with
+       | <span data-count="50">V</span>Num n when n &gt; 0 -&gt; <span data-count="34">e</span>val env (st1 - 1) e2
+       | <span data-count="16">V</span>Num _ -&gt; eval env (st1 - 1) e3
        | <span data-count="0">_</span> -&gt; fail (NonIntegerCondition cond))
     | <span data-count="18">F</span>un (x, body) -&gt; return (VClosure (x, body, env), steps - 1)
     | <span data-count="7">L</span>et (x, e1, e2) -&gt;
@@ -405,8 +395,8 @@ let rec eval env steps e =
 ;;
 
 let run_interpret program steps : (value, error) result =
-  <span data-count="22">m</span>atch eval [ "print", VUnit ] steps program with
-  | <span data-count="20">O</span>k (v, _) -&gt; Ok v
+  <span data-count="21">m</span>atch eval [ "print", VUnit ] steps program with
+  | <span data-count="19">O</span>k (v, _) -&gt; Ok v
   | <span data-count="2">E</span>rror e -&gt; Error e
 ;;
 </code></pre>

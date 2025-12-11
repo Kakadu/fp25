@@ -159,7 +159,7 @@ open Interpret
 
 let string_of_value = function
   | <span data-count="2">V</span>Unit -&gt; "Unit"
-  | <span data-count="18">V</span>Num n -&gt; string_of_int n
+  | <span data-count="17">V</span>Num n -&gt; string_of_int n
   | <span data-count="0">V</span>Closure (_, _, _) -&gt; "&lt;closure&gt;"
   | <span data-count="0">V</span>RecClosure _ -&gt; "&lt;rec_closure&gt;"
 ;;
@@ -189,15 +189,15 @@ let () =
   in
   let usage_msg = "miniMl starts...\n" in
   Arg.parse arg_list (fun _ -&gt; <span data-count="0">(</span>)) usage_msg;
-  <span data-count="22">m</span>atch Parser.parse (String.tri<span data-count="22">m</span> @@ In_channel.(input_al<span data-count="22">l</span> stdin)) with
-  | <span data-count="22">O</span>k expr -&gt;
+  <span data-count="21">m</span>atch Parser.parse (String.tri<span data-count="21">m</span> @@ In_channel.(input_al<span data-count="21">l</span> stdin)) with
+  | <span data-count="21">O</span>k expr -&gt;
     let _ =
-      if pr_args.ast then <span data-count="22">F</span>ormat.print<span data-count="22">f</span> "AST here:\n";
-      <span data-count="22">P</span>printast.p<span data-count="22">p</span> Format.std_formatter expr
+      if pr_args.ast then <span data-count="21">F</span>ormat.print<span data-count="21">f</span> "AST here:\n";
+      <span data-count="21">P</span>printast.p<span data-count="21">p</span> Format.std_formatter expr
     in
     Format.printf "\nInterpretation result here:\n";
-    <span data-count="22">(</span>match Interpret.run_interpret expr pr_args.steps with
-     | <span data-count="20">O</span>k expr -&gt; Format.print<span data-count="20">f</span> "Ok: %s\n" (string_of_valu<span data-count="20">e</span> expr)
+    <span data-count="21">(</span>match Interpret.run_interpret expr pr_args.steps with
+     | <span data-count="19">O</span>k expr -&gt; Format.print<span data-count="19">f</span> "Ok: %s\n" (string_of_valu<span data-count="19">e</span> expr)
      | <span data-count="2">E</span>rror er -&gt; Format.print<span data-count="2">f</span> "Interpret Error!: %s\n" (string_of_erro<span data-count="2">r</span> er))
   | <span data-count="0">E</span>rror (`Parsing_error msg) -&gt; Format.print<span data-count="0">f</span> "Parser erorr!: %s\n" msg
 ;;
