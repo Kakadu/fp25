@@ -249,8 +249,14 @@ let run_program ?(fuel = 100_000) (str : string)
   : (value * fuel, run_error) result
   =
   match Parser.parse str with
-  | Result.Error e -> Error e
-  | Result.Ok ast -> eval initial_env fuel ast
+  | Result.Error e ->
+    (* Parser.error -> run_error *)
+    Error (e :> run_error)
+  | Result.Ok ast ->
+    (* error -> run_error *)
+    (match eval initial_env fuel ast with
+     | Ok v -> Ok v
+     | Error e -> Error (e :> run_error))
 ;;
 
 let parse_and_run ?fuel (str : string) : unit =
