@@ -25,6 +25,7 @@ include struct
       | Int _ as l -> fin l
       | BinOp (_, _, _) as l -> fin l
       | If (_, _, _) as l -> fin l
+      | Let (_, _, _, _) as l -> fin l
       | Abs (x, b) ->
         (match helper b with
          | WIP b2 -> wip (abs x b2)
@@ -51,7 +52,8 @@ include struct
     let on_int _ n = Ast.Int n in
     let on_binop _ op l r = Ast.BinOp (op, l, r) in
     let on_if _ c t e = Ast.If (c, t, e) in
-    { Lambda.on_var; on_abs; on_app; on_int; on_binop; on_if }
+    let on_let _ is_rec name binding body = Ast.Let (is_rec, name, binding, body) in
+    { Lambda.on_var; on_abs; on_app; on_int; on_binop; on_if; on_let }
   ;;
 end
 

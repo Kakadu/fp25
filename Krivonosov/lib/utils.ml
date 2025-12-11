@@ -23,6 +23,9 @@ let free_vars =
       (match e with
        | None -> acc
        | Some e -> helper acc e)
+    | Let (_, name, binding, body) ->
+      let acc = helper acc binding in
+      acc @ list_remove name (helper [] body)
     | Abs (s, l) -> acc @ list_remove s (helper [] l)
     | App (l, r) -> helper (helper acc r) l
   in

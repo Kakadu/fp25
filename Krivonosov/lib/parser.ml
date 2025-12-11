@@ -89,6 +89,20 @@ let pexpr =
       option None (spaces *> string "else" *> spaces *> pexpr >>| Option.some)
       >>| fun else_branch -> Ast.If (cond, then_branch, else_branch)
     in
+    (* Let expression *)
+    let plet =
+      string "let" *> spaces *> option false (string "rec" *> spaces *> return true)
+      >>= fun is_rec ->
+      identifier
+      <* spaces
+      <* char '='
+      <* spaces
+      >>= fun name ->
+      pexpr
+      >>= fun binding ->
+      spaces *> string "in" *> spaces *> pexpr
+      >>| fun body -> Ast.Let (is_rec, name, binding, body)
+    in
     (* Application: sequence of atoms *)
     let papp =
       many1 patom
@@ -134,8 +148,8 @@ let pexpr =
     let pmul = chainl1 papp pmul_op in
     let padd = chainl1 pmul padd_op in
     let pcmp = chainl1 padd pcmp_op in
-    (* Top level: try if, lambda first, then comparison *)
-    spaces *> choice [ pif; plambda; pcmp ] <* spaces)
+    (* Top level: try let, if, lambda first, then comparison *)
+    spaces *> choice [ plet; pif; plambda; pcmp ] <* spaces)
 ;;
 
 let parse str =

@@ -18,6 +18,8 @@ let replace_name x ~by =
     | Int n -> Int n
     | BinOp (op, l, r) -> BinOp (op, helper l, helper r)
     | If (c, t, e) -> If (helper c, helper t, Option.map ~f:helper e)
+    | Let (is_rec, name, binding, body) ->
+      Let (is_rec, (if String.equal name x then by else name), helper binding, helper body)
     | App (l, r) -> App (helper l, helper r)
     | Abs (y, t) when String.equal x y -> Abs (by, helper t)
     | Abs (z, t) -> Abs (z, helper t)
@@ -37,6 +39,10 @@ let subst x ~by:v =
     | Int n -> Int n
     | BinOp (op, l, r) -> BinOp (op, helper l, helper r)
     | If (c, t, e) -> If (helper c, helper t, Option.map ~f:helper e)
+    | Let (is_rec, name, binding, body) when String.equal name x ->
+      (* Don't substitute in body if name shadows x *)
+      Let (is_rec, name, helper binding, body)
+    | Let (is_rec, name, binding, body) -> Let (is_rec, name, helper binding, helper body)
     | App (l, r) -> app (helper l) (helper r)
     | Abs (y, b) when String.equal y x -> abs y b
     | Abs (y, t) when is_free_in y v ->
@@ -55,6 +61,7 @@ type strat =
   ; on_int : strat -> int -> string Ast.t
   ; on_binop : strat -> Ast.binop -> string Ast.t -> string Ast.t -> string Ast.t
   ; on_if : strat -> string Ast.t -> string Ast.t -> string Ast.t option -> string Ast.t
+  ; on_let : strat -> bool -> name -> string Ast.t -> string Ast.t -> string Ast.t
   }
 
 let apply_strat st = function
@@ -64,6 +71,7 @@ let apply_strat st = function
   | Int n -> st.on_int st n
   | BinOp (op, l, r) -> st.on_binop st op l r
   | If (c, t, e) -> st.on_if st c t e
+  | Let (is_rec, name, binding, body) -> st.on_let st is_rec name binding body
 ;;
 
 let without_strat =
@@ -73,7 +81,8 @@ let without_strat =
   let on_int _ n = Int n in
   let on_binop _ op l r = BinOp (op, l, r) in
   let on_if _ c t e = If (c, t, e) in
-  { on_var; on_abs; on_app; on_int; on_binop; on_if }
+  let on_let _ is_rec name binding body = Let (is_rec, name, binding, body) in
+  { on_var; on_abs; on_app; on_int; on_binop; on_if; on_let }
 ;;
 
 let cbn_strat =

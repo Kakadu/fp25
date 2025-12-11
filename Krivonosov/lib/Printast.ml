@@ -27,6 +27,7 @@ type 'name t = 'name Ast.t =
   | Int of int
   | BinOp of binop * 'name t * 'name t
   | If of 'name t * 'name t * 'name t option
+  | Let of bool * 'name * 'name t * 'name t
 [@@deriving show { with_path = false }]
 
 let pp_named = pp Format.pp_print_string

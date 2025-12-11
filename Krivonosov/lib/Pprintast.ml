@@ -37,6 +37,10 @@ let pp ?(compact = true) =
     | If (cond, then_br, None) -> Format.fprintf fmt "(if %a then %a)" pp cond pp then_br
     | If (cond, then_br, Some else_br) ->
       Format.fprintf fmt "(if %a then %a else %a)" pp cond pp then_br pp else_br
+    | Let (is_rec, name, binding, body) ->
+      if is_rec
+      then Format.fprintf fmt "(let rec %s = %a in %a)" name pp binding pp body
+      else Format.fprintf fmt "(let %s = %a in %a)" name pp binding pp body
     | App (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | Abs (x, Abs (y, Var z)) when x = z && y <> z && compact ->
       if compact then Format.fprintf fmt "⊤"

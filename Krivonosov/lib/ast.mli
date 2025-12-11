@@ -30,3 +30,5 @@ type 'name t =
   | Int of int (** Integer literal [42] *)
   | BinOp of binop * 'name t * 'name t (** Binary operation [e1 + e2] *)
   | If of 'name t * 'name t * 'name t option (** Conditional [if cond then e1 else e2] *)
+  | Let of bool * 'name * 'name t * 'name t
+  (** Let binding [let (rec) x = e1 in e2]. bool indicates recursion *)

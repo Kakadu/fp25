@@ -71,6 +71,26 @@ end = struct
           | None -> return (VInt 0))
        | VInt _ -> eval env then_branch
        | _ -> fail `TypeMismatch)
+    | Ast.Let (is_rec, name, binding, body) ->
+      if is_rec
+      then (
+        (* For recursive let, create environment with self-reference *)
+        match binding with
+        | Ast.Abs (param, func_body) ->
+          (* Create closure with recursive environment *)
+          let rec new_env = (name, VClosure (param, func_body, new_env)) :: env in
+          eval new_env body
+        | _ ->
+          (* Non-function recursive bindings not supported yet *)
+          eval env binding
+          >>= fun value ->
+          let new_env = (name, value) :: env in
+          eval new_env body)
+      else
+        eval env binding
+        >>= fun value ->
+        let new_env = (name, value) :: env in
+        eval new_env body
     | Ast.App (f, arg) ->
       eval env f
       >>= (function

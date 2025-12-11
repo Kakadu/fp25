@@ -84,3 +84,23 @@ Test parsing if-then without else
   $ ../bin/REPL.exe -dparsetree -stop-after parsing <<EOF
   > if 0 then 100
   Parsed result: (If ((Int 0), (Int 100), None))
+
+Let-binding tests
+Test parsing simple let
+  $ ../bin/REPL.exe -dparsetree -stop-after parsing <<EOF
+  > let x = 5 in x + 3
+  Parsed result: (Let (false, x, (Int 5), (BinOp (Add, (Var x), (Int 3)))))
+
+Test parsing nested let
+  $ ../bin/REPL.exe -dparsetree -stop-after parsing <<EOF
+  > let x = 10 in let y = 20 in x + y
+  Parsed result: (Let (false, x, (Int 10),
+                    (Let (false, y, (Int 20), (BinOp (Add, (Var x), (Var y)))))
+                    ))
+
+Test parsing let rec
+  $ ../bin/REPL.exe -dparsetree -stop-after parsing <<EOF
+  > let rec fact = \n. if n then n else 1 in fact 5
+  Parsed result: (Let (true, fact,
+                    (Abs (n, (If ((Var n), (Var n), (Some (Int 1)))))),
+                    (App ((Var fact), (Int 5)))))
