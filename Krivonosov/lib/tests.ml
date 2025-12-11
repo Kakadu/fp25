@@ -43,6 +43,31 @@ let%expect_test _ =
   [%expect {| (Abs (f, (Abs (x, (App ((Var f), (App ((Var x), (Var x))))))))) |}]
 ;;
 
+(* Tests for fix combinator *)
+let%expect_test _ =
+  Format.printf "%a" pp (parse_optimistically "fix");
+  [%expect {| (Var fix) |}]
+;;
+
+let%expect_test _ =
+  Format.printf
+    "%a"
+    pp
+    (parse_optimistically "fix (\\f. \\n. if n <= 1 then 1 else n * f (n - 1))");
+  [%expect
+    {|
+      (App ((Var fix),
+         (Abs (f,
+            (Abs (n,
+               (If ((BinOp (Leq, (Var n), (Int 1))), (Int 1),
+                  (Some (BinOp (Mul, (Var n),
+                           (App ((Var f), (BinOp (Sub, (Var n), (Int 1))))))))
+                  ))
+               ))
+            ))
+         )) |}]
+;;
+
 let _ = Lambda_lib.Interpret.parse_and_run
 let _ = Lambda_lib.Lambda.a
 let _ = Lambda_lib.Lambda.one

@@ -13,7 +13,7 @@ let spaces = skip_while is_space
 
 (* Keyword filtering *)
 let is_keyword = function
-  | "let" | "rec" | "if" | "then" | "else" | "in" | "fun" | "fix" -> true
+  | "let" | "rec" | "if" | "then" | "else" | "in" | "fun" -> true
   | _ -> false
 ;;
 
