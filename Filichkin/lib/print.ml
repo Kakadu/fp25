@@ -35,11 +35,14 @@ let rec print_ast = function
   | Let (Rec, x, e, None) -> Printf.sprintf "Let (Rec, \"%s\", %s, None)" x (print_ast e)
   | Let (Rec, x, e, Some b) ->
     Printf.sprintf "Let (Rec, \"%s\", %s, Some %s)" x (print_ast e) (print_ast b)
-  | Abs (_, body) -> Printf.sprintf "Abs (%s, %s)" "hui" (print_ast body)
+  | Abs (param, body) ->
+    let param_str =
+      match param with
+      | Var x -> x
+      | _ -> failwith "Abs parameter must be a variable"
+    in
+    Printf.sprintf "Abs (Var \"%s\", %s)" param_str (print_ast body)
   | App (f, a) -> Printf.sprintf "App (%s, %s)" (print_ast f) (print_ast a)
-  | Seq lst ->
-    let lst_str = List.map print_ast lst |> String.concat "; " |> Printf.sprintf "[%s]" in
-    Printf.sprintf "Seq %s" lst_str
 ;;
 
 let rec print_expr = function
@@ -86,7 +89,4 @@ let rec print_expr = function
     in
     Printf.sprintf "(fun %s -> %s)" param_str (print_expr body)
   | App (func, arg) -> Printf.sprintf "(%s %s)" (print_expr func) (print_expr arg)
-  | Seq exprs ->
-    let exprs_str = List.map print_expr exprs |> String.concat "; " in
-    Printf.sprintf "(%s)" exprs_str
 ;;

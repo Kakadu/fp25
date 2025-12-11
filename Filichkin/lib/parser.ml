@@ -36,11 +36,6 @@ let integer =
         | '0' .. '9' -> true
         | _ -> false)
       >>= fun s -> return (Int (int_of_string s)))
-  <|> (char '-'
-       *> take_while1 (function
-         | '0' .. '9' -> true
-         | _ -> false)
-       >>= fun s -> return (Int (-int_of_string s)))
 ;;
 
 let is_first = function
@@ -96,6 +91,10 @@ let expr =
       | [] -> return f
       | _ -> return (List.fold_left (fun acc a -> App (acc, a)) f args)
     in
+    let unary =
+      let neg = char '-' *> spaces *> application >>| fun x -> BinOp (Minus, Int 0, x) in
+      neg <|> application
+    in
     let let_expr =
       let rec_flag = spaces *> kw_rec *> return Rec <|> return NonRec in
       let make_without_in =
@@ -103,17 +102,30 @@ let expr =
         >>= fun rf ->
         identifier
         >>= fun name ->
+        many (spaces *> identifier)
+        >>= fun args ->
         spaces *> char '=' *> spaces *> expr
-        >>= fun bound_expr -> return (Let (rf, name, bound_expr, None))
+        >>= fun bound_expr ->
+        let fun_expr =
+          List.fold_right (fun arg acc -> Abs (Var arg, acc)) args bound_expr
+        in
+        return (Let (rf, name, fun_expr, None))
       in
       let make_with_in =
         kw_let *> rec_flag
         >>= fun rf ->
         identifier
         >>= fun name ->
+        many (spaces *> identifier)
+        >>= fun args ->
         spaces *> char '=' *> spaces *> expr
         >>= fun bound_expr ->
-        kw_in *> expr >>= fun body -> return (Let (rf, name, bound_expr, Some body))
+        kw_in *> expr
+        >>= fun body ->
+        let fun_expr =
+          List.fold_right (fun arg acc -> Abs (Var arg, acc)) args bound_expr
+        in
+        return (Let (rf, name, fun_expr, Some body))
       in
       choice [ make_with_in; make_without_in ]
     in
@@ -128,7 +140,6 @@ let expr =
       <|> return (If (cond, t, None))
     in
     (* let: either `let [rec]? name = bound` or `let [rec]? name = bound in body` *)
-    (* op - подумать *)
     let bin_ops =
       let make_chain next ops =
         next
@@ -140,7 +151,7 @@ let expr =
       (* multiplicative *)
       let mult_div =
         make_chain
-          application
+          unary
           (choice
              [ spaces *> string "*" *> return Mult; spaces *> string "/" *> return Div ])
       in
