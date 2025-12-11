@@ -24,6 +24,7 @@ include struct
       | Var _ as l -> fin l
       | Int _ as l -> fin l
       | BinOp (_, _, _) as l -> fin l
+      | If (_, _, _) as l -> fin l
       | Abs (x, b) ->
         (match helper b with
          | WIP b2 -> wip (abs x b2)
@@ -49,7 +50,8 @@ include struct
     let on_var _ x = loop (var x) in
     let on_int _ n = Ast.Int n in
     let on_binop _ op l r = Ast.BinOp (op, l, r) in
-    { Lambda.on_var; on_abs; on_app; on_int; on_binop }
+    let on_if _ c t e = Ast.If (c, t, e) in
+    { Lambda.on_var; on_abs; on_app; on_int; on_binop; on_if }
   ;;
 end
 

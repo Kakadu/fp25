@@ -29,3 +29,4 @@ type 'name t =
   | App of 'name t * 'name t (** Application [f g ] *)
   | Int of int (** Integer literal [42] *)
   | BinOp of binop * 'name t * 'name t (** Binary operation [e1 + e2] *)
+  | If of 'name t * 'name t * 'name t option (** Conditional [if cond then e1 else e2] *)

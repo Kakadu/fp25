@@ -17,6 +17,12 @@ let free_vars =
     | Var s -> s :: acc
     | Int _ -> acc
     | BinOp (_, l, r) -> helper (helper acc r) l
+    | If (c, t, e) ->
+      let acc = helper acc c in
+      let acc = helper acc t in
+      (match e with
+       | None -> acc
+       | Some e -> helper acc e)
     | Abs (s, l) -> acc @ list_remove s (helper [] l)
     | App (l, r) -> helper (helper acc r) l
   in

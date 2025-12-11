@@ -62,6 +62,15 @@ end = struct
     | Ast.Abs (param, body) -> return (VClosure (param, body, env))
     | Ast.BinOp (op, l, r) ->
       eval env l >>= fun vl -> eval env r >>= fun vr -> eval_binop op vl vr
+    | Ast.If (cond, then_branch, else_branch_opt) ->
+      eval env cond
+      >>= (function
+       | VInt 0 ->
+         (match else_branch_opt with
+          | Some else_branch -> eval env else_branch
+          | None -> return (VInt 0))
+       | VInt _ -> eval env then_branch
+       | _ -> fail `TypeMismatch)
     | Ast.App (f, arg) ->
       eval env f
       >>= (function

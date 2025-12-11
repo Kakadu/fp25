@@ -34,6 +34,9 @@ let pp ?(compact = true) =
     | Var s -> Format.fprintf fmt "%s" s
     | Int n -> Format.fprintf fmt "%d" n
     | BinOp (op, l, r) -> Format.fprintf fmt "(%a %a %a)" pp l pp_binop op pp r
+    | If (cond, then_br, None) -> Format.fprintf fmt "(if %a then %a)" pp cond pp then_br
+    | If (cond, then_br, Some else_br) ->
+      Format.fprintf fmt "(if %a then %a else %a)" pp cond pp then_br pp else_br
     | App (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | Abs (x, Abs (y, Var z)) when x = z && y <> z && compact ->
       if compact then Format.fprintf fmt "⊤"

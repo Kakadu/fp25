@@ -80,6 +80,15 @@ let pexpr =
       <* spaces
       >>= fun param -> pexpr >>| fun body -> Ast.Abs (param, body)
     in
+    (* If-then-else expression *)
+    let pif =
+      string "if" *> spaces *> pexpr
+      >>= fun cond ->
+      spaces *> string "then" *> spaces *> pexpr
+      >>= fun then_branch ->
+      option None (spaces *> string "else" *> spaces *> pexpr >>| Option.some)
+      >>| fun else_branch -> Ast.If (cond, then_branch, else_branch)
+    in
     (* Application: sequence of atoms *)
     let papp =
       many1 patom
@@ -125,8 +134,8 @@ let pexpr =
     let pmul = chainl1 papp pmul_op in
     let padd = chainl1 pmul padd_op in
     let pcmp = chainl1 padd pcmp_op in
-    (* Top level: try lambda first, then comparison *)
-    spaces *> (plambda <|> pcmp) <* spaces)
+    (* Top level: try if, lambda first, then comparison *)
+    spaces *> choice [ pif; plambda; pcmp ] <* spaces)
 ;;
 
 let parse str =

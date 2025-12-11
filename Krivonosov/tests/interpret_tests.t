@@ -73,3 +73,14 @@ For 3! we use noral order reduction
   (((λ f . ((λ x . (f (x x))) (λ x . (f (x x))))) (λ s . (λ n . ((((λ n . ((n (λ x . (λ x . (λ y . y)))) (λ x . (λ y . x)))) n) (λ f . (λ x . (f x)))) (((λ x . (λ y . (λ z . (x (y z))))) (s ((λ n . (λ f . (λ x . (((n (λ g . (λ h . (h (g f))))) (λ u . x)) (λ u . u))))) n))) n))))) (λ f . (λ x . (f (f (f x))))))
   $ ../bin/REPL.exe -no   < lam_fac3.txt
   Evaluated result: (λ z x -> (z (z (z (z (z (z x)))))))
+
+If-then-else tests
+Test parsing if-then-else
+  $ ../bin/REPL.exe -dparsetree -stop-after parsing <<EOF
+  > if 1 then 5 else 10
+  Parsed result: (If ((Int 1), (Int 5), (Some (Int 10))))
+
+Test parsing if-then without else
+  $ ../bin/REPL.exe -dparsetree -stop-after parsing <<EOF
+  > if 0 then 100
+  Parsed result: (If ((Int 0), (Int 100), None))

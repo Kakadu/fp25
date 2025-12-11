@@ -17,6 +17,7 @@ let replace_name x ~by =
     | Var t -> Var t
     | Int n -> Int n
     | BinOp (op, l, r) -> BinOp (op, helper l, helper r)
+    | If (c, t, e) -> If (helper c, helper t, Option.map ~f:helper e)
     | App (l, r) -> App (helper l, helper r)
     | Abs (y, t) when String.equal x y -> Abs (by, helper t)
     | Abs (z, t) -> Abs (z, helper t)
@@ -35,6 +36,7 @@ let subst x ~by:v =
     | Var y -> Var y
     | Int n -> Int n
     | BinOp (op, l, r) -> BinOp (op, helper l, helper r)
+    | If (c, t, e) -> If (helper c, helper t, Option.map ~f:helper e)
     | App (l, r) -> app (helper l) (helper r)
     | Abs (y, b) when String.equal y x -> abs y b
     | Abs (y, t) when is_free_in y v ->
@@ -52,6 +54,7 @@ type strat =
   ; on_app : strat -> string Ast.t -> string Ast.t -> string Ast.t
   ; on_int : strat -> int -> string Ast.t
   ; on_binop : strat -> Ast.binop -> string Ast.t -> string Ast.t -> string Ast.t
+  ; on_if : strat -> string Ast.t -> string Ast.t -> string Ast.t option -> string Ast.t
   }
 
 let apply_strat st = function
@@ -60,6 +63,7 @@ let apply_strat st = function
   | App (l, r) -> st.on_app st l r
   | Int n -> st.on_int st n
   | BinOp (op, l, r) -> st.on_binop st op l r
+  | If (c, t, e) -> st.on_if st c t e
 ;;
 
 let without_strat =
@@ -68,7 +72,8 @@ let without_strat =
   let on_app _ = app in
   let on_int _ n = Int n in
   let on_binop _ op l r = BinOp (op, l, r) in
-  { on_var; on_abs; on_app; on_int; on_binop }
+  let on_if _ c t e = If (c, t, e) in
+  { on_var; on_abs; on_app; on_int; on_binop; on_if }
 ;;
 
 let cbn_strat =
