@@ -49,7 +49,7 @@ let gen_expr =
         ; ( 1
           , map
               (fun (c, t, e) -> If (c, t, e))
-              (triple (expr next_depth) (expr next_depth) (option (expr next_depth))) )
+              (triple (expr next_depth) (expr next_depth) (expr next_depth)) )
         ; ( 1
           , map
               (fun (name, body) -> Fun (name, body))

@@ -23,7 +23,7 @@ type expr =
   | Num of int (** integer constant *)
   | Var of varname (** variable *)
   | Binop of binop * expr * expr (** binary operation *)
-  | If of expr * expr * expr option (** if-then-(else) *)
+  | If of expr * expr * expr (** if-then-else *)
   | Fun of varname * expr (** function definitions *)
   | Let of varname * expr * expr (** local naming [let varname = expr in expr] *)
   | Letrec of varname * expr * expr

@@ -77,14 +77,11 @@ let rec eval env steps e =
           | Less -> if n1 < n2 then return (VNum 1, st2 - 1) else return (VNum 0, st2 - 1)
           | More -> if n1 > n2 then return (VNum 1, st2 - 1) else return (VNum 0, st2 - 1))
        | _ -> fail (InvalidBinop (op, v1, v2)))
-    | If (e1, e2, e3_opt) ->
+    | If (e1, e2, e3) ->
       let* cond, st1 = eval env (steps - 1) e1 in
       (match cond with
        | VNum n when n > 0 -> eval env (st1 - 1) e2
-       | VNum _ ->
-         (match e3_opt with
-          | Some e3 -> eval env (st1 - 1) e3
-          | None -> return (VUnit, st1 - 1))
+       | VNum _ -> eval env (st1 - 1) e3
        | _ -> fail (NonIntegerCondition cond))
     | Fun (x, body) -> return (VClosure (x, body, env), steps - 1)
     | Let (x, e1, e2) ->

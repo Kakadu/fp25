@@ -73,13 +73,6 @@ in the dune file
   Ok: 20
 
   $ ../bin/REPL.exe <<EOF
-  > if 5 then 10
-  AST here:
-  if 5 then 10
-  Interpretation result here:
-  Ok: 10
-
-  $ ../bin/REPL.exe <<EOF
   > let x = 5 in x + 1
   AST here:
   let x = 5 in x + 1

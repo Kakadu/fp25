@@ -25,10 +25,7 @@ let rec pp fmt = function
     in
     fprintf fmt "%a %s %a" pp left op_str pp right
   | If (cond, then_e, else_e) ->
-    fprintf fmt "if %a then %a" pp cond pp then_e;
-    (match else_e with
-     | Some e -> fprintf fmt " else %a" pp e
-     | None -> ())
+    fprintf fmt "if %a then %a else %a" pp cond pp then_e pp else_e
   | Fun (name, e) -> fprintf fmt "fun %s -> %a" name pp e
   | Let (name, rhs, body) -> fprintf fmt "let %s = %a in %a" name pp rhs pp body
   | Letrec (name, rhs, body) -> fprintf fmt "let rec %s = %a in %a" name pp rhs pp body

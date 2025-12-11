@@ -102,7 +102,7 @@ let expr =
       >>= fun cond ->
       token (string "then") *> expr
       >>= fun then_branch ->
-      option None (token (string "else") *> expr >>| fun e -> Some e)
+      token (string "else") *> expr
       >>= fun else_branch -> return @@ Ast.If (cond, then_branch, else_branch)
     in
     let let_expr =
