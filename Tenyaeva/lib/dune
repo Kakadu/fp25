@@ -2,18 +2,16 @@
  (name tenyaeva_lib)
  (public_name Tenyaeva.Lib)
  (modules ast parser)
- (libraries base angstrom)
+ (libraries base angstrom qcheck-core qcheck-core.runner)
  (preprocess
-  (pps ppx_deriving.show))
+  (pps ppx_deriving.show ppx_deriving_qcheck))
  (instrumentation
   (backend bisect_ppx)))
 
-; (library
-;  (name tests)
-;  (modules tests)
-;  (libraries lambda_lib)
-;  (preprocess
-;   (pps ppx_expect ppx_deriving.show))
-;  (instrumentation
-;   (backend bisect_ppx))
-;  (inline_tests))
+(executable
+ (name qcheck)
+ (public_name qcheck)
+ (libraries tenyaeva_lib)
+ (modules qcheck)
+ (instrumentation
+  (backend bisect_ppx)))
