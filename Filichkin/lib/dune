@@ -1,7 +1,7 @@
 (library
  (name Filichkin_lib)
  (public_name Filichkin.Lib)
- (modules Ast Parser Print)
+ (modules Ast Interpret Parser Print)
  (modules_without_implementation ast)
  (libraries base angstrom)
  (preprocess
