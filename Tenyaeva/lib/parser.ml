@@ -134,21 +134,22 @@ let parse_pattern =
       ; parse_pat_any
       ; parse_pat_option self
       ; parse_pat_constraint self
+      ; skip_round_par self
       ])
 ;;
 
 (* -------------------- operation -------------------- *)
 
-let cmp =
-  choice
-    [ token "=" *> return Eq
+(* let cmp =
+   choice
+   [ token "=" *> return Eq
     ; token "<>" *> return Neq
     ; token "<=" *> return Lte
     ; token ">=" *> return Gte
     ; token "<" *> return Lt
     ; token ">" *> return Gt
     ]
-;;
+   ;; *)
 
 let add_sub = choice [ token "+" *> return Add; token "-" *> return Sub ]
 let mult_div = choice [ token "/" *> return Div; token "*" *> return Mult ]
@@ -159,9 +160,10 @@ let parse_binop parse_expr parse_op =
 
 let parse_expr_binop parse_expr =
   let parse_expr = parse_binop parse_expr mult_div in
-  let parse_expr = parse_binop parse_expr add_sub in
-  parse_binop parse_expr cmp
+  parse_binop parse_expr add_sub
 ;;
+
+(* parse_binop parse_expr cmp *)
 
 let parse_unop = choice [ token "-" *> return Negative; token "+" *> return Positive ]
 

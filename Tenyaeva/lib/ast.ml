@@ -28,12 +28,12 @@ type binary_op =
   | Mult
   | Sub
   | Div
-  | Gt
-  | Lt
-  | Eq
-  | Neq
-  | Gte
-  | Lte
+    (* | Gt
+       | Lt
+       | Eq
+       | Neq
+       | Gte
+       | Lte *)
 [@@deriving show { with_path = false }, qcheck]
 
 type unary_op =
