@@ -8,21 +8,24 @@
 
 open Ast
 
-type value =
-  | VInt of int
-  | VUnit
-  | VClosure of string * expr * env ref
-
-and env
-
+(* let rec fix f eta = f ( fix f ) eta *)
 type error =
   | UnboundVariable of string
   | DivisionByZero
   | TypeError of string
   | UnsupportedConstruct of string
   | IncorrectExpression
+  | StackOverflow
 
 type 'a eval_result = ('a, error) Result.t
+
+type value =
+  | VInt of int
+  | VUnit
+  | VClosure of string * expr * env ref
+  | VBuiltin of (value -> value eval_result)
+
+and env
 
 val string_of_value : value -> string
 val string_of_error : error -> string
