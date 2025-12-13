@@ -1,9 +1,13 @@
+(** Copyright 2021-2025, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
 open Ast
 
 (** constants **)
 let string_of_const = function
-  | Int n  -> string_of_int n
-  | Unit   -> "()"
+  | Int n -> string_of_int n
+  | Unit -> "()"
 
 (** binary operations **)
 let string_of_op = function
@@ -11,102 +15,62 @@ let string_of_op = function
   | OpSub -> "-"
   | OpMul -> "*"
   | OpDiv -> "/"
-  | OpEq  -> "="
-  | OpGt  -> ">"
-  | OpLt  -> "<"
+  | OpEq -> "="
+  | OpGt -> ">"
+  | OpLt -> "<"
   | OpGte -> ">="
   | OpLte -> "<="
 
-(** helper: from Fun x -> Fun y -> ... to list of args + body **)
+(** Gather arguments of nested fun x -> fun y -> ... *)
 let rec collect_fun args = function
   | Fun (x, body) -> collect_fun (x :: args) body
-  | e             -> List.rev args, e
+  | e -> List.rev args, e
 
-(* Нужна, чтобы расставлять скобки только где нужно *)
 let is_atomic = function
   | Const _ | Var _ -> true
   | _ -> false
 
-let rec string_of_expr (e : expression) : string =
-  match e with
-  | Const c ->
-      string_of_const c
+let paren_if cond s =
+  if cond then "(" ^ s ^ ")" else s
 
-  | Var x ->
-      x
+let rec print_expr (e : expression) : string =
+  match e with
+  | Const c -> string_of_const c
+  | Var name -> name
+
+  | BinOp (op, l, r) ->
+      Printf.sprintf "(%s %s %s)" (print_expr l) (string_of_op op) (print_expr r)
+
+  | If (cond, thn, None) ->
+      Printf.sprintf "(if %s then %s)" (print_expr cond) (print_expr thn)
+  | If (cond, thn, Some els) ->
+      Printf.sprintf "(if %s then %s else %s)"
+        (print_expr cond) (print_expr thn) (print_expr els)
+
+  | Let (_scope, kind, name, bound, None) ->
+      let kwd = match kind with NonRec -> "let" | Rec -> "let rec" in
+      Printf.sprintf "(%s %s = %s)" kwd name (print_expr bound)
+  | Let (_scope, kind, name, bound, Some body) ->
+      let kwd = match kind with NonRec -> "let" | Rec -> "let rec" in
+      Printf.sprintf "(%s %s = %s in %s)" kwd name (print_expr bound) (print_expr body)
 
   | Fun (x, body) ->
       let args, core = collect_fun [x] body in
       let args_s = String.concat " " args in
-      Printf.sprintf "fun %s -> %s" args_s (string_of_expr core)
+      Printf.sprintf "(fun %s -> %s)" args_s (print_expr core)
 
   | App (f, arg) ->
-      (* собираем цепочку f a b c, чтобы не городить лишних скобок *)
-      let rec gather acc = function
-        | App (f', a') -> gather (a' :: acc) f'
-        | other        -> other, acc
+      let head = paren_if (not (is_atomic f)) (print_expr f) in
+      let arg_s =
+        match arg with
+        | Const _ | Var _ -> print_expr arg
+        | _ -> "(" ^ print_expr arg ^ ")"
       in
-      let f0, args = gather [arg] f in
-      let parts =
-        string_of_app_head f0
-        :: List.map string_of_app_arg args
-      in
-      String.concat " " parts
+      head ^ " " ^ arg_s
 
-  | BinOp (op, l, r) ->
-      (* для простоты всегда берём скобки вокруг бинарного выражения *)
-      Printf.sprintf "(%s %s %s)"
-        (string_of_expr l)
-        (string_of_op op)
-        (string_of_expr r)
+let string_of_expr = print_expr
 
-  | If (cond, thn, els_opt) ->
-      let base =
-        Printf.sprintf "if %s then %s"
-          (string_of_expr cond)
-          (string_of_expr thn)
-      in
-      begin match els_opt with
-      | None      -> base
-      | Some els  -> base ^ " else " ^ string_of_expr els
-      end
+let print_value = Interpret.string_of_value
+let print_error = Interpret.string_of_error
 
-  | Let (scope, kind, name, value, body_opt) ->
-      let scope_prefix =
-        match scope with
-        | GlobalVar -> ""   (* можно было бы помечать, но обычно не печатают *)
-        | LocalVar  -> ""
-      in
-      let rec_kwd =
-        match kind with
-        | NonRec -> ""
-        | Rec    -> " rec"
-      in
-      let binding =
-        Printf.sprintf "%slet%s %s = %s"
-          scope_prefix
-          rec_kwd
-          name
-          (string_of_expr value)
-      in
-      begin match body_opt with
-      | None ->
-          binding
-      | Some body ->
-          Printf.sprintf "%s in %s" binding (string_of_expr body)
-      end
-
-(* Вспомогалки для аппликации: голова и аргументы *)
-
-and string_of_app_head e =
-  (* Голова приложения: если это не атом, оборачиваем в скобки *)
-  if is_atomic e then
-    string_of_expr e
-  else
-    "(" ^ string_of_expr e ^ ")"
-
-and string_of_app_arg e =
-  (* Аргументы тоже лучше иногда скобочить, чтобы избежать двусмысленности *)
-  match e with
-  | Const _ | Var _ -> string_of_expr e
-  | _               -> "(" ^ string_of_expr e ^ ")"
+let show_parse_error e = Format.asprintf "%a" Parser.pp_error e
