@@ -8,6 +8,7 @@
 
 open Base
 open Ast
+open Stdlib
 
 module type MONAD_FAIL = sig
   include Base.Monad.S2
@@ -53,12 +54,14 @@ type envvalue =
     (* closure of non rec function -> name of arg for call, function code,
        function environment available *)
   | ERecClosure of ident * ident * Ast.expr * envt
-(* closure of rec function -> name of function
-   to add to environment to call, arg name, code, function environment *)
+  (* closure of rec function -> name of function
+     to add to environment to call, arg name, code, function environment *)
+  | EUnit (* unit return type like *)
+  | Ebuiltin of ident (* type for built in functions which are added in init *)
 
 and envt = (ident * envvalue) list
 
-let init : envt = []
+let init : envt = [ "print", Ebuiltin "print" ]
 
 let rec lookup (env : envt) (name : ident) =
   match env with
@@ -122,6 +125,15 @@ let rec eval env steps expression =
       let* func = eval env (steps - 1) f in
       let* evarg = eval env (steps - 1) arg in
       (match func with
+       | Ebuiltin x ->
+         (match x with
+          | "print" ->
+            (match evarg with
+             | EVal n ->
+               Printf.printf "%d\n" n;
+               Res.return EUnit
+             | _ -> Res.fail "cant print non ints yet")
+          | _ -> Res.fail "not implemented")
        | EClosure (argname, fcode, fenv) ->
          eval ((argname, evarg) :: fenv) (steps - 1) fcode
        | ERecClosure (fname, argname, fcode, fenv) ->
@@ -129,6 +141,6 @@ let rec eval env steps expression =
            ((argname, evarg) :: (fname, ERecClosure (fname, argname, fcode, fenv)) :: fenv)
            (steps - 1)
            fcode
-       | _ -> Res.fail "wtf")
+       | _ -> Res.fail "not a function for application")
     | _ -> Res.fail "")
 ;;

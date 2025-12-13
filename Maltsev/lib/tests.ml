@@ -261,11 +261,11 @@ let%test _ =
   Result.get_ok (Parser.parse "(fact) (6)") = Ast.App (Ast.Ident "fact", Ast.Const 6)
 ;;
 
-Printf.printf
-  "%s\n"
-  (pprint
-     (Result.get_ok
-        (parse "let rec fact n = if n < 1 then 1 else n * fact (n - 1) in fact 5")))
+(* Printf.printf
+   "%s\n"
+   (pprint
+   (Result.get_ok
+   (parse "let rec fact n = if n < 1 then 1 else n * fact (n - 1) in fact 5"))) *)
 
 let%test _ =
   Result.get_ok
