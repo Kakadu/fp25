@@ -1,3 +1,7 @@
+(** Copyright 2021-2025, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
 open Ast
 
 type value =
@@ -20,25 +24,29 @@ and eval_error =
 
 and 'a eval = int -> (('a * int), eval_error) result
 
-(** remaining fuel counter **)
+(** Explicit monad interface over computations with fuel. *)
+module type MONAD = sig
+  type 'a t = 'a eval
+  val ok : 'a -> 'a t
+  val fail : eval_error -> 'a t
+  val bind : 'a t -> ('a -> 'b t) -> 'b t
+  val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
+end
 
-(** neutral operation of the computation monad **)
-let return (x : 'a) : 'a eval =
-  fun fuel -> Ok (x, fuel)
-
-(** creates a computation that immediately fails **)
-let error (e : eval_error) : 'a eval =
-  fun _fuel -> Error e
-
-(** monadic gluing for 'a eval **)
-let bind (m : 'a eval) (f : 'a -> 'b eval) : 'b eval =
-  fun fuel ->
+module EvalM : MONAD = struct
+  type 'a t = 'a eval
+  let ok x fuel = Ok (x, fuel)
+  let fail e _fuel = Error e
+  let bind m f fuel =
     match m fuel with
     | Error e -> Error e
     | Ok (x, fuel') -> f x fuel'
+  let ( let* ) = bind
+end
 
-(** alias **)
-let ( let* ) = bind
+let return = EvalM.ok
+let error = EvalM.fail
+let ( let* ) = EvalM.( let* )
 
 (** single evaluation step **)
 let step : unit eval =
