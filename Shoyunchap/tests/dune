@@ -5,3 +5,15 @@
 (test
  (name printer_tests)
  (libraries lambda_lib))
+
+(test
+ (name parser_prop_tests)
+ (libraries lambda_lib qcheck))
+
+(executable
+ (name interpret_cli)
+ (modules interpret_cli)
+ (libraries lambda_lib))
+
+(cram
+ (deps interpret_cli.exe))
