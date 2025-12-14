@@ -75,8 +75,6 @@ let rec gen_expr n =
       ]
 ;;
 
-let genexpr_sized = Gen.sized gen_expr
-
 let arb_expr =
   let gen = Gen.sized gen_expr in
   let print = Some (fun expr -> Pprintast.pprint expr) in
