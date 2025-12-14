@@ -45,6 +45,18 @@ let rec print_ast = function
   | App (f, a) -> Printf.sprintf "App (%s, %s)" (print_ast f) (print_ast a)
 ;;
 
+let precedence = function
+  | Mult | Div -> 3
+  | Plus | Minus -> 2
+  | Equal | More | Less | EMore | ELess -> 1
+;;
+
+let precedence = function
+  | Mult | Div -> 3
+  | Plus | Minus -> 2
+  | Equal | More | Less | EMore | ELess -> 1
+;;
+
 let rec print_expr = function
   | Int n -> string_of_int n
   | Var s -> s
@@ -61,32 +73,73 @@ let rec print_expr = function
       | EMore -> ">="
       | ELess -> "<="
     in
-    Printf.sprintf "(%s %s %s)" (print_expr left) oper (print_expr right)
+    let left_str = print_expr left in
+    let right_str = print_expr right in
+    let need_parens_left =
+      match left with
+      | BinOp (inner_op, _, _) -> precedence inner_op < precedence op
+      | If _ | Let _ | Abs _ | App _ -> true
+      | _ -> false
+    in
+    let need_parens_right =
+      match right with
+      | BinOp (inner_op, _, _) -> precedence inner_op <= precedence op
+      | If _ | Let _ | Abs _ | App _ -> true
+      | _ -> false
+    in
+    let left_str =
+      if need_parens_left then Printf.sprintf "(%s)" left_str else left_str
+    in
+    let right_str =
+      if need_parens_right then Printf.sprintf "(%s)" right_str else right_str
+    in
+    Printf.sprintf "%s %s %s" left_str oper right_str
   | If (cond, thn, els) ->
-    let else_branch =
+    let cond_str = print_expr cond in
+    let thn_str = print_expr thn in
+    let else_str =
       match els with
       | None -> ""
-      | Some else_branch -> Printf.sprintf " else (%s)" (print_expr else_branch)
+      | Some e -> Printf.sprintf " else %s" (print_expr e)
     in
-    Printf.sprintf "if (%s) then (%s%s)" (print_expr cond) (print_expr thn) else_branch
+    Printf.sprintf "if %s then %s%s" cond_str thn_str else_str
   | Let (rec_f, name, value, body) ->
-    let rec_branch =
+    let rec_prefix =
       match rec_f with
       | Rec -> "rec "
       | NonRec -> ""
     in
-    let body_branch =
+    let value_str = print_expr value in
+    let body_str =
       match body with
       | None -> ""
-      | Some body_branch -> Printf.sprintf "in %s" (print_expr body_branch)
+      | Some b -> Printf.sprintf " in %s" (print_expr b)
     in
-    Printf.sprintf "let %s%s = (%s%s)" rec_branch name (print_expr value) body_branch
+    Printf.sprintf "let %s%s = %s%s" rec_prefix name value_str body_str
   | Abs (params, body) ->
     let param_str =
       match params with
       | Ast.Var s -> s
       | _ -> failwith "Abs parameter must be a variable"
     in
-    Printf.sprintf "(fun (%s) -> (%s))" param_str (print_expr body)
-  | App (func, arg) -> Printf.sprintf "(%s %s)" (print_expr func) (print_expr arg)
+    let body_str = print_expr body in
+    Printf.sprintf "fun %s -> %s" param_str body_str
+  | App (func, arg) ->
+    let func_str = print_expr func in
+    let arg_str = print_expr arg in
+    let need_parens_func =
+      match func with
+      | Abs _ | Let _ | If _ -> true
+      | _ -> false
+    in
+    let need_parens_arg =
+      match arg with
+      | Abs _ | Let _ | If _ | App _ -> true
+      | _ -> false
+    in
+    let func_str =
+      if need_parens_func then Printf.sprintf "(%s)" func_str else func_str
+    in
+    let arg_str = if need_parens_arg then Printf.sprintf "(%s)" arg_str else arg_str in
+    Printf.sprintf "%s %s" func_str arg_str
 ;;
