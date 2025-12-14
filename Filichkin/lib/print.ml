@@ -61,14 +61,14 @@ let rec print_expr = function
       | EMore -> ">="
       | ELess -> "<="
     in
-    Printf.sprintf "%s %s %s" (print_expr left) oper (print_expr right)
+    Printf.sprintf "(%s %s %s)" (print_expr left) oper (print_expr right)
   | If (cond, thn, els) ->
     let else_branch =
       match els with
       | None -> ""
-      | Some else_branch -> Printf.sprintf " else %s" (print_expr else_branch)
+      | Some else_branch -> Printf.sprintf " else (%s)" (print_expr else_branch)
     in
-    Printf.sprintf "if %s then %s%s" (print_expr cond) (print_expr thn) else_branch
+    Printf.sprintf "if (%s) then (%s%s)" (print_expr cond) (print_expr thn) else_branch
   | Let (rec_f, name, value, body) ->
     let rec_branch =
       match rec_f with
@@ -80,13 +80,13 @@ let rec print_expr = function
       | None -> ""
       | Some body_branch -> Printf.sprintf "in %s" (print_expr body_branch)
     in
-    Printf.sprintf "let %s%s = %s%s" rec_branch name (print_expr value) body_branch
+    Printf.sprintf "let %s%s = (%s%s)" rec_branch name (print_expr value) body_branch
   | Abs (params, body) ->
     let param_str =
       match params with
       | Ast.Var s -> s
       | _ -> failwith "Abs parameter must be a variable"
     in
-    Printf.sprintf "(fun %s -> %s)" param_str (print_expr body)
+    Printf.sprintf "(fun (%s) -> (%s))" param_str (print_expr body)
   | App (func, arg) -> Printf.sprintf "(%s %s)" (print_expr func) (print_expr arg)
 ;;

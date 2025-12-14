@@ -135,9 +135,7 @@ let expr =
       >>= fun cond ->
       kw_then *> expr
       >>= fun t ->
-      kw_else *> expr
-      >>= (fun e -> return (If (cond, t, Some e)))
-      <|> return (If (cond, t, None))
+      kw_else *> expr >>| (fun e -> If (cond, t, Some e)) <|> return (If (cond, t, None))
     in
     (* let: either `let [rec]? name = bound` or `let [rec]? name = bound in body` *)
     let bin_ops =

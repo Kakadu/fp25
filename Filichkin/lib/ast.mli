@@ -21,10 +21,6 @@ type rec_flag =
   | NonRec
   | Rec
 
-type patrn =
-  | Var of string
-  | Other of string
-
 (** Fixed-point operator (for recursion): Fix f computes the fixed point of f *)
 
 type expr =
