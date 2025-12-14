@@ -1,4 +1,5 @@
 (** Copyright 2021-2024, Kakadu and contributors *)
+
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
 open Ast
@@ -39,39 +40,30 @@ let ident_start = is_alpha <|> char '_'
 let ident_cont = is_alpha <|> is_digit <|> char '_'
 
 let ident =
-  token (
-    let* h = ident_start in
-    let* tl = many ident_cont in
-    let str = String.of_seq (List.to_seq (h :: tl)) in
-    if is_keyword str then 
-      fail ("keyword '" ^ str ^ "' cannot be used as identifier")
-    else 
-      return str
-  )
+  token
+    (let* h = ident_start in
+     let* tl = many ident_cont in
+     let str = String.of_seq (List.to_seq (h :: tl)) in
+     if is_keyword str
+     then fail ("keyword '" ^ str ^ "' cannot be used as identifier")
+     else return str)
 ;;
-let var_parser =
-  ident >>| fun name -> Var name
+
+let var_parser = ident >>| fun name -> Var name
 
 let number =
-  let integer = 
-    take_while1 (function
-      | '0' .. '9' -> true
-      | _ -> false)
-    >>| int_of_string
-  in
-  token (
-    (char '-' *> integer >>| fun n -> -n)
-    <|> integer
-  )
+  token
+    (take_while1 (function
+       | '0' .. '9' -> true
+       | _ -> false)
+     >>| int_of_string)
 ;;
 
-let number_expr = number >>| fun num -> Const(Int num)
-
+let number_expr = number >>| fun num -> Const (Int num)
 let plus = token (char '+') *> return Plus
 let minus = token (char '-') *> return Minus
 let mul = token (char '*') *> return Mul
 let div = token (char '/') *> return Div
-
 let eq = token (char '=') *> return Equal
 let neq = token (string "<>") *> return NotEqual
 let lt = token (char '<') *> return Less
@@ -81,47 +73,38 @@ let ge = token (string ">=") *> return GreaterEq
 
 let expr =
   fix (fun expr ->
-    let atom =
-      conde
-        [ number_expr
-        ; var_parser
-        ; parens expr
-        ]
-    in
-
+    let atom = conde [ number_expr; var_parser; parens expr ] in
     let app =
       atom
       >>= fun func ->
-      many (token atom)
-      >>| List.fold_left (fun f arg -> App (f, arg)) func
+      many (token atom) >>| List.fold_left (fun f arg -> App (f, arg)) func
     in
-
     let product =
       app
       >>= fun first ->
-      many (conde [ mul; div ] >>= fun op -> app >>| fun right -> (op, right))
+      many (conde [ mul; div ] >>= fun op -> app >>| fun right -> op, right)
       >>| List.fold_left (fun left (op, right) -> BinOp (op, left, right)) first
     in
-
     let sum =
       product
       >>= fun first ->
-      many (conde [ plus; minus ] >>= fun op -> product >>| fun right -> (op, right))
+      many (conde [ plus; minus ] >>= fun op -> product >>| fun right -> op, right)
       >>| List.fold_left (fun left (op, right) -> BinOp (op, left, right)) first
     in
-
     let comparison =
       sum
       >>= fun left ->
-      option left
+      option
+        left
         (conde [ neq; le; ge; lt; gt; eq ]
          >>= fun op -> sum >>| fun right -> Comp (op, left, right))
     in
-
     let let_expr =
       token (string "let")
       >>= fun _ ->
-      (token (string "rec") >>| fun _ -> Recursive) <|> return NonRecursive
+      token (string "rec")
+      >>| (fun _ -> Recursive)
+      <|> return NonRecursive
       >>= fun rec_flag ->
       ident
       >>= fun name ->
@@ -131,16 +114,13 @@ let expr =
       >>= fun _ ->
       expr
       >>= fun value ->
-      let body = 
-        if args = [] then value
-        else Abs (args, value)
-      in
       token (string "in")
       >>= fun _ ->
       expr
-      >>| fun in_expr -> Let (rec_flag, name, body, in_expr)
+      >>| fun in_expr ->
+      let body = if args = [] then value else Abs (args, value) in
+      Let (rec_flag, name, body, in_expr)
     in
-
     let if_expr =
       token (string "if")
       >>= fun _ ->
@@ -151,29 +131,17 @@ let expr =
       expr
       >>= fun then_branch ->
       token (string "else")
-      >>= fun _ ->
-      expr
-      >>| fun else_branch -> If (cond, then_branch, else_branch)
+      >>= fun _ -> expr >>| fun else_branch -> If (cond, then_branch, else_branch)
     in
-
     let abs_expr =
       token (string "fun")
       >>= fun _ ->
       many1 ident
       >>= fun args ->
-      token (string "->")
-      >>= fun _ ->
-      expr
-      >>| fun body -> Abs (args, body)
+      token (string "->") >>= fun _ -> expr >>| fun body -> Abs (args, body)
     in
-
-    conde
-      [ let_expr
-      ; if_expr
-      ; abs_expr
-      ; comparison
-      ]
-  )
+    conde [ let_expr; if_expr; abs_expr; comparison ])
+;;
 
 type error = [ `Parsing_error of string ]
 
