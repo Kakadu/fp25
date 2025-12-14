@@ -11,6 +11,13 @@ type eval_error =
   | MatchFailure
   | NoVariable of Ast.ident
 
+let pp_eval_error ppf : eval_error -> _ = function
+  | TypeError -> Format.fprintf ppf "Type error"
+  | DivisionByZero -> Format.fprintf ppf "Division by zero"
+  | MatchFailure -> Format.fprintf ppf "Matching failure"
+  | NoVariable id -> Format.fprintf ppf "Undefined variable '%s'" id
+;;
+
 type value =
   | ValInt of int
   | ValUnit
@@ -20,6 +27,20 @@ type value =
   | ValBuiltin of Ast.ident
 
 and environment = (Ast.ident, value, Base.String.comparator_witness) Base.Map.t
+
+let rec pp_value ppf =
+  let open Stdlib.Format in
+  function
+  | ValInt int -> fprintf ppf "%i" int
+  | ValUnit -> fprintf ppf "()"
+  | ValOption value ->
+    (match value with
+     | Some value -> fprintf ppf "Some %a" pp_value value
+     | None -> fprintf ppf "None")
+  | ValFun _ -> fprintf ppf "<fun>"
+  | ValFunction _ -> fprintf ppf "<function>"
+  | ValBuiltin _ -> fprintf ppf "<builtin>"
+;;
 
 module StepCounter = struct
   include StateR (struct
