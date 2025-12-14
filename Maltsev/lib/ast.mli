@@ -1,23 +1,18 @@
-type num = int
-type ident = string
-type recflag = Recflag of bool
+type num = int (* integer alias *)
+type ident = string (* string alias *)
+type recflag = Recflag of bool (* flag for rec *)
 
 type binop =
-  | Plus
-  | Minus
-  | Mul
-  | Div
-  | Eq
-  | Neq
-  | Le
-  | Bi
-  | Leq
-  | Beq
-
-type arithm =
-  | Const of num (* binary expr terminates in integer/some identifier *)
-  | Ident of ident (* variable used in arithmetic *)
-  | Binexpr of binop * arithm * arithm
+  | Plus (* + *)
+  | Minus (* - *)
+  | Mul (* * *)
+  | Div (* / *)
+  | Eq (* = *)
+  | Neq (* != *)
+  | Le (* < *)
+  | Bi (* > *)
+  | Leq (* <= *)
+  | Beq (* >= *)
 
 type expr =
   | Const of num (* integer *)
