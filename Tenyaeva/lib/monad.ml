@@ -1,0 +1,53 @@
+(** Copyright 2025, Tenyaeva Ekaterina *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+module type STATER = sig
+  type 'a t
+
+  val return : 'a -> 'b -> 'b * ('a, 'c) result
+  val fail : 'a -> 'b -> 'b * ('c, 'a) result
+
+  val ( >>= )
+    :  ('a -> 'b * ('c, 'd) result)
+    -> ('c -> 'b -> 'b * ('e, 'd) result)
+    -> 'a
+    -> 'b * ('e, 'd) result
+
+  val ( let* )
+    :  ('a -> 'b * ('c, 'd) result)
+    -> ('c -> 'b -> 'b * ('e, 'd) result)
+    -> 'a
+    -> 'b * ('e, 'd) result
+
+  val ( >>| ) : ('a -> 'b * ('c, 'd) result) -> ('c -> 'e) -> 'a -> 'b * ('e, 'd) result
+  val ( let+ ) : ('a -> 'b * ('c, 'd) result) -> ('c -> 'e) -> 'a -> 'b * ('e, 'd) result
+  val get : 'a -> 'a * ('a, 'b) result
+  val put : 'a -> 'b -> 'a * (unit, 'c) result
+end
+
+module StateR (S : sig
+    type state
+    type error
+  end) : STATER = struct
+  type state = S.state
+  type error = S.error
+  type 'a t = state -> state * ('a, error) result
+
+  let return v st = st, Ok v
+
+  let ( >>= ) m f st =
+    let s1, r = m st in
+    match r with
+    | Error e -> s1, Error e
+    | Ok v -> f v s1
+  ;;
+
+  let ( >>| ) m f = m >>= fun x -> return (f x)
+  let ( let* ) = ( >>= )
+  let ( let+ ) = ( >>| )
+  let get st = st, Ok st
+  let put new_st _st = new_st, Ok ()
+  let fail e st = st, Error e
+  let run m st = m st
+end
