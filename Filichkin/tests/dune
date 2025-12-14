@@ -1,12 +1,16 @@
 (library
  (name tests)
- (libraries Filichkin_lib)
+ (libraries Filichkin_lib qcheck)
  (modules parser_test interprate_test)
- (inline_tests)
  (preprocess
   (pps ppx_expect ppx_deriving.show))
  (instrumentation
   (backend bisect_ppx)))
+
+(test
+ (name qcheck_test)
+ (libraries Filichkin_lib qcheck)
+ (modules qcheck_test))
 
 (cram
  (applies_to interpret)
