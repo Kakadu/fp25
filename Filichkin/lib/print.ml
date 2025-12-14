@@ -97,10 +97,25 @@ let rec print_expr = function
   | If (cond, thn, els) ->
     let cond_str = print_expr cond in
     let thn_str = print_expr thn in
+    (* Add parentheses around nested if, let, Abs, or App in then branch when outer if has else *)
+    let thn_str =
+      match thn, els with
+      | If _, Some _ | Let _, Some _ | Abs _, Some _ | App _, Some _ ->
+        Printf.sprintf "(%s)" thn_str
+      | _ -> thn_str
+    in
     let else_str =
       match els with
       | None -> ""
-      | Some e -> Printf.sprintf " else %s" (print_expr e)
+      | Some e ->
+        let e_str = print_expr e in
+        (* Add parentheses around let without in in else branch to avoid ambiguity *)
+        let e_str =
+          match e with
+          | Let (_, _, _, None) -> Printf.sprintf "(%s)" e_str
+          | _ -> e_str
+        in
+        Printf.sprintf " else %s" e_str
     in
     Printf.sprintf "if %s then %s%s" cond_str thn_str else_str
   | Let (rec_f, name, value, body) ->
@@ -110,6 +125,13 @@ let rec print_expr = function
       | NonRec -> ""
     in
     let value_str = print_expr value in
+    (* Add parentheses around nested let, if without else, or Abs in value when outer let has body *)
+    let value_str =
+      match value, body with
+      | Let _, Some _ | If (_, _, None), Some _ | Abs _, Some _ ->
+        Printf.sprintf "(%s)" value_str
+      | _ -> value_str
+    in
     let body_str =
       match body with
       | None -> ""
@@ -123,18 +145,24 @@ let rec print_expr = function
       | _ -> failwith "Abs parameter must be a variable"
     in
     let body_str = print_expr body in
+    (* Add parentheses around let without in or if without else when they appear in Abs body *)
+    let body_str =
+      match body with
+      | Let (_, _, _, None) | If (_, _, None) -> Printf.sprintf "(%s)" body_str
+      | _ -> body_str
+    in
     Printf.sprintf "fun %s -> %s" param_str body_str
   | App (func, arg) ->
     let func_str = print_expr func in
     let arg_str = print_expr arg in
     let need_parens_func =
       match func with
-      | Abs _ | Let _ | If _ -> true
+      | Abs _ | Let _ | If _ | BinOp _ -> true
       | _ -> false
     in
     let need_parens_arg =
       match arg with
-      | Abs _ | Let _ | If _ | App _ -> true
+      | Abs _ | Let _ | If _ | App _ | BinOp _ -> true
       | _ -> false
     in
     let func_str =

@@ -142,21 +142,30 @@ let parse_after_print expr =
 ;;
 
 let print_parse_roundtrip =
-  QCheck.Test.make ~name:"AST -> print_expr -> parser -> AST" arb_expr (fun expr ->
-    match parse_after_print expr with
-    | Ok expr' ->
-      if expr = expr'
-      then true
-      else (
-        (* полезный вывод при падении *)
-        Printf.eprintf
-          "\nORIGINAL: %s\nPARSED:   %s\n"
-          (print_expr expr)
-          (print_expr expr');
-        false)
-    | Error msg ->
-      Printf.eprintf "\n%s\n" msg;
-      false)
+  QCheck.Test.make
+    ~count:1000
+    ~name:"AST -> print_expr -> parser -> AST"
+    arb_expr
+    (fun expr ->
+       match parse_after_print expr with
+       | Ok expr' ->
+         let original_ast_str = print_ast expr in
+         let parsed_ast_str = print_ast expr' in
+         if original_ast_str = parsed_ast_str
+         then true
+         else (
+           Printf.eprintf
+             "\nORIGINAL STR: %s\nPARSED STR:   %s\n"
+             (print_expr expr)
+             (print_expr expr');
+           Printf.eprintf
+             "\nORIGINAL AST: %s\nPARSED AST:   %s\n"
+             original_ast_str
+             parsed_ast_str;
+           false)
+       | Error msg ->
+         Printf.eprintf "\n%s\n" msg;
+         false)
 ;;
 
 let () = QCheck_runner.run_tests_main [ print_parse_roundtrip ]
