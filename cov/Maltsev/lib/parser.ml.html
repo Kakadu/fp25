@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>parser.ml &mdash; Coverage report</title>
+    <meta name="description" content="96.39% coverage in lib/parser.ml">
+    <link rel="stylesheet" href="../coverage.css"/>
+    <script src="../highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </head>
+  <body>
+    <div id="header">
+      <h1>
+        <a href="../index.html">
+          <span class="dirname">lib/</span>parser.ml
+        </a>
+      </h1>
+      <h2>96.39%</h2>
+    </div>
+    <div id="navbar">
+      <span class="unvisited" style="top:10.06%"></span>
+      <span class="unvisited" style="top:17.75%"></span>
+      <span class="unvisited" style="top:18.34%"></span>
+      <span class="unvisited" style="top:18.93%"></span>
+      <span class="unvisited" style="top:19.53%"></span>
+      <span class="some-visited" style="top:36.09%"></span>
+    </div>
+    <div id="report">
+      <div id="lines-layer">
+        <pre>
+<a id="L1"></a><span > </span>
+<a id="L2"></a><span > </span>
+<a id="L3"></a><span > </span>
+<a id="L4"></a><span > </span>
+<a id="L5"></a><span > </span>
+<a id="L6"></a><span > </span>
+<a id="L7"></a><span > </span>
+<a id="L8"></a><span > </span>
+<a id="L9"></a><span > </span>
+<a id="L10"></a><span class="visited"> </span>
+<a id="L11"></a><span class="visited"> </span>
+<a id="L12"></a><span > </span>
+<a id="L13"></a><span > </span>
+<a id="L14"></a><span class="visited"> </span>
+<a id="L15"></a><span > </span>
+<a id="L16"></a><span > </span>
+<a id="L17"></a><span class="unvisited"> </span>
+<a id="L18"></a><span class="visited"> </span>
+<a id="L19"></a><span > </span>
+<a id="L20"></a><span > </span>
+<a id="L21"></a><span class="visited"> </span>
+<a id="L22"></a><span > </span>
+<a id="L23"></a><span > </span>
+<a id="L24"></a><span class="visited"> </span>
+<a id="L25"></a><span class="visited"> </span>
+<a id="L26"></a><span class="visited"> </span>
+<a id="L27"></a><span > </span>
+<a id="L28"></a><span > </span>
+<a id="L29"></a><span > </span>
+<a id="L30"></a><span class="unvisited"> </span>
+<a id="L31"></a><span class="unvisited"> </span>
+<a id="L32"></a><span class="unvisited"> </span>
+<a id="L33"></a><span class="unvisited"> </span>
+<a id="L34"></a><span > </span>
+<a id="L35"></a><span > </span>
+<a id="L36"></a><span > </span>
+<a id="L37"></a><span class="visited"> </span>
+<a id="L38"></a><span class="visited"> </span>
+<a id="L39"></a><span class="visited"> </span>
+<a id="L40"></a><span > </span>
+<a id="L41"></a><span > </span>
+<a id="L42"></a><span > </span>
+<a id="L43"></a><span > </span>
+<a id="L44"></a><span class="visited"> </span>
+<a id="L45"></a><span class="visited"> </span>
+<a id="L46"></a><span class="visited"> </span>
+<a id="L47"></a><span > </span>
+<a id="L48"></a><span > </span>
+<a id="L49"></a><span > </span>
+<a id="L50"></a><span class="visited"> </span>
+<a id="L51"></a><span class="visited"> </span>
+<a id="L52"></a><span class="visited"> </span>
+<a id="L53"></a><span > </span>
+<a id="L54"></a><span class="visited"> </span>
+<a id="L55"></a><span class="visited"> </span>
+<a id="L56"></a><span class="visited"> </span>
+<a id="L57"></a><span > </span>
+<a id="L58"></a><span > </span>
+<a id="L59"></a><span > </span>
+<a id="L60"></a><span class="visited"> </span>
+<a id="L61"></a><span class="some-visited"> </span>
+<a id="L62"></a><span class="visited"> </span>
+<a id="L63"></a><span > </span>
+<a id="L64"></a><span > </span>
+<a id="L65"></a><span > </span>
+<a id="L66"></a><span class="visited"> </span>
+<a id="L67"></a><span class="visited"> </span>
+<a id="L68"></a><span class="visited"> </span>
+<a id="L69"></a><span class="visited"> </span>
+<a id="L70"></a><span class="visited"> </span>
+<a id="L71"></a><span class="visited"> </span>
+<a id="L72"></a><span > </span>
+<a id="L73"></a><span > </span>
+<a id="L74"></a><span class="visited"> </span>
+<a id="L75"></a><span class="visited"> </span>
+<a id="L76"></a><span class="visited"> </span>
+<a id="L77"></a><span class="visited"> </span>
+<a id="L78"></a><span class="visited"> </span>
+<a id="L79"></a><span class="visited"> </span>
+<a id="L80"></a><span class="visited"> </span>
+<a id="L81"></a><span class="visited"> </span>
+<a id="L82"></a><span > </span>
+<a id="L83"></a><span > </span>
+<a id="L84"></a><span class="visited"> </span>
+<a id="L85"></a><span class="visited"> </span>
+<a id="L86"></a><span class="visited"> </span>
+<a id="L87"></a><span > </span>
+<a id="L88"></a><span class="visited"> </span>
+<a id="L89"></a><span > </span>
+<a id="L90"></a><span class="visited"> </span>
+<a id="L91"></a><span > </span>
+<a id="L92"></a><span class="visited"> </span>
+<a id="L93"></a><span class="visited"> </span>
+<a id="L94"></a><span > </span>
+<a id="L95"></a><span class="visited"> </span>
+<a id="L96"></a><span class="visited"> </span>
+<a id="L97"></a><span > </span>
+<a id="L98"></a><span class="visited"> </span>
+<a id="L99"></a><span class="visited"> </span>
+<a id="L100"></a><span class="visited"> </span>
+<a id="L101"></a><span class="visited"> </span>
+<a id="L102"></a><span > </span>
+<a id="L103"></a><span class="visited"> </span>
+<a id="L104"></a><span class="visited"> </span>
+<a id="L105"></a><span > </span>
+<a id="L106"></a><span > </span>
+<a id="L107"></a><span class="visited"> </span>
+<a id="L108"></a><span > </span>
+<a id="L109"></a><span class="visited"> </span>
+<a id="L110"></a><span class="visited"> </span>
+<a id="L111"></a><span class="visited"> </span>
+<a id="L112"></a><span > </span>
+<a id="L113"></a><span class="visited"> </span>
+<a id="L114"></a><span > </span>
+<a id="L115"></a><span > </span>
+<a id="L116"></a><span class="visited"> </span>
+<a id="L117"></a><span class="visited"> </span>
+<a id="L118"></a><span class="visited"> </span>
+<a id="L119"></a><span > </span>
+<a id="L120"></a><span class="visited"> </span>
+<a id="L121"></a><span > </span>
+<a id="L122"></a><span > </span>
+<a id="L123"></a><span class="visited"> </span>
+<a id="L124"></a><span > </span>
+<a id="L125"></a><span class="visited"> </span>
+<a id="L126"></a><span class="visited"> </span>
+<a id="L127"></a><span > </span>
+<a id="L128"></a><span class="visited"> </span>
+<a id="L129"></a><span class="visited"> </span>
+<a id="L130"></a><span > </span>
+<a id="L131"></a><span class="visited"> </span>
+<a id="L132"></a><span > </span>
+<a id="L133"></a><span class="visited"> </span>
+<a id="L134"></a><span > </span>
+<a id="L135"></a><span class="visited"> </span>
+<a id="L136"></a><span > </span>
+<a id="L137"></a><span class="visited"> </span>
+<a id="L138"></a><span class="visited"> </span>
+<a id="L139"></a><span > </span>
+<a id="L140"></a><span class="visited"> </span>
+<a id="L141"></a><span class="visited"> </span>
+<a id="L142"></a><span > </span>
+<a id="L143"></a><span class="visited"> </span>
+<a id="L144"></a><span > </span>
+<a id="L145"></a><span class="visited"> </span>
+<a id="L146"></a><span > </span>
+<a id="L147"></a><span class="visited"> </span>
+<a id="L148"></a><span > </span>
+<a id="L149"></a><span class="visited"> </span>
+<a id="L150"></a><span > </span>
+<a id="L151"></a><span class="visited"> </span>
+<a id="L152"></a><span > </span>
+<a id="L153"></a><span class="visited"> </span>
+<a id="L154"></a><span > </span>
+<a id="L155"></a><span class="visited"> </span>
+<a id="L156"></a><span class="visited"> </span>
+<a id="L157"></a><span > </span>
+<a id="L158"></a><span class="visited"> </span>
+<a id="L159"></a><span class="visited"> </span>
+<a id="L160"></a><span class="visited"> </span>
+<a id="L161"></a><span > </span>
+<a id="L162"></a><span class="visited"> </span>
+<a id="L163"></a><span > </span>
+<a id="L164"></a><span > </span>
+<a id="L165"></a><span > </span>
+<a id="L166"></a><span class="visited"> </span>
+<a id="L167"></a><span class="visited"> </span>
+<a id="L168"></a><span class="visited"> </span>
+<a id="L169"></a><span > </span>
+</pre>
+      </div>
+      <div id="text-layer">
+        <pre id="line-numbers">
+<a href="#L1">  1</a>
+<a href="#L2">  2</a>
+<a href="#L3">  3</a>
+<a href="#L4">  4</a>
+<a href="#L5">  5</a>
+<a href="#L6">  6</a>
+<a href="#L7">  7</a>
+<a href="#L8">  8</a>
+<a href="#L9">  9</a>
+<a href="#L10"> 10</a>
+<a href="#L11"> 11</a>
+<a href="#L12"> 12</a>
+<a href="#L13"> 13</a>
+<a href="#L14"> 14</a>
+<a href="#L15"> 15</a>
+<a href="#L16"> 16</a>
+<a href="#L17"> 17</a>
+<a href="#L18"> 18</a>
+<a href="#L19"> 19</a>
+<a href="#L20"> 20</a>
+<a href="#L21"> 21</a>
+<a href="#L22"> 22</a>
+<a href="#L23"> 23</a>
+<a href="#L24"> 24</a>
+<a href="#L25"> 25</a>
+<a href="#L26"> 26</a>
+<a href="#L27"> 27</a>
+<a href="#L28"> 28</a>
+<a href="#L29"> 29</a>
+<a href="#L30"> 30</a>
+<a href="#L31"> 31</a>
+<a href="#L32"> 32</a>
+<a href="#L33"> 33</a>
+<a href="#L34"> 34</a>
+<a href="#L35"> 35</a>
+<a href="#L36"> 36</a>
+<a href="#L37"> 37</a>
+<a href="#L38"> 38</a>
+<a href="#L39"> 39</a>
+<a href="#L40"> 40</a>
+<a href="#L41"> 41</a>
+<a href="#L42"> 42</a>
+<a href="#L43"> 43</a>
+<a href="#L44"> 44</a>
+<a href="#L45"> 45</a>
+<a href="#L46"> 46</a>
+<a href="#L47"> 47</a>
+<a href="#L48"> 48</a>
+<a href="#L49"> 49</a>
+<a href="#L50"> 50</a>
+<a href="#L51"> 51</a>
+<a href="#L52"> 52</a>
+<a href="#L53"> 53</a>
+<a href="#L54"> 54</a>
+<a href="#L55"> 55</a>
+<a href="#L56"> 56</a>
+<a href="#L57"> 57</a>
+<a href="#L58"> 58</a>
+<a href="#L59"> 59</a>
+<a href="#L60"> 60</a>
+<a href="#L61"> 61</a>
+<a href="#L62"> 62</a>
+<a href="#L63"> 63</a>
+<a href="#L64"> 64</a>
+<a href="#L65"> 65</a>
+<a href="#L66"> 66</a>
+<a href="#L67"> 67</a>
+<a href="#L68"> 68</a>
+<a href="#L69"> 69</a>
+<a href="#L70"> 70</a>
+<a href="#L71"> 71</a>
+<a href="#L72"> 72</a>
+<a href="#L73"> 73</a>
+<a href="#L74"> 74</a>
+<a href="#L75"> 75</a>
+<a href="#L76"> 76</a>
+<a href="#L77"> 77</a>
+<a href="#L78"> 78</a>
+<a href="#L79"> 79</a>
+<a href="#L80"> 80</a>
+<a href="#L81"> 81</a>
+<a href="#L82"> 82</a>
+<a href="#L83"> 83</a>
+<a href="#L84"> 84</a>
+<a href="#L85"> 85</a>
+<a href="#L86"> 86</a>
+<a href="#L87"> 87</a>
+<a href="#L88"> 88</a>
+<a href="#L89"> 89</a>
+<a href="#L90"> 90</a>
+<a href="#L91"> 91</a>
+<a href="#L92"> 92</a>
+<a href="#L93"> 93</a>
+<a href="#L94"> 94</a>
+<a href="#L95"> 95</a>
+<a href="#L96"> 96</a>
+<a href="#L97"> 97</a>
+<a href="#L98"> 98</a>
+<a href="#L99"> 99</a>
+<a href="#L100">100</a>
+<a href="#L101">101</a>
+<a href="#L102">102</a>
+<a href="#L103">103</a>
+<a href="#L104">104</a>
+<a href="#L105">105</a>
+<a href="#L106">106</a>
+<a href="#L107">107</a>
+<a href="#L108">108</a>
+<a href="#L109">109</a>
+<a href="#L110">110</a>
+<a href="#L111">111</a>
+<a href="#L112">112</a>
+<a href="#L113">113</a>
+<a href="#L114">114</a>
+<a href="#L115">115</a>
+<a href="#L116">116</a>
+<a href="#L117">117</a>
+<a href="#L118">118</a>
+<a href="#L119">119</a>
+<a href="#L120">120</a>
+<a href="#L121">121</a>
+<a href="#L122">122</a>
+<a href="#L123">123</a>
+<a href="#L124">124</a>
+<a href="#L125">125</a>
+<a href="#L126">126</a>
+<a href="#L127">127</a>
+<a href="#L128">128</a>
+<a href="#L129">129</a>
+<a href="#L130">130</a>
+<a href="#L131">131</a>
+<a href="#L132">132</a>
+<a href="#L133">133</a>
+<a href="#L134">134</a>
+<a href="#L135">135</a>
+<a href="#L136">136</a>
+<a href="#L137">137</a>
+<a href="#L138">138</a>
+<a href="#L139">139</a>
+<a href="#L140">140</a>
+<a href="#L141">141</a>
+<a href="#L142">142</a>
+<a href="#L143">143</a>
+<a href="#L144">144</a>
+<a href="#L145">145</a>
+<a href="#L146">146</a>
+<a href="#L147">147</a>
+<a href="#L148">148</a>
+<a href="#L149">149</a>
+<a href="#L150">150</a>
+<a href="#L151">151</a>
+<a href="#L152">152</a>
+<a href="#L153">153</a>
+<a href="#L154">154</a>
+<a href="#L155">155</a>
+<a href="#L156">156</a>
+<a href="#L157">157</a>
+<a href="#L158">158</a>
+<a href="#L159">159</a>
+<a href="#L160">160</a>
+<a href="#L161">161</a>
+<a href="#L162">162</a>
+<a href="#L163">163</a>
+<a href="#L164">164</a>
+<a href="#L165">165</a>
+<a href="#L166">166</a>
+<a href="#L167">167</a>
+<a href="#L168">168</a>
+<a href="#L169">169</a>
+</pre>
+<pre><code class="ocaml">(** Copyright 2021-2023, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+(* TODO: implement parser here *)
+open Ast
+open Angstrom
+
+let is_space = function
+  | <span data-count="1562170">'</span> ' | <span data-count="1">'</span>\t' | <span data-count="1">'</span>\n' | <span data-count="1">'</span>\r' -&gt; true
+  | <span data-count="4349458">_</span> -&gt; false
+;;
+
+let spaces = skip_whil<span data-count="26">e</span> is_space
+
+let conde = function
+  | <span data-count="0">[</span>] -&gt; fail "empty conde"
+  | <span data-count="262654">h</span> :: tl -&gt; List.fold_left ( &lt;|&gt; ) h tl
+;;
+
+let parens p = <span data-count="102291">s</span>paces *<span data-count="102291">&gt;</span> cha<span data-count="102291">r</span> '(' *<span data-count="102291">&gt;</span> p &lt;<span data-count="102291">*</span> spaces &lt;* cha<span data-count="102291">r</span> ')'
+
+let is_digit c =
+  <span data-count="653801">m</span>atch c with
+  | <span data-count="133472">'</span>0' .. '9' -&gt; true
+  | <span data-count="520329">_</span> -&gt; false
+;;
+
+let is_alpha c =
+  <span data-count="0">m</span>atch c with
+  | <span data-count="0">'</span>a' .. 'z' -&gt; true
+  | <span data-count="0">'</span>A' .. 'Z' -&gt; true
+  | <span data-count="0">_</span> -&gt; false
+;;
+
+let var_name c =
+  <span data-count="1700764">m</span>atch c with
+  | <span data-count="172400">'</span>0' .. '9' | <span data-count="600484">'</span>a' .. 'z' | <span data-count="115590">'</span>A' .. 'Z' -&gt; true
+  | <span data-count="812290">_</span> -&gt; false
+;;
+
+let sign =
+  peek_char
+  &gt;&gt;<span data-count="26">=</span> function
+  | <span data-count="26125">S</span>ome '-' -&gt; advanc<span data-count="26125">e</span> 1 &gt;&gt;| fun () -&gt; <span data-count="26125">"</span>-"
+  | <span data-count="264065">_</span> -&gt; return ""
+;;
+
+let parse_number =
+  spaces *<span data-count="26">&gt;</span> sign
+  &gt;&gt;<span data-count="26">=</span> fun sign -&gt;
+  <span data-count="290190">t</span>ake_while<span data-count="290190">1</span> is_digit
+  &gt;&gt;| fun x -&gt;
+  <span data-count="51337">m</span>atch sign with
+  | <span data-count="25270">"</span>-" -&gt; Ast.Const (-1 * int_of_strin<span data-count="25270">g</span> x)
+  | <span data-count="26067">_</span> -&gt; Ast.Const (int_of_strin<span data-count="26067">g</span> x)
+;;
+
+let is_keyword s =
+  <span data-count="466554">m</span>atch s with
+  | <span data-count="6749">"</span>let" | <span data-count="0">"</span>rec" | <span data-count="30021">"</span>in" | <span data-count="42556">"</span>if" | <span data-count="10599">"</span>then" | <span data-count="10559">"</span>else" | <span data-count="78310">"</span>fun" | <span data-count="0">"</span>-&gt;" -&gt; true
+  | <span data-count="287760">_</span> -&gt; false
+;;
+
+let parse_varname =
+  spaces *<span data-count="26">&gt;</span> take_while<span data-count="26">1</span> var_name
+  &gt;&gt;<span data-count="26">=</span> fun s -&gt;
+  <span data-count="466554">m</span>atch s with
+  | <span data-count="466554">_</span> when is_keywor<span data-count="466554">d</span> s -&gt; <span data-count="178794">f</span>ail "Can't have a name same as keyword"
+  | <span data-count="287760">_</span> when String.for_al<span data-count="287760">l</span> is_digit s -&gt; <span data-count="56794">f</span>ail "Number cant be a name"
+  | <span data-count="230966">_</span> -&gt; return (Ast.Ident s)
+;;
+
+let plus = spaces *<span data-count="26">&gt;</span> cha<span data-count="26">r</span> '+' &gt;&gt;<span data-count="26">=</span> fun _ -&gt; <span data-count="2437">r</span>eturn Plus
+let minus = spaces *<span data-count="26">&gt;</span> cha<span data-count="26">r</span> '-' &gt;&gt;<span data-count="26">=</span> fun _ -&gt; <span data-count="2442">r</span>eturn Minus
+let mul = spaces *<span data-count="26">&gt;</span> cha<span data-count="26">r</span> '*' &gt;&gt;<span data-count="26">=</span> fun _ -&gt; <span data-count="2384">r</span>eturn Mul
+let div = spaces *<span data-count="26">&gt;</span> cha<span data-count="26">r</span> '/' &gt;&gt;<span data-count="26">=</span> fun _ -&gt; <span data-count="2454">r</span>eturn Div
+let eq = spaces *<span data-count="26">&gt;</span> cha<span data-count="26">r</span> '=' &gt;&gt;<span data-count="26">=</span> fun _ -&gt; <span data-count="2448">r</span>eturn Eq
+let neq = spaces *<span data-count="26">&gt;</span> strin<span data-count="26">g</span> "!=" &gt;&gt;<span data-count="26">=</span> fun _ -&gt; <span data-count="2462">r</span>eturn Neq
+let le = spaces *<span data-count="26">&gt;</span> cha<span data-count="26">r</span> '&lt;' &gt;&gt;<span data-count="26">=</span> fun _ -&gt; <span data-count="2519">r</span>eturn Le
+let bi = spaces *<span data-count="26">&gt;</span> cha<span data-count="26">r</span> '&gt;' &gt;&gt;<span data-count="26">=</span> fun _ -&gt; <span data-count="2413">r</span>eturn Bi
+
+let parse_expr =
+  fi<span data-count="26">x</span> (fun parse_expr -&gt;
+    <span data-count="25">l</span>et abstr =
+      spaces *<span data-count="25">&gt;</span> strin<span data-count="25">g</span> "fun"
+      &gt;&gt;= fun _ -&gt;
+      <span data-count="42583">m</span>any<span data-count="42583">1</span> parse_varname
+      &gt;&gt;= fun args -&gt;
+      <span data-count="42583">s</span>paces *<span data-count="42583">&gt;</span> strin<span data-count="42583">g</span> "-&gt;"
+      &gt;&gt;= fun _ -&gt;
+      <span data-count="42583">s</span>paces *<span data-count="42583">&gt;</span> parse_expr
+      &gt;&gt;| fun body -&gt; <span data-count="42583">L</span>ist.fold_right (fun arg f -&gt; <span data-count="42584">A</span>st.Abs (arg, f)) args body
+    in
+    <span data-count="25">l</span>et app =
+      spaces *<span data-count="25">&gt;</span> (paren<span data-count="25">s</span> abstr &lt;|<span data-count="25">&gt;</span> parse_varname &lt;|<span data-count="25">&gt;</span> paren<span data-count="25">s</span> parse_varname)
+      &gt;&gt;= fun func -&gt;
+      <span data-count="102216">m</span>any<span data-count="102216">1</span>
+        (spaces *<span data-count="102216">&gt;</span> cond<span data-count="102216">e</span> [ parse_number; parse_varname; paren<span data-count="102216">s</span> parse_expr ]
+         &gt;&gt;<span data-count="102216">|</span> fun arg -&gt; <span data-count="38959">a</span>rg)
+      &gt;&gt;| fun l -&gt; <span data-count="38955">L</span>ist.fold_left (fun x arg -&gt; <span data-count="38959">A</span>st.App (x, arg)) func l
+    in
+    <span data-count="25">l</span>et helper = conde [ app; parse_varname &lt;|<span data-count="25">&gt;</span> parse_number; paren<span data-count="25">s</span> parse_expr ] in
+    <span data-count="25">l</span>et mul_helper =
+      helper
+      &gt;&gt;= fun left -&gt;
+      <span data-count="175109">m</span>an<span data-count="175109">y</span>
+        (mul
+         &lt;|<span data-count="175109">&gt;</span> div
+         &gt;&gt;<span data-count="175109">=</span> fun operation -&gt; <span data-count="4838">h</span>elper &gt;&gt;= fun rightop -&gt; <span data-count="4838">r</span>eturn (operation, rightop))
+      &gt;&gt;| List.fold_lef<span data-count="175109">t</span> (fun l (op, r) -&gt; <span data-count="4838">A</span>st.Binexpr (op, l, r)) left
+    in
+    <span data-count="25">l</span>et sum_helper =
+      mul_helper
+      &gt;&gt;= fun left -&gt;
+      <span data-count="170230">m</span>an<span data-count="170230">y</span>
+        (plus &lt;|<span data-count="170230">&gt;</span> minus &gt;&gt;<span data-count="170230">=</span> fun operation -&gt; <span data-count="4879">m</span>ul_helper &gt;&gt;| fun right -&gt; <span data-count="4879">o</span>peration, right)
+      &gt;&gt;| fun l -&gt; <span data-count="170230">L</span>ist.fold_left (fun l (op, r) -&gt; <span data-count="4879">A</span>st.Binexpr (op, l, r)) left l
+    in
+    <span data-count="25">l</span>et comp =
+      sum_helper
+      &gt;&gt;= fun left -&gt;
+      <span data-count="160388">o</span>ption
+        left
+        (cond<span data-count="160388">e</span> [ eq; neq; bi; le ]
+         &gt;&gt;<span data-count="160388">=</span> fun op -&gt; <span data-count="9842">s</span>um_helper &gt;&gt;| fun right -&gt; <span data-count="9842">A</span>st.Binexpr (op, left, right))
+    in
+    <span data-count="25">l</span>et conditional =
+      spaces *<span data-count="25">&gt;</span> strin<span data-count="25">g</span> "if"
+      &gt;&gt;= fun _ -&gt;
+      <span data-count="19520">p</span>arse_expr
+      &gt;&gt;= fun cond -&gt;
+      <span data-count="19520">s</span>paces *<span data-count="19520">&gt;</span> strin<span data-count="19520">g</span> "then"
+      &gt;&gt;= fun _ -&gt;
+      <span data-count="19520">p</span>arse_expr
+      &gt;&gt;= fun tbranch -&gt;
+      <span data-count="19520">s</span>paces *<span data-count="19520">&gt;</span> strin<span data-count="19520">g</span> "else"
+      &gt;&gt;= fun _ -&gt; <span data-count="19520">p</span>arse_expr &gt;&gt;| fun ebranch -&gt; <span data-count="19520">A</span>st.Ite (cond, tbranch, ebranch)
+    in
+    <span data-count="25">l</span>et letbind =
+      spaces *<span data-count="25">&gt;</span> strin<span data-count="25">g</span> "let"
+      &gt;&gt;= fun _ -&gt;
+      <span data-count="38910">o</span>ptio<span data-count="38910">n</span> (Ast.Recflag false) (spaces *<span data-count="38910">&gt;</span> strin<span data-count="38910">g</span> "rec" &gt;&gt;<span data-count="38910">|</span> fun _ -&gt; <span data-count="19414">A</span>st.Recflag true)
+      &gt;&gt;= fun recbool -&gt;
+      <span data-count="38910">p</span>arse_varname
+      &gt;&gt;= fun name -&gt;
+      <span data-count="38910">m</span>an<span data-count="38910">y</span> parse_varname
+      &gt;&gt;= fun args -&gt;
+      <span data-count="38910">s</span>paces *<span data-count="38910">&gt;</span> strin<span data-count="38910">g</span> "="
+      &gt;&gt;= fun _ -&gt;
+      <span data-count="38910">s</span>paces *<span data-count="38910">&gt;</span> parse_expr
+      &gt;&gt;= fun letexpr -&gt;
+      <span data-count="38910">l</span>et body =
+        match args with
+        | <span data-count="38896">[</span>] -&gt; letexpr
+        | <span data-count="14">_</span> -&gt; List.fold_righ<span data-count="14">t</span> (fun arg f -&gt; <span data-count="18">A</span>st.Abs (arg, f)) args letexpr
+      in
+      spaces *<span data-count="38910">&gt;</span> strin<span data-count="38910">g</span> "in"
+      &gt;&gt;<span data-count="38910">=</span> (fun _ -&gt; <span data-count="38909">s</span>paces *<span data-count="38909">&gt;</span> parse_expr &gt;&gt;| fun bound -&gt; <span data-count="38909">b</span>ound)
+      &gt;&gt;| fun inexpr -&gt; <span data-count="38909">A</span>st.Let (recbool, name, body, inexpr)
+    in
+    <span data-count="25">c</span>onde [ letbind; comp; conditional; abstr ])
+;;
+
+let parse str =
+  <span data-count="1046">m</span>atch Angstrom.parse_string parse_expr ~consume:Angstrom.Consume.All str with
+  | <span data-count="1045">R</span>esult.Ok x -&gt; Result.Ok x
+  | <span data-count="1">E</span>rror err -&gt; Result.Error (`Parsing_error err)
+;;
+</code></pre>
+      </div>
+    </div>
+    <script src="../coverage.js"></script>
+  </body>
+</html>
