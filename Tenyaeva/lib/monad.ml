@@ -24,6 +24,7 @@ module type STATER = sig
   val ( let+ ) : ('a -> 'b * ('c, 'd) result) -> ('c -> 'e) -> 'a -> 'b * ('e, 'd) result
   val get : 'a -> 'a * ('a, 'b) result
   val put : 'a -> 'b -> 'a * (unit, 'c) result
+  val run : ('a -> 'b) -> 'a -> 'b
 end
 
 module StateR (S : sig
