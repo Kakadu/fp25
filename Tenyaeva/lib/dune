@@ -1,7 +1,7 @@
 (library
  (name tenyaeva_lib)
  (public_name Tenyaeva.Lib)
- (modules ast parser pprinter)
+ (modules ast parser pprinter interpreter monad)
  (libraries base angstrom qcheck-core qcheck-core.runner)
  (preprocess
   (pps ppx_deriving.show ppx_deriving_qcheck))
