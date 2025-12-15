@@ -166,3 +166,89 @@ in the dune file
   $ ../bin/REPL.exe <<EOF
   > if false then 100 else 200
   Result: 200
+
+  $ ../bin/REPL.exe <<EOF
+  > -5
+  Result: -5
+
+  $ ../bin/REPL.exe <<EOF
+  > -x
+  Error: Unbound variable: x
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = 5 in -x
+  Result: -5
+
+  $ ../bin/REPL.exe <<EOF
+  > 5 - -3
+  Result: 8
+
+  $ ../bin/REPL.exe <<EOF
+  > -5 + 3
+  Result: -2
+
+  $ ../bin/REPL.exe <<EOF
+  > 5 * -3
+  Result: -15
+
+  $ ../bin/REPL.exe <<EOF
+  > -10 / 2
+  Result: -5
+
+  $ ../bin/REPL.exe <<EOF
+  > -(3 + 4)
+  Result: -7
+
+  $ ../bin/REPL.exe <<EOF
+  > -(-5)
+  Result: 5
+
+  $ ../bin/REPL.exe <<EOF
+  > 2 * -3 + 4
+  Result: -2
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = 3 in let y = -x in y + 2
+  Result: -1
+
+  $ ../bin/REPL.exe <<EOF
+  > -5 < 0
+  Result: 1
+
+  $ ../bin/REPL.exe <<EOF
+  > 0 > -5
+  Result: 1
+
+  $ ../bin/REPL.exe <<EOF
+  > -3 = -3
+  Result: 1
+
+  $ ../bin/REPL.exe <<EOF
+  > -3 = 3
+  Result: 0
+
+  $ ../bin/REPL.exe --ast <<EOF
+  > -5
+  AST: (-5)
+  Result: -5
+
+  $ ../bin/REPL.exe --ast <<EOF
+  > 5 - -3
+  AST: (5 - (-3))
+  Result: 8
+
+  $ ../bin/REPL.exe <<EOF
+  > f -x
+  Error: Unbound variable: f
+
+  $ ../bin/REPL.exe <<EOF
+  > (fun x -> -x) 5
+  Result: -5
+
+  $ ../bin/REPL.exe <<EOF
+  > let neg = fun x -> -x in neg 7
+  Result: -7
+
+  $ ../bin/REPL.exe <<EOF
+  > let rec sum_neg_ones n = if n = 0 then 0 else -1 + sum_neg_ones (n - 1) in sum_neg_ones 5
+  Result: -5
