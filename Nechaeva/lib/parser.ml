@@ -59,7 +59,22 @@ let number =
      >>| int_of_string)
 ;;
 
-let number_expr = number >>| fun num -> Const (Int num)
+(* let number_expr = number >>| fun num -> Const (Int num) *)
+let number_expr =
+  token
+    (take_while1 (function
+       | '0' .. '9' -> true
+       | _ -> false)
+     >>= fun digits ->
+     peek_char
+     >>= (function
+            | Some c when (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c = '_' ->
+              fail "Invalid number format"
+            | _ -> return digits)
+     >>| int_of_string)
+  >>| fun num -> Const (Int num)
+;;
+
 let plus = token (char '+') *> return Plus
 let minus = token (char '-') *> return Minus
 let mul = token (char '*') *> return Mul
