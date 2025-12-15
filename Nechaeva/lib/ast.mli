@@ -30,6 +30,10 @@ type constant =
   | Int of int    (** Integer literal *)
   | Unit          (** Unit value *)
 
+(** Unary operations *)
+type unop =
+  | Neg    (** Unary minus: -e *)
+
 (** Expressions *)
 type expr =
   | Const of constant
@@ -44,6 +48,8 @@ type expr =
     (** Let binding: [let[rec] x = e1 in e2] *)
   | BinOp of binop * expr * expr
     (** Binary arithmetic operation *)
+  | UnOp of unop * expr
+    (** Unary operation *)
   | Comp of compop * expr * expr
     (** Comparison operation *)
   | If of expr * expr * expr

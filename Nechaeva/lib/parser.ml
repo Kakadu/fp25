@@ -89,8 +89,12 @@ let ge = token (string ">=") *> return GreaterEq
 let expr =
   fix (fun expr ->
     let atom = conde [ number_expr; var_parser; parens expr ] in
+    let unary =
+      let neg = token (char '-') *> atom >>| fun e -> UnOp (Neg, e) in
+      conde [ neg; atom ]
+    in
     let app =
-      atom
+      unary
       >>= fun func ->
       many (token atom) >>| List.fold_left (fun f arg -> App (f, arg)) func
     in
