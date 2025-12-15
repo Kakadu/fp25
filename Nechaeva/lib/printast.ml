@@ -60,8 +60,3 @@ let rec pp_expr fmt = function
 ;;
 
 let string_of_expr e = Format.asprintf "%a" pp_expr e
-let print_expr e = Format.printf "%a\n" pp_expr e
-
-let print_expr_to_channel chan e =
-  Format.fprintf (Format.formatter_of_out_channel chan) "%a\n" pp_expr e
-;;
