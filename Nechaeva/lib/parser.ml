@@ -137,7 +137,11 @@ let expr =
       >>= fun _ ->
       expr
       >>| fun in_expr ->
-      let body = if args = [] then value else Abs (args, value) in
+      let body =
+        match args with
+        | [] -> value
+        | _ -> Abs (args, value)
+      in
       Let (rec_flag, name, body, in_expr)
     in
     let if_expr =

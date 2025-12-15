@@ -111,7 +111,11 @@ let test_printer_safety =
       let _ = Printast.string_of_expr expr in
       true
     with
-    | _ -> false)
+    | exn ->
+      Printf.eprintf
+        "Printer crashed on expr with exception: %s\n"
+        (Printexc.to_string exn);
+      false)
 ;;
 
 let test_invalid_programs =
@@ -147,11 +151,6 @@ let test_idempotent =
       false)
 ;;
 
-let tests =
+QCheck_runner.run_tests
+  ~verbose:true
   [ test_roundtrip; test_printer_safety; test_invalid_programs; test_idempotent ]
-;;
-
-let () =
-  let result = QCheck_runner.run_tests ~verbose:true tests in
-  exit result
-;;

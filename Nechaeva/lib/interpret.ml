@@ -20,8 +20,7 @@ type value =
 
 type env = (string * value) list
 
-let builtin_print v =
-  match v with
+let builtin_print = function
   | VInt n ->
     print_int n;
     print_newline ();
@@ -57,7 +56,7 @@ end = struct
     if steps <= 0 then steps, Error ExceedMaxSteps else steps - 1, Ok ()
   ;;
 
-  let run m init = m init
+  let run m = m
 end
 
 let env_empty = []
@@ -146,7 +145,9 @@ module Interpreter = struct
     | VClosure ([], body, closure_env) -> eval body closure_env
     | VClosure (p :: ps, body, closure_env) ->
       let new_env = env_extend closure_env p arg_val in
-      if ps = [] then eval body new_env else return (VClosure (ps, body, new_env))
+      (match ps with
+       | [] -> eval body new_env
+       | _ -> return (VClosure (ps, body, new_env)))
     | VRecClosure (f_name, params, body, closure_env) ->
       let env_with_self = env_extend closure_env f_name func in
       apply (VClosure (params, body, env_with_self)) arg_val env
