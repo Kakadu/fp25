@@ -106,6 +106,11 @@ in the dune file
   AST: (let rec fact = (fun n -> (if (n = 1) then 1 else (n * (fact (n - 1))))) in (fact 5))
   Result: 120
 
+  $ ../bin/REPL.exe --ast <<EOF
+  > let rec fix = fun f ->  (fun x -> f (fun y -> (x x) y))  (fun x -> f (fun y -> (x x) y)) in let fact = fix (fun fact -> fun n -> if n = 0 then 1 else n * fact (n - 1)) in fact 5
+  AST: (let rec fix = (fun f -> ((fun x -> (f (fun y -> ((x x) y)))) (fun x -> (f (fun y -> ((x x) y)))))) in (let fact = (fix (fun fact -> (fun n -> (if (n = 0) then 1 else (n * (fact (n - 1))))))) in (fact 5)))
+  Result: 120
+
   $ ../bin/REPL.exe --maxSteps=10000 <<EOF
   > let rec fib n = if n <= 1 then n else fib (n - 1) + fib (n - 2) in fib 6
   Result: 8
