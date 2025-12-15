@@ -7,21 +7,19 @@
 [@@@ocaml.text "/*"]
 
 type binop =
-  | Plus
-  | Minus
-  | Mult
-  | Div
-  | Equal
-  | More
-  | Less
-  | EMore
-  | ELess
+  | Plus (** Addition: `+` *)
+  | Minus (** Subtraction: `-` *)
+  | Mult (** Multiplication: `*` *)
+  | Div (** Division: `/` *)
+  | Equal (** Equality: `=` *)
+  | More (** Greater than: `>` *)
+  | Less (** Less than: `<` *)
+  | EMore (** Greater than or equal: `>=` *)
+  | ELess (** Less than or equal: `<=` *)
 
 type rec_flag =
-  | NonRec
-  | Rec
-
-(** Fixed-point operator (for recursion): Fix f computes the fixed point of f *)
+  | NonRec (** Non-recursive binding *)
+  | Rec (** Recursive binding *)
 
 type expr =
   | Int of int (** Integer literal *)

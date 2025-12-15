@@ -10,7 +10,7 @@ open Ast
 
 let rec print_ast = function
   | Int n -> Printf.sprintf "Int %d" n
-  | Var x -> Printf.sprintf "Var \"%s\"" x
+  | Var x -> Printf.sprintf "Var %S" x
   | BinOp (op, l, r) ->
     let op_str =
       match op with
@@ -29,26 +29,20 @@ let rec print_ast = function
   | If (c, t, Some e) ->
     Printf.sprintf "If (%s, %s, Some %s)" (print_ast c) (print_ast t) (print_ast e)
   | Let (NonRec, x, e, None) ->
-    Printf.sprintf "Let (NonRec, \"%s\", %s, None)" x (print_ast e)
+    Printf.sprintf "Let (NonRec, %S, %s, None)" x (print_ast e)
   | Let (NonRec, x, e, Some b) ->
-    Printf.sprintf "Let (NonRec, \"%s\", %s, Some %s)" x (print_ast e) (print_ast b)
-  | Let (Rec, x, e, None) -> Printf.sprintf "Let (Rec, \"%s\", %s, None)" x (print_ast e)
+    Printf.sprintf "Let (NonRec, %S, %s, Some %s)" x (print_ast e) (print_ast b)
+  | Let (Rec, x, e, None) -> Printf.sprintf "Let (Rec, %S, %s, None)" x (print_ast e)
   | Let (Rec, x, e, Some b) ->
-    Printf.sprintf "Let (Rec, \"%s\", %s, Some %s)" x (print_ast e) (print_ast b)
+    Printf.sprintf "Let (Rec, %S, %s, Some %s)" x (print_ast e) (print_ast b)
   | Abs (param, body) ->
     let param_str =
       match param with
       | Var x -> x
-      | _ -> failwith "Abs parameter must be a variable"
+      | _ -> "???"
     in
-    Printf.sprintf "Abs (Var \"%s\", %s)" param_str (print_ast body)
+    Printf.sprintf "Abs (Var %S, %s)" param_str (print_ast body)
   | App (f, a) -> Printf.sprintf "App (%s, %s)" (print_ast f) (print_ast a)
-;;
-
-let precedence = function
-  | Mult | Div -> 3
-  | Plus | Minus -> 2
-  | Equal | More | Less | EMore | ELess -> 1
 ;;
 
 let precedence = function
@@ -142,7 +136,7 @@ let rec print_expr = function
     let param_str =
       match params with
       | Ast.Var s -> s
-      | _ -> failwith "Abs parameter must be a variable"
+      | _ -> "???"
     in
     let body_str = print_expr body in
     (* Add parentheses around let without in or if without else when they appear in Abs body *)

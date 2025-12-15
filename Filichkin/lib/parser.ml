@@ -25,8 +25,7 @@ let braces p = char '{' *> spaces *> p <* spaces <* char '}'
 
 (** This is a reserved word *)
 let is_keyword = function
-  | "let" | "in" | "fun" | "true" | "false" | "rec" | "else" | "if" | "then" | "_" | "fix"
-    -> true
+  | "let" | "in" | "fun" | "true" | "false" | "rec" | "else" | "if" | "then" | "_" -> true
   | _ -> false
 ;;
 
@@ -57,7 +56,6 @@ let identifier =
   >>= fun s -> if is_keyword s then fail ("keyword: " ^ s) else return s
 ;;
 
-(* var: convenience parser that returns AST Var *)
 let var = identifier >>= fun s -> return (Var s)
 let kw s = spaces *> string s <* spaces
 let kw_let = kw "let"
@@ -67,9 +65,6 @@ let kw_if = kw "if"
 let kw_then = kw "then"
 let kw_else = kw "else"
 let kw_rec = kw "rec"
-let kw_fix = kw "fix"
-
-(* fun (with multi-arg sugar) косяк *)
 
 let expr =
   fix (fun expr ->
@@ -173,7 +168,7 @@ let expr =
     choice [ let_expr; if_expr; bin_ops ])
 ;;
 
-let top = spaces *> expr <* spaces <* end_of_input (*костыль*)
+let top = spaces *> expr <* spaces <* end_of_input
 
 let parser str =
   match Angstrom.parse_string ~consume:Angstrom.Consume.All top str with

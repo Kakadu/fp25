@@ -8,6 +8,7 @@
 
 open Ast
 open Base
+module Env = Stdlib.Map.Make (String)
 
 type error =
   | UnboundVariable of string
@@ -18,8 +19,6 @@ type error =
   | StackOverflow
 
 type 'a eval_result = ('a, error) Result.t
-
-module Env = Stdlib.Map.Make (String)
 
 let ( >>= ) r f =
   match r with
@@ -32,9 +31,10 @@ let ( let* ) = ( >>= )
 type value =
   | VInt of int
   | VUnit
-  | VClosure of string * expr * env ref
+  | VClosure of string * expr * env Lazy.t
   | VBuiltin of (value -> value eval_result)
 
+(** Purely functional, immutable environment *)
 and env = value Env.t
 
 let return x = Ok x
@@ -55,6 +55,7 @@ let eval_binop op v1 v2 =
   | _, _, _ -> err (TypeError "binary operation expected two integers")
 ;;
 
+(** Main interpretation function *)
 let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
   if steps < 0
   then err StackOverflow
@@ -70,8 +71,7 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
       eval env e1 steps >>= fun v1 -> eval env e2 steps >>= fun v2 -> eval_binop op v1 v2
     | If (condition, then_expr, else_expr_opt) ->
       eval env condition steps
-      >>= fun rcond ->
-      (match rcond with
+      >>= (function
        | VInt 0 ->
          (match else_expr_opt with
           | Some else_expr -> eval env else_expr steps
@@ -88,43 +88,34 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
           | Some body -> eval new_env body steps
           | None -> return VUnit)
        | Rec ->
-         let env_ref = ref env in
-         (* Создаем замыкание, которое ссылается на этот env_ref *)
-         let* v =
-           eval !env_ref bound_expr steps
-           >>= function
-           | VClosure (param, body, _) ->
-             (* Создаем новое замыкание с правильной ссылкой *)
-             return (VClosure (param, body, env_ref))
-           | other -> return other
-         in
-         (* Обновляем окружение, добавляя туда само замыкание *)
-         let new_env = Env.add name v !env_ref in
-         env_ref := new_env;
-         (* Теперь вычисляем тело в обновленном окружении *)
-         (match body_opt with
-          | Some body -> eval new_env body steps
-          | None -> return VUnit))
+         (match bound_expr with
+          | Abs (Var param, fun_body) ->
+            (* lazy recursive environment *)
+            let rec env' : env Lazy.t = lazy (Env.add name closure env)
+            and closure : value = VClosure (param, fun_body, env') in
+            (match body_opt with
+             | Some body -> eval (Lazy.force env') body steps
+             | None -> return VUnit)
+          | _ -> err (TypeError "recursive binding must be a function")))
     | Abs (param_expr, body) ->
       (match param_expr with
        | Var x ->
-         (* Создаем замыкание с ссылкой на текущее окружение *)
-         let env_ref = ref env in
-         return (VClosure (x, body, env_ref))
+         (* lazily close over the current environment *)
+         return (VClosure (x, body, lazy env))
        | _ -> err (UnsupportedConstruct "lambda parameter must be a variable"))
     | App (fun_expr, arg_expr) ->
       let* vf = eval env fun_expr steps in
       let* va = eval env arg_expr steps in
       (match vf with
-       | VClosure (param, body, closure_env_ref) ->
-         (* Добавляем параметр в окружение замыкания *)
-         let new_env = Env.add param va !closure_env_ref in
+       | VClosure (param, body, closure_env) ->
+         let env0 = Lazy.force closure_env in
+         let new_env = Env.add param va env0 in
          eval new_env body steps
        | VBuiltin f -> f va
        | _ -> err (TypeError "application expects a function")))
 ;;
 
-let init_evn () =
+let init_env () =
   let print_int_fun =
     VBuiltin
       (function
@@ -137,7 +128,7 @@ let init_evn () =
   Env.empty |> Env.add "print_int" print_int_fun
 ;;
 
-let run_interpret expr = eval (init_evn ()) expr 200
+let run_interpret expr = eval (init_env ()) expr 1000
 
 let string_of_value = function
   | VInt n -> string_of_int n

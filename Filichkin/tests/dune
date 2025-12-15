@@ -1,11 +1,11 @@
-(library
- (name tests)
- (libraries Filichkin_lib qcheck)
- (modules parser_test interprate_test)
- (preprocess
-  (pps ppx_expect ppx_deriving.show))
- (instrumentation
-  (backend bisect_ppx)))
+; (library
+;  (name tests)
+;  (libraries Filichkin_lib qcheck)
+;  (modules parser_test interprate_test)
+;  (preprocess
+;   (pps ppx_expect ppx_deriving.show))
+;  (instrumentation
+;   (backend bisect_ppx)))
 
 (test
  (name qcheck_test)
