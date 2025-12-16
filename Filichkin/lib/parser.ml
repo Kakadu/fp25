@@ -20,6 +20,7 @@ let is_space = function
 (** Skips any number of spaces *)
 let spaces = skip_while is_space
 
+let spaces1 = take_while1 is_space *> return ()
 let parens p = char '(' *> spaces *> p <* spaces <* char ')'
 let braces p = char '{' *> spaces *> p <* spaces <* char '}'
 
@@ -49,15 +50,12 @@ let is_other = function
 
 let identifier =
   spaces
-  *> lift2
-       (fun h t -> String.make 1 h ^ t)
-       (satisfy is_first <?> "identifier first character")
-       (take_while is_other)
+  *> lift2 (fun h t -> String.make 1 h ^ t) (satisfy is_first) (take_while is_other)
   >>= fun s -> if is_keyword s then fail ("keyword: " ^ s) else return s
 ;;
 
 let var = identifier >>= fun s -> return (Var s)
-let kw s = spaces *> string s <* spaces
+let kw s = spaces *> string s <* spaces1
 let kw_let = kw "let"
 let kw_in = kw "in"
 let kw_fun = kw "fun"
@@ -74,9 +72,7 @@ let expr =
       kw "->" *> expr
       >>| fun body -> List.fold_right (fun arg f -> Abs (arg, f)) params body
     in
-    (* *_* *)
     let atom = spaces *> choice [ integer; var; fun_expr; parens expr ] <* spaces in
-    (* sugar: f x y *)
     let application =
       atom
       >>= fun f ->
@@ -124,7 +120,6 @@ let expr =
       in
       choice [ make_with_in; make_without_in ]
     in
-    (* if *)
     let if_expr =
       kw_if *> expr
       >>= fun cond ->
@@ -132,23 +127,19 @@ let expr =
       >>= fun t ->
       kw_else *> expr >>| (fun e -> If (cond, t, Some e)) <|> return (If (cond, t, None))
     in
-    (* let: either `let [rec]? name = bound` or `let [rec]? name = bound in body` *)
     let bin_ops =
       let make_chain next ops =
         next
         >>= fun first ->
         many (ops >>= fun op -> next >>= fun second -> return (op, second))
-        >>= fun rest ->
-        return (List.fold_left (fun acc (o, e) -> BinOp (o, acc, e)) first rest)
+        >>| fun rest -> List.fold_left (fun acc (o, e) -> BinOp (o, acc, e)) first rest
       in
-      (* multiplicative *)
       let mult_div =
         make_chain
           unary
           (choice
              [ spaces *> string "*" *> return Mult; spaces *> string "/" *> return Div ])
       in
-      (* additive *)
       let add_sub =
         make_chain
           mult_div

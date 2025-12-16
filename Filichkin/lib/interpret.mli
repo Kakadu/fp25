@@ -18,15 +18,13 @@ type error =
 
 type 'a eval_result = ('a, error) Result.t
 
-type value =
+type env = (string * value) list
+
+and value =
   | VInt of int
   | VUnit
-  | VClosure of string * expr * env Lazy.t
+  | VClosure of string * expr * env
   | VBuiltin of (value -> value eval_result)
-
-and env
-
-[@@@alert "-unneeded_mutual_rec"]
 
 val string_of_value : value -> string
 val string_of_error : error -> string

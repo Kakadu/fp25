@@ -8,7 +8,6 @@
 
 open Ast
 open Base
-module Env = Stdlib.Map.Make (String)
 
 type error =
   | UnboundVariable of string
@@ -28,15 +27,20 @@ let ( >>= ) r f =
 
 let ( let* ) = ( >>= )
 
-type value =
+type env = (string * value) list
+
+and value =
   | VInt of int
   | VUnit
-  | VClosure of string * expr * env Lazy.t
+  | VClosure of string * expr * env
   | VBuiltin of (value -> value eval_result)
 
-(** Purely functional, immutable environment *)
-and env = value Env.t
+let rec look_up x = function
+  | [] -> None
+  | (y, v) :: tl -> if String.equal x y then Some v else look_up x tl
+;;
 
+let extend env x v = (x, v) :: env
 let return x = Ok x
 let err e = Error e
 
@@ -64,52 +68,51 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
     match e with
     | Int n -> return (VInt n)
     | Var x ->
-      (match Env.find_opt x env with
+      (match look_up x env with
        | Some v -> return v
        | None -> err (UnboundVariable x))
     | BinOp (op, e1, e2) ->
       eval env e1 steps >>= fun v1 -> eval env e2 steps >>= fun v2 -> eval_binop op v1 v2
-    | If (condition, then_expr, else_expr_opt) ->
-      eval env condition steps
-      >>= (function
+    | If (cond, then_e, else_opt) ->
+      eval env cond steps
+      >>= fun v ->
+      (match v with
        | VInt 0 ->
-         (match else_expr_opt with
-          | Some else_expr -> eval env else_expr steps
+         (match else_opt with
+          | Some e -> eval env e steps
           | None -> return VUnit)
-       | VInt _ -> eval env then_expr steps
+       | VInt _ -> eval env then_e steps
        | _ -> err IncorrectExpression)
-    | Let (flag, name, bound_expr, body_opt) ->
+    | Let (flag, name, bound, body_opt) ->
       (match flag with
        | NonRec ->
-         eval env bound_expr steps
+         eval env bound steps
          >>= fun v ->
-         let new_env = Env.add name v env in
+         let new_env = (name, v) :: env in
          (match body_opt with
           | Some body -> eval new_env body steps
           | None -> return VUnit)
        | Rec ->
-         (match bound_expr with
+         (match bound with
           | Abs (Var param, fun_body) ->
-            (* lazy recursive environment *)
-            let rec env' : env Lazy.t = lazy (Env.add name closure env)
-            and closure : value = VClosure (param, fun_body, env') in
+            let rec closure = VClosure (param, fun_body, rec_env)
+            and rec_env = (name, closure) :: env in
             (match body_opt with
-             | Some body -> eval (Lazy.force env') body steps
+             | Some body -> eval rec_env body steps
              | None -> return VUnit)
           | _ -> err (TypeError "recursive binding must be a function")))
     | Abs (param_expr, body) ->
       (match param_expr with
-       | Var x ->
-         (* lazily close over the current environment *)
-         return (VClosure (x, body, lazy env))
+       | Var x -> return (VClosure (x, body, env))
        | _ -> err (UnsupportedConstruct "lambda parameter must be a variable"))
-    | App (fun_expr, arg_expr) ->
-      let* vf = eval env fun_expr steps in
-      let* va = eval env arg_expr steps in
+    | App (f, arg) ->
+      eval env f steps
+      >>= fun vf ->
+      eval env arg steps
+      >>= fun va ->
       (match vf with
        | VClosure (param, body, closure_env) ->
-         let env0 = Lazy.force closure_env in
-         let new_env = Env.add param va env0 in
+         let new_env = (param, va) :: closure_env in
          eval new_env body steps
        | VBuiltin f -> f va
        | _ -> err (TypeError "application expects a function")))
@@ -120,12 +123,12 @@ let init_env () =
     VBuiltin
       (function
         | VInt x ->
-          let () = print_int x in
-          let () = print_newline () in
+          print_int x;
+          print_newline ();
           return VUnit
         | _ -> err (TypeError "print_int expects an integer"))
   in
-  Env.empty |> Env.add "print_int" print_int_fun
+  [ "print_int", print_int_fun ]
 ;;
 
 let run_interpret expr = eval (init_env ()) expr 1000
