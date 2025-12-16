@@ -6,8 +6,7 @@
 
 [@@@ocaml.text "/*"]
 
-let rec pprint ast =
-  match ast with
+let rec pprint = function
   | Ast.Const x -> string_of_int x
   | Ast.Ident x -> x
   | Ast.Binexpr (op, l, r) ->

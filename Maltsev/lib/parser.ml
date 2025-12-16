@@ -20,21 +20,18 @@ let conde = function
 
 let parens p = spaces *> char '(' *> p <* spaces <* char ')'
 
-let is_digit c =
-  match c with
+let is_digit = function
   | '0' .. '9' -> true
   | _ -> false
 ;;
 
-let is_alpha c =
-  match c with
+let is_alpha = function
   | 'a' .. 'z' -> true
   | 'A' .. 'Z' -> true
   | _ -> false
 ;;
 
-let var_name c =
-  match c with
+let var_name = function
   | '0' .. '9' | 'a' .. 'z' | 'A' .. 'Z' -> true
   | _ -> false
 ;;
@@ -56,8 +53,7 @@ let parse_number =
   | _ -> Ast.Const (int_of_string x)
 ;;
 
-let is_keyword s =
-  match s with
+let is_keyword = function
   | "let" | "rec" | "in" | "if" | "then" | "else" | "fun" | "->" -> true
   | _ -> false
 ;;
