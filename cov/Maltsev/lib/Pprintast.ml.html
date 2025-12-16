@@ -18,8 +18,8 @@
       <h2>93.33%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="bottom:37.93%"></span>
-      <span class="unvisited" style="bottom:3.45%"></span>
+      <span class="unvisited" style="bottom:31.43%"></span>
+      <span class="unvisited" style="bottom:2.86%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -27,32 +27,38 @@
 <a id="L1"></a><span > </span>
 <a id="L2"></a><span > </span>
 <a id="L3"></a><span > </span>
-<a id="L4"></a><span class="visited"> </span>
-<a id="L5"></a><span class="visited"> </span>
-<a id="L6"></a><span class="visited"> </span>
-<a id="L7"></a><span class="visited"> </span>
+<a id="L4"></a><span > </span>
+<a id="L5"></a><span > </span>
+<a id="L6"></a><span > </span>
+<a id="L7"></a><span > </span>
 <a id="L8"></a><span > </span>
 <a id="L9"></a><span > </span>
 <a id="L10"></a><span class="visited"> </span>
 <a id="L11"></a><span class="visited"> </span>
 <a id="L12"></a><span class="visited"> </span>
 <a id="L13"></a><span class="visited"> </span>
-<a id="L14"></a><span class="visited"> </span>
-<a id="L15"></a><span class="visited"> </span>
+<a id="L14"></a><span > </span>
+<a id="L15"></a><span > </span>
 <a id="L16"></a><span class="visited"> </span>
 <a id="L17"></a><span class="visited"> </span>
-<a id="L18"></a><span class="unvisited"> </span>
-<a id="L19"></a><span > </span>
+<a id="L18"></a><span class="visited"> </span>
+<a id="L19"></a><span class="visited"> </span>
 <a id="L20"></a><span class="visited"> </span>
 <a id="L21"></a><span class="visited"> </span>
 <a id="L22"></a><span class="visited"> </span>
 <a id="L23"></a><span class="visited"> </span>
-<a id="L24"></a><span class="visited"> </span>
-<a id="L25"></a><span class="visited"> </span>
+<a id="L24"></a><span class="unvisited"> </span>
+<a id="L25"></a><span > </span>
 <a id="L26"></a><span class="visited"> </span>
 <a id="L27"></a><span class="visited"> </span>
-<a id="L28"></a><span class="unvisited"> </span>
-<a id="L29"></a><span > </span>
+<a id="L28"></a><span class="visited"> </span>
+<a id="L29"></a><span class="visited"> </span>
+<a id="L30"></a><span class="visited"> </span>
+<a id="L31"></a><span class="visited"> </span>
+<a id="L32"></a><span class="visited"> </span>
+<a id="L33"></a><span class="visited"> </span>
+<a id="L34"></a><span class="unvisited"> </span>
+<a id="L35"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -86,34 +92,46 @@
 <a href="#L27">27</a>
 <a href="#L28">28</a>
 <a href="#L29">29</a>
+<a href="#L30">30</a>
+<a href="#L31">31</a>
+<a href="#L32">32</a>
+<a href="#L33">33</a>
+<a href="#L34">34</a>
+<a href="#L35">35</a>
 </pre>
-<pre><code class="ocaml">(*open Ast*)
+<pre><code class="ocaml">[@@@ocaml.text "/*"]
+
+(** Copyright 2021-2024, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+[@@@ocaml.text "/*"]
 
 let rec pprint ast =
-  <span data-count="245610">m</span>atch ast with
-  | <span data-count="41473">A</span>st.Const x -&gt; string_of_int x
-  | <span data-count="73654">A</span>st.Ident x -&gt; x
-  | <span data-count="16380">A</span>st.Binexpr (op, l, r) -&gt;
+  <span data-count="235941">m</span>atch ast with
+  | <span data-count="39674">A</span>st.Const x -&gt; string_of_int x
+  | <span data-count="70788">A</span>st.Ident x -&gt; x
+  | <span data-count="15613">A</span>st.Binexpr (op, l, r) -&gt;
     let op_str =
       match op with
-      | <span data-count="2010">A</span>st.Plus -&gt; "+"
-      | <span data-count="2029">A</span>st.Minus -&gt; "-"
-      | <span data-count="2010">A</span>st.Mul -&gt; "*"
-      | <span data-count="2061">A</span>st.Div -&gt; "/"
-      | <span data-count="2061">A</span>st.Eq -&gt; "="
-      | <span data-count="2031">A</span>st.Bi -&gt; "&gt;"
-      | <span data-count="2076">A</span>st.Neq -&gt; "!="
-      | <span data-count="2102">A</span>st.Le -&gt; "&lt;"
+      | <span data-count="1943">A</span>st.Plus -&gt; "+"
+      | <span data-count="1942">A</span>st.Minus -&gt; "-"
+      | <span data-count="1917">A</span>st.Mul -&gt; "*"
+      | <span data-count="1975">A</span>st.Div -&gt; "/"
+      | <span data-count="2126">A</span>st.Eq -&gt; "="
+      | <span data-count="1878">A</span>st.Bi -&gt; "&gt;"
+      | <span data-count="1910">A</span>st.Neq -&gt; "!="
+      | <span data-count="1922">A</span>st.Le -&gt; "&lt;"
       | <span data-count="0">_</span> -&gt; "?"
     in
-    "(" ^ pprin<span data-count="16380">t</span> l ^ ") " ^ op_str ^ " (" ^ pprin<span data-count="16380">t</span> r ^ ")"
-  | <span data-count="16310">A</span>st.Ite (cond, tb, eb) -&gt;
-    "if " ^ pprin<span data-count="16310">t</span> cond ^ " then " ^ pprin<span data-count="16310">t</span> tb ^ " else " ^ pprin<span data-count="16310">t</span> eb
-  | <span data-count="32563">A</span>st.Let (Ast.Recflag b, Ast.Ident name, letexpr, inexpr) -&gt;
-    let rec_flag = if b then <span data-count="16250">"</span>rec " else <span data-count="16313">"</span>" in
-    "let " ^ rec_flag ^ name ^ " = " ^ pprin<span data-count="32563">t</span> letexpr ^ " in " ^ pprin<span data-count="32563">t</span> inexpr
-  | <span data-count="32667">A</span>st.Abs (Ast.Ident arg, f) -&gt; "fun " ^ arg ^ " -&gt; " ^ pprin<span data-count="32667">t</span> f
-  | <span data-count="32563">A</span>st.App (f, arg) -&gt; "(" ^ pprin<span data-count="32563">t</span> f ^ ") (" ^ pprin<span data-count="32563">t</span> arg ^ ")"
+    "(" ^ pprin<span data-count="15613">t</span> l ^ ") " ^ op_str ^ " (" ^ pprin<span data-count="15613">t</span> r ^ ")"
+  | <span data-count="15601">A</span>st.Ite (cond, tb, eb) -&gt;
+    "if " ^ pprin<span data-count="15601">t</span> cond ^ " then " ^ pprin<span data-count="15601">t</span> tb ^ " else " ^ pprin<span data-count="15601">t</span> eb
+  | <span data-count="31423">A</span>st.Let (Ast.Recflag b, Ast.Ident name, letexpr, inexpr) -&gt;
+    let rec_flag = if b then <span data-count="15751">"</span>rec " else <span data-count="15672">"</span>" in
+    "let " ^ rec_flag ^ name ^ " = " ^ pprin<span data-count="31423">t</span> letexpr ^ " in " ^ pprin<span data-count="31423">t</span> inexpr
+  | <span data-count="31619">A</span>st.Abs (Ast.Ident arg, f) -&gt; "fun " ^ arg ^ " -&gt; " ^ pprin<span data-count="31619">t</span> f
+  | <span data-count="31223">A</span>st.App (f, arg) -&gt; "(" ^ pprin<span data-count="31223">t</span> f ^ ") (" ^ pprin<span data-count="31223">t</span> arg ^ ")"
   | <span data-count="0">_</span> -&gt; "bad ast"
 ;;
 </code></pre>
