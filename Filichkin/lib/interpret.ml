@@ -118,7 +118,7 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
        | _ -> err (TypeError "application expects a function")))
 ;;
 
-let init_env () =
+let init_env =
   let print_int_fun =
     VBuiltin
       (function
@@ -131,7 +131,7 @@ let init_env () =
   [ "print_int", print_int_fun ]
 ;;
 
-let run_interpret expr = eval (init_env ()) expr 1000
+let run_interpret expr = eval (init_env ) expr 1000
 
 let string_of_value = function
   | VInt n -> string_of_int n
