@@ -8,7 +8,6 @@ open Filichkin_lib.Parser
 open Filichkin_lib.Print
 open Gen
 
-(** Генератор для переменных *)
 let gen_var_name =
   Gen.(
     oneof
@@ -28,7 +27,6 @@ let gen_var_name =
       ])
 ;;
 
-(** Генератор для binop *)
 let gen_binop =
   Gen.(
     oneof
