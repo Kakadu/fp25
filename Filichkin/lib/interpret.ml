@@ -131,7 +131,7 @@ let init_env =
   [ "print_int", print_int_fun ]
 ;;
 
-let run_interpret expr = eval (init_env ) expr 1000
+let run_interpret expr = eval init_env expr 1000
 
 let string_of_value = function
   | VInt n -> string_of_int n
