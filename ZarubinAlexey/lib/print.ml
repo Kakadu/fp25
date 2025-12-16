@@ -6,6 +6,8 @@
 
 [@@@ocaml.text "/*"]
 
+open Ast
+
 type 'name t = 'name Ast.t =
   | Var of 'name
   | Abs of 'name * 'name t
@@ -14,9 +16,8 @@ type 'name t = 'name Ast.t =
   | Let of 'name * 'name t * 'name t
   | Let_rec of 'name * 'name * 'name t * 'name t
   | If of 'name t * 'name t * 'name t
-  | Binop of Ast.binop * 'name t * 'name t
+  | Binop of binop * 'name t * 'name t
   | Fix of 'name t
-
-[@@deriving show { with_path = false}]
+[@@deriving show { with_path = false }]
 
 let pp_named = pp Format.pp_print_string

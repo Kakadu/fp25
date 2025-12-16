@@ -9,18 +9,26 @@
 (** Real monadic interpreter goes here *)
 
 open Base
-open Utils
 open Ast
+
+(** модульный тип монады с ошибкой, вычисление дает 'a или ошибку 'e*)
+module type MONAD_FAIL = sig
+  type ('a, 'e) t
+
+  val return : 'a -> ('a, 'e) t
+  val bind : ('a, 'e) t -> f:('a -> ('b, 'e) t) -> ('b, 'e) t
+  val fail : 'e -> ('a, 'e) t
+end
 
 (** Тип ошибок интерпритатора.*)
 type error = 
-  ['UnknownVariable of string (** Переменная не найдена в окружении*)
-  | 'IfConditionNotInt (** Условие if не является целым числом*)
-  | 'BinopOnNonInt (** Бинарная операция применена не к двум int*)
-  | 'NotAFunction (** Попытка вызвать не функцию*)
-  | 'DivisionByZero (** Деление на ноль*)
-  | 'ResultNotInt (** В конце получили не int *)
-  | 'FixOnNonFunction (** fix применен к не функции *)
+  [`UnknownVariable of string (** Переменная не найдена в окружении*)
+  | `IfConditionNotInt (** Условие if не является целым числом*)
+  | `BinopOnNonInt (** Бинарная операция применена не к двум int*)
+  | `NotAFunction (** Попытка вызвать не функцию*)
+  | `DivisionByZero (** Деление на ноль*)
+  | `ResultNotInt (** В конце получили не int *)
+  | `FixOnNonFunction (** fix применен к не функции *)
   ]
 
   (** Функтор интерпретатора.
@@ -45,7 +53,7 @@ type error =
       let return (x : 'a) : ('a, 'e) M.t =
         M.return x
 
-        let (let *) (m : ('a, 'e) M.t) (f : 'a -> ('b, 'e) M.t) : ('b, 'e) M.t =
+        let ( let* ) (m : ('a, 'e) M.t) (f : 'a -> ('b, 'e) M.t) : ('b, 'e) M.t =
           M.bind m ~f
           (** завершить вычесление с ошибкой е*)
           let fail (e : 'e) : ('a, 'e) M.t =
@@ -57,7 +65,7 @@ type error =
           let rec lookup (env : env) (x : name) : (value, [> error]) M.t =
             match env with
             | [] ->
-               fail ('UnknownVariable x)
+               fail (`UnknownVariable x)
             | (y,v) :: rest ->
                if String.equal x y then
                return v
@@ -69,7 +77,7 @@ type error =
             |Add -> return (VInt (n1 + n2))
             |Sub -> return (VInt (n1 - n2))
             |Mul -> return (VInt (n1 * n2))
-            |Div -> if n2 = 0 then fail 'DivisionByZero else return (VInt (n1 / n2))
+            |Div -> if n2 = 0 then fail `DivisionByZero else return (VInt (n1 / n2))
             |Eq -> if Int.equal n1 n2 then return (VInt 1) else return (VInt 0)
             |Lt -> if n1 < n2 then return (VInt 1) else return (VInt 0)
             |Gt -> if n1 >n2 then return (VInt 1) else return (VInt 0)
@@ -96,7 +104,7 @@ type error =
                 eval env' body
                 |VInt _ -> 
                 (** попытка вызвать что не является функцией*)
-                fail 'NotAFunction
+                fail `NotAFunction
               end
               |Let (x, e1, e2) ->
               (** вычисляем е1, добавляем х -> знач в окружение, вычисляем е2 в новом окруж*)
@@ -112,7 +120,7 @@ type error =
                 begin
                   match vcond with
                   |VInt n -> if n = 0 then eval env e_else else eval env e_then
-                  |VClosure _ -> fail 'IfCOnditionNotInt
+                  |VClosure _ -> fail `IfConditionNotInt
                 end
                 |Binop (op, e1, e2) ->
                 let* v1 = eval env e1 in
@@ -120,7 +128,7 @@ type error =
                 begin 
                   match v1, v2 with
                   |VInt n1, VInt n2 -> eval_binop op n1 n2
-                  | _ -> fail 'BinopOnNonInt
+                  | _ -> fail `BinopOnNonInt
                 end
                 |Fix e1 ->
                 (** ожидаем на входе функцию (замыкание), из нее строим рекурсивную функцию*)
@@ -132,20 +140,20 @@ type error =
                   let rec vfix : value = VClosure (param, body, (param, vfix) :: closure_env)
                   in
                   return vfix
-                  |VInt _ -> fail 'FixOnNonFunction
+                  |VInt _ -> fail `FixOnNonFunction
                 end
                 let run (expr : name Ast.t) : (int, [> error]) M.t =
                   let* v = eval [] expr in
                   match v with
                   |VInt n -> return n
-                  |VClosure _ -> 'ResultNotInt
+                  |VClosure _ -> fail `ResultNotInt
                 end
                 (** парсит строку, запускает интерпретатор и печатает результат*)
                 let parse_and_run str = let module I = Interpret (Base.Result) in
                 (** сначала парсим строку в ast, потом передаем его в интерпретатор*)
                 let rez = Base.Result.(Parser.parse str >>= I.run) in
                 match rez with
-                | Result.Ok n -> Printf.printf "Success: %d\n" n
+                | Result.Ok n -> Stdlib.Printf.printf "Success: %d\n" n
                 |Result.Error #Parser.error -> Format.eprintf "Parsing error\n%!"; exit 1
                 |Result.Error #error -> Format.eprintf "Interpreter error\n%!"; exit 1
                 ;;
