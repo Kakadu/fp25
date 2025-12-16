@@ -14,7 +14,7 @@ type error =
   | TypeError of string
   | UnsupportedConstruct of string
   | IncorrectExpression
-  | StackOverflow
+  | StepCountIsZero
 
 type 'a eval_result = ('a, error) Result.t
 

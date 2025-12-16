@@ -15,7 +15,7 @@ type error =
   | TypeError of string
   | UnsupportedConstruct of string
   | IncorrectExpression
-  | StackOverflow
+  | StepCountIsZero
 
 type 'a eval_result = ('a, error) Result.t
 
@@ -63,7 +63,7 @@ let eval_binop op v1 v2 =
 (** Main interpretation function *)
 let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
   if steps < 0
-  then err StackOverflow
+  then err StepCountIsZero
   else (
     let steps = steps - 1 in
     match e with
@@ -144,5 +144,5 @@ let string_of_error = function
   | TypeError msg -> Printf.sprintf "Type error: %s" msg
   | UnsupportedConstruct constr -> Printf.sprintf "Unsupported construct: %s" constr
   | IncorrectExpression -> "Incorrect expression"
-  | StackOverflow -> "Stack overflow"
+  | StepCountIsZero -> "Stack overflow"
 ;;
