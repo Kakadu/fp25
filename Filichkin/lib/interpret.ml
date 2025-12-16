@@ -37,7 +37,8 @@ and value =
 
 let rec look_up x = function
   | [] -> None
-  | (y, v) :: tl -> if String.equal x y then Some v else look_up x tl
+  | (y, v) :: _ when String.equal x y -> Some v
+  | _ :: tl -> look_up x tl
 ;;
 
 let extend env x v = (x, v) :: env
@@ -75,8 +76,7 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
       eval env e1 steps >>= fun v1 -> eval env e2 steps >>= fun v2 -> eval_binop op v1 v2
     | If (cond, then_e, else_opt) ->
       eval env cond steps
-      >>= fun v ->
-      (match v with
+      >>= (function
        | VInt 0 ->
          (match else_opt with
           | Some e -> eval env e steps
