@@ -6,8 +6,12 @@
 
 [@@@ocaml.text "/*"]
 
-type num = int (** integer alias *)
-type ident = string (** string alias *)
+(** integer alias *)
+type num = int
+
+(** string alias *)
+type ident = string
+
 type recflag = Recflag of bool (** flag for rec *)
 
 type binop =
@@ -30,5 +34,5 @@ type expr =
   | Abs of expr * expr (** curried lambda abstraction (name and expr) *)
   | App of expr * expr (** application, fun and arg *)
   | Let of recflag * expr * expr * expr
-(** let binding, might be recursive, might be just a function definition, let "rec" "name" =
-   "expression" in "expression" *)
+  (** let binding, might be recursive, might be just a function definition, let "rec" "name" =
+      "expression" in "expression" *)
