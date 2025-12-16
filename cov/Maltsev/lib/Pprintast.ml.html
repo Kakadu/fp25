@@ -106,29 +106,29 @@
 [@@@ocaml.text "/*"]
 
 let rec pprint = function
-  | <span data-count="39225">A</span>st.Const x -&gt; string_of_int x
-  | <span data-count="69411">A</span>st.Ident x -&gt; x
-  | <span data-count="15462">A</span>st.Binexpr (op, l, r) -&gt;
+  | <span data-count="42723">A</span>st.Const x -&gt; string_of_int x
+  | <span data-count="76632">A</span>st.Ident x -&gt; x
+  | <span data-count="16728">A</span>st.Binexpr (op, l, r) -&gt;
     let op_str =
       match op with
-      | <span data-count="1932">A</span>st.Plus -&gt; "+"
-      | <span data-count="1928">A</span>st.Minus -&gt; "-"
-      | <span data-count="1914">A</span>st.Mul -&gt; "*"
-      | <span data-count="1911">A</span>st.Div -&gt; "/"
-      | <span data-count="1932">A</span>st.Eq -&gt; "="
-      | <span data-count="2007">A</span>st.Bi -&gt; "&gt;"
-      | <span data-count="1911">A</span>st.Neq -&gt; "!="
-      | <span data-count="1927">A</span>st.Le -&gt; "&lt;"
+      | <span data-count="2087">A</span>st.Plus -&gt; "+"
+      | <span data-count="2137">A</span>st.Minus -&gt; "-"
+      | <span data-count="2128">A</span>st.Mul -&gt; "*"
+      | <span data-count="2064">A</span>st.Div -&gt; "/"
+      | <span data-count="2106">A</span>st.Eq -&gt; "="
+      | <span data-count="2085">A</span>st.Bi -&gt; "&gt;"
+      | <span data-count="2074">A</span>st.Neq -&gt; "!="
+      | <span data-count="2047">A</span>st.Le -&gt; "&lt;"
       | <span data-count="0">_</span> -&gt; "?"
     in
-    "(" ^ pprin<span data-count="15462">t</span> l ^ ") " ^ op_str ^ " (" ^ pprin<span data-count="15462">t</span> r ^ ")"
-  | <span data-count="15429">A</span>st.Ite (cond, tb, eb) -&gt;
-    "if " ^ pprin<span data-count="15429">t</span> cond ^ " then " ^ pprin<span data-count="15429">t</span> tb ^ " else " ^ pprin<span data-count="15429">t</span> eb
-  | <span data-count="30767">A</span>st.Let (Ast.Recflag b, Ast.Ident name, letexpr, inexpr) -&gt;
-    let rec_flag = if b then <span data-count="15515">"</span>rec " else <span data-count="15252">"</span>" in
-    "let " ^ rec_flag ^ name ^ " = " ^ pprin<span data-count="30767">t</span> letexpr ^ " in " ^ pprin<span data-count="30767">t</span> inexpr
-  | <span data-count="30801">A</span>st.Abs (Ast.Ident arg, f) -&gt; "fun " ^ arg ^ " -&gt; " ^ pprin<span data-count="30801">t</span> f
-  | <span data-count="30548">A</span>st.App (f, arg) -&gt; "(" ^ pprin<span data-count="30548">t</span> f ^ ") (" ^ pprin<span data-count="30548">t</span> arg ^ ")"
+    "(" ^ pprin<span data-count="16728">t</span> l ^ ") " ^ op_str ^ " (" ^ pprin<span data-count="16728">t</span> r ^ ")"
+  | <span data-count="16888">A</span>st.Ite (cond, tb, eb) -&gt;
+    "if " ^ pprin<span data-count="16888">t</span> cond ^ " then " ^ pprin<span data-count="16888">t</span> tb ^ " else " ^ pprin<span data-count="16888">t</span> eb
+  | <span data-count="33930">A</span>st.Let (Ast.Recflag b, Ast.Ident name, letexpr, inexpr) -&gt;
+    let rec_flag = if b then <span data-count="16906">"</span>rec " else <span data-count="17024">"</span>" in
+    "let " ^ rec_flag ^ name ^ " = " ^ pprin<span data-count="33930">t</span> letexpr ^ " in " ^ pprin<span data-count="33930">t</span> inexpr
+  | <span data-count="33904">A</span>st.Abs (Ast.Ident arg, f) -&gt; "fun " ^ arg ^ " -&gt; " ^ pprin<span data-count="33904">t</span> f
+  | <span data-count="33920">A</span>st.App (f, arg) -&gt; "(" ^ pprin<span data-count="33920">t</span> f ^ ") (" ^ pprin<span data-count="33920">t</span> arg ^ ")"
   | <span data-count="0">_</span> -&gt; "bad ast"
 ;;
 </code></pre>

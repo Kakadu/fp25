@@ -237,70 +237,70 @@ let gen_var = Gen.oneo<span data-count="1">f</span> [ retur<span data-count="1">
 let gen_int = Gen.oneo<span data-count="1">f</span> [ retur<span data-count="1">n</span> (Ast.Const 8); retur<span data-count="1">n</span> (Ast.Const (-13)) ]
 
 let gen_binexpr e1 e2 =
-  <span data-count="15459">G</span>en.oneo<span data-count="15459">f</span>
-    [ retur<span data-count="15459">n</span> Ast.Plus
-    ; retur<span data-count="15459">n</span> Ast.Minus
-    ; retur<span data-count="15459">n</span> Ast.Mul
-    ; retur<span data-count="15459">n</span> Ast.Div
-    ; retur<span data-count="15459">n</span> Ast.Eq
-    ; retur<span data-count="15459">n</span> Ast.Neq
-    ; retur<span data-count="15459">n</span> Ast.Le
-    ; retur<span data-count="15459">n</span> Ast.Bi
+  <span data-count="16725">G</span>en.oneo<span data-count="16725">f</span>
+    [ retur<span data-count="16725">n</span> Ast.Plus
+    ; retur<span data-count="16725">n</span> Ast.Minus
+    ; retur<span data-count="16725">n</span> Ast.Mul
+    ; retur<span data-count="16725">n</span> Ast.Div
+    ; retur<span data-count="16725">n</span> Ast.Eq
+    ; retur<span data-count="16725">n</span> Ast.Neq
+    ; retur<span data-count="16725">n</span> Ast.Le
+    ; retur<span data-count="16725">n</span> Ast.Bi
     ]
-  &gt;&gt;= fun op -&gt; <span data-count="15459">r</span>eturn (Ast.Binexpr (op, e1, e2))
+  &gt;&gt;= fun op -&gt; <span data-count="16725">r</span>eturn (Ast.Binexpr (op, e1, e2))
 ;;
 
-let gen_ite e1 e2 e3 = <span data-count="15428">r</span>eturn (Ast.Ite (e1, e2, e3))
-let gen_abs e1 = <span data-count="30800">g</span>en_var &gt;&gt;= fun name -&gt; <span data-count="30800">r</span>eturn (Ast.Abs (name, e1))
-let gen_app e1 = <span data-count="30546">g</span>en_var &gt;&gt;= fun name -&gt; <span data-count="30546">r</span>eturn (Ast.App (name, e1))
+let gen_ite e1 e2 e3 = <span data-count="16887">r</span>eturn (Ast.Ite (e1, e2, e3))
+let gen_abs e1 = <span data-count="33903">g</span>en_var &gt;&gt;= fun name -&gt; <span data-count="33903">r</span>eturn (Ast.Abs (name, e1))
+let gen_app e1 = <span data-count="33918">g</span>en_var &gt;&gt;= fun name -&gt; <span data-count="33918">r</span>eturn (Ast.App (name, e1))
 
 let gen_let_nonrec e1 e2 =
-  <span data-count="15252">g</span>en_var
+  <span data-count="17024">g</span>en_var
   &gt;&gt;= fun name -&gt;
-  <span data-count="15252">g</span>en_ap<span data-count="15252">p</span> e1 &gt;&gt;= fun letexpr -&gt; <span data-count="15252">r</span>eturn (Ast.Let (Ast.Recflag false, name, letexpr, e2))
+  <span data-count="17024">g</span>en_ap<span data-count="17024">p</span> e1 &gt;&gt;= fun letexpr -&gt; <span data-count="17024">r</span>eturn (Ast.Let (Ast.Recflag false, name, letexpr, e2))
 ;;
 
 let gen_let_rec e1 e2 =
-  <span data-count="15514">g</span>en_var
+  <span data-count="16905">g</span>en_var
   &gt;&gt;= fun name -&gt;
-  <span data-count="15514">g</span>en_ab<span data-count="15514">s</span> e1 &gt;&gt;= fun letexpr -&gt; <span data-count="15514">r</span>eturn (Ast.Let (Ast.Recflag true, name, letexpr, e2))
+  <span data-count="16905">g</span>en_ab<span data-count="16905">s</span> e1 &gt;&gt;= fun letexpr -&gt; <span data-count="16905">r</span>eturn (Ast.Let (Ast.Recflag true, name, letexpr, e2))
 ;;
 
 let rec gen_expr n =
-  <span data-count="170314">m</span>atch n with
-  | <span data-count="39221">0</span> -&gt; gen_int
-  | <span data-count="38860">1</span> -&gt; gen_var
-  | <span data-count="92233">_</span> -&gt;
+  <span data-count="186861">m</span>atch n with
+  | <span data-count="42719">0</span> -&gt; gen_int
+  | <span data-count="42709">1</span> -&gt; gen_var
+  | <span data-count="101433">_</span> -&gt;
     Gen.oneof
-      [ (Gen.int_rang<span data-count="92233">e</span> 0 (n - 1)
-         &gt;&gt;<span data-count="92233">=</span> fun n1 -&gt;
-         <span data-count="15459">g</span>en_exp<span data-count="15459">r</span> n1
+      [ (Gen.int_rang<span data-count="101433">e</span> 0 (n - 1)
+         &gt;&gt;<span data-count="101433">=</span> fun n1 -&gt;
+         <span data-count="16725">g</span>en_exp<span data-count="16725">r</span> n1
          &gt;&gt;= fun e1 -&gt;
-         <span data-count="15459">G</span>en.int_rang<span data-count="15459">e</span> 0 (n - 1) &gt;&gt;= fun n2 -&gt; <span data-count="15459">g</span>en_exp<span data-count="15459">r</span> n2 &gt;&gt;= fun e2 -&gt; <span data-count="15459">g</span>en_binexpr e1 e2
+         <span data-count="16725">G</span>en.int_rang<span data-count="16725">e</span> 0 (n - 1) &gt;&gt;= fun n2 -&gt; <span data-count="16725">g</span>en_exp<span data-count="16725">r</span> n2 &gt;&gt;= fun e2 -&gt; <span data-count="16725">g</span>en_binexpr e1 e2
         )
-      ; (Gen.int_rang<span data-count="92233">e</span> 0 (n - 1)
-         &gt;&gt;<span data-count="92233">=</span> fun n1 -&gt;
-         <span data-count="15428">g</span>en_exp<span data-count="15428">r</span> n1
+      ; (Gen.int_rang<span data-count="101433">e</span> 0 (n - 1)
+         &gt;&gt;<span data-count="101433">=</span> fun n1 -&gt;
+         <span data-count="16887">g</span>en_exp<span data-count="16887">r</span> n1
          &gt;&gt;= fun cond -&gt;
-         <span data-count="15428">G</span>en.int_rang<span data-count="15428">e</span> 0 (n - 1)
+         <span data-count="16887">G</span>en.int_rang<span data-count="16887">e</span> 0 (n - 1)
          &gt;&gt;= fun n2 -&gt;
-         <span data-count="15428">g</span>en_exp<span data-count="15428">r</span> n2
+         <span data-count="16887">g</span>en_exp<span data-count="16887">r</span> n2
          &gt;&gt;= fun tb -&gt;
-         <span data-count="15428">G</span>en.int_rang<span data-count="15428">e</span> 0 (n - 1)
-         &gt;&gt;= fun n3 -&gt; <span data-count="15428">g</span>en_exp<span data-count="15428">r</span> n3 &gt;&gt;= fun eb -&gt; <span data-count="15428">g</span>en_ite cond tb eb)
-      ; (Gen.int_rang<span data-count="92233">e</span> 0 (n - 1) &gt;&gt;<span data-count="92233">=</span> fun n1 -&gt; <span data-count="15286">g</span>en_exp<span data-count="15286">r</span> n1 &gt;&gt;= fun e1 -&gt; <span data-count="15286">g</span>en_abs e1)
-      ; (Gen.int_rang<span data-count="92233">e</span> 0 (n - 1) &gt;&gt;<span data-count="92233">=</span> fun n1 -&gt; <span data-count="15294">g</span>en_exp<span data-count="15294">r</span> n1 &gt;&gt;= fun e1 -&gt; <span data-count="15294">g</span>en_app e1)
-      ; (Gen.int_rang<span data-count="92233">e</span> 0 (n - 1)
-         &gt;&gt;<span data-count="92233">=</span> fun n1 -&gt;
-         <span data-count="15252">g</span>en_exp<span data-count="15252">r</span> n1
+         <span data-count="16887">G</span>en.int_rang<span data-count="16887">e</span> 0 (n - 1)
+         &gt;&gt;= fun n3 -&gt; <span data-count="16887">g</span>en_exp<span data-count="16887">r</span> n3 &gt;&gt;= fun eb -&gt; <span data-count="16887">g</span>en_ite cond tb eb)
+      ; (Gen.int_rang<span data-count="101433">e</span> 0 (n - 1) &gt;&gt;<span data-count="101433">=</span> fun n1 -&gt; <span data-count="16998">g</span>en_exp<span data-count="16998">r</span> n1 &gt;&gt;= fun e1 -&gt; <span data-count="16998">g</span>en_abs e1)
+      ; (Gen.int_rang<span data-count="101433">e</span> 0 (n - 1) &gt;&gt;<span data-count="101433">=</span> fun n1 -&gt; <span data-count="16894">g</span>en_exp<span data-count="16894">r</span> n1 &gt;&gt;= fun e1 -&gt; <span data-count="16894">g</span>en_app e1)
+      ; (Gen.int_rang<span data-count="101433">e</span> 0 (n - 1)
+         &gt;&gt;<span data-count="101433">=</span> fun n1 -&gt;
+         <span data-count="17024">g</span>en_exp<span data-count="17024">r</span> n1
          &gt;&gt;= fun e1 -&gt;
-         <span data-count="15252">G</span>en.int_rang<span data-count="15252">e</span> 0 (n - 1)
-         &gt;&gt;= fun n2 -&gt; <span data-count="15252">g</span>en_exp<span data-count="15252">r</span> n2 &gt;&gt;= fun e2 -&gt; <span data-count="15252">g</span>en_let_nonrec e1 e2)
-      ; (Gen.int_rang<span data-count="92233">e</span> 0 (n - 1)
-         &gt;&gt;<span data-count="92233">=</span> fun n1 -&gt;
-         <span data-count="15514">g</span>en_exp<span data-count="15514">r</span> n1
+         <span data-count="17024">G</span>en.int_rang<span data-count="17024">e</span> 0 (n - 1)
+         &gt;&gt;= fun n2 -&gt; <span data-count="17024">g</span>en_exp<span data-count="17024">r</span> n2 &gt;&gt;= fun e2 -&gt; <span data-count="17024">g</span>en_let_nonrec e1 e2)
+      ; (Gen.int_rang<span data-count="101433">e</span> 0 (n - 1)
+         &gt;&gt;<span data-count="101433">=</span> fun n1 -&gt;
+         <span data-count="16905">g</span>en_exp<span data-count="16905">r</span> n1
          &gt;&gt;= fun e1 -&gt;
-         <span data-count="15514">G</span>en.int_rang<span data-count="15514">e</span> 0 (n - 1) &gt;&gt;= fun n2 -&gt; <span data-count="15514">g</span>en_exp<span data-count="15514">r</span> n2 &gt;&gt;= fun e2 -&gt; <span data-count="15514">g</span>en_let_rec e1 e2
+         <span data-count="16905">G</span>en.int_rang<span data-count="16905">e</span> 0 (n - 1) &gt;&gt;= fun n2 -&gt; <span data-count="16905">g</span>en_exp<span data-count="16905">r</span> n2 &gt;&gt;= fun e2 -&gt; <span data-count="16905">g</span>en_let_rec e1 e2
         )
       ]
 ;;
