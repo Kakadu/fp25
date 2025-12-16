@@ -9,36 +9,31 @@
 type name = string
 
 (** Бинарные операции miniML*)
-type binop = 
-  |Add
-  |Sub
-  |Mul
-  |Div
-  |Eq
-  |Lt
-  |Gt
+type binop =
+  | Add
+  | Sub
+  | Mul
+  | Div
+  | Eq
+  | Lt
+  | Gt
+[@@deriving show { with_path = false }]
 
 (* Главное дерево абстрактного синтаксиса *)
 type 'name t =
- | Var of 'name
- | Abs of 'name * 'name t 
- (** Анонимная функция [fun x -> body]*)
- | App of 'name t * 'name t 
- (** Применение функции [f a]*)
- | Int of int 
- | Let of 'name * 'name t * 'name t
-    (** Нерекурсивное определение:
-    [let x = e1 in e2]
-    Сначала вычисляем [e1] , результат связываем с именем [x],
-    потом вычисляем [e2] в окружении
-    *)
- | Let_rec of 'name * 'name * 'name t * 'name t
- (** Рекурсивное определение функции:
-  [let rec f x = body in e]
-  *)
+  | Var of 'name
+  | Abs of 'name * 'name t (** Анонимная функция [fun x -> body]*)
+  | App of 'name t * 'name t (** Применение функции [f a]*)
+  | Int of int
+  | Let of 'name * 'name t * 'name t
+  (** Нерекурсивное определение:
+      [let x = e1 in e2]
+      Сначала вычисляем [e1] , результат связываем с именем [x],
+      потом вычисляем [e2] в окружении *)
+  | Let_rec of 'name * 'name * 'name t * 'name t
+  (** Рекурсивное определение функции:
+      [let rec f x = body in e] *)
   | If of 'name t * 'name t * 'name t
   | Binop of binop * 'name t * 'name t
-  | Fix of 'name t
-  (** Оператор фиксированной точки
-  [fix f]
-  *)
+  | Fix of 'name t (** Оператор фиксированной точки
+                       [fix f] *)

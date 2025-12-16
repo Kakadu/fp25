@@ -8,10 +8,10 @@ open Angstrom
 let ( let* ) = ( >>= )
 
 (** заворачиваем текстовое сообщение*)
-type error = [ 'Parsing_error of string]
+type error = [ `Parsing_error of string ]
 
 let pp_error ppf = function
-| 'Parsing_error s -> Format.fprintf ppf "%s" s
+| `Parsing_error s -> Format.fprintf ppf "%s" s
 
 (** проверяем является ли символ пробельным*)
 let is_space = function
@@ -50,7 +50,7 @@ let is_ident_char = function
 *)
 
 let ident : string t =
-    let* first = satisfy is_ident_sstart in
+    let* first = satisfy is_ident_start in
     let* rest = take_while is_ident_char in
     let name = String.make 1 first ^ rest in
     lexeme (return name)
@@ -71,7 +71,6 @@ let integer : Ast.name Ast.t t =
 let chainl1 (p : Ast.name Ast.t t) (op : (Ast.name Ast.t -> Ast.name Ast.t -> Ast.name Ast.t) t)
 : Ast.name Ast.t t = 
 let rec go acc =
-    let rec go acc =
         (let* f = op in
         let* x = p in
         let acc' = f acc x in
@@ -83,7 +82,7 @@ let rec go acc =
 (** парсер выражений с приоритетами*)
 let rec expr () : Ast.name Ast.t t =
     (* сначала конструкции с ключевыми словами let/if/fun, а потом бинарные операции*)
-    (let_expr ()) <|> (if_expr()) <|> (fun_expr ()) <|> cmp ()
+    (let_expr ()) <|> (if_expr ()) <|> (fun_expr ()) <|> cmp ()
 
 (** парсер let / let rec*)
 and let_expr () : Ast.name Ast.t t =
@@ -120,6 +119,7 @@ let* is_rec =
    and fun_expr () : Ast.name Ast.t t =
    let* _ = symbol "fun" in
    (** many1 p парсим p 1 или больше раз и возвращаем список рез*)
+   let* params = many1 ident in
    let* _ = symbol "->" in
    let* body = expr () in
    (**делаем каррирование для функции*)
@@ -160,7 +160,7 @@ let* is_rec =
       [ (** скобки *)
         parens (expr ())
         ; (** fix e*)
-         (symbil "fix" *> atom () >>= fun e -> return (Ast.FIx e))
+         (symbol "fix" *> atom () >>= fun e -> return (Ast.Fix e))
         ; (** число *)
          integer
         ; (** переменная *)
@@ -190,4 +190,4 @@ let parse (str : string) : (Ast.name Ast.t, [> error ]) result =
      str
      with
      | Result.Ok x -> Result.Ok x
-     | Result.Error msg -> Result.Error
+     | Result.Error msg -> Result.Error (`Parsing_error msg)
