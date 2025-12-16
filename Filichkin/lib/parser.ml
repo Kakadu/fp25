@@ -22,7 +22,6 @@ let spaces = skip_while is_space
 
 let spaces1 = take_while1 is_space *> return ()
 let parens p = char '(' *> spaces *> p <* spaces <* char ')'
-let braces p = char '{' *> spaces *> p <* spaces <* char '}'
 
 (** This is a reserved word *)
 let is_keyword = function

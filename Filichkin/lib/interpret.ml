@@ -25,8 +25,6 @@ let ( >>= ) r f =
   | Error _ as e -> e
 ;;
 
-let ( let* ) = ( >>= )
-
 type env = (string * value) list
 
 and value =
@@ -41,7 +39,6 @@ let rec look_up x = function
   | _ :: tl -> look_up x tl
 ;;
 
-let extend env x v = (x, v) :: env
 let return x = Ok x
 let err e = Error e
 
@@ -123,8 +120,8 @@ let init_env =
     VBuiltin
       (function
         | VInt x ->
-          print_int x;
-          print_newline ();
+          Base.print_int x;
+          Base.print_newline ();
           return VUnit
         | _ -> err (TypeError "print_int expects an integer"))
   in
@@ -134,7 +131,7 @@ let init_env =
 let run_interpret expr = eval init_env expr 1000
 
 let string_of_value = function
-  | VInt n -> string_of_int n
+  | VInt n -> Int.to_string n
   | _ -> "()"
 ;;
 
