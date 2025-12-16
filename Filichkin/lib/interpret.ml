@@ -120,8 +120,7 @@ let init_env =
     VBuiltin
       (function
         | VInt x ->
-          Base.print_int x;
-          Base.print_newline ();
+          Stdlib.Printf.printf "%d\n" x;
           return VUnit
         | _ -> err (TypeError "print_int expects an integer"))
   in
