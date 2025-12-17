@@ -70,6 +70,11 @@ module Env = struct
     | None -> fail (NoVariable key)
   ;;
 
+  let find_exn1 env key =
+    let val' = Map.find_exn env key in
+    val'
+  ;;
+
   let empty = Map.empty (module String)
 
   let env_with_print_funs =
@@ -134,12 +139,12 @@ module Eval = struct
        | Const_int int -> return (ValInt int)
        (* | Bool bool -> return (ValBool bool) *)
        | Const_unit -> return ValUnit)
-    (* | ExpLet (NonRec, value_binding, value_binding_list, exp) ->
-       let* env = eval_value_binding_list env (value_binding :: value_binding_list) in
-       eval_expression env exp
-       | ExpLet (Rec, value_binding, value_binding_list, exp) ->
-       let* env = eval_rec_value_binding_list env (value_binding :: value_binding_list) in
-       eval_expression env exp *)
+    | Expr_let (NonRecursive, value_binding, value_binding_list, exp) ->
+      let* env = eval_value_binding_list env (value_binding :: value_binding_list) in
+      eval_expression env exp
+    | Expr_let (Recursive, value_binding, value_binding_list, exp) ->
+      let* env = eval_rec_value_binding_list env (value_binding :: value_binding_list) in
+      eval_expression env exp
     | Expr_fun (pat, exp) -> return (ValFun (NonRecursive, pat, exp, env))
     | Expr_function (case, case_list) -> return (ValFunction (case :: case_list, env))
     | Expr_match (exp, case, case_list) ->
@@ -152,7 +157,7 @@ module Eval = struct
     | Expr_unop (op, e) ->
       let* v = eval_expression env e in
       eval_un_op (op, v)
-    (* | Expr_apply (exp1, exp2) ->
+    | Expr_apply (exp1, exp2) ->
        let* fun_val = eval_expression env exp1 in
        let* arg_val = eval_expression env exp2 in
        (match fun_val with
@@ -170,11 +175,8 @@ module Eval = struct
        | "print_int", ValInt integer ->
        Format.printf "%d\n" integer;
        return ValUnit
-       | "print_endline", ValString str ->
-       print_endline str;
-       return ValUnit
        | _ -> fail TypeError)
-       | _ -> fail TypeError) *)
+       | _ -> fail TypeError)
     | Expr_option None -> return (ValOption None)
     | Expr_option (Some expr) ->
       let* value = eval_expression env expr in
@@ -196,7 +198,6 @@ module Eval = struct
           | _ -> fail TypeError)
        | _ -> fail TypeError)
     | Expr_constraint (_, exp) -> eval_expression env exp
-    | _ -> fail TypeError (*not implemented*)
 
   and find_and_eval_case env value = function
     | [] -> fail MatchFailure
@@ -240,25 +241,21 @@ module Eval = struct
       value_binding_list
   ;;
 
-  let eval_structure_item env out_list
-    =
-    (* let rec extract_names_from_pat env acc = function
-      | Pat_var id -> acc @ [ Some id, find_exn env id ]
+  let eval_structure_item env out_list =
+    let rec extract_names_from_pat (env : environment) acc = function
+      | Pat_var id -> acc @ [ Some id, find_exn1 env id ]
       | Pat_constraint (_, pat) -> extract_names_from_pat env acc pat
       | _ -> acc
-    in *)
-    (* let get_names_from_let_binds env =
+    in
+    let get_names_from_let_binds env =
       Base.List.fold_left ~init:[] ~f:(fun acc { vb_pat; _ } ->
         extract_names_from_pat env acc vb_pat)
-    in *)
+    in
     function
     | Str_eval exp ->
       let* val' = eval_expression env exp in
       return (env, out_list @ [ None, val' ])
-    | _ -> fail TypeError
-  ;;
-
-  (* | Str_value (NonRecursive, value_binding, value_binding_list) ->
+    | Str_value (NonRecursive, value_binding, value_binding_list) ->
       let value_binding_list = value_binding :: value_binding_list in
       let* env = eval_value_binding_list env value_binding_list in
       let eval_list = get_names_from_let_binds env value_binding_list in
@@ -267,7 +264,8 @@ module Eval = struct
       let value_binding_list = value_binding :: value_binding_list in
       let* env = eval_rec_value_binding_list env value_binding_list in
       let eval_list = get_names_from_let_binds env value_binding_list in
-      return (env, out_list @ eval_list) *)
+      return (env, out_list @ eval_list)
+  ;;
 
   let eval_structure env ast =
     let* env, out_list =
