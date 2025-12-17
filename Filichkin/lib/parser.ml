@@ -53,22 +53,33 @@ let identifier =
   >>= fun s -> if is_keyword s then fail ("keyword: " ^ s) else return s
 ;;
 
+let my_skip s =
+  spaces *> string s
+  <* (spaces1
+      <|> (peek_char
+           >>= function
+           | Some '(' -> return ()
+           | Some c when not (is_other c) -> return ()
+           | _ -> fail "Invalid entry"))
+;;
+
 let var = identifier >>= fun s -> return (Var s)
-let kw s = spaces *> string s <* spaces
+let kw s = spaces *> string s <* spaces1
 let kw_let = kw "let"
-let kw_in = kw "in"
+let kw_in = my_skip "in"
 let kw_fun = kw "fun"
-let kw_if = kw "if"
-let kw_then = kw "then"
-let kw_else = kw "else"
+let kw_if = my_skip "if"
+let kw_then = my_skip "then"
+let kw_else = my_skip "else"
 let kw_rec = kw "rec"
+let kw_arrow = my_skip "->"
 
 let expr =
   fix (fun expr ->
     let fun_expr =
       kw_fun *> many1 identifier
       >>= fun params ->
-      kw "->" *> expr
+      kw_arrow *> expr
       >>| fun body -> List.fold_right (fun arg f -> Abs (arg, f)) params body
     in
     let atom = spaces *> choice [ integer; var; fun_expr; parens expr ] <* spaces in

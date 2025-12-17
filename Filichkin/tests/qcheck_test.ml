@@ -136,7 +136,7 @@ let parse_after_print expr =
 
 let print_parse_roundtrip =
   QCheck.Test.make
-    ~count:1000
+    ~count:10000
     ~name:"AST -> print_expr -> parser -> AST"
     arb_expr
     (fun expr ->
