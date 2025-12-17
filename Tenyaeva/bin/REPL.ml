@@ -3,6 +3,7 @@
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
 open Tenyaeva_lib.Parser
+open Tenyaeva_lib.Interpreter
 open Tenyaeva_lib.Ast
 
 type options = { mutable dump_parsetree : bool }
@@ -10,7 +11,18 @@ type options = { mutable dump_parsetree : bool }
 let run_single options =
   let text = Stdlib.String.trim (In_channel.input_all stdin) in
   if not options.dump_parsetree
-  then Stdlib.Format.printf "The interpreter is not yet implemented\n";
+  then (
+    match parse text with
+    | Ok structure ->
+      (match run_interpreter structure with
+       | Ok out_list ->
+         List.iter
+           (function
+             | Some id, val' -> Format.printf "val %s = %a\n" id pp_value val'
+             | None, val' -> Format.printf "- = %a\n" pp_value val')
+           out_list
+       | Error err -> Stdlib.Format.printf "%a\n" pp_eval_error err)
+    | Error err -> Stdlib.Format.printf "%s\n" err);
   if options.dump_parsetree
   then (
     match parse text with
