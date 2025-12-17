@@ -19,7 +19,7 @@ type error =
 
 type 'a eval_result = ('a, error) Result.t
 
-let ( >>= ) r f =
+let ( let* ) r f =
   match r with
   | Ok v -> f v
   | Error _ as e -> e
@@ -70,10 +70,12 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
        | Some v -> return v
        | None -> err (UnboundVariable x))
     | BinOp (op, e1, e2) ->
-      eval env e1 steps >>= fun v1 -> eval env e2 steps >>= fun v2 -> eval_binop op v1 v2
+      let* v1 = eval env e1 steps in
+      let* v2 = eval env e2 steps in
+      eval_binop op v1 v2
     | If (cond, then_e, else_opt) ->
-      eval env cond steps
-      >>= (function
+      let* v = eval env cond steps in
+      (match v with
        | VInt 0 ->
          (match else_opt with
           | Some e -> eval env e steps
@@ -83,8 +85,7 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
     | Let (flag, name, bound, body_opt) ->
       (match flag with
        | NonRec ->
-         eval env bound steps
-         >>= fun v ->
+         let* v = eval env bound steps in
          let new_env = (name, v) :: env in
          (match body_opt with
           | Some body -> eval new_env body steps
@@ -103,10 +104,8 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
        | Var x -> return (VClosure (x, body, env))
        | _ -> err (UnsupportedConstruct "lambda parameter must be a variable"))
     | App (f, arg) ->
-      eval env f steps
-      >>= fun vf ->
-      eval env arg steps
-      >>= fun va ->
+      let* vf = eval env f steps in
+      let* va = eval env arg steps in
       (match vf with
        | VClosure (param, body, closure_env) ->
          let new_env = (param, va) :: closure_env in
