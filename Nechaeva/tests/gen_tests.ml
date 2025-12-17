@@ -1,6 +1,6 @@
 [@@@ocaml.text "/*"]
 
-(** Copyright 2021-2024, Kakadu and contributors *)
+(** Copyright 2021-2025, Kakadu and contributors *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
@@ -21,7 +21,6 @@ let gen_name =
     ]
 ;;
 
-(* let gen_int = Gen.(oneof [ small_int; int_range (-100) 100; int ])*)
 let gen_int = Gen.(oneof [ small_int; int_range 0 100; int_range 1 1000 ])
 let gen_constant = Gen.map (fun i -> Int i) gen_int
 let gen_binop = Gen.oneofl [ Plus; Minus; Mul; Div ]
@@ -85,9 +84,10 @@ let gen_invalid_program =
     ; pure ""
     ; pure "   "
     ; pure "123abc"
+    ; pure "123ABC"
+    ; pure "123xyz"
+    ; pure "123XYZ"
     ; pure "*y"
-    ; pure "x == y"
-    ; pure "x != y"
     ; pure "x + y *"
     ; pure "* x y"
     ]

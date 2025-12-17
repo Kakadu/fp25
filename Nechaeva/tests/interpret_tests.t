@@ -29,6 +29,11 @@ in the dune file
   > 5 / 0
   Error: Division by zero
 
+  $ ../bin/REPL.exe --ast --maxSteps=100 <<EOF
+  > 5 / 0
+  AST: (5 / 0)
+  Error: Division by zero
+
   $ ../bin/REPL.exe <<EOF
   > 5 = 5
   Result: 1
@@ -119,6 +124,11 @@ in the dune file
   > let rec loop x = loop x in loop 1
   Error: Maximum steps exceeded
 
+  $ ../bin/REPL.exe --ast --maxSteps=50 <<EOF
+  > let rec loop x = loop x in loop 1
+  AST: (let rec loop = (fun x -> (loop x)) in (loop 1))
+  Error: Maximum steps exceeded
+
   $ ../bin/REPL.exe <<EOF
   > let x = 10 in let f = fun y -> x + y in let x = 20 in f 5
   Result: 15
@@ -147,6 +157,24 @@ in the dune file
   $ ../bin/REPL.exe --maxSteps=5 <<EOF
   > let rec loop x = loop (x + 1) in loop 0
   Error: Maximum steps exceeded
+
+  $ ../bin/REPL.exe <<EOF
+  > let rec f x = if x = 0 then 0 else f (x - 1) in f
+  Result: <rec_closure>
+
+  $ ../bin/REPL.exe <<EOF
+  > print
+  Result: <builtin>
+
+  $ ../bin/REPL.exe --ast --maxSteps=10000 <<EOF
+  > let rec f x = if x = 0 then 0 else f (x - 1) in f
+  AST: (let rec f = (fun x -> (if (x = 0) then 0 else (f (x - 1)))) in f)
+  Result: <rec_closure>
+
+  $ ../bin/REPL.exe --ast --maxSteps=10000 <<EOF
+  > print
+  AST: print
+  Result: <builtin>
 
   $ ../bin/REPL.exe <<EOF
   > let x = 1 in let y = 2 in let z = 3 in x + y + z
@@ -179,6 +207,10 @@ in the dune file
   $ ../bin/REPL.exe <<EOF
   > -x
   Error: Unbound variable: x
+
+  $ ../bin/REPL.exe <<EOF
+  > let rec x = 5 in x
+  Error: Type error: let rec must bind to function
 
   $ ../bin/REPL.exe <<EOF
   > let x = 5 in -x
@@ -257,3 +289,98 @@ in the dune file
   $ ../bin/REPL.exe <<EOF
   > let rec sum_neg_ones n = if n = 0 then 0 else -1 + sum_neg_ones (n - 1) in sum_neg_ones 5
   Result: -5
+
+  $ ../bin/REPL.exe --ocaml
+  ../bin/REPL.exe: unknown option '--ocaml'.
+  
+    --ast Show AST before evaluation
+    --maxSteps Set maximum number of evaluation steps (default: 1000)
+    -help  Display this list of options
+    --help  Display this list of options
+  [2]
+
+  $ ../bin/REPL.exe --maxSteps
+  ../bin/REPL.exe: option '--maxSteps' needs an argument.
+  
+    --ast Show AST before evaluation
+    --maxSteps Set maximum number of evaluation steps (default: 1000)
+    -help  Display this list of options
+    --help  Display this list of options
+  [2]
+
+  $ ../bin/REPL.exe -help
+  
+    --ast Show AST before evaluation
+    --maxSteps Set maximum number of evaluation steps (default: 1000)
+    -help  Display this list of options
+    --help  Display this list of options
+
+  $ ../bin/REPL.exe --help
+  
+    --ast Show AST before evaluation
+    --maxSteps Set maximum number of evaluation steps (default: 1000)
+    -help  Display this list of options
+    --help  Display this list of options
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = 1 in
+  > let f = fun y ->
+  >   let g = fun z -> x + y + z in
+  >   g
+  > in
+  > let h = f 2 in
+  > h 3
+  Result: 6
+
+  $ ../bin/REPL.exe <<EOF
+  > let make_adder x =
+  >   fun y -> x + y
+  > in
+  > let add5 = make_adder 5 in
+  > let add10 = make_adder 10 in
+  > add5 (add10 3)
+  Result: 18
+
+  $ ../bin/REPL.exe <<EOF
+  > 1 (2 + 3)
+  Error: Not a function
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = 5 in x (10)
+  Error: Not a function
+
+  $ ../bin/REPL.exe <<EOF
+  > if (fun x -> x) then 1 else 2
+  Error: Type error: If condition must be integer
+
+  $ ../bin/REPL.exe <<EOF
+  > let rec x = 5 in x
+  Error: Type error: let rec must bind to function
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = print 5 in x
+  5
+  Result: ()
+
+  $ ../bin/REPL.exe <<EOF
+  > let f = fun x -> print x in f 10
+  10
+  Result: ()
+
+  $ ../bin/REPL.exe <<EOF
+  > print true
+  1
+  Result: ()
+
+  $ ../bin/REPL.exe <<EOF
+  > print false
+  0
+  Result: ()
+
+  $ ../bin/REPL.exe <<EOF
+  > print (fun x -> x)
+  Error: Type error: print expects integer
+
+  $ ../bin/REPL.exe <<EOF
+  > let print_num = print in print_num
+  Result: <builtin>

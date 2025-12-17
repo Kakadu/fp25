@@ -17,6 +17,11 @@ let%expect_test "parse integer" =
   [%expect {| 42 |}]
 ;;
 
+let%expect_test "parse integer" =
+  run_test "    42    ";
+  [%expect {| 42 |}]
+;;
+
 let%expect_test "parse variable" =
   run_test "x";
   [%expect {| x |}]
@@ -167,17 +172,17 @@ let%expect_test "parse whitespace handling" =
 
 let%expect_test "parse invalid - missing operand" =
   run_test "1 +";
-  [%expect {| Parsing error: : end_of_input |}]
+  [%expect {| Parsing error: syntax error |}]
 ;;
 
 let%expect_test "parse invalid - unmatched parenthesis" =
   run_test "(1 + 2";
-  [%expect {| Parsing error: : not enough input |}]
+  [%expect {| Parsing error: syntax error |}]
 ;;
 
 let%expect_test "parse invalid - extra parenthesis" =
   run_test "1 + 2)";
-  [%expect {| Parsing error: : end_of_input |}]
+  [%expect {| Parsing error: syntax error |}]
 ;;
 
 let%expect_test "parse comparison precedence over arithmetic" =
@@ -311,4 +316,64 @@ let%expect_test "parse unary minus precedence over binary operators" =
 let%expect_test "parse unary minus before parentheses" =
   run_test "-(5 + 3)";
   [%expect {| (-(5 + 3)) |}]
+;;
+
+let%expect_test "parse invalid identifier starting with number" =
+  run_test "123abc";
+  [%expect {| Parsing error: syntax error |}]
+;;
+
+let%expect_test "parse keyword as identifier" =
+  run_test "let";
+  [%expect {| Parsing error: syntax error |}]
+;;
+
+let%expect_test "parse identifier with underscores" =
+  run_test "_var_name_123";
+  [%expect {| _var_name_123 |}]
+;;
+
+let%expect_test "parse single underscore" =
+  run_test "_";
+  [%expect {| _ |}]
+;;
+
+let%expect_test "parse number with underscore" =
+  run_test "123_456";
+  [%expect {| Parsing error: syntax error |}]
+;;
+
+let%expect_test "parse empty input" =
+  run_test "";
+  [%expect {| Parsing error: syntax error |}]
+;;
+
+let%expect_test "parse only spaces" =
+  run_test "   ";
+  [%expect {| Parsing error: syntax error |}]
+;;
+
+let%expect_test "parse only tabs" =
+  run_test "\t\t\t";
+  [%expect {| Parsing error: syntax error |}]
+;;
+
+let%expect_test "parse only newlines" =
+  run_test "\n\n\r\n";
+  [%expect {| Parsing error: syntax error |}]
+;;
+
+let%expect_test "parse only newlines" =
+  run_test "\n\n\r\n5";
+  [%expect {| 5 |}]
+;;
+
+let%expect_test "parse unary minus with parentheses" =
+  run_test "-(-5)";
+  [%expect {| (-(-5)) |}]
+;;
+
+let%expect_test "parse nested application with complex arguments with keyword var" =
+  run_test "f (let let = 1 in let) (if fun then 3 else 4)";
+  [%expect {| Parsing error: syntax error |}]
 ;;
