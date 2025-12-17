@@ -54,7 +54,7 @@ let identifier =
 ;;
 
 let var = identifier >>= fun s -> return (Var s)
-let kw s = spaces *> string s <* spaces1
+let kw s = spaces *> string s <* spaces
 let kw_let = kw "let"
 let kw_in = kw "in"
 let kw_fun = kw "fun"
@@ -66,7 +66,7 @@ let kw_rec = kw "rec"
 let expr =
   fix (fun expr ->
     let fun_expr =
-      kw_fun *> many1 var
+      kw_fun *> many1 identifier
       >>= fun params ->
       kw "->" *> expr
       >>| fun body -> List.fold_right (fun arg f -> Abs (arg, f)) params body
@@ -96,9 +96,7 @@ let expr =
         >>= fun args ->
         spaces *> char '=' *> spaces *> expr
         >>= fun bound_expr ->
-        let fun_expr =
-          List.fold_right (fun arg acc -> Abs (Var arg, acc)) args bound_expr
-        in
+        let fun_expr = List.fold_right (fun arg acc -> Abs (arg, acc)) args bound_expr in
         return (Let (rf, name, fun_expr, None))
       in
       let make_with_in =
@@ -112,9 +110,7 @@ let expr =
         >>= fun bound_expr ->
         kw_in *> expr
         >>= fun body ->
-        let fun_expr =
-          List.fold_right (fun arg acc -> Abs (Var arg, acc)) args bound_expr
-        in
+        let fun_expr = List.fold_right (fun arg acc -> Abs (arg, acc)) args bound_expr in
         return (Let (rf, name, fun_expr, Some body))
       in
       choice [ make_with_in; make_without_in ]

@@ -92,17 +92,14 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
           | None -> return VUnit)
        | Rec ->
          (match bound with
-          | Abs (Var param, fun_body) ->
+          | Abs (param, fun_body) ->
             let rec closure = VClosure (param, fun_body, rec_env)
             and rec_env = (name, closure) :: env in
             (match body_opt with
              | Some body -> eval rec_env body steps
              | None -> return VUnit)
           | _ -> err (TypeError "recursive binding must be a function")))
-    | Abs (param_expr, body) ->
-      (match param_expr with
-       | Var x -> return (VClosure (x, body, env))
-       | _ -> err (UnsupportedConstruct "lambda parameter must be a variable"))
+    | Abs (param, body) -> return (VClosure (param, body, env))
     | App (f, arg) ->
       let* vf = eval env f steps in
       let* va = eval env arg steps in

@@ -62,7 +62,7 @@ let rec gen_expr size =
       let gen_bound =
         map2
           (fun params body ->
-            List.fold_right (fun param acc -> Abs (Var param, acc)) params body)
+            List.fold_right (fun param acc -> Abs (param, acc)) params body)
           gen_params
           under_expr
       in
@@ -73,7 +73,7 @@ let rec gen_expr size =
       let gen_params = list_size (int_range 1 3) gen_var_name in
       map2
         (fun params body ->
-          List.fold_right (fun param acc -> Abs (Var param, acc)) params body)
+          List.fold_right (fun param acc -> Abs (param, acc)) params body)
         gen_params
         under_expr
     in
@@ -122,12 +122,7 @@ let rec shrink_expr = function
     <+> (shrink_expr x2 >|= fun e2 -> App (x1, e2))
   | Abs (x1, x2) ->
     let open Iter in
-    (match x1 with
-     | Var _ -> Iter.empty
-     | _ ->
-       of_list [ x1; x2 ]
-       <+> (shrink_expr x1 >|= fun e1 -> Abs (e1, x2))
-       <+> (shrink_expr x2 >|= fun e2 -> Abs (x1, e2)))
+    of_list [ x2 ] <+> (shrink_expr x2 >|= fun e2 -> Abs (x1, e2))
 ;;
 
 let arb_expr = QCheck.make ~print:print_expr ~shrink:shrink_expr (gen_expr 20)

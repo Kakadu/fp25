@@ -21,9 +21,11 @@ type rec_flag =
   | NonRec (** Non-recursive binding *)
   | Rec (** Recursive binding *)
 
+type ident = string [@@deriving show { with_path = false }]
+
 type expr =
   | Int of int (** Integer literal *)
-  | Var of string (** Variable name *)
+  | Var of ident (** Variable name *)
   | BinOp of binop * expr * expr
   (** Binary operation: operator, left and right operands *)
   | If of expr * expr * expr option
@@ -31,7 +33,7 @@ type expr =
   | Let of rec_flag * string * expr * expr option
   (** Let expression: recursiveness flag, name, bound expression, body (optional)
       The last parameter is the optional expression body (for parsing convenience) *)
-  | Abs of expr * expr
+  | Abs of ident * expr
   (** Abstraction (lambda function): parameter list, function body
       Syntactic sugar for functions with multiple arguments *)
   | App of expr * expr (** Application (function call): function, argument *)

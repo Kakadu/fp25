@@ -35,13 +35,7 @@ let rec print_ast = function
   | Let (Rec, x, e, None) -> Printf.sprintf "Let (Rec, %S, %s, None)" x (print_ast e)
   | Let (Rec, x, e, Some b) ->
     Printf.sprintf "Let (Rec, %S, %s, Some %s)" x (print_ast e) (print_ast b)
-  | Abs (param, body) ->
-    let param_str =
-      match param with
-      | Var x -> x
-      | _ -> "???"
-    in
-    Printf.sprintf "Abs (Var %S, %s)" param_str (print_ast body)
+  | Abs (param, body) -> Printf.sprintf "Abs (%S, %s)" param (print_ast body)
   | App (f, a) -> Printf.sprintf "App (%s, %s)" (print_ast f) (print_ast a)
 ;;
 
@@ -132,12 +126,7 @@ let rec print_expr = function
       | Some b -> Printf.sprintf " in %s" (print_expr b)
     in
     Printf.sprintf "let %s%s = %s%s" rec_prefix name value_str body_str
-  | Abs (params, body) ->
-    let param_str =
-      match params with
-      | Ast.Var s -> s
-      | _ -> "???"
-    in
+  | Abs (param, body) ->
     let body_str = print_expr body in
     (* Add parentheses around let without in or if without else when they appear in Abs body *)
     let body_str =
@@ -145,7 +134,7 @@ let rec print_expr = function
       | Let (_, _, _, None) | If (_, _, None) -> Printf.sprintf "(%s)" body_str
       | _ -> body_str
     in
-    Printf.sprintf "fun %s -> %s" param_str body_str
+    Printf.sprintf "fun %s -> %s" param body_str
   | App (func, arg) ->
     let func_str = print_expr func in
     let arg_str = print_expr arg in
