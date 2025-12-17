@@ -6,9 +6,7 @@
 
 (license "LGPL-3.0-or-later WITH OCaml-LGPL-linking-exception")
 
-(authors
- "Darya Nechaeva <necaevadara435@gmail.com>"
- "Darya Nechaeva <necaevadara435@gmail.com>")
+(authors "Darya Nechaeva <necaevadara435@gmail.com>")
 
 (maintainers "Darya Nechaeva <necaevadara435@gmail.com>")
 
