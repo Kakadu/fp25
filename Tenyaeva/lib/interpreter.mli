@@ -22,6 +22,9 @@ type value =
 
 and environment = (Ast.ident, value, Base.String.comparator_witness) Base.Map.t
 
+val pp_value : Format.formatter -> value -> unit
+val pp_eval_error : Format.formatter -> eval_error -> unit
+
 val run_interpreter
   :  Ast.structure
   -> ((Ast.ident option * value) list, eval_error) Result.t
