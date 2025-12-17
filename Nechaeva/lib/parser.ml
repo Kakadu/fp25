@@ -14,11 +14,6 @@ let spaces = skip_while is_space
 let token p = spaces *> p <* spaces
 let parens p = char '(' *> token p <* char ')'
 
-let conde = function
-  | [] -> fail "empty conde"
-  | h :: tl -> List.fold_left ( <|> ) h tl
-;;
-
 let is_keyword = function
   | "let" | "in" | "rec" | "if" | "then" | "else" | "fun" -> true
   | _ -> false
@@ -59,7 +54,6 @@ let number =
      >>| int_of_string)
 ;;
 
-(* let number_expr = number >>| fun num -> Const (Int num) *)
 let number_expr =
   token
     (take_while1 (function
@@ -88,10 +82,10 @@ let ge = token (string ">=") *> return GreaterEq
 
 let expr =
   fix (fun expr ->
-    let atom = conde [ number_expr; var_parser; parens expr ] in
+    let atom = choice [ number_expr; var_parser; parens expr ] in
     let unary =
       let neg = token (char '-') *> atom >>| fun e -> UnOp (Neg, e) in
-      conde [ neg; atom ]
+      choice [ neg; atom ]
     in
     let app =
       unary
@@ -101,13 +95,13 @@ let expr =
     let product =
       app
       >>= fun first ->
-      many (conde [ mul; div ] >>= fun op -> app >>| fun right -> op, right)
+      many (choice [ mul; div ] >>= fun op -> app >>| fun right -> op, right)
       >>| List.fold_left (fun left (op, right) -> BinOp (op, left, right)) first
     in
     let sum =
       product
       >>= fun first ->
-      many (conde [ plus; minus ] >>= fun op -> product >>| fun right -> op, right)
+      many (choice [ plus; minus ] >>= fun op -> product >>| fun right -> op, right)
       >>| List.fold_left (fun left (op, right) -> BinOp (op, left, right)) first
     in
     let comparison =
@@ -115,7 +109,7 @@ let expr =
       >>= fun left ->
       option
         left
-        (conde [ neq; le; ge; lt; gt; eq ]
+        (choice [ neq; le; ge; lt; gt; eq ]
          >>= fun op -> sum >>| fun right -> Comp (op, left, right))
     in
     let let_expr =
@@ -163,7 +157,7 @@ let expr =
       >>= fun args ->
       token (string "->") >>= fun _ -> expr >>| fun body -> Abs (args, body)
     in
-    conde [ let_expr; if_expr; abs_expr; comparison ])
+    choice [ let_expr; if_expr; abs_expr; comparison ])
 ;;
 
 type error = [ `Parsing_error of string ]
@@ -171,5 +165,5 @@ type error = [ `Parsing_error of string ]
 let parse str =
   match Angstrom.parse_string expr ~consume:Angstrom.Consume.All str with
   | Result.Ok x -> Result.Ok x
-  | Error er -> Result.Error (`Parsing_error er)
+  | Error _ -> Result.Error (`Parsing_error "syntax error")
 ;;
