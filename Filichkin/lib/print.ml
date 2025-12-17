@@ -39,12 +39,6 @@ let rec print_ast = function
   | App (f, a) -> Printf.sprintf "App (%s, %s)" (print_ast f) (print_ast a)
 ;;
 
-let precedence = function
-  | Mult | Div -> 3
-  | Plus | Minus -> 2
-  | Equal | More | Less | EMore | ELess -> 1
-;;
-
 let rec print_expr = function
   | Int n -> string_of_int n
   | Var s -> s
