@@ -51,14 +51,6 @@ let number =
     (take_while1 (function
        | '0' .. '9' -> true
        | _ -> false)
-     >>| int_of_string)
-;;
-
-let number_expr =
-  token
-    (take_while1 (function
-       | '0' .. '9' -> true
-       | _ -> false)
      >>= fun digits ->
      peek_char
      >>= (function
@@ -82,7 +74,7 @@ let ge = token (string ">=") *> return GreaterEq
 
 let expr =
   fix (fun expr ->
-    let atom = choice [ number_expr; var_parser; parens expr ] in
+    let atom = choice [ number; var_parser; parens expr ] in
     let unary =
       let neg = token (char '-') *> atom >>| fun e -> UnOp (Neg, e) in
       choice [ neg; atom ]
