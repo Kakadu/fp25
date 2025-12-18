@@ -31,10 +31,10 @@ let is_keyword = function
 
 let integer =
   spaces
-  *> (take_while1 (function
-        | '0' .. '9' -> true
-        | _ -> false)
-      >>= fun s -> return (Int (int_of_string s)))
+  *> take_while1 (function
+    | '0' .. '9' -> true
+    | _ -> false)
+  >>| fun digits -> Int (int_of_string digits)
 ;;
 
 let is_first = function
@@ -82,19 +82,20 @@ let expr =
       >>| fun body -> List.fold_right (fun arg f -> Abs (arg, f)) params body
     in
     let atom = spaces *> choice [ integer; var; fun_expr; parens expr ] <* spaces in
+    let unary_minus =
+      fix (fun unary_minus ->
+        let base = choice [ atom; parens unary_minus ] in
+        choice [ (char '-' *> spaces *> base >>| fun e -> UnOp ("-", e)); base ])
+    in
     let application =
-      let* f = atom in
+      let* f = unary_minus in
       let* args = many atom in
       match args with
       | [] -> return f
       | _ -> return (List.fold_left (fun acc a -> App (acc, a)) f args)
     in
-    let unary =
-      let neg = char '-' *> spaces *> application >>| fun x -> BinOp (Minus, Int 0, x) in
-      neg <|> application
-    in
     let let_expr =
-      let rec_flag = spaces *> kw_rec *> return Rec <|> return NonRec in
+      let rec_flag = kw_rec *> return Rec <|> return NonRec in
       let make_without_in =
         let* rf = kw_let *> rec_flag in
         let* name = identifier in
@@ -130,7 +131,7 @@ let expr =
       in
       let mult_div =
         make_chain
-          unary
+          application
           (choice
              [ spaces *> string "*" *> return Mult; spaces *> string "/" *> return Div ])
       in

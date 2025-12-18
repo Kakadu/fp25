@@ -100,6 +100,11 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
              | None -> return VUnit)
           | _ -> err (TypeError "recursive binding must be a function")))
     | Abs (param, body) -> return (VClosure (param, body, env))
+    | UnOp (op, e1) ->
+      let* v1 = eval env e1 steps in
+      (match op, v1 with
+       | "-", VInt n -> return (VInt (-n))
+       | _ -> err (TypeError "unsupported unary operator"))
     | App (f, arg) ->
       let* vf = eval env f steps in
       let* va = eval env arg steps in
@@ -136,5 +141,5 @@ let string_of_error = function
   | TypeError msg -> Printf.sprintf "Type error: %s" msg
   | UnsupportedConstruct constr -> Printf.sprintf "Unsupported construct: %s" constr
   | IncorrectExpression -> "Incorrect expression"
-  | StepCountIsZero -> "Stack overflow"
+  | StepCountIsZero -> "Step count is zero"
 ;;

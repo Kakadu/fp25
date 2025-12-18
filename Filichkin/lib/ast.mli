@@ -28,6 +28,7 @@ type expr =
   | Var of ident (** Variable name *)
   | BinOp of binop * expr * expr
   (** Binary operation: operator, left and right operands *)
+  | UnOp of string * expr (* Unary minus sign *)
   | If of expr * expr * expr option
   (** Conditional expression: condition, then branch, optional else branch *)
   | Let of rec_flag * string * expr * expr option

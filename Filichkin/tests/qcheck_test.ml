@@ -78,6 +78,7 @@ let rec gen_expr size =
         under_expr
     in
     let gen_app = map2 (fun x y -> App (x, y)) under_expr under_expr in
+    let gen_unop = map (fun e -> UnOp ("-", e)) under_expr in
     frequency
       [ 8, gen_int
       ; 7, gen_var
@@ -86,11 +87,15 @@ let rec gen_expr size =
       ; 3, gen_let
       ; 3, gen_abs
       ; 2, gen_app
+      ; 2, gen_unop
       ])
 ;;
 
 let rec shrink_expr = function
   | Int _ | Var _ -> Iter.empty
+  | UnOp (op, e) ->
+    let open Iter in
+    of_list [ e ] <+> (shrink_expr e >|= fun e' -> UnOp (op, e'))
   | BinOp (op, x1, x2) ->
     let open Iter in
     of_list [ x1; x2 ]
@@ -142,8 +147,8 @@ let print_parse_roundtrip =
     (fun expr ->
        match parse_after_print expr with
        | Ok expr' ->
-         let original_ast_str = print_ast expr in
-         let parsed_ast_str = print_ast expr' in
+         let original_ast_str = print_expr expr in
+         let parsed_ast_str = print_expr expr' in
          if original_ast_str = parsed_ast_str
          then true
          else (

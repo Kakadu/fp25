@@ -10,10 +10,8 @@ let%expect_test "parse number with different spacing" =
   [%expect {| Int 42 |}];
   print_string (print_ast (parser "  42  " |> Result.get_ok));
   [%expect {| Int 42 |}];
-  print_string (print_ast (parser "-42" |> Result.get_ok));
-  [%expect {| BinOp (Minus, Int 0, Int 42) |}];
-  print_string (print_ast (parser "  -42  " |> Result.get_ok));
-  [%expect {| BinOp (Minus, Int 0, Int 42) |}];
+  print_string (print_ast (parser " -42" |> Result.get_ok));
+  [%expect {| UnOp ("-", Int 42) |}];
   print_string (print_ast (parser "  0  " |> Result.get_ok));
   [%expect {| Int 0 |}]
 ;;
@@ -40,9 +38,9 @@ let%expect_test "parse binop with various spacing" =
   [%expect {| BinOp (Plus, Int 1, Int 1) |}];
   print_string (print_ast (parser "  1  +  1  " |> Result.get_ok));
   [%expect {| BinOp (Plus, Int 1, Int 1) |}];
-  print_string (print_ast (parser "1-1" |> Result.get_ok));
-  [%expect {| BinOp (Minus, Int 1, Int 1) |}];
   print_string (print_ast (parser "1 - 1" |> Result.get_ok));
+  [%expect {| BinOp (Minus, Int 1, Int 1) |}];
+  print_string (print_ast (parser "1  - 1" |> Result.get_ok));
   [%expect {| BinOp (Minus, Int 1, Int 1) |}];
   print_string (print_ast (parser "1*1" |> Result.get_ok));
   [%expect {| BinOp (Mult, Int 1, Int 1) |}];
@@ -64,10 +62,10 @@ let%expect_test "parse binop with various spacing" =
   [%expect {| BinOp (Mult, BinOp (Plus, Int 1, Int 2), Int 3) |}];
   print_string (print_ast (parser "  (  1  +  2  )  *  3  " |> Result.get_ok));
   [%expect {| BinOp (Mult, BinOp (Plus, Int 1, Int 2), Int 3) |}];
-  print_string (print_ast (parser "a+b*c-d/e" |> Result.get_ok));
+  print_string (print_ast (parser "a+b*c -d/e" |> Result.get_ok));
   [%expect
     {| BinOp (Minus, BinOp (Plus, Var "a", BinOp (Mult, Var "b", Var "c")), BinOp (Div, Var "d", Var "e")) |}];
-  print_string (print_ast (parser "a + b * c - d / e" |> Result.get_ok));
+  print_string (print_ast (parser "a + b * c  - d / e" |> Result.get_ok));
   [%expect
     {| BinOp (Minus, BinOp (Plus, Var "a", BinOp (Mult, Var "b", Var "c")), BinOp (Div, Var "d", Var "e")) |}];
   print_string (print_ast (parser "x=5" |> Result.get_ok));
@@ -133,19 +131,19 @@ let%expect_test "parse let with various spacing" =
 ;;
 
 let%expect_test "parse abs with various spacing" =
-  print_string (print_ast (parser "fun x->x+1" |> Result.get_ok));
+  print_string (print_ast (parser "fun x ->x+1" |> Result.get_ok));
   [%expect {| Abs ("x", BinOp (Plus, Var "x", Int 1)) |}];
-  print_string (print_ast (parser "fun x -> x + 1" |> Result.get_ok));
+  print_string (print_ast (parser "fun x  -> x + 1" |> Result.get_ok));
   [%expect {| Abs ("x", BinOp (Plus, Var "x", Int 1)) |}];
-  print_string (print_ast (parser "  fun  x  ->  x  +  1  " |> Result.get_ok));
+  print_string (print_ast (parser "  fun  x   ->  x  +  1  " |> Result.get_ok));
   [%expect {| Abs ("x", BinOp (Plus, Var "x", Int 1)) |}];
-  print_string (print_ast (parser "fun x y->x+y" |> Result.get_ok));
+  print_string (print_ast (parser "fun x y ->x+y" |> Result.get_ok));
   [%expect {| Abs ("x", Abs ("y", BinOp (Plus, Var "x", Var "y"))) |}];
-  print_string (print_ast (parser "fun x y -> x + y" |> Result.get_ok));
+  print_string (print_ast (parser "fun x y  -> x + y" |> Result.get_ok));
   [%expect {| Abs ("x", Abs ("y", BinOp (Plus, Var "x", Var "y"))) |}];
-  print_string (print_ast (parser "fun x -> if x>0 then x else -x" |> Result.get_ok));
+  print_string (print_ast (parser "fun x  -> if x>0 then x else  -x" |> Result.get_ok));
   [%expect
-    {| Abs ("x", If (BinOp (More, Var "x", Int 0), Var "x", Some BinOp (Minus, Int 0, Var "x"))) |}]
+    {| Abs ("x", If (BinOp (More, Var "x", Int 0), Var "x", Some (UnOp ("-", Var "x")))) |}]
 ;;
 
 let%expect_test "parse app with various spacing" =
@@ -163,11 +161,11 @@ let%expect_test "parse app with various spacing" =
   [%expect {| App (Var "f", App (Var "x", Var "y")) |}];
   print_string (print_ast (parser "f (x) (y)" |> Result.get_ok));
   [%expect {| App (App (Var "f", Var "x"), Var "y") |}];
-  print_string (print_ast (parser "(fun x->x+1) 5" |> Result.get_ok));
+  print_string (print_ast (parser "(fun x ->x+1) 5" |> Result.get_ok));
   [%expect {| App (Abs ("x", BinOp (Plus, Var "x", Int 1)), Int 5) |}];
-  print_string (print_ast (parser "(fun x -> x + 1) 5" |> Result.get_ok));
+  print_string (print_ast (parser "(fun x  -> x + 1) 5" |> Result.get_ok));
   [%expect {| App (Abs ("x", BinOp (Plus, Var "x", Int 1)), Int 5) |}];
-  print_string (print_ast (parser "let f=fun x->x+1 in f 5" |> Result.get_ok));
+  print_string (print_ast (parser "let f=fun x ->x+1 in f 5" |> Result.get_ok));
   [%expect
     {| Let (NonRec, "f", Abs ("x", BinOp (Plus, Var "x", Int 1)), Some App (Var "f", Int 5)) |}]
 ;;
@@ -177,19 +175,20 @@ let%expect_test "parse complex expressions with various spacing" =
   [%expect
     {| If (Let (NonRec, "x", Int 5, Some BinOp (More, Var "x", Int 0)), Int 1, Some Int 0) |}];
   print_string
-    (print_ast (parser "let f=fun x->if x>0 then x else 0 in f 5+f(-3)" |> Result.get_ok));
+    (print_ast
+       (parser "let f=fun x ->if x>0 then x else 0 in f 5+f( -3)" |> Result.get_ok));
   [%expect
-    {| Let (NonRec, "f", Abs ("x", If (BinOp (More, Var "x", Int 0), Var "x", Some Int 0)), Some BinOp (Plus, App (Var "f", Int 5), App (Var "f", BinOp (Minus, Int 0, Int 3)))) |}];
+    {| Let (NonRec, "f", Abs ("x", If (BinOp (More, Var "x", Int 0), Var "x", Some Int 0)), Some BinOp (Plus, App (Var "f", Int 5), App (Var "f", UnOp ("-", Int 3)))) |}];
   print_string
     (print_ast
-       (parser "let rec fact n = if n<=1 then 1 else n*fact(n-1) in fact 5"
+       (parser "let rec fact n = if n<=1 then 1 else n*fact(n -1) in fact 5"
         |> Result.get_ok));
   [%expect
     {| Let (Rec, "fact", Abs ("n", If (BinOp (ELess, Var "n", Int 1), Int 1, Some BinOp (Mult, Var "n", App (Var "fact", BinOp (Minus, Var "n", Int 1))))), Some App (Var "fact", Int 5)) |}];
   print_string
     (print_ast
        (parser
-          "  let  rec  fact  n  =  if  n  <=  1  then  1  else  n  *  fact  (  n  -  1  \
+          "  let  rec  fact  n  =  if  n  <=  1  then  1  else  n  *  fact  (  n   -  1  \
            )  in  fact  5  "
         |> Result.get_ok));
   [%expect
@@ -201,10 +200,10 @@ let%expect_test "parse nested expressions" =
   [%expect {| Int 5 |}];
   print_string (print_ast (parser "(  (  (  (  5  )  )  )  )" |> Result.get_ok));
   [%expect {| Int 5 |}];
-  print_string (print_ast (parser "1+(2*(3-4)/5)" |> Result.get_ok));
+  print_string (print_ast (parser "1+(2*(3 -4)/5)" |> Result.get_ok));
   [%expect
     {| BinOp (Plus, Int 1, BinOp (Div, BinOp (Mult, Int 2, BinOp (Minus, Int 3, Int 4)), Int 5)) |}];
-  print_string (print_ast (parser "1 + (2 * (3 - 4) / 5)" |> Result.get_ok));
+  print_string (print_ast (parser "1 + (2 * (3  - 4) / 5)" |> Result.get_ok));
   [%expect
     {| BinOp (Plus, Int 1, BinOp (Div, BinOp (Mult, Int 2, BinOp (Minus, Int 3, Int 4)), Int 5)) |}];
   print_string
@@ -216,10 +215,10 @@ let%expect_test "parse nested expressions" =
 ;;
 
 let%expect_test "parse with extreme spacing" =
-  print_string (print_ast (parser "1+2*3-4/5" |> Result.get_ok));
+  print_string (print_ast (parser "1+2*3 -4/5" |> Result.get_ok));
   [%expect
     {| BinOp (Minus, BinOp (Plus, Int 1, BinOp (Mult, Int 2, Int 3)), BinOp (Div, Int 4, Int 5)) |}];
-  print_string (print_ast (parser "  1  +  2  *  3  -  4  /  5  " |> Result.get_ok));
+  print_string (print_ast (parser "  1  +  2  *  3   -  4  /  5  " |> Result.get_ok));
   [%expect
     {| BinOp (Minus, BinOp (Plus, Int 1, BinOp (Mult, Int 2, Int 3)), BinOp (Div, Int 4, Int 5)) |}];
   print_string (print_ast (parser "if  x>0  then  let y=5 in y else 0" |> Result.get_ok));

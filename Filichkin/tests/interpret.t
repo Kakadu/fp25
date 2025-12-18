@@ -44,8 +44,8 @@ in the dune file
   120
   
   $ ../bin/REPL.exe << EOF
-  > let r = 5 in let rec f n k = if n > k then n + (f (n-1) k) else k in let y = if r > 0 then -1*r+5 else r-5 in f r y
-  Let (NonRec, "r", Int 5, Some Let (Rec, "f", Abs ("n", Abs ("k", If (BinOp (More, Var "n", Var "k"), BinOp (Plus, Var "n", App (App (Var "f", BinOp (Minus, Var "n", Int 1)), Var "k")), Some Var "k"))), Some Let (NonRec, "y", If (BinOp (More, Var "r", Int 0), BinOp (Plus, BinOp (Mult, BinOp (Minus, Int 0, Int 1), Var "r"), Int 5), Some BinOp (Minus, Var "r", Int 5)), Some App (App (Var "f", Var "r"), Var "y"))))
+  > let r = 5 in let rec f n k = if n > k then n + (f (n- 1) k) else k in let y = if r > 0 then -1*r+5 else r-5 in f r y
+  Let (NonRec, "r", Int 5, Some Let (Rec, "f", Abs ("n", Abs ("k", If (BinOp (More, Var "n", Var "k"), BinOp (Plus, Var "n", App (App (Var "f", BinOp (Minus, Var "n", Int 1)), Var "k")), Some Var "k"))), Some Let (NonRec, "y", If (BinOp (More, Var "r", Int 0), BinOp (Plus, BinOp (Mult, UnOp (-, Int 1), Var "r"), Int 5), Some BinOp (Minus, Var "r", Int 5)), Some App (App (Var "f", Var "r"), Var "y"))))
   15
   
   $ ../bin/REPL.exe << EOF
@@ -91,8 +91,8 @@ in the dune file
   
 
   $ ../bin/REPL.exe << EOF
-  > let x i = print_int i in let y = fun z -> if (z > 0) then z else (0-z) in x (y (-5))
-  Let (NonRec, "x", Abs ("i", App (Var "print_int", Var "i")), Some Let (NonRec, "y", Abs ("z", If (BinOp (More, Var "z", Int 0), Var "z", Some BinOp (Minus, Int 0, Var "z"))), Some App (Var "x", App (Var "y", BinOp (Minus, Int 0, Int 5)))))
+  > let x i = print_int i in let y = fun z -> if (z > 0) then z else (0- z) in x (y (-5))
+  Let (NonRec, "x", Abs ("i", App (Var "print_int", Var "i")), Some Let (NonRec, "y", Abs ("z", If (BinOp (More, Var "z", Int 0), Var "z", Some BinOp (Minus, Int 0, Var "z"))), Some App (Var "x", App (Var "y", UnOp (-, Int 5)))))
   5
   ()
   
@@ -184,7 +184,7 @@ in the dune file
   $ ../bin/REPL.exe << EOF
   > let rec infinite n = if n = 0 then 0 else infinite n in infinite 5
   Let (Rec, "infinite", Abs ("n", If (BinOp (Equal, Var "n", Int 0), Int 0, Some App (Var "infinite", Var "n"))), Some App (Var "infinite", Int 5))
-  Stack overflow
+  Step count is zero
   
   $ ../bin/REPL.exe << EOF
   > let apply_twice f x = f (f x) in let inc = fun x -> x + 1 in apply_twice inc 10

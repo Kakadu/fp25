@@ -37,6 +37,7 @@ let rec print_ast = function
     Printf.sprintf "Let (Rec, %S, %s, Some %s)" x (print_ast e) (print_ast b)
   | Abs (param, body) -> Printf.sprintf "Abs (%S, %s)" param (print_ast body)
   | App (f, a) -> Printf.sprintf "App (%s, %s)" (print_ast f) (print_ast a)
+  | UnOp (_, e) -> Printf.sprintf "UnOp (%s, %s)" "-" (print_ast e)
 ;;
 
 let rec print_expr = function
@@ -58,6 +59,7 @@ let rec print_expr = function
     let left_str = print_expr left in
     let right_str = print_expr right in
     Printf.sprintf "((%s) %s (%s))" left_str oper right_str
+  | UnOp (_, e) -> Printf.sprintf "(%s(%s))" "-" (print_expr e)
   | If (cond, thn, els) ->
     let cond_str = print_expr cond in
     let thn_str = print_expr thn in
