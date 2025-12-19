@@ -31,10 +31,7 @@ let is_alpha = function
   | _ -> false
 ;;
 
-let var_name = function
-  | '0' .. '9' | 'a' .. 'z' | 'A' .. 'Z' -> true
-  | _ -> false
-;;
+let var_name c = is_alpha c || is_digit c
 
 let sign =
   peek_char
@@ -64,7 +61,7 @@ let parse_varname =
   match s with
   | _ when is_keyword s -> fail "Can't have a name same as keyword"
   | _ when String.for_all is_digit s -> fail "Number cant be a name"
-  | _ -> return (Ast.Ident s)
+  | _ -> return s
 ;;
 
 let plus = spaces *> char '+' >>= fun _ -> return Plus
@@ -89,14 +86,36 @@ let parse_expr =
       >>| fun body -> List.fold_right (fun arg f -> Ast.Abs (arg, f)) args body
     in
     let app =
-      spaces *> (parens abstr <|> parse_varname <|> parens parse_varname)
-      >>= fun func ->
-      many1
-        (spaces *> conde [ parse_number; parse_varname; parens parse_expr ]
-         >>| fun arg -> arg)
-      >>| fun l -> List.fold_left (fun x arg -> Ast.App (x, arg)) func l
+      spaces
+      *> conde
+           [ (parse_varname >>= fun x -> return (Ast.Ident x))
+           ; abstr
+           ; parens abstr
+           ; (parens parse_expr
+              >>= function
+              | Ast.App app_node -> return (Ast.App app_node)
+              | _ -> fail "not app")
+           ]
+      >>= fun appto ->
+      spaces *> conde [ parens parse_expr; parse_expr ]
+      >>= fun arg1 ->
+      spaces *> many (conde [ parse_expr; parens parse_expr ])
+      >>= fun args ->
+      (match appto with
+       | Ast.Ident x -> return (Ast.Var (x, arg1))
+       | Ast.Abs (x, e) -> return (Ast.Fun (x, e, arg1))
+       | Ast.App a -> return (Ast.Application (a, arg1))
+       | _ -> fail "")
+      >>| fun r ->
+      Ast.App (List.fold_left (fun accum el -> Ast.Application (accum, el)) r args)
     in
-    let helper = conde [ app; parse_varname <|> parse_number; parens parse_expr ] in
+    let helper =
+      conde
+        [ app
+        ; parse_varname >>= (fun x -> return (Ast.Ident x)) <|> parse_number
+        ; parens parse_expr
+        ]
+    in
     let mul_helper =
       helper
       >>= fun left ->
@@ -128,7 +147,7 @@ let parse_expr =
       >>= fun cond ->
       spaces *> string "then"
       >>= fun _ ->
-      parse_expr
+      spaces *> parse_expr
       >>= fun tbranch ->
       spaces *> string "else"
       >>= fun _ -> parse_expr >>| fun ebranch -> Ast.Ite (cond, tbranch, ebranch)
@@ -136,7 +155,7 @@ let parse_expr =
     let letbind =
       spaces *> string "let"
       >>= fun _ ->
-      option (Ast.Recflag false) (spaces *> string "rec" >>| fun _ -> Ast.Recflag true)
+      option false (spaces *> string "rec" >>| fun _ -> true)
       >>= fun recbool ->
       parse_varname
       >>= fun name ->
@@ -155,7 +174,7 @@ let parse_expr =
       >>= (fun _ -> spaces *> parse_expr >>| fun bound -> bound)
       >>| fun inexpr -> Ast.Let (recbool, name, body, inexpr)
     in
-    conde [ letbind; comp; conditional; abstr ])
+    conde [ letbind; conditional; comp; abstr ])
 ;;
 
 let parse str =

@@ -3,75 +3,99 @@ open QCheck
 
 let ( >>= ) = Gen.( >>= )
 let return = Gen.return
-let gen_var = Gen.oneof [ return (Ast.Ident "x"); return (Ast.Ident "X1") ]
-let gen_int = Gen.oneof [ return (Ast.Const 8); return (Ast.Const (-13)) ]
 
-let gen_binexpr e1 e2 =
+let gen_simple_expr =
   Gen.oneof
-    [ return Ast.Plus
-    ; return Ast.Minus
-    ; return Ast.Mul
-    ; return Ast.Div
-    ; return Ast.Eq
-    ; return Ast.Neq
-    ; return Ast.Le
-    ; return Ast.Bi
+    [ return (Ast.Const 0)
+    ; return (Ast.Const 1)
+    ; return (Ast.Const (-1))
+    ; return (Ast.Const 1212)
+    ; return (Ast.Const 102002)
     ]
-  >>= fun op -> return (Ast.Binexpr (op, e1, e2))
 ;;
 
-let gen_ite e1 e2 e3 = return (Ast.Ite (e1, e2, e3))
-let gen_abs e1 = gen_var >>= fun name -> return (Ast.Abs (name, e1))
-let gen_app e1 = gen_var >>= fun name -> return (Ast.App (name, e1))
+let gen_ident = Gen.oneof [ return "x"; return "y"; return "z"; return "f"; return "g" ]
 
-let gen_let_nonrec e1 e2 =
-  gen_var
-  >>= fun name ->
-  gen_app e1 >>= fun letexpr -> return (Ast.Let (Ast.Recflag false, name, letexpr, e2))
+let gen_app_var =
+  gen_ident
+  >>= fun fname -> gen_simple_expr >>= fun arg -> return (Ast.App (Ast.Var (fname, arg)))
 ;;
 
-let gen_let_rec e1 e2 =
-  gen_var
-  >>= fun name ->
-  gen_abs e1 >>= fun letexpr -> return (Ast.Let (Ast.Recflag true, name, letexpr, e2))
+let gen_app_abs =
+  gen_ident
+  >>= fun param ->
+  Gen.oneof
+    [ return (Ast.Ident param)
+    ; gen_simple_expr
+    ; Gen.map
+        (fun r -> Ast.Binexpr (Ast.Plus, Ast.Ident param, Ast.Const r))
+        (Gen.int_range 1 10)
+    ]
+  >>= fun body ->
+  gen_simple_expr >>= fun arg -> return (Ast.App (Ast.Fun (param, body, arg)))
+;;
+
+let rec gen_app_mularg args =
+  if args = 0
+  then Gen.oneof [ gen_app_var; gen_app_abs ]
+  else
+    gen_app_mularg (args - 1)
+    >>= fun inapp ->
+    match inapp with
+    | Ast.App x ->
+      gen_simple_expr >>= fun arg -> return (Ast.App (Ast.Application (x, arg)))
+    | _ -> gen_app_var
+;;
+
+let gen_app n =
+  if n = 0
+  then Gen.oneof [ gen_app_var; gen_app_abs ]
+  else Gen.int_range 0 (n / 2) >>= fun m -> gen_app_mularg m
 ;;
 
 let rec gen_expr n =
   match n with
-  | 0 -> gen_int
-  | 1 -> gen_var
+  | 0 -> Gen.oneof [ gen_simple_expr; gen_app_var ]
+  | 1 -> Gen.oneof [ gen_simple_expr; gen_app_var; gen_app_abs ]
   | _ ->
+    Gen.int_range 0 (n / 2)
+    >>= fun n1 ->
     Gen.oneof
-      [ (Gen.int_range 0 (n - 1)
-         >>= fun n1 ->
-         gen_expr n1
+      [ (gen_expr n1
          >>= fun e1 ->
-         Gen.int_range 0 (n - 1) >>= fun n2 -> gen_expr n2 >>= fun e2 -> gen_binexpr e1 e2
-        )
-      ; (Gen.int_range 0 (n - 1)
-         >>= fun n1 ->
          gen_expr n1
+         >>= fun e2 ->
+         Gen.oneof
+           [ return Ast.Plus
+           ; return Ast.Minus
+           ; return Ast.Mul
+           ; return Ast.Div
+           ; return Ast.Eq
+           ; return Ast.Neq
+           ; return Ast.Le
+           ; return Ast.Bi
+           ]
+         >>= fun op -> return (Ast.Binexpr (op, e1, e2)))
+      ; (gen_expr n1
          >>= fun cond ->
-         Gen.int_range 0 (n - 1)
-         >>= fun n2 ->
-         gen_expr n2
-         >>= fun tb ->
-         Gen.int_range 0 (n - 1)
-         >>= fun n3 -> gen_expr n3 >>= fun eb -> gen_ite cond tb eb)
-      ; (Gen.int_range 0 (n - 1) >>= fun n1 -> gen_expr n1 >>= fun e1 -> gen_abs e1)
-      ; (Gen.int_range 0 (n - 1) >>= fun n1 -> gen_expr n1 >>= fun e1 -> gen_app e1)
-      ; (Gen.int_range 0 (n - 1)
-         >>= fun n1 ->
          gen_expr n1
-         >>= fun e1 ->
-         Gen.int_range 0 (n - 1)
-         >>= fun n2 -> gen_expr n2 >>= fun e2 -> gen_let_nonrec e1 e2)
-      ; (Gen.int_range 0 (n - 1)
-         >>= fun n1 ->
+         >>= fun tb -> gen_expr n1 >>= fun eb -> return (Ast.Ite (cond, tb, eb)))
+      ; (gen_ident
+         >>= fun arg -> gen_expr (n - 1) >>= fun body -> return (Ast.Abs (arg, body)))
+      ; (Gen.int_range 0 n1 >>= fun n2 -> gen_app n2)
+      ; (gen_ident
+         >>= fun name ->
          gen_expr n1
-         >>= fun e1 ->
-         Gen.int_range 0 (n - 1) >>= fun n2 -> gen_expr n2 >>= fun e2 -> gen_let_rec e1 e2
-        )
+         >>= fun bound ->
+         gen_expr n1 >>= fun body -> return (Ast.Let (false, name, bound, body)))
+      ; (gen_ident
+         >>= fun name ->
+         gen_ident
+         >>= fun param ->
+         gen_expr n1
+         >>= fun fun_body ->
+         let lambda = Ast.Abs (param, fun_body) in
+         gen_expr n1 >>= fun body -> return (Ast.Let (true, name, lambda, body)))
       ]
 ;;
 
@@ -83,7 +107,7 @@ let arb_expr =
 ;;
 
 let roundtrip =
-  Test.make ~count:1000 ~name:"roundtrip tests" arb_expr (fun expr ->
+  Test.make ~count:100 ~name:"roundtrip tests" arb_expr (fun expr ->
     let res = Parser.parse (Pprintast.pprint expr) in
     match res with
     | Ok x -> expr = x

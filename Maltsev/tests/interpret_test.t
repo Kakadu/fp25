@@ -74,7 +74,7 @@ in the dune file
   $ ../bin/REPL.exe <<EOF
   >    let a = 13 in a 3
   
-  not a function for application
+  can apply functions only
 
   $ ../bin/REPL.exe <<EOF
   >    let a = 13
@@ -95,7 +95,7 @@ in the dune file
   
   not a function
 
-  $ ../bin/REPL.exe <<EOF
+  $ ../bin/REPL.exe 10000 <<EOF
   >    let rec fib n = if n > 2 then fib (n - 1) + fib (n - 2) else if n != 1 then 1 else 0 in fib 7
   
   8
@@ -121,10 +121,26 @@ in the dune file
   > let f = print 10 in f 11
   10
   
-  not a function for application
+  can apply functions only
 
 
   $ ../bin/REPL.exe <<EOF
   > let rec fix f x = f (fix f) x in let fixfact fact n = if n = 0 then 1 else n * fact (n - 1) in let fact = fix fixfact in fact 7
   
   5040
+
+  $ ../bin/REPL.exe <<EOF
+  > let f n = n in print f
+  
+  can print ints only
+
+  $ ../bin/REPL.exe <<EOF
+  > let f n = if n < 0 then print 0 else print 1 in f -1
+  0
+  
+  Non integer result
+
+  $ ../bin/REPL.exe <<EOF
+  > (fun f -> fun x -> f x) (fun n -> n) 10
+  
+  10

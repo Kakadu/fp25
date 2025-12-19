@@ -20,15 +20,21 @@ let rec pprint = function
       | Ast.Bi -> ">"
       | Ast.Neq -> "!="
       | Ast.Le -> "<"
-      | _ -> "?"
     in
-    "(" ^ pprint l ^ ") " ^ op_str ^ " (" ^ pprint r ^ ")"
+    String.concat "" [ "("; pprint l; ") "; op_str; " ("; pprint r; ")" ]
   | Ast.Ite (cond, tb, eb) ->
-    "if " ^ pprint cond ^ " then " ^ pprint tb ^ " else " ^ pprint eb
-  | Ast.Let (Ast.Recflag b, Ast.Ident name, letexpr, inexpr) ->
+    String.concat "" [ "if "; pprint cond; " then "; pprint tb; " else "; pprint eb ]
+  | Ast.Let (b, name, letexpr, inexpr) ->
     let rec_flag = if b then "rec " else "" in
-    "let " ^ rec_flag ^ name ^ " = " ^ pprint letexpr ^ " in " ^ pprint inexpr
-  | Ast.Abs (Ast.Ident arg, f) -> "fun " ^ arg ^ " -> " ^ pprint f
-  | Ast.App (f, arg) -> "(" ^ pprint f ^ ") (" ^ pprint arg ^ ")"
-  | _ -> "bad ast"
+    String.concat
+      ""
+      [ "let "; rec_flag; name; " = "; pprint letexpr; " in "; pprint inexpr ]
+  | Ast.Abs (arg, f) -> String.concat "" [ "fun "; arg; " -> "; pprint f ]
+  | Ast.App app ->
+    (match app with
+     | Var (s, e) -> String.concat "" [ s; " ("; pprint e; ")" ]
+     | Fun (s, e, arg) ->
+       String.concat "" [ "(fun "; s; " -> "; pprint e; ") "; pprint arg ]
+     | Application (some, e) ->
+       String.concat "" [ "("; pprint (Ast.App some); ") "; " ("; pprint e; ")" ])
 ;;

@@ -53,9 +53,6 @@ type envvalue =
   | EClosure of ident * Ast.expr * envt
     (* closure of non rec function -> name of arg for call, function code,
        function environment available *)
-  | ERecClosure of ident * ident * Ast.expr * envt
-  (* closure of rec function -> name of function
-     to add to environment to call, arg name, code, function environment *)
   | EUnit (* unit return type like *)
   | Ebuiltin of ident (* type for built in functions which are added in init *)
 
@@ -95,8 +92,7 @@ let rec eval env steps expression =
           | Ast.Eq -> Res.return (if lv = rv then EVal 1 else EVal 0)
           | Ast.Neq -> Res.return (if lv != rv then EVal 1 else EVal 0)
           | Ast.Bi -> Res.return (if lv > rv then EVal 1 else EVal 0)
-          | Ast.Le -> Res.return (if lv < rv then EVal 1 else EVal 0)
-          | _ -> Res.fail "not implemented")
+          | Ast.Le -> Res.return (if lv < rv then EVal 1 else EVal 0))
        | _ -> Res.fail "bad binop")
     | Ast.Ite (cond, tb, eb) ->
       let* condition = eval env (steps - 1) cond in
@@ -106,41 +102,37 @@ let rec eval env steps expression =
        | _ -> Res.fail "bad condition")
     | Ast.Let (b, name, letexpr, inexpr) ->
       (match b with
-       | Ast.Recflag false ->
-         (match name with
-          | Ast.Ident f ->
-            let* code = eval env (steps - 1) letexpr in
-            eval ((f, code) :: env) (steps - 2) inexpr
-          | _ -> Res.fail "bad function name")
-       | Ast.Recflag true ->
-         (match name with
-          | Ast.Ident f ->
-            (match letexpr with
-             | Ast.Abs (Ast.Ident arg, e) ->
-               eval ((f, ERecClosure (f, arg, e, env)) :: env) (steps - 1) inexpr
-             | _ -> Res.fail "not a function")
-          | _ -> Res.fail "bad function name"))
-    | Ast.Abs (Ast.Ident arg, f) -> Res.return (EClosure (arg, f, env))
-    | Ast.App (f, arg) ->
-      let* func = eval env (steps - 1) f in
-      let* evarg = eval env (steps - 1) arg in
+       | false ->
+         let* code = eval env (steps - 1) letexpr in
+         eval ((name, code) :: env) (steps - 2) inexpr
+       | true ->
+         (match letexpr with
+          | Ast.Abs (arg, e) ->
+            let rec recclos = (name, EClosure (arg, e, recclos)) :: env in
+            eval recclos (steps - 1) inexpr
+          | _ -> Res.fail "not a function"))
+    | Ast.Abs (arg, f) -> Res.return (EClosure (arg, f, env))
+    | Ast.App someapp ->
+      let* func =
+        match someapp with
+        | Var (s, _) -> lookup env s
+        | Fun (x, e, _) -> eval env (steps - 1) (Ast.Abs (x, e))
+        | Application (a, _) -> eval env (steps - 1) (Ast.App a)
+      in
+      let* evarg =
+        match someapp with
+        | Var (_, e) -> eval env (steps - 1) e
+        | Fun (_, _, e) -> eval env (steps - 1) e
+        | Application (_, e) -> eval env (steps - 1) e
+      in
       (match func with
-       | Ebuiltin x ->
-         (match x with
-          | "print" ->
-            (match evarg with
-             | EVal n ->
-               Printf.printf "%d\n" n;
-               Res.return EUnit
-             | _ -> Res.fail "cant print non ints yet")
-          | _ -> Res.fail "not implemented")
        | EClosure (argname, fcode, fenv) ->
          eval ((argname, evarg) :: fenv) (steps - 1) fcode
-       | ERecClosure (fname, argname, fcode, fenv) ->
-         eval
-           ((argname, evarg) :: (fname, ERecClosure (fname, argname, fcode, fenv)) :: fenv)
-           (steps - 1)
-           fcode
-       | _ -> Res.fail "not a function for application")
-    | _ -> Res.fail "")
+       | Ebuiltin s when s = "print" ->
+         (match evarg with
+          | EVal x ->
+            Printf.printf "%d\n" x;
+            Res.return EUnit
+          | _ -> Res.fail "can print ints only")
+       | _ -> Res.fail "can apply functions only"))
 ;;

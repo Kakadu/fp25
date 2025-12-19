@@ -10,7 +10,10 @@ open Lambda_lib
 
 let steps =
   match Array.length Sys.argv with
-  | 2 when int_of_string Sys.argv.(1) >= 0 -> int_of_string Sys.argv.(1)
+  | 2
+    when (try int_of_string Sys.argv.(1) with
+          | Failure _ -> 1000)
+         >= 0 -> int_of_string Sys.argv.(1)
   | _ -> 1000
 ;;
 

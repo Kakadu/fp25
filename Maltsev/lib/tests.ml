@@ -42,9 +42,9 @@ let ident str =
   | Error _ -> Result.Error (`Parsing_error "Failed to parse")
 ;;
 
-let%test _ = Result.get_ok (ident "aaa") = Ast.Ident "aaa"
-let%test _ = Result.get_ok (ident "1a") = Ast.Ident "1a"
-let%test _ = Result.get_ok (ident "  a1") = Ast.Ident "a1"
+let%test _ = Result.get_ok (ident "aaa") = "aaa"
+let%test _ = Result.get_ok (ident "1a") = "1a"
+let%test _ = Result.get_ok (ident "  a1") = "a1"
 
 (* no success *)
 let%test _ = Result.get_error (ident "1") = `Parsing_error "Failed to parse"
@@ -117,31 +117,28 @@ let%test _ =
 ;;
 
 (* test abstractions *)
-let%test _ = Result.get_ok (parse "fun x -> a") = Ast.Abs (Ast.Ident "x", Ast.Ident "a")
+let%test _ = Result.get_ok (parse "fun x -> a") = Ast.Abs ("x", Ast.Ident "a")
 
 let%test _ =
   Result.get_ok (parse "fun x -> fun k -> x + k")
-  = Ast.Abs
-      ( Ast.Ident "x"
-      , Ast.Abs (Ast.Ident "k", Ast.Binexpr (Ast.Plus, Ast.Ident "x", Ast.Ident "k")) )
+  = Ast.Abs ("x", Ast.Abs ("k", Ast.Binexpr (Ast.Plus, Ast.Ident "x", Ast.Ident "k")))
 ;;
 
 let%test _ =
   Result.get_ok (parse "fun x -> if x = 0 then 1 else 2")
   = Ast.Abs
-      ( Ast.Ident "x"
+      ( "x"
       , Ast.Ite
           (Ast.Binexpr (Ast.Eq, Ast.Ident "x", Ast.Const 0), Ast.Const 1, Ast.Const 2) )
 ;;
 
 (* test application *)
-let%test _ = Result.get_ok (parse "fact 10") = Ast.App (Ast.Ident "fact", Ast.Const 10)
+let%test _ = Result.get_ok (parse "fact 10") = Ast.App (Ast.Var ("fact", Ast.Const 10))
 
 let%test _ =
   Result.get_ok (parse "(fun x -> x 1) (fun y -> y)")
   = Ast.App
-      ( Ast.Abs (Ast.Ident "x", Ast.App (Ast.Ident "x", Ast.Const 1))
-      , Ast.Abs (Ast.Ident "y", Ast.Ident "y") )
+      (Ast.Fun ("x", Ast.App (Var ("x", Ast.Const 1)), Ast.Abs ("y", Ast.Ident "y")))
 ;;
 
 let%test _ =
@@ -149,34 +146,14 @@ let%test _ =
   = Ast.Ite
       ( Ast.Binexpr (Ast.Le, Ast.Ident "n", Ast.Const 2)
       , Ast.Const 1
-      , Ast.App (Ast.Ident "fact", Ast.Binexpr (Ast.Minus, Ast.Ident "n", Ast.Const 1)) )
+      , Ast.App (Var ("fact", Ast.Binexpr (Ast.Minus, Ast.Ident "n", Ast.Const 1))) )
 ;;
 
 let%test _ = Result.get_ok (parse "ABCDEFGHGREW") = Ast.Ident "ABCDEFGHGREW"
 
-(*let%test _ =
-  Result.get_ok (parse "let a = 1 in b")
-  = Ast.Let (Ast.Recflag false, Ast.Ident "a", [], Ast.Const 1, Some (Ast.Ident "b"))
-  ;;*)
-
-(* let%test _ =
-   Result.get_ok (parse "let rec fact n = if n < 2 then 1 else fact (n - 1) * n")
-   = Ast.Let
-   ( Ast.Recflag true
-   , Ast.Ident "fact"
-   , [ Ast.Ident "n" ]
-   , Ast.Ite
-   ( Ast.Binexpr (Ast.Le, Ast.Ident "n", Ast.Const 2)
-   , Ast.Const 1
-   , Ast.Binexpr
-   ( Ast.Mul
-   , Ast.App
-   (Ast.Ident "fact", Ast.Binexpr (Ast.Minus, Ast.Ident "n", Ast.Const 1))
-   , Ast.Ident "n" ) )
-   , None ) *)
 let%test _ =
-  Result.get_ok (parse "f n + 2")
-  = Ast.Binexpr (Ast.Plus, Ast.App (Ast.Ident "f", Ast.Ident "n"), Ast.Const 2)
+  Result.get_ok (parse "f (n) + 2")
+  = Ast.Binexpr (Ast.Plus, Ast.App (Var ("f", Ast.Ident "n")), Ast.Const 2)
 ;;
 
 let%test _ =
@@ -219,8 +196,7 @@ let%test _ =
        init
        1000
        (Ast.App
-          ( Ast.Abs (Ast.Ident "x", Ast.Binexpr (Ast.Plus, Ast.Ident "x", Ast.Const 1))
-          , Ast.Const 100 )))
+          (Ast.Fun ("x", Ast.Binexpr (Ast.Plus, Ast.Ident "x", Ast.Const 1), Ast.Const 100))))
   = EVal 101
 ;;
 
@@ -266,14 +242,8 @@ let%test _ =
 ;;
 
 let%test _ =
-  Result.get_ok (Parser.parse "(fact) (6)") = Ast.App (Ast.Ident "fact", Ast.Const 6)
+  Result.get_ok (Parser.parse "(fact (6))") = Ast.App (Ast.Var ("fact", Ast.Const 6))
 ;;
-
-(* Printf.printf
-   "%s\n"
-   (pprint
-   (Result.get_ok
-   (parse "let rec fact n = if n < 1 then 1 else n * fact (n - 1) in fact 5"))) *)
 
 let%test _ =
   Result.get_ok
@@ -288,4 +258,9 @@ let%test _ =
                       "let rec fact n = if n < 1 then 1 else n * fact (n - 1) in    \n\
                       \ \r \t                      fact 5"))))))
   = EVal 120
+;;
+
+let%test _ =
+  Result.get_ok (parse "(a 1) 2")
+  = Ast.App (Ast.Application (Ast.Var ("a", Ast.Const 1), Ast.Const 2))
 ;;
