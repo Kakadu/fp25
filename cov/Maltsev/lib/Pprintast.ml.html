@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>Pprintast.ml &mdash; Coverage report</title>
-    <meta name="description" content="93.10% coverage in lib/Pprintast.ml">
+    <meta name="description" content="100.00% coverage in lib/Pprintast.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,11 +15,9 @@
           <span class="dirname">lib/</span>Pprintast.ml
         </a>
       </h1>
-      <h2>93.10%</h2>
+      <h2>100.00%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="bottom:32.35%"></span>
-      <span class="unvisited" style="bottom:2.94%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -46,18 +44,24 @@
 <a id="L20"></a><span class="visited"> </span>
 <a id="L21"></a><span class="visited"> </span>
 <a id="L22"></a><span class="visited"> </span>
-<a id="L23"></a><span class="unvisited"> </span>
-<a id="L24"></a><span > </span>
+<a id="L23"></a><span > </span>
+<a id="L24"></a><span class="visited"> </span>
 <a id="L25"></a><span class="visited"> </span>
 <a id="L26"></a><span class="visited"> </span>
 <a id="L27"></a><span class="visited"> </span>
 <a id="L28"></a><span class="visited"> </span>
-<a id="L29"></a><span class="visited"> </span>
-<a id="L30"></a><span class="visited"> </span>
+<a id="L29"></a><span > </span>
+<a id="L30"></a><span > </span>
 <a id="L31"></a><span class="visited"> </span>
 <a id="L32"></a><span class="visited"> </span>
-<a id="L33"></a><span class="unvisited"> </span>
+<a id="L33"></a><span class="visited"> </span>
 <a id="L34"></a><span > </span>
+<a id="L35"></a><span class="visited"> </span>
+<a id="L36"></a><span class="visited"> </span>
+<a id="L37"></a><span class="visited"> </span>
+<a id="L38"></a><span class="visited"> </span>
+<a id="L39"></a><span class="visited"> </span>
+<a id="L40"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -96,6 +100,12 @@
 <a href="#L32">32</a>
 <a href="#L33">33</a>
 <a href="#L34">34</a>
+<a href="#L35">35</a>
+<a href="#L36">36</a>
+<a href="#L37">37</a>
+<a href="#L38">38</a>
+<a href="#L39">39</a>
+<a href="#L40">40</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -106,30 +116,36 @@
 [@@@ocaml.text "/*"]
 
 let rec pprint = function
-  | <span data-count="42723">A</span>st.Const x -&gt; string_of_int x
-  | <span data-count="76632">A</span>st.Ident x -&gt; x
-  | <span data-count="16728">A</span>st.Binexpr (op, l, r) -&gt;
+  | <span data-count="1564">A</span>st.Const x -&gt; string_of_int x
+  | <span data-count="159">A</span>st.Ident x -&gt; x
+  | <span data-count="252">A</span>st.Binexpr (op, l, r) -&gt;
     let op_str =
       match op with
-      | <span data-count="2087">A</span>st.Plus -&gt; "+"
-      | <span data-count="2137">A</span>st.Minus -&gt; "-"
-      | <span data-count="2128">A</span>st.Mul -&gt; "*"
-      | <span data-count="2064">A</span>st.Div -&gt; "/"
-      | <span data-count="2106">A</span>st.Eq -&gt; "="
-      | <span data-count="2085">A</span>st.Bi -&gt; "&gt;"
-      | <span data-count="2074">A</span>st.Neq -&gt; "!="
-      | <span data-count="2047">A</span>st.Le -&gt; "&lt;"
-      | <span data-count="0">_</span> -&gt; "?"
+      | <span data-count="95">A</span>st.Plus -&gt; "+"
+      | <span data-count="23">A</span>st.Minus -&gt; "-"
+      | <span data-count="28">A</span>st.Mul -&gt; "*"
+      | <span data-count="18">A</span>st.Div -&gt; "/"
+      | <span data-count="14">A</span>st.Eq -&gt; "="
+      | <span data-count="15">A</span>st.Bi -&gt; "&gt;"
+      | <span data-count="32">A</span>st.Neq -&gt; "!="
+      | <span data-count="27">A</span>st.Le -&gt; "&lt;"
     in
-    "(" ^ pprin<span data-count="16728">t</span> l ^ ") " ^ op_str ^ " (" ^ pprin<span data-count="16728">t</span> r ^ ")"
-  | <span data-count="16888">A</span>st.Ite (cond, tb, eb) -&gt;
-    "if " ^ pprin<span data-count="16888">t</span> cond ^ " then " ^ pprin<span data-count="16888">t</span> tb ^ " else " ^ pprin<span data-count="16888">t</span> eb
-  | <span data-count="33930">A</span>st.Let (Ast.Recflag b, Ast.Ident name, letexpr, inexpr) -&gt;
-    let rec_flag = if b then <span data-count="16906">"</span>rec " else <span data-count="17024">"</span>" in
-    "let " ^ rec_flag ^ name ^ " = " ^ pprin<span data-count="33930">t</span> letexpr ^ " in " ^ pprin<span data-count="33930">t</span> inexpr
-  | <span data-count="33904">A</span>st.Abs (Ast.Ident arg, f) -&gt; "fun " ^ arg ^ " -&gt; " ^ pprin<span data-count="33904">t</span> f
-  | <span data-count="33920">A</span>st.App (f, arg) -&gt; "(" ^ pprin<span data-count="33920">t</span> f ^ ") (" ^ pprin<span data-count="33920">t</span> arg ^ ")"
-  | <span data-count="0">_</span> -&gt; "bad ast"
+    String.concat "" [ "("; pprin<span data-count="252">t</span> l; ") "; op_str; " ("; pprin<span data-count="252">t</span> r; ")" ]
+  | <span data-count="165">A</span>st.Ite (cond, tb, eb) -&gt;
+    String.concat "" [ "if "; pprin<span data-count="165">t</span> cond; " then "; pprin<span data-count="165">t</span> tb; " else "; pprin<span data-count="165">t</span> eb ]
+  | <span data-count="400">A</span>st.Let (b, name, letexpr, inexpr) -&gt;
+    let rec_flag = if b then <span data-count="190">"</span>rec " else <span data-count="210">"</span>" in
+    String.concat
+      ""
+      [ "let "; rec_flag; name; " = "; pprin<span data-count="400">t</span> letexpr; " in "; pprin<span data-count="400">t</span> inexpr ]
+  | <span data-count="402">A</span>st.Abs (arg, f) -&gt; String.concat "" [ "fun "; arg; " -&gt; "; pprin<span data-count="402">t</span> f ]
+  | <span data-count="1085">A</span>st.App app -&gt;
+    (match app with
+     | <span data-count="445">V</span>ar (s, e) -&gt; String.concat "" [ s; " ("; pprin<span data-count="445">t</span> e; ")" ]
+     | <span data-count="247">F</span>un (s, e, arg) -&gt;
+       String.concat "" [ "(fun "; s; " -&gt; "; pprin<span data-count="247">t</span> e; ") "; pprin<span data-count="247">t</span> arg ]
+     | <span data-count="393">A</span>pplication (some, e) -&gt;
+       String.concat "" [ "("; pprin<span data-count="393">t</span> (Ast.App some); ") "; " ("; pprin<span data-count="393">t</span> e; ")" ])
 ;;
 </code></pre>
       </div>
