@@ -22,16 +22,17 @@ type binop =
   | Le (** < *)
   | Bi (** > *)
 
+(** The main type for AST*)
 type expr =
-  | Const of num
-  | Ident of ident
-  | Binexpr of binop * expr * expr
-  | Ite of expr * expr * expr
-  | Abs of ident * expr
-  | App of app
-  | Let of bool * ident * expr * expr
+  | Const of num (** integer constant *)
+  | Ident of ident (** identifier *)
+  | Binexpr of binop * expr * expr (** binary arithmetic and comparisons *)
+  | Ite of expr * expr * expr (** if then else *)
+  | Abs of ident * expr (** abstraction of variable name and expression itself *)
+  | App of app (** application *)
+  | Let of bool * ident * expr * expr (** let and let rec bindings *)
 
 and app =
-  | Var of ident * expr
-  | Fun of ident * expr * expr
-  | Application of app * expr
+  | Var of ident * expr (** apply bound with let function to expression *)
+  | Fun of ident * expr * expr (** apply abstraction to expression *)
+  | Application of app * expr (** apply application to expression *)
