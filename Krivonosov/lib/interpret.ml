@@ -15,6 +15,7 @@ type error =
   [ `UnknownVariable of string
   | `DivisionByZero
   | `TypeMismatch
+  | `StepLimitExceeded
   ]
 
 (** Values in our interpreter *)
@@ -22,13 +23,25 @@ type value =
   | VInt of int
   | VClosure of string * string Ast.t * environment
   | VBuiltin of string * (value -> (value, error) Base.Result.t)
+  | VUnit
 
 and environment = (string * value) list
 
 module Interpret (M : MONAD_FAIL) : sig
-  val run : string Ast.t -> (value, error) M.t
+  val run : max_steps:int -> string Ast.t -> (value, error) M.t
 end = struct
   open M
+
+  (** Step counter to prevent infinite loops *)
+  let step_counter = ref 0
+
+  let max_steps_limit = ref 10000
+
+  (** Increment step counter and check limit *)
+  let check_step () =
+    step_counter := !step_counter + 1;
+    if !step_counter > !max_steps_limit then fail `StepLimitExceeded else return ()
+  ;;
 
   (** Lookup variable in environment *)
   let lookup env name =
@@ -57,7 +70,10 @@ end = struct
   ;;
 
   (** Main evaluation function *)
-  let rec eval env = function
+  let rec eval env expr =
+    check_step ()
+    >>= fun () ->
+    match expr with
     | Ast.Int n -> return (VInt n)
     | Ast.Var name -> lookup env name
     | Ast.Abs (param, body) -> return (VClosure (param, body, env))
@@ -111,38 +127,34 @@ end = struct
 
   (** Create initial environment with built-in functions *)
   let initial_env () =
-    (* Implementation of fix combinator for CBV (Call-By-Value).
-
-       For a function f = λrec_fn. λarg. ...body...
-       We want: fix f = λarg. ...body[rec_fn := fix f]...
-
-       The implementation mirrors let rec:
-       We create a cyclic closure where the inner function has access to itself
-       through the environment. *)
-    let fix_builtin =
+    (* Print function: prints a value and returns unit *)
+    let print_builtin =
       VBuiltin
-        ( "fix"
-        , fun f_val ->
-            match f_val with
-            | VClosure (rec_param, inner_fn, f_env) ->
-              (* f is λrec_param. inner_fn
-                 We need to evaluate inner_fn with rec_param bound to the result itself *)
-              (match inner_fn with
-               | Ast.Abs (param, body) ->
-                 (* inner_fn = λparam.body
-                    Result should be: λparam. body with rec_param bound to result *)
-                 let rec result = VClosure (param, body, (rec_param, result) :: f_env) in
-                 Base.Result.Ok result
-               | _ ->
-                 (* If inner_fn is not a lambda, we can't properly implement fix *)
-                 Base.Result.Error (`TypeMismatch : [> error ]))
-            | _ -> Base.Result.Error (`TypeMismatch : [> error ]) )
+        ( "print"
+        , fun v ->
+            (match v with
+             | VInt n -> Stdlib.Printf.printf "%d\n%!" n
+             | VClosure _ -> Stdlib.Printf.printf "<fun>\n%!"
+             | VBuiltin (name, _) -> Stdlib.Printf.printf "<builtin:%s>\n%!" name
+             | VUnit -> Stdlib.Printf.printf "()\n%!");
+            Base.Result.Ok VUnit )
     in
-    [ "fix", fix_builtin ]
+    [ "print", print_builtin ]
   ;;
 
-  let run expr = eval (initial_env ()) expr
+  let run ~max_steps expr =
+    (* Reset and set step limit *)
+    step_counter := 0;
+    max_steps_limit := max_steps;
+    eval (initial_env ()) expr
+  ;;
 end
+
+(** Public function to evaluate an AST expression *)
+let eval_expr ?(max_steps = 10000) ast =
+  let module I = Interpret (Base.Result) in
+  I.run ~max_steps ast
+;;
 
 let parse_and_run str =
   let module I = Interpret (Base.Result) in
@@ -150,12 +162,14 @@ let parse_and_run str =
   let rez =
     Parser.parse str
     >>= fun ast ->
-    I.run ast |> Result.map_error ~f:(fun e -> (e :> [ Parser.error | error ]))
+    I.run ~max_steps:10000 ast
+    |> Result.map_error ~f:(fun e -> (e :> [ Parser.error | error ]))
   in
   match rez with
   | Result.Ok (VInt n) -> Stdlib.Printf.printf "Success: %d\n" n
   | Result.Ok (VClosure _) -> Stdlib.Printf.printf "Success: <closure>\n"
   | Result.Ok (VBuiltin (name, _)) -> Stdlib.Printf.printf "Success: <builtin %s>\n" name
+  | Result.Ok VUnit -> Stdlib.Printf.printf "Success: ()\n"
   | Result.Error (#Parser.error as e) ->
     (match e with
      | `Parsing_error msg -> Format.eprintf "Parsing error: %s\n%!" msg);
@@ -168,5 +182,8 @@ let parse_and_run str =
     Stdlib.exit 1
   | Result.Error `TypeMismatch ->
     Format.eprintf "Interpreter error: Type mismatch\n%!";
+    Stdlib.exit 1
+  | Result.Error `StepLimitExceeded ->
+    Format.eprintf "Interpreter error: Step limit exceeded\n%!";
     Stdlib.exit 1
 ;;

@@ -74,11 +74,32 @@ let pexpr =
     in
     (* Lambda abstractions *)
     let plambda =
-      (string "λ" <|> string "\\") *> spaces *> identifier
-      <* spaces
-      <* (char '.' <|> string "->" *> return ' ')
-      <* spaces
-      >>= fun param -> pexpr >>| fun body -> Ast.Abs (param, body)
+      choice
+        [ (* fun x y z -> body syntax sugar (multi-parameter) *)
+          (string "fun" *> spaces *> many1 (identifier <* spaces)
+           <* string "->"
+           <* spaces
+           >>= fun params ->
+           pexpr
+           >>| fun body ->
+           (* Desugar: fun x y z -> body becomes fun x -> fun y -> fun z -> body *)
+           List.fold_right (fun param acc -> Ast.Abs (param, acc)) params body)
+        ; (* λ x y z -> body syntax sugar (multi-parameter) *)
+          ((string "λ" <|> string "\\") *> spaces *> many1 (identifier <* spaces)
+           <* string "->"
+           <* spaces
+           >>= fun params ->
+           pexpr
+           >>| fun body ->
+           (* Desugar: λ x y z -> body becomes λx.λy.λz.body *)
+           List.fold_right (fun param acc -> Ast.Abs (param, acc)) params body)
+        ; (* λx. body or \x. body (single parameter with dot) *)
+          ((string "λ" <|> string "\\") *> spaces *> identifier
+           <* spaces
+           <* char '.'
+           <* spaces
+           >>= fun param -> pexpr >>| fun body -> Ast.Abs (param, body))
+        ]
     in
     (* If-then-else expression *)
     let pif =

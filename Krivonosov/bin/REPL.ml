@@ -75,6 +75,8 @@ type opts =
   { mutable dump_parsetree : bool
   ; mutable mode : strategy_kind * strategy
   ; mutable stop_after : stop_after
+  ; mutable use_interpreter : bool
+  ; mutable max_steps : int
   }
 
 let big_step_evaluator = function
@@ -84,7 +86,7 @@ let big_step_evaluator = function
   | CBV -> Lambda.cbv_strat
 ;;
 
-let run_single dump_parsetree stop_after eval =
+let run_single dump_parsetree stop_after use_interpreter max_steps eval =
   let text = In_channel.(input_all stdin) |> String.trim in
   let ast = Parser.parse text in
   match ast with
@@ -94,15 +96,42 @@ let run_single dump_parsetree stop_after eval =
     (match stop_after with
      | SA_parsing -> ()
      | SA_never ->
-       let rez = eval ast in
-       Format.printf "Evaluated result: %a\n%!" Pprintast.pp_hum rez)
+       if use_interpreter
+       then (
+         (* Use monadic interpreter *)
+         match Interpret.eval_expr ~max_steps ast with
+         | Base.Result.Ok (Interpret.VInt n) -> Format.printf "Evaluated result: %d\n%!" n
+         | Base.Result.Ok (Interpret.VClosure _) ->
+           Format.printf "Evaluated result: <fun>\n%!"
+         | Base.Result.Ok (Interpret.VBuiltin (name, _)) ->
+           Format.printf "Evaluated result: <builtin:%s>\n%!" name
+         | Base.Result.Ok Interpret.VUnit -> Format.printf "Evaluated result: ()\n%!"
+         | Base.Result.Error (`UnknownVariable name) ->
+           Format.printf "Error: Unknown variable %s\n%!" name
+         | Base.Result.Error `DivisionByZero ->
+           Format.printf "Error: Division by zero\n%!"
+         | Base.Result.Error `TypeMismatch -> Format.printf "Error: Type mismatch\n%!"
+         | Base.Result.Error `StepLimitExceeded ->
+           Format.printf "Error: Step limit exceeded (max %d steps)\n%!" max_steps)
+       else (
+         (* Use old lambda reduction *)
+         let rez = eval ast in
+         Format.printf "Evaluated result: %a\n%!" Pprintast.pp_hum rez))
 ;;
 
 let () =
-  let opts = { dump_parsetree = false; mode = Big_step, NO; stop_after = SA_never } in
+  let opts =
+    { dump_parsetree = false
+    ; mode = Big_step, NO
+    ; stop_after = SA_never
+    ; use_interpreter = true
+    ; max_steps = 10000
+    }
+  in
   let pick_strategy stra () =
     let kind, _ = opts.mode in
-    opts.mode <- kind, stra
+    opts.mode <- kind, stra;
+    opts.use_interpreter <- false
   in
   let pick_step step () =
     let _, stra = opts.mode in
@@ -130,18 +159,26 @@ let () =
               | "parsing" -> opts.stop_after <- SA_parsing
               | _ -> failwith "Bad argument of -stop-after")
         , "" )
+      ; ( "-max-steps"
+        , Int (fun n -> opts.max_steps <- n)
+        , "Maximum number of evaluation steps (default: 10000)" )
       ]
       (fun _ ->
         Stdlib.Format.eprintf "Positioned arguments are not supported\n";
         Stdlib.exit 1)
       "Read-Eval-Print-Loop for Utyped Lambda Calculus"
   in
-  run_single opts.dump_parsetree opts.stop_after (fun ast ->
-    let stra =
-      match opts.mode with
-      | Big_step, stra -> big_step_evaluator stra
-      | Small_step, AO -> ao_small_step_strat
-      | _ -> raise (Failure "Implement it yourself")
-    in
-    Lambda.apply_strat stra ast)
+  run_single
+    opts.dump_parsetree
+    opts.stop_after
+    opts.use_interpreter
+    opts.max_steps
+    (fun ast ->
+       let stra =
+         match opts.mode with
+         | Big_step, stra -> big_step_evaluator stra
+         | Small_step, AO -> ao_small_step_strat
+         | _ -> raise (Failure "Implement it yourself")
+       in
+       Lambda.apply_strat stra ast)
 ;;

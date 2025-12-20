@@ -29,3 +29,13 @@
   lam_3x2.txt
   lam_fac3.txt
   ../bin/REPL.exe))
+
+(library
+ (name tests)
+ (modules tests)
+ (libraries lambda_lib)
+ (preprocess
+  (pps ppx_expect ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx))
+ (inline_tests))

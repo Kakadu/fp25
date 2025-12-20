@@ -16,7 +16,7 @@ in the dune file
   $ ../bin/REPL.exe -dparsetree <<EOF
   > garbage242
   Parsed result: (Var garbage242)
-  Evaluated result: garbage242
+  Error: Unknown variable garbage242
 
 
 
@@ -104,3 +104,132 @@ Test parsing let rec
   Parsed result: (Let (true, fact,
                     (Abs (n, (If ((Var n), (Var n), (Some (Int 1)))))),
                     (App ((Var fact), (Int 5)))))
+
+Interpreter tests
+=================
+
+Basic arithmetic
+  $ ../bin/REPL.exe <<EOF
+  > 2 + 3
+  Evaluated result: 5
+  $ ../bin/REPL.exe <<EOF
+  > 10 - 4
+  Evaluated result: 6
+  $ ../bin/REPL.exe <<EOF
+  > 3 * 4
+  Evaluated result: 12
+  $ ../bin/REPL.exe <<EOF
+  > 15 / 3
+  Evaluated result: 5
+  $ ../bin/REPL.exe <<EOF
+  > 17 % 5
+  Evaluated result: 2
+
+Comparison operators
+  $ ../bin/REPL.exe <<EOF
+  > 5 = 5
+  Evaluated result: 1
+  $ ../bin/REPL.exe <<EOF
+  > 5 = 3
+  Evaluated result: 0
+  $ ../bin/REPL.exe <<EOF
+  > 3 < 5
+  Evaluated result: 1
+  $ ../bin/REPL.exe <<EOF
+  > 5 <= 5
+  Evaluated result: 1
+
+Conditional expressions
+  $ ../bin/REPL.exe <<EOF
+  > if 1 then 100 else 200
+  Evaluated result: 100
+  $ ../bin/REPL.exe <<EOF
+  > if 0 then 100 else 200
+  Evaluated result: 200
+  $ ../bin/REPL.exe <<EOF
+  > if (3 > 2) then 42 else 0
+  Evaluated result: 42
+
+Let bindings
+  $ ../bin/REPL.exe <<EOF
+  > let x = 10 in x + 5
+  Evaluated result: 15
+  $ ../bin/REPL.exe <<EOF
+  > let x = 5 in let y = 10 in x * y
+  Evaluated result: 50
+
+Factorial with let rec
+  $ ../bin/REPL.exe <<EOF
+  > let rec fact = fun n -> if n <= 1 then 1 else n * fact (n - 1) in fact 0
+  Evaluated result: 1
+  $ ../bin/REPL.exe <<EOF
+  > let rec fact = fun n -> if n <= 1 then 1 else n * fact (n - 1) in fact 1
+  Evaluated result: 1
+  $ ../bin/REPL.exe <<EOF
+  > let rec fact = fun n -> if n <= 1 then 1 else n * fact (n - 1) in fact 5
+  Evaluated result: 120
+  $ ../bin/REPL.exe <<EOF
+  > let rec fact = fun n -> if n <= 1 then 1 else n * fact (n - 1) in fact 10
+  Evaluated result: 3628800
+
+Fibonacci with let rec
+  $ ../bin/REPL.exe <<EOF
+  > let rec fib = fun n -> if n <= 1 then n else fib (n - 1) + fib (n - 2) in fib 0
+  Evaluated result: 0
+  $ ../bin/REPL.exe <<EOF
+  > let rec fib = fun n -> if n <= 1 then n else fib (n - 1) + fib (n - 2) in fib 1
+  Evaluated result: 1
+  $ ../bin/REPL.exe <<EOF
+  > let rec fib = fun n -> if n <= 1 then n else fib (n - 1) + fib (n - 2) in fib 7
+  Evaluated result: 13
+  $ ../bin/REPL.exe <<EOF
+  > let rec fib = fun n -> if n <= 1 then n else fib (n - 1) + fib (n - 2) in fib 10
+  Evaluated result: 55
+
+Multi-parameter syntax sugar
+  $ ../bin/REPL.exe <<EOF
+  > (fun x y -> x + y) 2 3
+  Evaluated result: 5
+  $ ../bin/REPL.exe <<EOF
+  > (fun x y z -> x + y + z) 1 2 3
+  Evaluated result: 6
+
+Print function
+  $ ../bin/REPL.exe <<EOF
+  > print 42
+  42
+  Evaluated result: ()
+  $ ../bin/REPL.exe <<EOF
+  > print (5 + 3)
+  8
+  Evaluated result: ()
+  $ ../bin/REPL.exe <<EOF
+  > let x = print 10 in print 20
+  10
+  20
+  Evaluated result: ()
+
+Error handling - Division by zero
+  $ ../bin/REPL.exe <<EOF
+  > 10 / 0
+  Error: Division by zero
+
+Error handling - Unknown variable
+  $ ../bin/REPL.exe <<EOF
+  > x + 5
+  Error: Unknown variable x
+
+Error handling - Type mismatch
+  $ ../bin/REPL.exe <<EOF
+  > (fun x -> x) + 5
+  Error: Type mismatch
+
+Step limit - Infinite loop with let rec
+  $ ../bin/REPL.exe -max-steps 100 <<EOF
+  > let rec loop = fun x -> loop x in loop 0
+  Error: Step limit exceeded (max 100 steps)
+
+Step limit - Factorial completes within limit
+  $ ../bin/REPL.exe -max-steps 200 <<EOF
+  > let rec fact = fun n -> if n <= 1 then 1 else n * fact (n - 1) in fact 5
+  Evaluated result: 120
