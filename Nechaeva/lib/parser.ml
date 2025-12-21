@@ -105,7 +105,9 @@ let expr =
          >>= fun op -> sum >>| fun right -> Comp (op, left, right))
     in
     let let_expr =
-      token (string "let")
+      spaces *> string "let"
+      >>= fun _ ->
+      take_while1 is_space
       >>= fun _ ->
       token (string "rec")
       >>| (fun _ -> Recursive)
