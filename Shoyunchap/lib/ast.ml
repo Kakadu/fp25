@@ -31,39 +31,39 @@ type name = string [@@deriving show { with_path = false }]
 
 (** Binary operations on integers. All results are ints (1/0 for comparisons). **)
 type operation_id =
-  | OpAdd  (** + **)
-  | OpSub  (** - **)
-  | OpMul  (** * **)
-  | OpDiv  (** / **)
-  | OpEq   (** = **)
-  | OpGt   (** > **)
-  | OpLt   (** < **)
-  | OpGte  (** >= **)
-  | OpLte  (** <= **)
+  | OpAdd (** + **)
+  | OpSub (** - **)
+  | OpMul (** * **)
+  | OpDiv (** / **)
+  | OpEq (** = **)
+  | OpGt (** > **)
+  | OpLt (** < **)
+  | OpGte (** >= **)
+  | OpLte (** <= **)
 [@@deriving show { with_path = false }]
 
 (** Distinguish let from let rec. **)
 type binding_kind =
-  | NonRec  (** let x = e **)
-  | Rec  (** let rec f = fun x -> e **)
+  | NonRec (** let x = e **)
+  | Rec (** let rec f = fun x -> e **)
 [@@deriving show { with_path = false }]
 
 (** Expressions of the language. **)
 type expression =
-  | Const of const  (** Literal constants. **)
-  | Var of name  (** Variable lookup. **)
+  | Const of const (** Literal constants. **)
+  | Var of name (** Variable lookup. **)
   | Let of var_scope * binding_kind * name * expression * expression option
-      (** let/let rec:
-          - var_scope marks global vs local binding (informational);
-          - binding_kind distinguishes `let` vs `let rec`;
-          - name is the bound variable;
-          - expression is the bound value (possibly a sugared multi-arg fun);
-          - expression option is the body (`None` for top-level declarations). **)
-  | Fun of name * expression  (** Lambda abstraction: fun x -> e. **)
-  | App of expression * expression  (** Application: f a (left-associative). **)
-  | BinOp of operation_id * expression * expression  (** Integer operation. **)
+  (** let/let rec:
+      - var_scope marks global vs local binding (informational);
+      - binding_kind distinguishes `let` vs `let rec`;
+      - name is the bound variable;
+      - expression is the bound value (possibly a sugared multi-arg fun);
+      - expression option is the body (`None` for top-level declarations). **)
+  | Fun of name * expression (** Lambda abstraction: fun x -> e. **)
+  | App of expression * expression (** Application: f a (left-associative). **)
+  | BinOp of operation_id * expression * expression (** Integer operation. **)
   | If of expression * expression * expression option
-      (** Conditional: `0` is false, non-zero is true; else is optional. **)
+  (** Conditional: `0` is false, non-zero is true; else is optional. **)
 [@@deriving show { with_path = false }]
 
 (** Sugars and notes:

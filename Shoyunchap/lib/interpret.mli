@@ -21,7 +21,7 @@ and eval_error =
   | Step_limit_exceeded
   | Fix_argument_shape
 
-and 'a eval = int -> (('a * int), eval_error) result
+and 'a eval = int -> ('a * int, eval_error) result
 
 module type MONAD = sig
   type 'a t = 'a eval
@@ -37,17 +37,14 @@ module EvalM : MONAD
 val return : 'a -> 'a eval
 val error : eval_error -> 'a eval
 val ( let* ) : 'a eval -> ('a -> 'b eval) -> 'b eval
-
 val step : unit eval
 val lookup : env -> name -> value eval
 val extend : env -> name -> value -> env
 val apply : value -> value -> value eval
 val eval : env -> expression -> value eval
-
 val builtin_fix : value
 val builtin_print_int : value
 val builtin_print_newline : value
-
 val initial_env : env
 val run : ?max_steps:int -> expression -> (value, eval_error) result
 val string_of_value : value -> string

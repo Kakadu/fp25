@@ -99,17 +99,17 @@ let parse_cmp_op : operation_id Angstrom.t =
        ]
 ;;
 
-(* syntax sugar for fun x y -> e 
-example result: Fun ("x", Fun ("y", Fun ("z", body)))
-with args : [x, y, z]
+(* syntax sugar for fun x y -> e
+   example result: Fun ("x", Fun ("y", Fun ("z", body)))
+   with args : [x, y, z]
 *)
 let curry_fun (args : name list) (body : expression) : expression =
   List.fold_right (fun x e -> Fun (x, e)) args body
 ;;
 
-(* left-associative chain combinator 
-((1 + 2) + 3)
-with "1+2+3"
+(* left-associative chain combinator
+   ((1 + 2) + 3)
+   with "1+2+3"
 *)
 let chainl1 p op =
   let open Angstrom in
@@ -153,7 +153,7 @@ let expr : expression Angstrom.t =
       chainl1 mul_div op
     in
     (* comparisons we allow only one comparison in the chain:
-       a + b < c - d 
+       a + b < c - d
     *)
     let cmp_level =
       let open Angstrom in
