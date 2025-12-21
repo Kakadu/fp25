@@ -24,7 +24,7 @@ let parens p = symbol "(" *> p <* symbol ")"
 (* Identifiers and integers *)
 
 let is_ident_start = function
-  | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
+  | 'a' .. 'z' | '_' -> true
   | _ -> false
 ;;
 
