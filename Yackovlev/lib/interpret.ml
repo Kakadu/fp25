@@ -12,7 +12,6 @@ type prim =
   | Print_int
   | Trace_int
   | Fix
-;;
 
 type value =
   | VInt of int
@@ -27,7 +26,6 @@ and closure =
   }
 
 and env = (name * value) list
-;;
 
 type error =
   [ `Unknown_variable of name
@@ -36,7 +34,6 @@ type error =
   | `Type_error of string
   | `Out_of_fuel
   ]
-;;
 
 type 'a eval_result = ('a, error) result
 
@@ -57,7 +54,7 @@ let tick (fuel : fuel) : (unit * fuel, error) result =
 
 let lookup (env : env) (x : name) : value option = List.assoc_opt x env
 
-let rec string_of_value = function
+let string_of_value = function
   | VInt n -> string_of_int n
   | VUnit -> "()"
   | VClosure _ -> "<fun>"
@@ -79,8 +76,7 @@ let eval_int_binop (op : binop) (n1 : int) (n2 : int) : (int, error) result =
   | Add -> ok (n1 + n2)
   | Sub -> ok (n1 - n2)
   | Mul -> ok (n1 * n2)
-  | Div ->
-    if n2 = 0 then error `Division_by_zero else ok (n1 / n2)
+  | Div -> if n2 = 0 then error `Division_by_zero else ok (n1 / n2)
 ;;
 
 let eval_cmpop (op : cmpop) (n1 : int) (n2 : int) : (int, error) result =
@@ -97,9 +93,7 @@ let eval_cmpop (op : cmpop) (n1 : int) (n2 : int) : (int, error) result =
   ok as_int
 ;;
 
-let apply_prim (fuel : fuel) (p : prim) (arg : value)
-  : (value * fuel, error) result
-  =
+let apply_prim (fuel : fuel) (p : prim) (arg : value) : (value * fuel, error) result =
   match p, arg with
   | Print_int, VInt n ->
     (* Print the integer during evaluation and return unit *)
@@ -123,17 +117,13 @@ let apply_prim (fuel : fuel) (p : prim) (arg : value)
          VClosure { param = arg; body = inner_body; env = (self, rec_closure) :: env }
        in
        ok (rec_closure, fuel)
-     | _ ->
-       error (`Type_error "fix expects a function that returns a function"))
-  | Fix, v ->
-    error (`Type_error ("fix expects a function, got " ^ string_of_value v))
+     | _ -> error (`Type_error "fix expects a function that returns a function"))
+  | Fix, v -> error (`Type_error ("fix expects a function, got " ^ string_of_value v))
 ;;
 
 (* The mutually recursive evaluator helpers follow *)
 
-let rec apply (fuel : fuel) (f : value) (arg : value)
-  : (value * fuel, error) result
-  =
+let rec apply (fuel : fuel) (f : value) (arg : value) : (value * fuel, error) result =
   match f with
   | VClosure { param; body; env } ->
     let env' = (param, arg) :: env in
@@ -144,7 +134,7 @@ let rec apply (fuel : fuel) (f : value) (arg : value)
 and eval_if (env : env) (fuel : fuel) (cond : expr) (e_then : expr) (e_else : expr)
   : (value * fuel, error) result
   =
-  let* (v_cond, fuel1) = eval env fuel cond in
+  let* v_cond, fuel1 = eval env fuel cond in
   match v_cond with
   | VInt n ->
     (* Integers as booleans: 0 is false, any non-zero is true *)
@@ -155,7 +145,7 @@ and eval_let (env : env) (fuel : fuel) (x : name) (e1 : expr) (e2 : expr)
   : (value * fuel, error) result
   =
   (* Call-by-value let: evaluate [e1], bind, then evaluate [e2] *)
-  let* (v1, fuel1) = eval env fuel e1 in
+  let* v1, fuel1 = eval env fuel e1 in
   let env' = (x, v1) :: env in
   eval env' fuel1 e2
 
@@ -168,15 +158,14 @@ and eval_let_rec (env : env) (fuel : fuel) (f : name) (rhs : expr) (body : expr)
     let rec closure = VClosure { param = x; body = fun_body; env = env' }
     and env' = (f, closure) :: env in
     eval env' fuel body
-  | _ ->
-    error (`Type_error "let rec expects a function on the right-hand side")
+  | _ -> error (`Type_error "let rec expects a function on the right-hand side")
 
 and eval_binop (env : env) (fuel : fuel) (op : binop) (e1 : expr) (e2 : expr)
   : (value * fuel, error) result
   =
   (* Call-by-value for arithmetic: evaluate left operand, then right operand *)
-  let* (v1, fuel1) = eval env fuel e1 in
-  let* (v2, fuel2) = eval env fuel1 e2 in
+  let* v1, fuel1 = eval env fuel e1 in
+  let* v2, fuel2 = eval env fuel1 e2 in
   match v1, v2 with
   | VInt n1, VInt n2 ->
     let* n = eval_int_binop op n1 n2 in
@@ -189,8 +178,8 @@ and eval_cmp (env : env) (fuel : fuel) (op : cmpop) (e1 : expr) (e2 : expr)
   : (value * fuel, error) result
   =
   (* Call-by-value for comparisons: evaluate left operand, then right operand *)
-  let* (v1, fuel1) = eval env fuel e1 in
-  let* (v2, fuel2) = eval env fuel1 e2 in
+  let* v1, fuel1 = eval env fuel e1 in
+  let* v2, fuel2 = eval env fuel1 e2 in
   match v1, v2 with
   | VInt n1, VInt n2 ->
     let* n = eval_cmpop op n1 n2 in
@@ -198,11 +187,9 @@ and eval_cmp (env : env) (fuel : fuel) (op : cmpop) (e1 : expr) (e2 : expr)
     ok (VInt n, fuel2)
   | _ -> error (`Type_error "comparison expects integer operands")
 
-and eval (env : env) (fuel : fuel) (e : expr)
-  : (value * fuel, error) result
-  =
+and eval (env : env) (fuel : fuel) (e : expr) : (value * fuel, error) result =
   (* Each call to [eval] consumes one unit of fuel *)
-  let* ((), fuel) = tick fuel in
+  let* (), fuel = tick fuel in
   match e with
   | Var x ->
     (* Look up variable in the current environment *)
@@ -215,29 +202,24 @@ and eval (env : env) (fuel : fuel) (e : expr)
     ok (VClosure { param = x; body; env }, fuel)
   | App (e1, e2) ->
     (* Call-by-value: first evaluate the function expression, then the argument *)
-    let* (f, fuel1) = eval env fuel e1 in
-    let* (arg, fuel2) = eval env fuel1 e2 in
+    let* f, fuel1 = eval env fuel e1 in
+    let* arg, fuel2 = eval env fuel1 e2 in
     apply fuel2 f arg
-  | Let (x, e1, e2) ->
-    eval_let env fuel x e1 e2
-  | Let_rec (f, rhs, body) ->
-    eval_let_rec env fuel f rhs body
-  | If (cond, e_then, e_else) ->
-    eval_if env fuel cond e_then e_else
-  | Binop (op, e1, e2) ->
-    eval_binop env fuel op e1 e2
-  | Cmp (op, e1, e2) ->
-    eval_cmp env fuel op e1 e2
+  | Let (x, e1, e2) -> eval_let env fuel x e1 e2
+  | Let_rec (f, rhs, body) -> eval_let_rec env fuel f rhs body
+  | If (cond, e_then, e_else) -> eval_if env fuel cond e_then e_else
+  | Binop (op, e1, e2) -> eval_binop env fuel op e1 e2
+  | Cmp (op, e1, e2) -> eval_cmp env fuel op e1 e2
 ;;
 
 let initial_env : env =
-  [ "print_int", VPrim Print_int
-  ; "trace_int", VPrim Trace_int
-  ; "fix", VPrim Fix
-  ]
+  [ "print_int", VPrim Print_int; "trace_int", VPrim Trace_int; "fix", VPrim Fix ]
 ;;
 
-type run_error = [ error | Parser.error ]
+type run_error =
+  [ error
+  | Parser.error
+  ]
 
 let string_of_run_error (err : run_error) : string =
   match err with
@@ -245,9 +227,7 @@ let string_of_run_error (err : run_error) : string =
   | #Parser.error as e -> Format.asprintf "%a" Parser.pp_error e
 ;;
 
-let run_program ?(fuel = 100_000) (str : string)
-  : (value * fuel, run_error) result
-  =
+let run_program ?(fuel = 100_000) (str : string) : (value * fuel, run_error) result =
   match Parser.parse str with
   | Result.Error e ->
     (* Parser.error -> run_error *)
@@ -261,8 +241,6 @@ let run_program ?(fuel = 100_000) (str : string)
 
 let parse_and_run ?fuel (str : string) : unit =
   match run_program ?fuel str with
-  | Ok (v, _fuel_left) ->
-    Format.printf "Success: %s\n%!" (string_of_value v)
-  | Error err ->
-    Format.eprintf "Error: %s\n%!" (string_of_run_error err)
+  | Ok (v, _fuel_left) -> Format.printf "Success: %s\n%!" (string_of_value v)
+  | Error err -> Format.eprintf "Error: %s\n%!" (string_of_run_error err)
 ;;
