@@ -384,3 +384,23 @@ in the dune file
   $ ../bin/REPL.exe <<EOF
   > let print_num = print in print_num
   Result: <builtin>
+
+  $ ../bin/REPL.exe <<EOF
+  > letrec
+  Error: Unbound variable: letrec
+
+  $ ../bin/REPL.exe <<EOF
+  > letrec f x = if x = 0 then 0 else f (x-1) in f
+  Parser error: syntax error
+
+  $ ../bin/REPL.exe <<EOF
+  > let rec fact letrec = if letrec = 1 then 1 else letrec * fact (letrec - 1) in fact 5
+  Result: 120
+
+  $ ../bin/REPL.exe <<EOF
+  > let rec letrec n = if n = 1 then 1 else n * letrec (n - 1) in letrec 6
+  Result: 720
+
+  $ ../bin/REPL.exe <<EOF
+  > let letrec = 5 in -letrec
+  Result: -5
