@@ -126,11 +126,9 @@ let pexpr =
     in
     (* Application: sequence of atoms *)
     let papp =
-      many1 patom
-      >>| function
-      | [] -> failwith "impossible: many1 returned empty list"
-      | [ x ] -> x
-      | x :: xs -> List.fold_left (fun acc e -> Ast.App (acc, e)) x xs
+      patom
+      >>= fun first ->
+      many patom >>| fun rest -> List.fold_left (fun acc e -> Ast.App (acc, e)) first rest
     in
     (* Binary operators with precedence *)
     (* Comparison operators: =, <>, <, >, <=, >= (lowest precedence) *)

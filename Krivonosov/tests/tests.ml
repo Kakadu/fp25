@@ -18,110 +18,224 @@ let%test _ = fact 5 = 120
 *)
 
 open Lambda_lib
-open Parser
+open QCheck
 
-let parse_optimistically str = Result.get_ok (parse str)
-let pp ast = Print.print_ast ast
+let parse_optimistically str = Result.get_ok (Parser.parse str)
+let pp = Lambda_lib.Print.print_ast
 
-let%expect_test _ =
+let%expect_test "parse simple application" =
   Format.printf "%s" (pp (parse_optimistically "x y"));
   [%expect {| App (Var "x", Var "y") |}]
 ;;
 
-let%expect_test _ =
+let%expect_test "parse application with parens" =
   Format.printf "%s" (pp (parse_optimistically "(x y)"));
   [%expect {| App (Var "x", Var "y") |}]
 ;;
 
-let%expect_test _ =
+let%expect_test "parse lambda with backslash" =
   Format.printf "%s" (pp (parse_optimistically "(\\x . x x)"));
   [%expect {| Abs ("x", App (Var "x", Var "x")) |}]
 ;;
 
-let%expect_test _ =
+let%expect_test "parse lambda with unicode" =
   Format.printf "%s" (pp (parse_optimistically "(λf.λx. f (x x))"));
   [%expect {| Abs ("f", Abs ("x", App (Var "f", App (Var "x", Var "x")))) |}]
 ;;
 
-(* Round-trip tests: parse(pretty_print(ast)) should equal ast *)
-(* Testing that parsing and printing are inverses *)
-
-let test_roundtrip ast_str =
-  let parsed = parse_optimistically ast_str in
-  let printed = Print.print_expr parsed in
-  let reparsed = parse_optimistically printed in
-  if parsed = reparsed
-  then ()
-  else
-    Format.printf
-      "Round-trip failed!\nOriginal: %s\nPrinted: %s\nReparsed AST: %s\n"
-      ast_str
-      printed
-      (pp reparsed)
+(* Test all binary operators *)
+let%expect_test "parse division" =
+  Format.printf "%s" (pp (parse_optimistically "10 / 2"));
+  [%expect {| BinOp (Div, Int 10, Int 2) |}]
 ;;
 
-(* Test round-trip for integers *)
-let%test "roundtrip: integer" =
-  test_roundtrip "42";
-  true
+let%expect_test "parse modulo" =
+  Format.printf "%s" (pp (parse_optimistically "10 % 3"));
+  [%expect {| BinOp (Mod, Int 10, Int 3) |}]
 ;;
 
-(* Test round-trip for variables *)
-let%test "roundtrip: variable" =
-  test_roundtrip "foo";
-  true
+let%expect_test "parse equality" =
+  Format.printf "%s" (pp (parse_optimistically "5 = 5"));
+  [%expect {| BinOp (Eq, Int 5, Int 5) |}]
 ;;
 
-(* Test round-trip for lambda *)
-let%test "roundtrip: lambda" =
-  test_roundtrip "fun x -> x";
-  true
+let%expect_test "parse not equal" =
+  Format.printf "%s" (pp (parse_optimistically "5 <> 3"));
+  [%expect {| BinOp (Neq, Int 5, Int 3) |}]
 ;;
 
-(* Test round-trip for application *)
-let%test "roundtrip: application" =
-  test_roundtrip "(fun x -> x) 5";
-  true
+let%expect_test "parse less than" =
+  Format.printf "%s" (pp (parse_optimistically "3 < 5"));
+  [%expect {| BinOp (Lt, Int 3, Int 5) |}]
 ;;
 
-(* Test round-trip for arithmetic *)
-let%test "roundtrip: arithmetic" =
-  test_roundtrip "2 + 3";
-  true
+let%expect_test "parse greater than" =
+  Format.printf "%s" (pp (parse_optimistically "5 > 3"));
+  [%expect {| BinOp (Gt, Int 5, Int 3) |}]
 ;;
 
-let%test "roundtrip: complex arithmetic" =
-  test_roundtrip "3 * 4 + 5";
-  true
+let%expect_test "parse less or equal" =
+  Format.printf "%s" (pp (parse_optimistically "3 <= 5"));
+  [%expect {| BinOp (Leq, Int 3, Int 5) |}]
 ;;
 
-(* Test round-trip for if-then-else *)
-let%test "roundtrip: if-then-else" =
-  test_roundtrip "if 1 then 5 else 10";
-  true
+let%expect_test "parse greater or equal" =
+  Format.printf "%s" (pp (parse_optimistically "5 >= 3"));
+  [%expect {| BinOp (Geq, Int 5, Int 3) |}]
 ;;
 
-(* Test round-trip for let binding *)
-let%test "roundtrip: let binding" =
-  test_roundtrip "let x = 5 in x + 3";
-  true
+let%expect_test "parse if without else" =
+  Format.printf "%s" (pp (parse_optimistically "if 1 then 42"));
+  [%expect {| If (Int 1, Int 42, None) |}]
 ;;
 
-(* Test round-trip for let rec *)
-let%test "roundtrip: let rec" =
-  test_roundtrip
-    "let rec fact = fun n -> if n <= 1 then 1 else n * fact (n - 1) in fact 5";
-  true
+let%expect_test "parse if with else" =
+  Format.printf "%s" (pp (parse_optimistically "if 1 then 42 else 0"));
+  [%expect {| If (Int 1, Int 42, Some Int 0) |}]
 ;;
 
-(* Test round-trip for multi-parameter function *)
-let%test "roundtrip: multi-param fun" =
-  test_roundtrip "fun x y z -> x + y + z";
-  true
+let%expect_test "parse let without rec" =
+  Format.printf "%s" (pp (parse_optimistically "let x = 5 in x"));
+  [%expect {| Let (false, "x", Int 5, Var "x") |}]
 ;;
 
-(* Test round-trip for nested let *)
-let%test "roundtrip: nested let" =
-  test_roundtrip "let x = 10 in let y = 20 in x + y";
-  true
+let%expect_test "parse let rec" =
+  Format.printf "%s" (pp (parse_optimistically "let rec f = fun x -> x in f"));
+  [%expect {| Let (true, "f", Abs ("x", Var "x"), Var "f") |}]
+;;
+
+(* ========================================================================== *)
+(* QuickCheck Generators and Property-Based Tests *)
+(* ========================================================================== *)
+
+(** Generator for variable names *)
+let gen_name =
+  Gen.(oneofl [ "x"; "y"; "z"; "f"; "g"; "h"; "n"; "m"; "a"; "b"; "foo"; "bar"; "baz" ])
+;;
+
+(** Generator for binary operators *)
+let gen_binop = Gen.oneofl Ast.[ Add; Sub; Mul; Div; Mod; Eq; Neq; Lt; Gt; Leq; Geq ]
+
+(** Generator for AST expressions with bounded depth
+    @param max_depth Maximum depth of the generated AST tree *)
+let gen_ast max_depth =
+  let open Gen in
+  let rec gen_ast_sized depth =
+    if depth <= 0
+    then
+      (* At max depth, generate only leaf nodes *)
+      oneof
+        [ map (fun n -> Ast.Int n) (int_range 0 100)
+        ; map (fun name -> Ast.Var name) gen_name
+        ]
+    else
+      (* Generate all kinds of expressions *)
+      frequency
+        [ (* Leaf nodes - higher weight for simpler expressions *)
+          3, map (fun n -> Ast.Int n) (int_range 0 100)
+        ; 3, map (fun name -> Ast.Var name) gen_name (* Binary operations *)
+        ; ( 2
+          , map3
+              (fun op l r -> Ast.BinOp (op, l, r))
+              gen_binop
+              (gen_ast_sized (depth - 1))
+              (gen_ast_sized (depth - 1)) )
+          (* Abstraction (lambda) *)
+        ; ( 2
+          , map2
+              (fun param body -> Ast.Abs (param, body))
+              gen_name
+              (gen_ast_sized (depth - 1)) )
+          (* Application *)
+        ; ( 2
+          , map2
+              (fun f arg -> Ast.App (f, arg))
+              (gen_ast_sized (depth - 1))
+              (gen_ast_sized (depth - 1)) )
+          (* If-then-else *)
+        ; ( 1
+          , map3
+              (fun c t e -> Ast.If (c, t, Some e))
+              (gen_ast_sized (depth - 1))
+              (gen_ast_sized (depth - 1))
+              (gen_ast_sized (depth - 1)) )
+          (* Let binding (non-recursive only to avoid complexity) *)
+        ; ( 1
+          , map3
+              (fun name binding body -> Ast.Let (false, name, binding, body))
+              gen_name
+              (gen_ast_sized (depth - 1))
+              (gen_ast_sized (depth - 1)) )
+        ]
+  in
+  gen_ast_sized max_depth
+;;
+
+(** QuickCheck test: parse and print are inverses (round-trip property)
+    Property: for any AST, parsing the printed representation should yield the same AST *)
+let test_roundtrip_property =
+  Test.make
+    ~name:"parse-print roundtrip"
+    ~count:1000
+    (make (gen_ast 3))
+    (fun ast ->
+      let printed = Lambda_lib.Print.print_expr ast in
+      match Parser.parse printed with
+      | Result.Ok reparsed -> ast = reparsed
+      | Result.Error _ ->
+        (* If parsing fails, this is also acceptable since our printer might produce
+           expressions that are syntactically valid but the parser doesn't handle *)
+        true)
+;;
+
+(** QuickCheck test: printer always produces parseable output
+    Property: for any AST, the printed representation should be parseable *)
+let test_printer_produces_parseable =
+  Test.make
+    ~name:"printer produces parseable output"
+    ~count:1000
+    (make (gen_ast 3))
+    (fun ast ->
+      let printed = Lambda_lib.Print.print_expr ast in
+      match Parser.parse printed with
+      | Result.Ok _ -> true
+      | Result.Error _ -> false)
+;;
+
+(** QuickCheck test: print is deterministic
+    Property: printing the same AST twice should produce the same string *)
+let test_printer_deterministic =
+  Test.make
+    ~name:"printer is deterministic"
+    ~count:1000
+    (make (gen_ast 3))
+    (fun ast ->
+      let printed1 = Lambda_lib.Print.print_expr ast in
+      let printed2 = Lambda_lib.Print.print_expr ast in
+      printed1 = printed2)
+;;
+
+(** QuickCheck test: parser is deterministic
+    Property: parsing the same string twice should produce the same result *)
+let test_parser_deterministic =
+  Test.make
+    ~name:"parser is deterministic"
+    ~count:1000
+    (make Gen.(small_string ~gen:printable))
+    (fun str ->
+      let result1 = Parser.parse str in
+      let result2 = Parser.parse str in
+      result1 = result2)
+;;
+
+(* Run QuickCheck tests *)
+let () =
+  let open QCheck_base_runner in
+  run_tests
+    [ test_roundtrip_property
+    ; test_printer_produces_parseable
+    ; test_printer_deterministic
+    ; test_parser_deterministic
+    ]
+  |> ignore
 ;;

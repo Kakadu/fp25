@@ -5,7 +5,7 @@
 (library
  (name tests)
  (modules tests)
- (libraries lambda_lib)
+ (libraries lambda_lib qcheck)
  (preprocess
   (pps ppx_expect ppx_deriving.show))
  (instrumentation

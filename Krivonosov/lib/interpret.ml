@@ -54,7 +54,7 @@ end = struct
     | Ast.Div, VInt _, VInt 0 -> fail `DivisionByZero
     | Ast.Div, VInt a, VInt b -> return (VInt (a / b))
     | Ast.Mod, VInt _, VInt 0 -> fail `DivisionByZero
-    | Ast.Mod, VInt a, VInt b -> return (VInt (a mod b))
+    | Ast.Mod, VInt a, VInt b -> return (VInt (a % b))
     | Ast.Eq, VInt a, VInt b -> return (VInt (if a = b then 1 else 0))
     | Ast.Neq, VInt a, VInt b -> return (VInt (if a <> b then 1 else 0))
     | Ast.Lt, VInt a, VInt b -> return (VInt (if a < b then 1 else 0))
@@ -130,10 +130,10 @@ end = struct
         ( "print"
         , fun v ->
             (match v with
-             | VInt n -> Stdlib.Printf.printf "%d\n%!" n
-             | VClosure _ -> Stdlib.Printf.printf "<fun>\n%!"
-             | VBuiltin (name, _) -> Stdlib.Printf.printf "<builtin:%s>\n%!" name
-             | VUnit -> Stdlib.Printf.printf "()\n%!");
+             | VInt n -> Stdio.printf "%d\n%!" n
+             | VClosure _ -> Stdio.printf "<fun>\n%!"
+             | VBuiltin (name, _) -> Stdio.printf "<builtin:%s>\n%!" name
+             | VUnit -> Stdio.printf "()\n%!");
             Base.Result.Ok VUnit )
     in
     [ "print", print_builtin ]
@@ -146,36 +146,4 @@ end
 let eval_expr ?(max_steps = 10000) ast =
   let module I = Interpret (Base.Result) in
   I.run ~max_steps ast
-;;
-
-let parse_and_run str =
-  let module I = Interpret (Base.Result) in
-  let open Base.Result in
-  let rez =
-    Parser.parse str
-    >>= fun ast ->
-    I.run ~max_steps:10000 ast
-    |> Result.map_error ~f:(fun e -> (e :> [ Parser.error | error ]))
-  in
-  match rez with
-  | Result.Ok (VInt n) -> Stdlib.Printf.printf "Success: %d\n" n
-  | Result.Ok (VClosure _) -> Stdlib.Printf.printf "Success: <closure>\n"
-  | Result.Ok (VBuiltin (name, _)) -> Stdlib.Printf.printf "Success: <builtin %s>\n" name
-  | Result.Ok VUnit -> Stdlib.Printf.printf "Success: ()\n"
-  | Result.Error (#Parser.error as e) ->
-    (match e with
-     | `Parsing_error msg -> Format.eprintf "Parsing error: %s\n%!" msg);
-    Stdlib.exit 1
-  | Result.Error (`UnknownVariable name) ->
-    Format.eprintf "Interpreter error: Unknown variable %s\n%!" name;
-    Stdlib.exit 1
-  | Result.Error `DivisionByZero ->
-    Format.eprintf "Interpreter error: Division by zero\n%!";
-    Stdlib.exit 1
-  | Result.Error `TypeMismatch ->
-    Format.eprintf "Interpreter error: Type mismatch\n%!";
-    Stdlib.exit 1
-  | Result.Error `StepLimitExceeded ->
-    Format.eprintf "Interpreter error: Step limit exceeded\n%!";
-    Stdlib.exit 1
 ;;

@@ -11,14 +11,20 @@ open Lambda_lib
 (** Parse command line arguments*)
 let parse_args args =
   let rec parse max_steps = function
-    | [] -> max_steps
+    | [] -> Some max_steps
     | "-max-steps" :: n :: rest ->
       (match int_of_string_opt n with
        | Some steps -> parse steps rest
-       | None -> failwith "Invalid value for -max-steps")
-    | arg :: _ -> failwith ("Unknown argument: " ^ arg)
+       | None ->
+         Printf.eprintf "Error: Invalid value for -max-steps: %s\n" n;
+         None)
+    | arg :: _ ->
+      Printf.eprintf "Error: Unknown argument: %s\n" arg;
+      None
   in
-  parse 10000 args
+  match parse 10000 args with
+  | Some max_steps -> max_steps
+  | None -> exit 1
 ;;
 
 let () =

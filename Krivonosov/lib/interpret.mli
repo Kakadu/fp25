@@ -25,6 +25,3 @@ and environment = (string * value) list
 
 (** Evaluate an AST expression with optional step limit *)
 val eval_expr : ?max_steps:int -> string Ast.t -> (value, error) Base.Result.t
-
-(** Parse and run a string (for testing) *)
-val parse_and_run : string -> unit

@@ -33,11 +33,35 @@ Comparison operators
   > 5 = 3
   0
   $ ../bin/REPL.exe <<EOF
+  > 5 <> 3
+  1
+  $ ../bin/REPL.exe <<EOF
+  > 5 <> 5
+  0
+  $ ../bin/REPL.exe <<EOF
   > 3 < 5
   1
   $ ../bin/REPL.exe <<EOF
+  > 5 < 3
+  0
+  $ ../bin/REPL.exe <<EOF
+  > 5 > 3
+  1
+  $ ../bin/REPL.exe <<EOF
+  > 3 > 5
+  0
+  $ ../bin/REPL.exe <<EOF
   > 5 <= 5
   1
+  $ ../bin/REPL.exe <<EOF
+  > 6 <= 5
+  0
+  $ ../bin/REPL.exe <<EOF
+  > 5 >= 5
+  1
+  $ ../bin/REPL.exe <<EOF
+  > 4 >= 5
+  0
 
 Conditional expressions
   $ ../bin/REPL.exe <<EOF
@@ -49,6 +73,12 @@ Conditional expressions
   $ ../bin/REPL.exe <<EOF
   > if (3 > 2) then 42 else 0
   42
+  $ ../bin/REPL.exe <<EOF
+  > if 1 then 42
+  42
+  $ ../bin/REPL.exe <<EOF
+  > if 0 then 42
+  0
 
 Let bindings
   $ ../bin/REPL.exe <<EOF
@@ -57,6 +87,9 @@ Let bindings
   $ ../bin/REPL.exe <<EOF
   > let x = 5 in let y = 10 in x * y
   50
+  $ ../bin/REPL.exe <<EOF
+  > let rec x = 42 in x
+  42
 
 Factorial with let rec
   $ ../bin/REPL.exe <<EOF
@@ -108,10 +141,32 @@ Print function
   10
   20
   ()
+  $ ../bin/REPL.exe <<EOF
+  > print (fun x -> x)
+  <fun>
+  ()
+  $ ../bin/REPL.exe <<EOF
+  > print print
+  <builtin:print>
+  ()
+
+Returning closures and builtins
+  $ ../bin/REPL.exe <<EOF
+  > fun x -> x
+  <fun>
+  $ ../bin/REPL.exe <<EOF
+  > print
+  <builtin:print>
 
 Error handling - Division by zero
   $ ../bin/REPL.exe <<EOF
   > 10 / 0
+  Division by zero
+  [1]
+
+Error handling - Modulo by zero
+  $ ../bin/REPL.exe <<EOF
+  > 10 % 0
   Division by zero
   [1]
 
@@ -124,6 +179,18 @@ Error handling - Unknown variable
 Error handling - Type mismatch
   $ ../bin/REPL.exe <<EOF
   > (fun x -> x) + 5
+  Type error
+  [1]
+  $ ../bin/REPL.exe <<EOF
+  > 5 + (fun x -> x)
+  Type error
+  [1]
+  $ ../bin/REPL.exe <<EOF
+  > 42 10
+  Type error
+  [1]
+  $ ../bin/REPL.exe <<EOF
+  > if (fun x -> x) then 1 else 0
   Type error
   [1]
 

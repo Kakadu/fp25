@@ -27,10 +27,13 @@
   (angstrom
    (= "0.16.0"))
   base
+  stdio
   (ppx_inline_test :with-test)
   ppx_expect
   ppx_deriving
   bisect_ppx
+  (qcheck :with-test)
+  (qcheck-core :with-test)
   (odoc :with-doc)
   (ocamlformat
    (and
