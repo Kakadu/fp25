@@ -11,7 +11,7 @@
 open Base
 
 (** Monad signature with fail *)
-module type MONAD_FAIL = sig
+module type MonadFail = sig
   include Base.Monad.S2
 
   val fail : 'e -> ('a, 'e) t
@@ -33,21 +33,10 @@ type value =
 
 and environment = (string * value) list
 
-module Interpret (M : MONAD_FAIL) : sig
+module Interpret (M : MonadFail) : sig
   val run : max_steps:int -> string Ast.t -> (value, error) M.t
 end = struct
   open M
-
-  (** Step counter to prevent infinite loops *)
-  let step_counter = ref 0
-
-  let max_steps_limit = ref 10000
-
-  (** Increment step counter and check limit *)
-  let check_step () =
-    step_counter := !step_counter + 1;
-    if !step_counter > !max_steps_limit then fail `StepLimitExceeded else return ()
-  ;;
 
   (** Lookup variable in environment *)
   let lookup env name =
@@ -75,60 +64,62 @@ end = struct
     | _ -> fail `TypeMismatch
   ;;
 
-  (** Main evaluation function *)
-  let rec eval env expr =
-    check_step ()
-    >>= fun () ->
-    match expr with
-    | Ast.Int n -> return (VInt n)
-    | Ast.Var name -> lookup env name
-    | Ast.Abs (param, body) -> return (VClosure (param, body, env))
-    | Ast.BinOp (op, l, r) ->
-      eval env l >>= fun vl -> eval env r >>= fun vr -> eval_binop op vl vr
-    | Ast.If (cond, then_branch, else_branch_opt) ->
-      eval env cond
-      >>= (function
-       | VInt 0 ->
-         (match else_branch_opt with
-          | Some else_branch -> eval env else_branch
-          | None -> return (VInt 0))
-       | VInt _ -> eval env then_branch
-       | _ -> fail `TypeMismatch)
-    | Ast.Let (is_rec, name, binding, body) ->
-      if is_rec
-      then (
-        (* For recursive let, create environment with self-reference *)
-        match binding with
-        | Ast.Abs (param, func_body) ->
-          (* Create closure with recursive environment *)
-          let rec new_env = (name, VClosure (param, func_body, new_env)) :: env in
-          eval new_env body
-        | _ ->
-          (* Non-function recursive bindings not supported yet *)
-          eval env binding
+  (** Main evaluation function with step counter as parameter *)
+  let rec eval steps_remaining env expr =
+    if steps_remaining <= 0
+    then fail `StepLimitExceeded
+    else (
+      let steps = steps_remaining - 1 in
+      match expr with
+      | Ast.Int n -> return (VInt n)
+      | Ast.Var name -> lookup env name
+      | Ast.Abs (param, body) -> return (VClosure (param, body, env))
+      | Ast.BinOp (op, l, r) ->
+        eval steps env l >>= fun vl -> eval steps env r >>= fun vr -> eval_binop op vl vr
+      | Ast.If (cond, then_branch, else_branch_opt) ->
+        eval steps env cond
+        >>= (function
+         | VInt 0 ->
+           (match else_branch_opt with
+            | Some else_branch -> eval steps env else_branch
+            | None -> return (VInt 0))
+         | VInt _ -> eval steps env then_branch
+         | _ -> fail `TypeMismatch)
+      | Ast.Let (is_rec, name, binding, body) ->
+        if is_rec
+        then (
+          (* For recursive let, create environment with self-reference *)
+          match binding with
+          | Ast.Abs (param, func_body) ->
+            (* Create closure with recursive environment *)
+            let rec new_env = (name, VClosure (param, func_body, new_env)) :: env in
+            eval steps new_env body
+          | _ ->
+            (* Non-function recursive bindings not supported yet *)
+            eval steps env binding
+            >>= fun value ->
+            let new_env = (name, value) :: env in
+            eval steps new_env body)
+        else
+          eval steps env binding
           >>= fun value ->
           let new_env = (name, value) :: env in
-          eval new_env body)
-      else
-        eval env binding
-        >>= fun value ->
-        let new_env = (name, value) :: env in
-        eval new_env body
-    | Ast.App (f, arg) ->
-      eval env f
-      >>= (function
-       | VClosure (param, body, closure_env) ->
-         eval env arg
-         >>= fun varg ->
-         let new_env = (param, varg) :: closure_env in
-         eval new_env body
-       | VBuiltin (_, builtin_fn) ->
-         eval env arg
-         >>= fun varg ->
-         (match builtin_fn varg with
-          | Base.Result.Ok v -> return v
-          | Base.Result.Error e -> fail e)
-       | _ -> fail `TypeMismatch)
+          eval steps new_env body
+      | Ast.App (f, arg) ->
+        eval steps env f
+        >>= (function
+         | VClosure (param, body, closure_env) ->
+           eval steps env arg
+           >>= fun varg ->
+           let new_env = (param, varg) :: closure_env in
+           eval steps new_env body
+         | VBuiltin (_, builtin_fn) ->
+           eval steps env arg
+           >>= fun varg ->
+           (match builtin_fn varg with
+            | Base.Result.Ok v -> return v
+            | Base.Result.Error e -> fail e)
+         | _ -> fail `TypeMismatch))
   ;;
 
   (** Create initial environment with built-in functions *)
@@ -148,12 +139,7 @@ end = struct
     [ "print", print_builtin ]
   ;;
 
-  let run ~max_steps expr =
-    (* Reset and set step limit *)
-    step_counter := 0;
-    max_steps_limit := max_steps;
-    eval (initial_env ()) expr
-  ;;
+  let run ~max_steps expr = eval max_steps (initial_env ()) expr
 end
 
 (** Public function to evaluate an AST expression *)

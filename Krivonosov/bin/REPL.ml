@@ -8,19 +8,28 @@
 
 open Lambda_lib
 
+(** Parse command line arguments*)
+let parse_args args =
+  let rec parse max_steps = function
+    | [] -> max_steps
+    | "-max-steps" :: n :: rest ->
+      (match int_of_string_opt n with
+       | Some steps -> parse steps rest
+       | None -> failwith "Invalid value for -max-steps")
+    | arg :: _ -> failwith ("Unknown argument: " ^ arg)
+  in
+  parse 10000 args
+;;
+
 let () =
-  let max_steps = ref 10000 in
-  Stdlib.Arg.parse
-    [ "-max-steps", Int (fun n -> max_steps := n), "Maximum evaluation steps" ]
-    (fun _ -> failwith "No positional args")
-    "miniML REPL";
+  let max_steps = parse_args (List.tl (Array.to_list Sys.argv)) in
   let input = In_channel.(input_all stdin) |> String.trim in
   match Parser.parse input with
   | Error e ->
     Format.printf "Error: %a\n%!" Parser.pp_error e;
     exit 1
   | Result.Ok ast ->
-    (match Interpret.eval_expr ~max_steps:!max_steps ast with
+    (match Interpret.eval_expr ~max_steps ast with
      | Base.Result.Ok (Interpret.VInt n) -> Printf.printf "%d\n" n
      | Base.Result.Ok (Interpret.VClosure _) -> Printf.printf "<fun>\n"
      | Base.Result.Ok (Interpret.VBuiltin (name, _)) ->
