@@ -13,9 +13,9 @@ let is_space = function
 let spaces = skip_while is_space
 
 (* Consume spaces around parser [p] *)
-let token p = spaces *> p <* spaces
+let token p = p <* spaces
 
-(* Parse a fixed symbol, skipping spaces around it *)
+(* Parse a fixed symbol, skipping spaces after it *)
 let symbol s = token (string s)
 
 (* Parenthesised expression *)
@@ -57,18 +57,9 @@ let ident =
 ;;
 
 let integer =
-  let is_digit = function
-    | '0' .. '9' -> true
-    | _ -> false
-  in
-  let number =
-    option 1 (char '-' *> return (-1))
-    >>= fun sign ->
-    take_while1 is_digit
-    >>| fun ds -> sign * int_of_string ds
-  in
-  token number
-;;
+  take_while1 (function '0' .. '9' -> true | _ -> false)
+  >>| int_of_string
+  |> token
 
 type dispatch =
   { apps : dispatch -> string Ast.t Angstrom.t
@@ -112,6 +103,16 @@ let expr : string Ast.t Angstrom.t =
       | [] -> failwith "application on empty list, impossible by [many1]"
     in
 
+    let unary =
+      fix (fun self ->
+        choice
+          [ (symbol "-" *> self >>| function
+             | Int n -> Int (-n)
+             | e -> Binop (Sub, Int 0, e))
+          ; app
+          ])
+    in
+
     (* Multiplication and division, left associative *)
     let mul_div =
       let op =
@@ -120,7 +121,7 @@ let expr : string Ast.t Angstrom.t =
           ; symbol "/" *> return (fun l r -> Binop (Div, l, r))
           ]
       in
-      chainl1 app op
+      chainl1 unary op
     in
 
     (* Addition and subtraction, left associative *)
@@ -214,7 +215,7 @@ let parse_lam =
 ;;
 
 let parse str =
-  match Angstrom.parse_string (expr) ~consume:Angstrom.Consume.All str with
+  match Angstrom.parse_string (spaces *> expr <* spaces) ~consume:Angstrom.Consume.All str with
   | Result.Ok x -> Result.Ok x
   | Error er -> Result.Error (`Parsing_error er)
 ;;
