@@ -15,7 +15,6 @@ type value =
   | VInt of int
   | VUnit
   | VClosure of string list * expr * (string * value) list
-  | VRecClosure of string * string list * expr * (string * value) list
   | VBuiltin of (value -> (value, error) result)
 
 type env = (string * value) list
@@ -38,7 +37,7 @@ val initial_env : env
 
 module Interpreter : sig
   val eval : expr -> env -> value StepErrorM.t
-  val apply : value -> value -> env -> value StepErrorM.t
+  val apply : value -> value -> value StepErrorM.t
 end
 
 val run_interpreter : expr -> int -> (value, error) result

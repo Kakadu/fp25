@@ -15,10 +15,9 @@ type value =
   | VInt of int
   | VUnit
   | VClosure of string list * expr * (string * value) list
-  | VRecClosure of string * string list * expr * (string * value) list
   | VBuiltin of (value -> (value, error) result)
 
-type env = (string * value) list
+and env = (string * value) list
 
 let builtin_print = function
   | VInt n ->
@@ -89,7 +88,7 @@ module Interpreter = struct
     | App (f, arg) ->
       let* func = eval f env in
       let* arg_val = eval arg env in
-      apply func arg_val env
+      apply func arg_val
     | Let (NonRecursive, name, e1, e2) ->
       let* v1 = eval e1 env in
       let new_env = env_extend env name v1 in
@@ -97,9 +96,9 @@ module Interpreter = struct
     | Let (Recursive, name, e1, e2) ->
       (match e1 with
        | Abs (params, body) ->
-         let rec_closure = VRecClosure (name, params, body, env) in
-         let new_env = env_extend env name rec_closure in
-         eval e2 new_env
+         let rec closure = VClosure (params, body, rec_env)
+         and rec_env = (name, closure) :: env in
+         eval e2 rec_env
        | _ -> fail (TypeError "let rec must bind to function"))
     | BinOp (op, e1, e2) ->
       let* v1 = eval e1 env in
@@ -140,7 +139,7 @@ module Interpreter = struct
        | VInt _ -> eval e1 env
        | _ -> fail (TypeError "If condition must be integer"))
 
-  and apply func arg_val env =
+  and apply func arg_val =
     match func with
     | VClosure ([], body, closure_env) -> eval body closure_env
     | VClosure (p :: ps, body, closure_env) ->
@@ -148,9 +147,6 @@ module Interpreter = struct
       (match ps with
        | [] -> eval body new_env
        | _ -> return (VClosure (ps, body, new_env)))
-    | VRecClosure (f_name, params, body, closure_env) ->
-      let env_with_self = env_extend closure_env f_name func in
-      apply (VClosure (params, body, env_with_self)) arg_val env
     | VBuiltin f ->
       (match f arg_val with
        | Ok v -> return v

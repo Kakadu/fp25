@@ -16,7 +16,6 @@ let string_of_value = function
   | VInt n -> string_of_int n
   | VUnit -> "()"
   | VClosure _ -> "<closure>"
-  | VRecClosure _ -> "<rec_closure>"
   | VBuiltin _ -> "<builtin>"
 ;;
 
