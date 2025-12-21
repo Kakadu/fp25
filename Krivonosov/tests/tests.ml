@@ -21,26 +21,26 @@ open Lambda_lib
 open Parser
 
 let parse_optimistically str = Result.get_ok (parse str)
-let pp = Printast.pp_named
+let pp ast = Print.print_ast ast
 
 let%expect_test _ =
-  Format.printf "%a" pp (parse_optimistically "x y");
-  [%expect {| (App ((Var x), (Var y))) |}]
+  Format.printf "%s" (pp (parse_optimistically "x y"));
+  [%expect {| App (Var "x", Var "y") |}]
 ;;
 
 let%expect_test _ =
-  Format.printf "%a" pp (parse_optimistically "(x y)");
-  [%expect {| (App ((Var x), (Var y))) |}]
+  Format.printf "%s" (pp (parse_optimistically "(x y)"));
+  [%expect {| App (Var "x", Var "y") |}]
 ;;
 
 let%expect_test _ =
-  Format.printf "%a" pp (parse_optimistically "(\\x . x x)");
-  [%expect {| (Abs (x, (App ((Var x), (Var x))))) |}]
+  Format.printf "%s" (pp (parse_optimistically "(\\x . x x)"));
+  [%expect {| Abs ("x", App (Var "x", Var "x")) |}]
 ;;
 
 let%expect_test _ =
-  Format.printf "%a" pp (parse_optimistically "(λf.λx. f (x x))");
-  [%expect {| (Abs (f, (Abs (x, (App ((Var f), (App ((Var x), (Var x))))))))) |}]
+  Format.printf "%s" (pp (parse_optimistically "(λf.λx. f (x x))"));
+  [%expect {| Abs ("f", Abs ("x", App (Var "f", App (Var "x", Var "x")))) |}]
 ;;
 
 (* Round-trip tests: parse(pretty_print(ast)) should equal ast *)
@@ -48,17 +48,16 @@ let%expect_test _ =
 
 let test_roundtrip ast_str =
   let parsed = parse_optimistically ast_str in
-  let printed = Format.asprintf "%a" Pprintast.pp_hum parsed in
+  let printed = Print.print_expr parsed in
   let reparsed = parse_optimistically printed in
   if parsed = reparsed
   then ()
   else
     Format.printf
-      "Round-trip failed!\nOriginal: %s\nPrinted: %s\nReparsed AST: %a\n"
+      "Round-trip failed!\nOriginal: %s\nPrinted: %s\nReparsed AST: %s\n"
       ast_str
       printed
-      pp
-      reparsed
+      (pp reparsed)
 ;;
 
 (* Test round-trip for integers *)
@@ -126,16 +125,3 @@ let%test "roundtrip: nested let" =
   test_roundtrip "let x = 10 in let y = 20 in x + y";
   true
 ;;
-
-let _ = Lambda_lib.Interpret.parse_and_run
-let _ = Lambda_lib.Lambda.a
-let _ = Lambda_lib.Lambda.one
-let _ = Lambda_lib.Lambda.p
-let _ = Lambda_lib.Lambda.three
-let _ = Lambda_lib.Lambda.two
-let _ = Lambda_lib.Lambda.without_strat
-let _ = Lambda_lib.Lambda.zero
-
-(* parse_lam removed in new parser implementation *)
-let _ = Lambda_lib.Printast.pp
-let _ = Lambda_lib.Printast.show

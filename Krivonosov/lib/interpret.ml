@@ -9,7 +9,13 @@
 (** Real monadic interpreter goes here *)
 
 open Base
-open Utils
+
+(** Monad signature with fail *)
+module type MONAD_FAIL = sig
+  include Base.Monad.S2
+
+  val fail : 'e -> ('a, 'e) t
+end
 
 type error =
   [ `UnknownVariable of string
