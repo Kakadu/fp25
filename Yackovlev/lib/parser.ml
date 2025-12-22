@@ -85,10 +85,10 @@ let expr : string Ast.t Angstrom.t =
     (* Function application is left associative and tighter than any infix operator *)
     let app =
       many1 atom
-      >>| function
-      | [ x ] -> x
-      | x :: xs -> List.fold_left (fun acc r -> App (acc, r)) x xs
-      | [] -> failwith "application on empty list, impossible by [many1]"
+      >>= function
+      | [ x ] -> return x
+      | x :: xs -> return (List.fold_left (fun acc r -> App (acc, r)) x xs)
+      | [] -> fail "application on empty list, impossible by [many1]"
     in
     let unary =
       fix (fun self ->

@@ -27,7 +27,8 @@ let string_of_cmpop = function
 
 let rec pp pp_name fmt = function
   | Var x -> pp_name fmt x
-  | Int n -> if n < 0 then fprintf fmt "(%d)" n else fprintf fmt "%d" n
+  | Int n when n < 0 -> fprintf fmt "(%d)" n
+  | Int n -> fprintf fmt "%d" n
   | Abs (x, e) -> fprintf fmt "(fun %a -> %a)" pp_name x (pp pp_name) e
   | App (e1, e2) -> fprintf fmt "(%a %a)" (pp pp_name) e1 (pp pp_name) e2
   | Let (x, e1, e2) ->
