@@ -105,6 +105,113 @@ let%expect_test "parse let rec" =
 ;;
 
 (* ========================================================================== *)
+(* ADDITIONAL COVERAGE TESTS *)
+(* ========================================================================== *)
+
+(* Parser: Lambda syntax tests *)
+let%expect_test "parse lambda with unicode λ" =
+  Format.printf "%s" (pp (parse_optimistically "λx . x"));
+  [%expect {| Abs ("x", Var "x") |}]
+;;
+
+let%expect_test "parse lambda with backslash alone" =
+  Format.printf "%s" (pp (parse_optimistically "\\x . x"));
+  [%expect {| Abs ("x", Var "x") |}]
+;;
+
+let%expect_test "parse multi-param lambda with unicode" =
+  Format.printf "%s" (pp (parse_optimistically "λx y z -> x"));
+  [%expect {| Abs ("x", Abs ("y", Abs ("z", Var "x"))) |}]
+;;
+
+let%expect_test "parse multi-param lambda with backslash" =
+  Format.printf "%s" (pp (parse_optimistically "\\x y z -> x"));
+  [%expect {| Abs ("x", Abs ("y", Abs ("z", Var "x"))) |}]
+;;
+
+let%expect_test "parse multi-param fun syntax" =
+  Format.printf "%s" (pp (parse_optimistically "fun x y -> x"));
+  [%expect {| Abs ("x", Abs ("y", Var "x")) |}]
+;;
+
+(* Interpreter: Recursive binding tests *)
+let%expect_test "eval recursive function - factorial" =
+  let ast = parse_optimistically "let rec fact = fun n -> if n then 1 else n in fact 0" in
+  (match Interpret.eval_expr ast with
+   | Result.Ok (Interpret.VInt n) -> Format.printf "%d" n
+   | Result.Ok (Interpret.VClosure _) -> Format.printf "<fun>"
+   | Result.Ok _ -> Format.printf "<value>"
+   | Result.Error (`UnknownVariable s) -> Format.printf "UnknownVariable: %s" s
+   | Result.Error `DivisionByZero -> Format.printf "DivisionByZero"
+   | Result.Error `TypeMismatch -> Format.printf "TypeMismatch"
+   | Result.Error `StepLimitExceeded -> Format.printf "StepLimitExceeded");
+  [%expect {| <fun> |}]
+;;
+
+let%expect_test "eval if-then-else with 0 condition (false)" =
+  let ast = parse_optimistically "if 0 then 42 else 99" in
+  (match Interpret.eval_expr ast with
+   | Result.Ok (Interpret.VInt n) -> Format.printf "%d" n
+   | Result.Ok (Interpret.VClosure _) -> Format.printf "<fun>"
+   | Result.Ok _ -> Format.printf "<value>"
+   | Result.Error _ -> Format.printf "<error>");
+  [%expect {| 99 |}]
+;;
+
+let%expect_test "eval if-then without else (non-zero)" =
+  let ast = parse_optimistically "if 1 then 42" in
+  (match Interpret.eval_expr ast with
+   | Result.Ok (Interpret.VInt n) -> Format.printf "%d" n
+   | Result.Ok (Interpret.VClosure _) -> Format.printf "<fun>"
+   | Result.Ok _ -> Format.printf "<value>"
+   | Result.Error _ -> Format.printf "<error>");
+  [%expect {| 42 |}]
+;;
+
+let%expect_test "eval if-then without else (zero - no else)" =
+  let ast = parse_optimistically "if 0 then 42" in
+  (match Interpret.eval_expr ast with
+   | Result.Ok (Interpret.VInt n) -> Format.printf "%d" n
+   | Result.Ok (Interpret.VClosure _) -> Format.printf "<fun>"
+   | Result.Ok _ -> Format.printf "<value>"
+   | Result.Error _ -> Format.printf "<error>");
+  [%expect {| 0 |}]
+;;
+
+let%expect_test "eval unknown variable error" =
+  let ast = parse_optimistically "unknown_var" in
+  (match Interpret.eval_expr ast with
+   | Result.Ok _ -> Format.printf "<value>"
+   | Result.Error (`UnknownVariable s) -> Format.printf "UnknownVariable: %s" s
+   | Result.Error _ -> Format.printf "<error>");
+  [%expect {| UnknownVariable: unknown_var |}]
+;;
+
+let%expect_test "eval division by zero" =
+  let ast = parse_optimistically "10 / 0" in
+  (match Interpret.eval_expr ast with
+   | Result.Ok (Interpret.VInt n) -> Format.printf "%d" n
+   | Result.Ok (Interpret.VClosure _) -> Format.printf "<fun>"
+   | Result.Ok (Interpret.VBuiltin (name, _)) -> Format.printf "<builtin:%s>" name
+   | Result.Ok Interpret.VUnit -> Format.printf "()"
+   | Result.Error `DivisionByZero -> Format.printf "DivisionByZero"
+   | Result.Error _ -> Format.printf "<error>");
+  [%expect {| DivisionByZero |}]
+;;
+
+let%expect_test "eval modulo by zero" =
+  let ast = parse_optimistically "10 % 0" in
+  (match Interpret.eval_expr ast with
+   | Result.Ok (Interpret.VInt n) -> Format.printf "%d" n
+   | Result.Ok (Interpret.VClosure _) -> Format.printf "<fun>"
+   | Result.Ok (Interpret.VBuiltin (name, _)) -> Format.printf "<builtin:%s>" name
+   | Result.Ok Interpret.VUnit -> Format.printf "()"
+   | Result.Error `DivisionByZero -> Format.printf "DivisionByZero"
+   | Result.Error _ -> Format.printf "<error>");
+  [%expect {| DivisionByZero |}]
+;;
+
+(* ========================================================================== *)
 (* QuickCheck Generators and Property-Based Tests *)
 (* ========================================================================== *)
 

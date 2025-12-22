@@ -204,3 +204,56 @@ Step limit - Factorial completes within limit
   $ ../bin/REPL.exe -max-steps 200 <<EOF
   > let rec fact = fun n -> if n <= 1 then 1 else n * fact (n - 1) in fact 5
   120
+
+REPL argument parsing edge cases
+=================================
+
+Invalid -max-steps value (non-numeric)
+  $ ../bin/REPL.exe -max-steps invalid <<EOF
+  > 42
+  Error: Invalid value for -max-steps: invalid
+  [1]
+
+Unknown argument
+  $ ../bin/REPL.exe -unknown-arg <<EOF
+  > 42
+  Error: Unknown argument: -unknown-arg
+  [1]
+
+Lambda syntax - Unicode λ
+  $ ../bin/REPL.exe <<EOF
+  > λx . x + 1
+  <fun>
+
+Lambda syntax - Backslash
+  $ ../bin/REPL.exe <<EOF
+  > \x . x + 1
+  <fun>
+
+Multi-parameter lambda with unicode
+  $ ../bin/REPL.exe <<EOF
+  > λx y -> x + y
+  <fun>
+
+Multi-parameter lambda with backslash
+  $ ../bin/REPL.exe <<EOF
+  > \x y -> x + y
+  <fun>
+
+Parsing error handling
+  $ ../bin/REPL.exe <<EOF
+  > this is invalid syntax
+  Unbound variable: this
+  [1]
+
+Syntax error - unmatched parenthesis
+  $ ../bin/REPL.exe <<EOF
+  > (5 + 3
+  Error: : no more choices
+  [1]
+
+Syntax error - missing closing paren with complex expr
+  $ ../bin/REPL.exe <<EOF
+  > (fun x -> x + 1
+  Error: : no more choices
+  [1]

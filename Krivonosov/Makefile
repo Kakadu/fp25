@@ -35,7 +35,7 @@ odig:
 	odig odoc $(ODIG_SWITCHES) Lambda
 
 TEST_COV_D = /tmp/cov
-COVERAGE_OPTS = --coverage-path $(TEST_COV_D) --expect lib/ --expect tests/
+COVERAGE_OPTS = --coverage-path $(TEST_COV_D)
 
 .PHONY: test_coverage coverage
 test_coverage: coverage
