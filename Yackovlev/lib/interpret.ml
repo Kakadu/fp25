@@ -10,7 +10,6 @@ open Ast
 
 type prim =
   | Print_int
-  | Trace_int
   | Fix
 
 type value =
@@ -59,7 +58,6 @@ let string_of_value = function
   | VUnit -> "()"
   | VClosure _ -> "<fun>"
   | VPrim Print_int -> "<prim print_int>"
-  | VPrim Trace_int -> "<prim trace_int>"
   | VPrim Fix -> "<prim fix>"
 ;;
 
@@ -101,12 +99,6 @@ let apply_prim (fuel : fuel) (p : prim) (arg : value) : (value * fuel, error) re
     ok (VUnit, fuel)
   | Print_int, v ->
     error (`Type_error ("print_int expects int, got " ^ string_of_value v))
-  | Trace_int, VInt n ->
-    (* Print the integer and return it unchanged for debugging *)
-    print_endline (string_of_int n);
-    ok (VInt n, fuel)
-  | Trace_int, v ->
-    error (`Type_error ("trace_int expects int, got " ^ string_of_value v))
   | Fix, VClosure { param = self; body; env } ->
     (* [fix f] expects [f] to be a function of one argument [self]
        that returns the actual recursive function.
@@ -212,9 +204,7 @@ and eval (env : env) (fuel : fuel) (e : expr) : (value * fuel, error) result =
   | Cmp (op, e1, e2) -> eval_cmp env fuel op e1 e2
 ;;
 
-let initial_env : env =
-  [ "print_int", VPrim Print_int; "trace_int", VPrim Trace_int; "fix", VPrim Fix ]
-;;
+let initial_env : env = [ "print_int", VPrim Print_int; "fix", VPrim Fix ]
 
 type run_error =
   [ error

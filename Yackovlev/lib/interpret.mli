@@ -12,8 +12,6 @@ open Ast
 type prim =
   | Print_int
   (** [print_int : int -> unit] prints integer to stdout and returns [unit]. *)
-  | Trace_int
-  (** [trace_int : int -> int] prints integer to stdout and returns it unchanged. *)
   | Fix (** [fix : (('a -> 'b) -> 'a -> 'b) -> 'a -> 'b] fixed-point combinator *)
 
 type value =
