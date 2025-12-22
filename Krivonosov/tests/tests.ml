@@ -237,5 +237,5 @@ let () =
     ; test_printer_deterministic
     ; test_parser_deterministic
     ]
-  |> ignore
+  |> Stdlib.exit
 ;;

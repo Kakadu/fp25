@@ -22,7 +22,7 @@ type binop =
   | Leq (** [<=] *)
   | Geq (** [>=] *)
 
-(** The main type for our AST (дерева абстрактного синтаксиса) *)
+(** The main type for our AST *)
 type 'name t =
   | Var of 'name (** Variable [x] *)
   | Abs of 'name * 'name t (** Abstraction [λx.t] *)
