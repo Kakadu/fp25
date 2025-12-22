@@ -370,9 +370,9 @@ end = struct
 
   (** Lookup variable in environment *)
   let lookup env name =
-    <span data-count="1059">m</span>atch List.Assoc.find ~equal:String.equal env name with
+    <span data-count="1060">m</span>atch List.Assoc.find ~equal:String.equal env name with
     | <span data-count="1058">S</span>ome v -&gt; return v
-    | <span data-count="1">N</span>one -&gt; fail (`UnknownVariable name)
+    | <span data-count="2">N</span>one -&gt; fail (`UnknownVariable name)
   ;;
 
   (** Evaluate binary operation *)
@@ -396,14 +396,14 @@ end = struct
 
   (** Main evaluation function with step counter as parameter *)
   let rec eval steps_remaining env expr =
-    <span data-count="2871">i</span>f steps_remaining &lt;= 0
+    <span data-count="2879">i</span>f steps_remaining &lt;= 0
     then <span data-count="1">f</span>ail `StepLimitExceeded
-    else <span data-count="2870">(</span>
+    else <span data-count="2878">(</span>
       let steps = steps_remaining - 1 in
       match expr with
       | <span data-count="556">A</span>st.Int n -&gt; return (VInt n)
-      | <span data-count="1059">A</span>st.Var name -&gt; lookup env name
-      | <span data-count="10">A</span>st.Abs (param, body) -&gt; return (VClosure (param, body, env))
+      | <span data-count="1060">A</span>st.Var name -&gt; lookup env name
+      | <span data-count="14">A</span>st.Abs (param, body) -&gt; return (VClosure (param, body, env))
       | <span data-count="629">A</span>st.BinOp (op, l, r) -&gt;
         eva<span data-count="629">l</span> steps env l &gt;&gt;= fun vl -&gt; <span data-count="628">e</span>va<span data-count="628">l</span> steps env r &gt;&gt;= fun vr -&gt; <span data-count="628">e</span>val_binop op vl vr
       | <span data-count="248">A</span>st.If (cond, then_branch, else_branch_opt) -&gt;
@@ -435,8 +435,8 @@ end = struct
           &gt;&gt;= fun value -&gt;
           <span data-count="4">l</span>et new_env = (name, value) :: env in
           eval steps new_env body
-      | <span data-count="353">A</span>st.App (f, arg) -&gt;
-        eva<span data-count="353">l</span> steps env f
+      | <span data-count="356">A</span>st.App (f, arg) -&gt;
+        eva<span data-count="356">l</span> steps env f
         &gt;&gt;= (function
          | <span data-count="345">V</span>Closure (param, body, closure_env) -&gt;
            eva<span data-count="345">l</span> steps env arg
@@ -455,7 +455,7 @@ end = struct
   (** Create initial environment with built-in functions *)
   let initial_env () =
     (* Print function: prints a value and returns unit *)
-    <span data-count="51">l</span>et print_builtin =
+    <span data-count="56">l</span>et print_builtin =
       VBuiltin
         ( "print"
         , fun v -&gt;
@@ -469,12 +469,12 @@ end = struct
     [ "print", print_builtin ]
   ;;
 
-  let run ~max_steps expr = <span data-count="51">e</span>val max_steps (initial_en<span data-count="51">v</span> ()) expr
+  let run ~max_steps expr = <span data-count="56">e</span>val max_steps (initial_en<span data-count="56">v</span> ()) expr
 end
 
 (** Public function to evaluate an AST expression *)
 let eval_expr ?(max_steps = <span data-count="0">1</span>0000) ast =
-  <span data-count="51">l</span>et module I = Interpret (Base.Result) in
+  <span data-count="56">l</span>et module I = Interpret (Base.Result) in
   I.run ~max_steps ast
 ;;
 </code></pre>
