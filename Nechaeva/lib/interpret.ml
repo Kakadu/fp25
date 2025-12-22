@@ -17,7 +17,7 @@ type value =
   | VClosure of string list * expr * (string * value) list
   | VBuiltin of (value -> (value, error) result)
 
-and env = (string * value) list
+type env = (string * value) list
 
 let builtin_print = function
   | VInt n ->
