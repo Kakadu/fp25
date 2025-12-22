@@ -14,6 +14,16 @@ let spaces = skip_while is_space
 let token p = spaces *> p <* spaces
 let parens p = char '(' *> token p <* char ')'
 
+let keyword_space s =
+  spaces *> string s
+  >>= fun _ ->
+  peek_char
+  >>= (function
+         | Some '(' -> return ()
+         | _ -> fail "not paren")
+  <|> (take_while1 is_space >>= fun _ -> return ())
+;;
+
 let is_keyword = function
   | "let" | "in" | "rec" | "if" | "then" | "else" | "fun" -> true
   | _ -> false
@@ -105,15 +115,13 @@ let expr =
          >>= fun op -> sum >>| fun right -> Comp (op, left, right))
     in
     let let_expr =
-      spaces *> string "let"
+      keyword_space "let"
       >>= fun _ ->
-      take_while1 is_space
-      >>= fun _ ->
-      token (string "rec")
-      >>| (fun _ -> Recursive)
+      spaces *> string "rec" *> take_while1 is_space *> return Recursive
       <|> return NonRecursive
       >>= fun rec_flag ->
-      ident
+      parens ident
+      <|> ident
       >>= fun name ->
       many ident
       >>= fun args ->
@@ -133,21 +141,22 @@ let expr =
       Let (rec_flag, name, body, in_expr)
     in
     let if_expr =
-      token (string "if")
+      keyword_space "if"
       >>= fun _ ->
       expr
       >>= fun cond ->
-      token (string "then")
+      keyword_space "then"
       >>= fun _ ->
       expr
       >>= fun then_branch ->
-      token (string "else")
+      keyword_space "else"
       >>= fun _ -> expr >>| fun else_branch -> If (cond, then_branch, else_branch)
     in
     let abs_expr =
-      token (string "fun")
+      keyword_space "fun"
       >>= fun _ ->
-      many1 ident
+      let parse_args = parens ident >>| (fun arg -> [ arg ]) <|> many1 ident in
+      parse_args
       >>= fun args ->
       token (string "->") >>= fun _ -> expr >>| fun body -> Abs (args, body)
     in
