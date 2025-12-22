@@ -160,7 +160,7 @@ in the dune file
 
   $ ../bin/REPL.exe <<EOF
   > let rec f x = if x = 0 then 0 else f (x - 1) in f
-  Result: <rec_closure>
+  Result: <closure>
 
   $ ../bin/REPL.exe <<EOF
   > print
@@ -169,7 +169,7 @@ in the dune file
   $ ../bin/REPL.exe --ast --maxSteps=10000 <<EOF
   > let rec f x = if x = 0 then 0 else f (x - 1) in f
   AST: (let rec f = (fun x -> (if (x = 0) then 0 else (f (x - 1)))) in f)
-  Result: <rec_closure>
+  Result: <closure>
 
   $ ../bin/REPL.exe --ast --maxSteps=10000 <<EOF
   > print
@@ -404,3 +404,103 @@ in the dune file
   $ ../bin/REPL.exe <<EOF
   > let letrec = 5 in -letrec
   Result: -5
+
+  $ ../bin/REPL.exe <<EOF
+  > ifx=5then10else20
+  Parser error: syntax error
+
+  $ ../bin/REPL.exe <<EOF
+  > if x=5then10else 20
+  Parser error: syntax error
+
+  $ ../bin/REPL.exe <<EOF
+  > if x=5 then10 else20
+  Parser error: syntax error
+
+  $ ../bin/REPL.exe <<EOF
+  > if(x=5)then(10)else(20)
+  Error: Unbound variable: x
+
+  $ ../bin/REPL.exe <<EOF
+  > if (x) = 5 then 10 else 20
+  Error: Unbound variable: x
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = 5 in if (x) = 5 then 10 else 20
+  Result: 10
+
+  $ ../bin/REPL.exe <<EOF
+  > if (x = 5) then 10 else 20
+  Error: Unbound variable: x
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = 5 in if (x = 5) then 10 else 20
+  Result: 10
+
+  $ ../bin/REPL.exe <<EOF
+  > fun (x y)->x+y
+  Parser error: syntax error
+
+  $ ../bin/REPL.exe <<EOF  
+  > fun(x) -> x + 1
+  Result: <closure>
+
+  $ ../bin/REPL.exe <<EOF
+  > fun(x)->x+1
+  Result: <closure>
+
+  $ ../bin/REPL.exe <<EOF
+  > funx ->x+1
+  Parser error: syntax error
+
+  $ ../bin/REPL.exe <<EOF
+  > fun x->x+1
+  Result: <closure>
+
+  $ ../bin/REPL.exe <<EOF
+  > let x=5in x
+  Parser error: syntax error
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = 5 inx
+  Parser error: syntax error
+
+  $ ../bin/REPL.exe <<EOF
+  > let x=5in x+1
+  Parser error: syntax error
+
+  $ ../bin/REPL.exe <<EOF
+  > let x=5 inx+1
+  Parser error: syntax error
+
+  $ ../bin/REPL.exe <<EOF
+  > let(x) = 5 in x
+  Result: 5
+
+  $ ../bin/REPL.exe <<EOF
+  > let (x) = 5 in x
+  Result: 5
+
+  $ ../bin/REPL.exe <<EOF
+  > let( x )=5 in x
+  Result: 5
+
+  $ ../bin/REPL.exe <<EOF
+  > let(x)=5 in x
+  Result: 5
+
+  $ ../bin/REPL.exe <<EOF
+  > let (x)=(5) in x
+  Result: 5
+
+  $ ../bin/REPL.exe <<EOF
+  > let ( x ) = 5 in x
+  Result: 5
+
+  $ ../bin/REPL.exe <<EOF
+  > let x=(5)in x
+  Result: 5
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = 5 in(x + 1)
+  Result: 6
