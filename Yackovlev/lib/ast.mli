@@ -6,17 +6,14 @@
 
 [@@@ocaml.text "/*"]
 
-(* Name of variable or function *)
 type name = string
 
-(* Binary arithmetic operations *)
 type binop =
   | Add (** e1 + e2 *)
   | Sub (** e1 - e2 *)
   | Mul (** e1 * e2 *)
   | Div (** e1 / e2 *)
 
-(* Comparison operations *)
 type cmpop =
   | Eq (** e1 = e2 *)
   | Neq (** e1 <> e2 *)
@@ -25,7 +22,6 @@ type cmpop =
   | Gt (** e1 > e2 *)
   | Ge (** e1 >= e2 *)
 
-(* AST for miniML expressions *)
 type 'name t =
   | Var of 'name (** Variable, like x *)
   | Int of int (** Integer literal *)
@@ -37,8 +33,5 @@ type 'name t =
   | Binop of binop * 'name t * 'name t (** Arithmetic operation *)
   | Cmp of cmpop * 'name t * 'name t (** Comparison *)
 
-(* Expression with string names *)
 type expr = name t
-
-(* Whole program is one expression *)
 type program = expr

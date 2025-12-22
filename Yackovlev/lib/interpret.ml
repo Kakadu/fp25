@@ -94,15 +94,11 @@ let eval_cmpop (op : cmpop) (n1 : int) (n2 : int) : (int, error) result =
 let apply_prim (fuel : fuel) (p : prim) (arg : value) : (value * fuel, error) result =
   match p, arg with
   | Print_int, VInt n ->
-    (* Print the integer during evaluation and return unit *)
     print_endline (string_of_int n);
     ok (VUnit, fuel)
   | Print_int, v ->
     error (`Type_error ("print_int expects int, got " ^ string_of_value v))
   | Fix, VClosure { param = self; body; env } ->
-    (* [fix f] expects [f] to be a function of one argument [self]
-       that returns the actual recursive function.
-       Typical usage: [fix (fun self -> fun n -> ...)] *)
     (match body with
      | Abs (arg, inner_body) ->
        let rec rec_closure =
@@ -112,8 +108,6 @@ let apply_prim (fuel : fuel) (p : prim) (arg : value) : (value * fuel, error) re
      | _ -> error (`Type_error "fix expects a function that returns a function"))
   | Fix, v -> error (`Type_error ("fix expects a function, got " ^ string_of_value v))
 ;;
-
-(* The mutually recursive evaluator helpers follow *)
 
 let rec apply (fuel : fuel) (f : value) (arg : value) : (value * fuel, error) result =
   match f with
@@ -128,15 +122,12 @@ and eval_if (env : env) (fuel : fuel) (cond : expr) (e_then : expr) (e_else : ex
   =
   let* v_cond, fuel1 = eval env fuel cond in
   match v_cond with
-  | VInt n ->
-    (* Integers as booleans: 0 is false, any non-zero is true *)
-    if n <> 0 then eval env fuel1 e_then else eval env fuel1 e_else
+  | VInt n -> if n <> 0 then eval env fuel1 e_then else eval env fuel1 e_else
   | _ -> error (`Type_error "if condition must be an int")
 
 and eval_let (env : env) (fuel : fuel) (x : name) (e1 : expr) (e2 : expr)
   : (value * fuel, error) result
   =
-  (* Call-by-value let: evaluate [e1], bind, then evaluate [e2] *)
   let* v1, fuel1 = eval env fuel e1 in
   let env' = (x, v1) :: env in
   eval env' fuel1 e2
@@ -146,7 +137,6 @@ and eval_let_rec (env : env) (fuel : fuel) (f : name) (rhs : expr) (body : expr)
   =
   match rhs with
   | Abs (x, fun_body) ->
-    (* Recursive function binding: [f] is available inside [fun_body] *)
     let rec closure = VClosure { param = x; body = fun_body; env = env' }
     and env' = (f, closure) :: env in
     eval env' fuel body
@@ -155,45 +145,35 @@ and eval_let_rec (env : env) (fuel : fuel) (f : name) (rhs : expr) (body : expr)
 and eval_binop (env : env) (fuel : fuel) (op : binop) (e1 : expr) (e2 : expr)
   : (value * fuel, error) result
   =
-  (* Call-by-value for arithmetic: evaluate left operand, then right operand *)
   let* v1, fuel1 = eval env fuel e1 in
   let* v2, fuel2 = eval env fuel1 e2 in
   match v1, v2 with
   | VInt n1, VInt n2 ->
     let* n = eval_int_binop op n1 n2 in
     ok (VInt n, fuel2)
-  | _ ->
-    (* Trying to add/multiply/etc non-integers is a runtime type error *)
-    error (`Type_error "integer operands expected in arithmetic")
+  | _ -> error (`Type_error "integer operands expected in arithmetic")
 
 and eval_cmp (env : env) (fuel : fuel) (op : cmpop) (e1 : expr) (e2 : expr)
   : (value * fuel, error) result
   =
-  (* Call-by-value for comparisons: evaluate left operand, then right operand *)
   let* v1, fuel1 = eval env fuel e1 in
   let* v2, fuel2 = eval env fuel1 e2 in
   match v1, v2 with
   | VInt n1, VInt n2 ->
     let* n = eval_cmpop op n1 n2 in
-    (* Comparison result is encoded as an int: 1 is true, 0 is false *)
     ok (VInt n, fuel2)
   | _ -> error (`Type_error "comparison expects integer operands")
 
 and eval (env : env) (fuel : fuel) (e : expr) : (value * fuel, error) result =
-  (* Each call to [eval] consumes one unit of fuel *)
   let* (), fuel = tick fuel in
   match e with
   | Var x ->
-    (* Look up variable in the current environment *)
     (match lookup env x with
      | Some v -> ok (v, fuel)
      | None -> error (`Unknown_variable x))
   | Int n -> ok (VInt n, fuel)
-  | Abs (x, body) ->
-    (* Closures capture the current environment *)
-    ok (VClosure { param = x; body; env }, fuel)
+  | Abs (x, body) -> ok (VClosure { param = x; body; env }, fuel)
   | App (e1, e2) ->
-    (* Call-by-value: first evaluate the function expression, then the argument *)
     let* f, fuel1 = eval env fuel e1 in
     let* arg, fuel2 = eval env fuel1 e2 in
     apply fuel2 f arg
@@ -219,11 +199,8 @@ let string_of_run_error (err : run_error) : string =
 
 let run_program ?(fuel = 100_000) (str : string) : (value * fuel, run_error) result =
   match Parser.parse str with
-  | Result.Error e ->
-    (* Parser.error -> run_error *)
-    Error (e :> run_error)
+  | Result.Error e -> Error (e :> run_error)
   | Result.Ok ast ->
-    (* error -> run_error *)
     (match eval initial_env fuel ast with
      | Ok v -> Ok v
      | Error e -> Error (e :> run_error))
