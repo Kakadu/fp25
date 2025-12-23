@@ -28,6 +28,7 @@ let is_digit = function
 let is_alpha = function
   | 'a' .. 'z' -> true
   | 'A' .. 'Z' -> true
+  | '_' -> true
   | _ -> false
 ;;
 
@@ -97,9 +98,20 @@ let parse_expr =
               | _ -> fail "not app")
            ]
       >>= fun appto ->
-      spaces *> conde [ parens parse_expr; parse_expr ]
+      spaces
+      *> conde
+           [ parens parse_expr
+           ; (parse_varname >>= fun s -> return (Ast.Ident s))
+           ; parse_number
+           ]
       >>= fun arg1 ->
-      spaces *> many (conde [ parse_expr; parens parse_expr ])
+      spaces
+      *> many
+           (conde
+              [ parens parse_expr
+              ; (parse_varname >>= fun s -> return (Ast.Ident s))
+              ; parse_number
+              ])
       >>= fun args ->
       (match appto with
        | Ast.Ident x -> return (Ast.Var (x, arg1))

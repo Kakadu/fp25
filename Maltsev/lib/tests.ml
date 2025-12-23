@@ -264,3 +264,21 @@ let%test _ =
   Result.get_ok (parse "(a 1) 2")
   = Ast.App (Ast.Application (Ast.Var ("a", Ast.Const 1), Ast.Const 2))
 ;;
+
+Printf.printf
+  "%s\n"
+  (Pprintast.pprint
+     (Result.get_ok
+        (parse
+           "let n = 10 in\n\
+           \   let ifn a b = let z = print a in print b in\n\
+           \   let thenn = 100 in\n\
+           \   let elsen = 1000 in\n\
+           \   ifn thenn 1000")))
+
+let%test _ =
+  Result.get_ok (parse "i e t")
+  = Ast.App (Ast.Application (Ast.Var ("i", Ast.Ident "e"), Ast.Ident "t"))
+;;
+
+let%test _ = Result.get_ok (parse "i_ 1") = Ast.App (Ast.Var ("i_", Ast.Const 1))

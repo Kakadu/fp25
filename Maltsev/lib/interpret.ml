@@ -58,7 +58,7 @@ type envvalue =
 
 and envt = (ident * envvalue) list
 
-let init : envt = [ "print", Ebuiltin "print" ]
+let init : envt = [ "print", Ebuiltin "print"; "print_int", Ebuiltin "print_int" ]
 
 let rec lookup (env : envt) (name : ident) =
   match env with
@@ -132,6 +132,12 @@ let rec eval env steps expression =
          (match evarg with
           | EVal x ->
             Printf.printf "%d\n" x;
+            Res.return EUnit
+          | _ -> Res.fail "can print ints only")
+       | Ebuiltin s when s = "print_int" ->
+         (match evarg with
+          | EVal x ->
+            Printf.printf "%d" x;
             Res.return EUnit
           | _ -> Res.fail "can print ints only")
        | _ -> Res.fail "can apply functions only"))

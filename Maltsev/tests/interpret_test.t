@@ -145,6 +145,13 @@ in the dune file
 
   10
 
+  $ ../bin/REPL.exe <<EOF
+  > let n = 10 in
+  > let ifn a b = let z = print a in print b in
+  > let thenn = 10000 in
+  > let elsen = 10000 in
+  > ifn thenn elsen
+
   $ cat > 1.ml <<EOF
   > let n = 10 in
   > let print = print_int in
