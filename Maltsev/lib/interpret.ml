@@ -101,16 +101,16 @@ let rec eval env steps expression =
        | EVal _ -> eval env (steps - 1) tb
        | _ -> Res.fail "bad condition")
     | Ast.Let (b, name, letexpr, inexpr) ->
-      (match b with
-       | false ->
-         let* code = eval env (steps - 1) letexpr in
-         eval ((name, code) :: env) (steps - 2) inexpr
-       | true ->
-         (match letexpr with
-          | Ast.Abs (arg, e) ->
-            let rec recclos = (name, EClosure (arg, e, recclos)) :: env in
-            eval recclos (steps - 1) inexpr
-          | _ -> Res.fail "not a function"))
+      if b
+      then (
+        match letexpr with
+        | Ast.Abs (arg, e) ->
+          let rec recclos = (name, EClosure (arg, e, recclos)) :: env in
+          eval recclos (steps - 1) inexpr
+        | _ -> Res.fail "not a function")
+      else
+        let* code = eval env (steps - 1) letexpr in
+        eval ((name, code) :: env) (steps - 2) inexpr
     | Ast.Abs (arg, f) -> Res.return (EClosure (arg, f, env))
     | Ast.App someapp ->
       let* func =
