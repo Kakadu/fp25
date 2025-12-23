@@ -8,11 +8,10 @@
 
 (** Error types for interpreter *)
 type error =
-  [ `UnknownVariable of string
-  | `DivisionByZero
-  | `TypeMismatch
-  | `StepLimitExceeded
-  ]
+  | UnknownVariable of string
+  | DivisionByZero
+  | TypeMismatch
+  | StepLimitExceeded
 
 (** Values in our interpreter *)
 type value =

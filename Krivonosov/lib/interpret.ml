@@ -18,11 +18,10 @@ module type MonadFail = sig
 end
 
 type error =
-  [ `UnknownVariable of string
-  | `DivisionByZero
-  | `TypeMismatch
-  | `StepLimitExceeded
-  ]
+  | UnknownVariable of string
+  | DivisionByZero
+  | TypeMismatch
+  | StepLimitExceeded
 
 (** Values in our interpreter *)
 type value =
@@ -42,7 +41,7 @@ end = struct
   let lookup env name =
     match List.Assoc.find ~equal:String.equal env name with
     | Some v -> return v
-    | None -> fail (`UnknownVariable name)
+    | None -> fail (UnknownVariable name)
   ;;
 
   (** Evaluate binary operation *)
@@ -51,9 +50,9 @@ end = struct
     | Ast.Add, VInt a, VInt b -> return (VInt (a + b))
     | Ast.Sub, VInt a, VInt b -> return (VInt (a - b))
     | Ast.Mul, VInt a, VInt b -> return (VInt (a * b))
-    | Ast.Div, VInt _, VInt 0 -> fail `DivisionByZero
+    | Ast.Div, VInt _, VInt 0 -> fail DivisionByZero
     | Ast.Div, VInt a, VInt b -> return (VInt (a / b))
-    | Ast.Mod, VInt _, VInt 0 -> fail `DivisionByZero
+    | Ast.Mod, VInt _, VInt 0 -> fail DivisionByZero
     | Ast.Mod, VInt a, VInt b -> return (VInt (a % b))
     | Ast.Eq, VInt a, VInt b -> return (VInt (if a = b then 1 else 0))
     | Ast.Neq, VInt a, VInt b -> return (VInt (if a <> b then 1 else 0))
@@ -61,13 +60,13 @@ end = struct
     | Ast.Gt, VInt a, VInt b -> return (VInt (if a > b then 1 else 0))
     | Ast.Leq, VInt a, VInt b -> return (VInt (if a <= b then 1 else 0))
     | Ast.Geq, VInt a, VInt b -> return (VInt (if a >= b then 1 else 0))
-    | _ -> fail `TypeMismatch
+    | _ -> fail TypeMismatch
   ;;
 
   (** Main evaluation function with step counter as parameter *)
   let rec eval steps_remaining env expr =
     if steps_remaining <= 0
-    then fail `StepLimitExceeded
+    then fail StepLimitExceeded
     else (
       let steps = steps_remaining - 1 in
       match expr with
@@ -84,7 +83,7 @@ end = struct
             | Some else_branch -> eval steps env else_branch
             | None -> return (VInt 0))
          | VInt _ -> eval steps env then_branch
-         | _ -> fail `TypeMismatch)
+         | _ -> fail TypeMismatch)
       | Ast.Let (is_rec, name, binding, body) ->
         if is_rec
         then (
@@ -119,7 +118,7 @@ end = struct
            (match builtin_fn varg with
             | Base.Result.Ok v -> return v
             | Base.Result.Error e -> fail e)
-         | _ -> fail `TypeMismatch))
+         | _ -> fail TypeMismatch))
   ;;
 
   (** Create initial environment with built-in functions *)

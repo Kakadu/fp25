@@ -9,6 +9,7 @@
 open Base
 open Stdio
 open Lambda_lib
+open Lambda_lib.Interpret
 
 (** Parse command line arguments*)
 let parse_args args =
@@ -38,21 +39,21 @@ let () =
     eprintf "Error: %s\n" msg;
     Stdlib.exit 1
   | Result.Ok ast ->
-    (match Interpret.eval_expr ~max_steps ast with
-     | Result.Ok (Interpret.VInt n) -> printf "%d\n" n
-     | Result.Ok (Interpret.VClosure _) -> printf "<fun>\n"
-     | Result.Ok (Interpret.VBuiltin (name, _)) -> printf "<builtin:%s>\n" name
-     | Result.Ok Interpret.VUnit -> printf "()\n"
-     | Result.Error (`UnknownVariable name) ->
+    (match eval_expr ~max_steps ast with
+     | Result.Ok (VInt n) -> printf "%d\n" n
+     | Result.Ok (VClosure _) -> printf "<fun>\n"
+     | Result.Ok (VBuiltin (name, _)) -> printf "<builtin:%s>\n" name
+     | Result.Ok VUnit -> printf "()\n"
+     | Result.Error (UnknownVariable name) ->
        eprintf "Unbound variable: %s\n" name;
        Stdlib.exit 1
-     | Result.Error `DivisionByZero ->
+     | Result.Error DivisionByZero ->
        eprintf "Division by zero\n";
        Stdlib.exit 1
-     | Result.Error `TypeMismatch ->
+     | Result.Error TypeMismatch ->
        eprintf "Type error\n";
        Stdlib.exit 1
-     | Result.Error `StepLimitExceeded ->
+     | Result.Error StepLimitExceeded ->
        eprintf "Step limit exceeded\n";
        Stdlib.exit 1)
 ;;
