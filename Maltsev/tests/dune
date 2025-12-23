@@ -1,0 +1,11 @@
+(test
+ (name parser_tests)
+ (libraries lambda_lib qcheck)
+ (instrumentation
+  (backend bisect_ppx))
+ (preprocess
+  (pps bisect_ppx)))
+
+(cram
+ (applies_to interpret_test)
+ (deps ../bin/REPL.exe))
