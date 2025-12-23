@@ -297,84 +297,84 @@ let gen_ident = Gen.oneo<span data-count="1">f</span> [ retur<span data-count="1
 
 let gen_app_var =
   gen_ident
-  &gt;&gt;<span data-count="1">=</span> fun fname -&gt; <span data-count="443">g</span>en_simple_expr &gt;&gt;= fun arg -&gt; <span data-count="443">r</span>eturn (Ast.App (Ast.Var (fname, arg)))
+  &gt;&gt;<span data-count="1">=</span> fun fname -&gt; <span data-count="279">g</span>en_simple_expr &gt;&gt;= fun arg -&gt; <span data-count="279">r</span>eturn (Ast.App (Ast.Var (fname, arg)))
 ;;
 
 let gen_app_abs =
   gen_ident
   &gt;&gt;<span data-count="1">=</span> fun param -&gt;
-  <span data-count="247">G</span>en.oneo<span data-count="247">f</span>
-    [ retur<span data-count="247">n</span> (Ast.Ident param)
+  <span data-count="181">G</span>en.oneo<span data-count="181">f</span>
+    [ retur<span data-count="181">n</span> (Ast.Ident param)
     ; gen_simple_expr
-    ; Gen.ma<span data-count="247">p</span>
+    ; Gen.ma<span data-count="181">p</span>
         (fun r -&gt; <span data-count="69">A</span>st.Binexpr (Ast.Plus, Ast.Ident param, Ast.Const r))
-        (Gen.int_rang<span data-count="247">e</span> 1 10)
+        (Gen.int_rang<span data-count="181">e</span> 1 10)
     ]
   &gt;&gt;= fun body -&gt;
-  <span data-count="247">g</span>en_simple_expr &gt;&gt;= fun arg -&gt; <span data-count="247">r</span>eturn (Ast.App (Ast.Fun (param, body, arg)))
+  <span data-count="181">g</span>en_simple_expr &gt;&gt;= fun arg -&gt; <span data-count="181">r</span>eturn (Ast.App (Ast.Fun (param, body, arg)))
 ;;
 
 let rec gen_app_mularg args =
-  <span data-count="496">i</span>f args = 0
-  then <span data-count="103">G</span>en.oneof [ gen_app_var; gen_app_abs ]
+  <span data-count="206">i</span>f args = 0
+  then <span data-count="68">G</span>en.oneof [ gen_app_var; gen_app_abs ]
   else
-    <span data-count="393">g</span>en_app_mular<span data-count="393">g</span> (args - 1)
+    <span data-count="138">g</span>en_app_mular<span data-count="138">g</span> (args - 1)
     &gt;&gt;= fun inapp -&gt;
-    <span data-count="393">m</span>atch inapp with
-    | <span data-count="393">A</span>st.App x -&gt;
-      gen_simple_expr &gt;&gt;= fun arg -&gt; <span data-count="393">r</span>eturn (Ast.App (Ast.Application (x, arg)))
+    <span data-count="138">m</span>atch inapp with
+    | <span data-count="138">A</span>st.App x -&gt;
+      gen_simple_expr &gt;&gt;= fun arg -&gt; <span data-count="138">r</span>eturn (Ast.App (Ast.Application (x, arg)))
     | <span data-count="0">_</span> -&gt; gen_app_var
 ;;
 
 let gen_app n =
-  <span data-count="202">i</span>f n = 0
-  then <span data-count="99">G</span>en.oneof [ gen_app_var; gen_app_abs ]
-  else <span data-count="103">G</span>en.int_rang<span data-count="103">e</span> 0 (n / 2) &gt;&gt;= fun m -&gt; <span data-count="103">g</span>en_app_mularg m
+  <span data-count="123">i</span>f n = 0
+  then <span data-count="55">G</span>en.oneof [ gen_app_var; gen_app_abs ]
+  else <span data-count="68">G</span>en.int_rang<span data-count="68">e</span> 0 (n / 2) &gt;&gt;= fun m -&gt; <span data-count="68">g</span>en_app_mularg m
 ;;
 
 let rec gen_expr n =
-  <span data-count="3932">m</span>atch n with
-  | <span data-count="863">0</span> -&gt; Gen.oneof [ gen_simple_expr; gen_app_var ]
-  | <span data-count="905">1</span> -&gt; Gen.oneof [ gen_simple_expr; gen_app_var; gen_app_abs ]
-  | <span data-count="2164">_</span> -&gt;
-    Gen.int_rang<span data-count="2164">e</span> 0 (n / 2)
+  <span data-count="2426">m</span>atch n with
+  | <span data-count="570">0</span> -&gt; Gen.oneof [ gen_simple_expr; gen_app_var ]
+  | <span data-count="595">1</span> -&gt; Gen.oneof [ gen_simple_expr; gen_app_var; gen_app_abs ]
+  | <span data-count="1261">_</span> -&gt;
+    Gen.int_rang<span data-count="1261">e</span> 0 (n / 2)
     &gt;&gt;= fun n1 -&gt;
-    <span data-count="1157">G</span>en.oneof
-      [ (gen_exp<span data-count="1157">r</span> n1
-         &gt;&gt;<span data-count="1157">=</span> fun e1 -&gt;
-         <span data-count="180">g</span>en_exp<span data-count="180">r</span> n1
+    <span data-count="700">G</span>en.oneof
+      [ (gen_exp<span data-count="700">r</span> n1
+         &gt;&gt;<span data-count="700">=</span> fun e1 -&gt;
+         <span data-count="104">g</span>en_exp<span data-count="104">r</span> n1
          &gt;&gt;= fun e2 -&gt;
-         <span data-count="180">G</span>en.oneo<span data-count="180">f</span>
-           [ retur<span data-count="180">n</span> Ast.Plus
-           ; retur<span data-count="180">n</span> Ast.Minus
-           ; retur<span data-count="180">n</span> Ast.Mul
-           ; retur<span data-count="180">n</span> Ast.Div
-           ; retur<span data-count="180">n</span> Ast.Eq
-           ; retur<span data-count="180">n</span> Ast.Neq
-           ; retur<span data-count="180">n</span> Ast.Le
-           ; retur<span data-count="180">n</span> Ast.Bi
+         <span data-count="104">G</span>en.oneo<span data-count="104">f</span>
+           [ retur<span data-count="104">n</span> Ast.Plus
+           ; retur<span data-count="104">n</span> Ast.Minus
+           ; retur<span data-count="104">n</span> Ast.Mul
+           ; retur<span data-count="104">n</span> Ast.Div
+           ; retur<span data-count="104">n</span> Ast.Eq
+           ; retur<span data-count="104">n</span> Ast.Neq
+           ; retur<span data-count="104">n</span> Ast.Le
+           ; retur<span data-count="104">n</span> Ast.Bi
            ]
-         &gt;&gt;= fun op -&gt; <span data-count="180">r</span>eturn (Ast.Binexpr (op, e1, e2)))
-      ; (gen_exp<span data-count="1157">r</span> n1
-         &gt;&gt;<span data-count="1157">=</span> fun cond -&gt;
-         <span data-count="164">g</span>en_exp<span data-count="164">r</span> n1
-         &gt;&gt;= fun tb -&gt; <span data-count="164">g</span>en_exp<span data-count="164">r</span> n1 &gt;&gt;= fun eb -&gt; <span data-count="164">r</span>eturn (Ast.Ite (cond, tb, eb)))
+         &gt;&gt;= fun op -&gt; <span data-count="104">r</span>eturn (Ast.Binexpr (op, e1, e2)))
+      ; (gen_exp<span data-count="700">r</span> n1
+         &gt;&gt;<span data-count="700">=</span> fun cond -&gt;
+         <span data-count="130">g</span>en_exp<span data-count="130">r</span> n1
+         &gt;&gt;= fun tb -&gt; <span data-count="130">g</span>en_exp<span data-count="130">r</span> n1 &gt;&gt;= fun eb -&gt; <span data-count="130">r</span>eturn (Ast.Ite (cond, tb, eb)))
       ; (gen_ident
-         &gt;&gt;<span data-count="1157">=</span> fun arg -&gt; <span data-count="212">g</span>en_exp<span data-count="212">r</span> (n - 1) &gt;&gt;= fun body -&gt; <span data-count="212">r</span>eturn (Ast.Abs (arg, body)))
-      ; (Gen.int_rang<span data-count="1157">e</span> 0 n1 &gt;&gt;<span data-count="1157">=</span> fun n2 -&gt; <span data-count="202">g</span>en_app n2)
+         &gt;&gt;<span data-count="700">=</span> fun arg -&gt; <span data-count="124">g</span>en_exp<span data-count="124">r</span> (n - 1) &gt;&gt;= fun body -&gt; <span data-count="124">r</span>eturn (Ast.Abs (arg, body)))
+      ; (Gen.int_rang<span data-count="700">e</span> 0 n1 &gt;&gt;<span data-count="700">=</span> fun n2 -&gt; <span data-count="123">g</span>en_app n2)
       ; (gen_ident
-         &gt;&gt;<span data-count="1157">=</span> fun name -&gt;
-         <span data-count="210">g</span>en_exp<span data-count="210">r</span> n1
+         &gt;&gt;<span data-count="700">=</span> fun name -&gt;
+         <span data-count="96">g</span>en_exp<span data-count="96">r</span> n1
          &gt;&gt;= fun bound -&gt;
-         <span data-count="210">g</span>en_exp<span data-count="210">r</span> n1 &gt;&gt;= fun body -&gt; <span data-count="210">r</span>eturn (Ast.Let (false, name, bound, body)))
+         <span data-count="96">g</span>en_exp<span data-count="96">r</span> n1 &gt;&gt;= fun body -&gt; <span data-count="96">r</span>eturn (Ast.Let (false, name, bound, body)))
       ; (gen_ident
-         &gt;&gt;<span data-count="1157">=</span> fun name -&gt;
-         <span data-count="189">g</span>en_ident
+         &gt;&gt;<span data-count="700">=</span> fun name -&gt;
+         <span data-count="123">g</span>en_ident
          &gt;&gt;= fun param -&gt;
-         <span data-count="189">g</span>en_exp<span data-count="189">r</span> n1
+         <span data-count="123">g</span>en_exp<span data-count="123">r</span> n1
          &gt;&gt;= fun fun_body -&gt;
-         <span data-count="189">l</span>et lambda = Ast.Abs (param, fun_body) in
-         gen_exp<span data-count="189">r</span> n1 &gt;&gt;= fun body -&gt; <span data-count="189">r</span>eturn (Ast.Let (true, name, lambda, body)))
+         <span data-count="123">l</span>et lambda = Ast.Abs (param, fun_body) in
+         gen_exp<span data-count="123">r</span> n1 &gt;&gt;= fun body -&gt; <span data-count="123">r</span>eturn (Ast.Let (true, name, lambda, body)))
       ]
 ;;
 

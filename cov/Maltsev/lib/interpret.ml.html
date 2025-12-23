@@ -127,13 +127,13 @@
 <a id="L103"></a><span class="visited"> </span>
 <a id="L104"></a><span > </span>
 <a id="L105"></a><span class="visited"> </span>
-<a id="L106"></a><span class="visited"> </span>
+<a id="L106"></a><span > </span>
 <a id="L107"></a><span class="visited"> </span>
-<a id="L108"></a><span class="visited"> </span>
+<a id="L108"></a><span > </span>
 <a id="L109"></a><span > </span>
 <a id="L110"></a><span class="visited"> </span>
 <a id="L111"></a><span > </span>
-<a id="L112"></a><span > </span>
+<a id="L112"></a><span class="visited"> </span>
 <a id="L113"></a><span class="visited"> </span>
 <a id="L114"></a><span class="visited"> </span>
 <a id="L115"></a><span class="visited"> </span>
@@ -406,16 +406,16 @@ let rec eval env steps expression =
        | <span data-count="39">E</span>Val _ -&gt; eval env (steps - 1) tb
        | <span data-count="1">_</span> -&gt; Res.fail "bad condition")
     | <span data-count="24">A</span>st.Let (b, name, letexpr, inexpr) -&gt;
-      (match b with
-       | <span data-count="16">f</span>alse -&gt;
-         let* code = eva<span data-count="16">l</span> env (steps - 1) letexpr in
-         <span data-count="16">e</span>val ((name, code) :: env) (steps - 2) inexpr
-       | <span data-count="8">t</span>rue -&gt;
-         (match letexpr with
-          | <span data-count="7">A</span>st.Abs (arg, e) -&gt;
-            let rec recclos = (name, EClosure (arg, e, recclos)) :: env in
-            eval recclos (steps - 1) inexpr
-          | <span data-count="1">_</span> -&gt; Res.fail "not a function"))
+      if b
+      then <span data-count="8">(</span>
+        match letexpr with
+        | <span data-count="7">A</span>st.Abs (arg, e) -&gt;
+          let rec recclos = (name, EClosure (arg, e, recclos)) :: env in
+          eval recclos (steps - 1) inexpr
+        | <span data-count="1">_</span> -&gt; Res.fail "not a function")
+      else
+        <span data-count="16">l</span>et* code = eva<span data-count="16">l</span> env (steps - 1) letexpr in
+        <span data-count="16">e</span>val ((name, code) :: env) (steps - 2) inexpr
     | <span data-count="36">A</span>st.Abs (arg, f) -&gt; Res.return (EClosure (arg, f, env))
     | <span data-count="122">A</span>st.App someapp -&gt;
       let* func =

@@ -116,36 +116,36 @@
 [@@@ocaml.text "/*"]
 
 let rec pprint = function
-  | <span data-count="1564">A</span>st.Const x -&gt; string_of_int x
-  | <span data-count="159">A</span>st.Ident x -&gt; x
-  | <span data-count="252">A</span>st.Binexpr (op, l, r) -&gt;
+  | <span data-count="949">A</span>st.Const x -&gt; string_of_int x
+  | <span data-count="129">A</span>st.Ident x -&gt; x
+  | <span data-count="176">A</span>st.Binexpr (op, l, r) -&gt;
     let op_str =
       match op with
-      | <span data-count="95">A</span>st.Plus -&gt; "+"
-      | <span data-count="23">A</span>st.Minus -&gt; "-"
-      | <span data-count="28">A</span>st.Mul -&gt; "*"
-      | <span data-count="18">A</span>st.Div -&gt; "/"
-      | <span data-count="14">A</span>st.Eq -&gt; "="
-      | <span data-count="15">A</span>st.Bi -&gt; "&gt;"
-      | <span data-count="32">A</span>st.Neq -&gt; "!="
-      | <span data-count="27">A</span>st.Le -&gt; "&lt;"
+      | <span data-count="90">A</span>st.Plus -&gt; "+"
+      | <span data-count="12">A</span>st.Minus -&gt; "-"
+      | <span data-count="11">A</span>st.Mul -&gt; "*"
+      | <span data-count="12">A</span>st.Div -&gt; "/"
+      | <span data-count="8">A</span>st.Eq -&gt; "="
+      | <span data-count="17">A</span>st.Bi -&gt; "&gt;"
+      | <span data-count="11">A</span>st.Neq -&gt; "!="
+      | <span data-count="15">A</span>st.Le -&gt; "&lt;"
     in
-    String.concat "" [ "("; pprin<span data-count="252">t</span> l; ") "; op_str; " ("; pprin<span data-count="252">t</span> r; ")" ]
-  | <span data-count="165">A</span>st.Ite (cond, tb, eb) -&gt;
-    String.concat "" [ "if "; pprin<span data-count="165">t</span> cond; " then "; pprin<span data-count="165">t</span> tb; " else "; pprin<span data-count="165">t</span> eb ]
-  | <span data-count="400">A</span>st.Let (b, name, letexpr, inexpr) -&gt;
-    let rec_flag = if b then <span data-count="190">"</span>rec " else <span data-count="210">"</span>" in
+    String.concat "" [ "("; pprin<span data-count="176">t</span> l; ") "; op_str; " ("; pprin<span data-count="176">t</span> r; ")" ]
+  | <span data-count="131">A</span>st.Ite (cond, tb, eb) -&gt;
+    String.concat "" [ "if "; pprin<span data-count="131">t</span> cond; " then "; pprin<span data-count="131">t</span> tb; " else "; pprin<span data-count="131">t</span> eb ]
+  | <span data-count="220">A</span>st.Let (b, name, letexpr, inexpr) -&gt;
+    let rec_flag = if b then <span data-count="124">"</span>rec " else <span data-count="96">"</span>" in
     String.concat
       ""
-      [ "let "; rec_flag; name; " = "; pprin<span data-count="400">t</span> letexpr; " in "; pprin<span data-count="400">t</span> inexpr ]
-  | <span data-count="402">A</span>st.Abs (arg, f) -&gt; String.concat "" [ "fun "; arg; " -&gt; "; pprin<span data-count="402">t</span> f ]
-  | <span data-count="1085">A</span>st.App app -&gt;
+      [ "let "; rec_flag; name; " = "; pprin<span data-count="220">t</span> letexpr; " in "; pprin<span data-count="220">t</span> inexpr ]
+  | <span data-count="248">A</span>st.Abs (arg, f) -&gt; String.concat "" [ "fun "; arg; " -&gt; "; pprin<span data-count="248">t</span> f ]
+  | <span data-count="600">A</span>st.App app -&gt;
     (match app with
-     | <span data-count="445">V</span>ar (s, e) -&gt; String.concat "" [ s; " ("; pprin<span data-count="445">t</span> e; ")" ]
-     | <span data-count="247">F</span>un (s, e, arg) -&gt;
-       String.concat "" [ "(fun "; s; " -&gt; "; pprin<span data-count="247">t</span> e; ") "; pprin<span data-count="247">t</span> arg ]
-     | <span data-count="393">A</span>pplication (some, e) -&gt;
-       String.concat "" [ "("; pprin<span data-count="393">t</span> (Ast.App some); ") "; " ("; pprin<span data-count="393">t</span> e; ")" ])
+     | <span data-count="281">V</span>ar (s, e) -&gt; String.concat "" [ s; " ("; pprin<span data-count="281">t</span> e; ")" ]
+     | <span data-count="181">F</span>un (s, e, arg) -&gt;
+       String.concat "" [ "(fun "; s; " -&gt; "; pprin<span data-count="181">t</span> e; ") "; pprin<span data-count="181">t</span> arg ]
+     | <span data-count="138">A</span>pplication (some, e) -&gt;
+       String.concat "" [ "("; pprin<span data-count="138">t</span> (Ast.App some); ") "; " ("; pprin<span data-count="138">t</span> e; ")" ])
 ;;
 </code></pre>
       </div>
