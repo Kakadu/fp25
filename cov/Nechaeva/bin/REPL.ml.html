@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>REPL.ml &mdash; Coverage report</title>
-    <meta name="description" content="92.59% coverage in bin/REPL.ml">
+    <meta name="description" content="96.15% coverage in bin/REPL.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,11 +15,10 @@
           <span class="dirname">bin/</span>REPL.ml
         </a>
       </h1>
-      <h2>92.59%</h2>
+      <h2>96.15%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="bottom:35.85%"></span>
-      <span class="unvisited" style="bottom:3.77%"></span>
+      <span class="unvisited" style="bottom:3.85%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -43,40 +42,39 @@
 <a id="L17"></a><span class="visited"> </span>
 <a id="L18"></a><span class="visited"> </span>
 <a id="L19"></a><span class="visited"> </span>
-<a id="L20"></a><span class="visited"> </span>
+<a id="L20"></a><span > </span>
 <a id="L21"></a><span > </span>
 <a id="L22"></a><span > </span>
-<a id="L23"></a><span > </span>
+<a id="L23"></a><span class="visited"> </span>
 <a id="L24"></a><span class="visited"> </span>
 <a id="L25"></a><span class="visited"> </span>
 <a id="L26"></a><span class="visited"> </span>
 <a id="L27"></a><span class="visited"> </span>
-<a id="L28"></a><span class="visited"> </span>
+<a id="L28"></a><span > </span>
 <a id="L29"></a><span > </span>
 <a id="L30"></a><span > </span>
-<a id="L31"></a><span > </span>
+<a id="L31"></a><span class="visited"> </span>
 <a id="L32"></a><span class="visited"> </span>
 <a id="L33"></a><span class="visited"> </span>
-<a id="L34"></a><span class="unvisited"> </span>
+<a id="L34"></a><span class="visited"> </span>
 <a id="L35"></a><span class="visited"> </span>
 <a id="L36"></a><span class="visited"> </span>
 <a id="L37"></a><span class="visited"> </span>
 <a id="L38"></a><span class="visited"> </span>
-<a id="L39"></a><span class="visited"> </span>
+<a id="L39"></a><span > </span>
 <a id="L40"></a><span > </span>
 <a id="L41"></a><span > </span>
 <a id="L42"></a><span > </span>
 <a id="L43"></a><span > </span>
-<a id="L44"></a><span > </span>
-<a id="L45"></a><span class="visited"> </span>
-<a id="L46"></a><span > </span>
-<a id="L47"></a><span class="visited"> </span>
+<a id="L44"></a><span class="visited"> </span>
+<a id="L45"></a><span > </span>
+<a id="L46"></a><span class="visited"> </span>
+<a id="L47"></a><span > </span>
 <a id="L48"></a><span > </span>
 <a id="L49"></a><span > </span>
-<a id="L50"></a><span > </span>
-<a id="L51"></a><span class="unvisited"> </span>
-<a id="L52"></a><span class="visited"> </span>
-<a id="L53"></a><span > </span>
+<a id="L50"></a><span class="unvisited"> </span>
+<a id="L51"></a><span class="visited"> </span>
+<a id="L52"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -133,7 +131,6 @@
 <a href="#L50">50</a>
 <a href="#L51">51</a>
 <a href="#L52">52</a>
-<a href="#L53">53</a>
 </pre>
 <pre><code class="ocaml">(** Copyright 2021-2025, Kakadu and contributors *)
 
@@ -150,15 +147,14 @@ type opts =
   }
 
 let string_of_value = function
-  | <span data-count="50">V</span>Int n -&gt; string_of_int n
+  | <span data-count="63">V</span>Int n -&gt; string_of_int n
   | <span data-count="6">V</span>Unit -&gt; "()"
-  | <span data-count="2">V</span>Closure _ -&gt; "&lt;closure&gt;"
-  | <span data-count="2">V</span>RecClosure _ -&gt; "&lt;rec_closure&gt;"
+  | <span data-count="7">V</span>Closure _ -&gt; "&lt;closure&gt;"
   | <span data-count="3">V</span>Builtin _ -&gt; "&lt;builtin&gt;"
 ;;
 
 let string_of_error = function
-  | <span data-count="3">U</span>nboundVariable name -&gt; Printf.sprintf "Unbound variable: %s" name
+  | <span data-count="7">U</span>nboundVariable name -&gt; Printf.sprintf "Unbound variable: %s" name
   | <span data-count="5">T</span>ypeError msg -&gt; Printf.sprintf "Type error: %s" msg
   | <span data-count="2">D</span>ivisionByZero -&gt; "Division by zero"
   | <span data-count="3">N</span>otAFunction -&gt; "Not a function"
@@ -166,14 +162,14 @@ let string_of_error = function
 ;;
 
 let run_single opts =
-  <span data-count="79">l</span>et text = In_channel.(input_al<span data-count="79">l</span> stdin) |&gt; String.trim in
-  <span data-count="79">m</span>atch parse text with
-  | <span data-count="0">E</span>rror (`Parsing_error msg) -&gt; Format.printf "Parser error: %s\n" msg
-  | <span data-count="79">O</span>k ast -&gt;
+  <span data-count="109">l</span>et text = In_channel.(input_al<span data-count="109">l</span> stdin) |&gt; String.trim in
+  <span data-count="109">m</span>atch parse text with
+  | <span data-count="10">E</span>rror (`Parsing_error msg) -&gt; Format.printf "Parser error: %s\n" msg
+  | <span data-count="99">O</span>k ast -&gt;
     if opts.show_ast then <span data-count="11">F</span>ormat.print<span data-count="11">f</span> "AST: %a\n" pp_expr ast;
-    <span data-count="79">(</span>match run_interpreter ast opts.max_steps with
-     | <span data-count="63">O</span>k value -&gt; Format.printf "Result: %s\n" (string_of_valu<span data-count="63">e</span> value)
-     | <span data-count="16">E</span>rror err -&gt; Format.printf "Error: %s\n" (string_of_erro<span data-count="16">r</span> err))
+    <span data-count="99">(</span>match run_interpreter ast opts.max_steps with
+     | <span data-count="79">O</span>k value -&gt; Format.printf "Result: %s\n" (string_of_valu<span data-count="79">e</span> value)
+     | <span data-count="20">E</span>rror err -&gt; Format.printf "Error: %s\n" (string_of_erro<span data-count="20">r</span> err))
 ;;
 
 let () =
@@ -186,7 +182,7 @@ let () =
     ]
   in
   Arg.parse arg_list (fun _ -&gt; <span data-count="0">(</span>)) "";
-  <span data-count="79">r</span>un_singl<span data-count="79">e</span> opts
+  <span data-count="109">r</span>un_singl<span data-count="109">e</span> opts
 ;;
 </code></pre>
       </div>

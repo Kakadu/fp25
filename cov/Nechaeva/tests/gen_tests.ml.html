@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>gen_tests.ml &mdash; Coverage report</title>
-    <meta name="description" content="86.11% coverage in tests/gen_tests.ml">
+    <meta name="description" content="85.98% coverage in tests/gen_tests.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,7 +15,7 @@
           <span class="dirname">tests/</span>gen_tests.ml
         </a>
       </h1>
-      <h2>86.11%</h2>
+      <h2>85.98%</h2>
     </div>
     <div id="navbar">
       <span class="some-visited" style="top:41.67%"></span>
@@ -377,36 +377,36 @@ let gen_name =
 ;;
 
 let gen_int = Gen.(oneo<span data-count="10">f</span> [ small_int; int_rang<span data-count="10">e</span> 0 100; int_rang<span data-count="10">e</span> 1 1000 ])
-let gen_constant = Gen.ma<span data-count="10">p</span> (fun i -&gt; <span data-count="61593">I</span>nt i) gen_int
+let gen_constant = Gen.ma<span data-count="10">p</span> (fun i -&gt; <span data-count="62592">I</span>nt i) gen_int
 let gen_binop = Gen.oneof<span data-count="10">l</span> [ Plus; Minus; Mul; Div ]
 let gen_compop = Gen.oneof<span data-count="10">l</span> [ Equal; NotEqual; Less; LessEq; Greater; GreaterEq ]
 let gen_rec_flag = Gen.oneof<span data-count="10">l</span> [ NonRecursive; Recursive ]
 
 let gen_expr =
   let rec aux depth =
-    <span data-count="1200204">l</span>et open Gen in
+    <span data-count="1207044">l</span>et open Gen in
     if depth &lt;= 0
-    then <span data-count="907653">o</span>neof [ ma<span data-count="907653">p</span> (fun c -&gt; <span data-count="61593">C</span>onst c) gen_constant; ma<span data-count="907653">p</span> (fun n -&gt; <span data-count="61497">V</span>ar n) gen_name ]
-    else <span data-count="292551">(</span>
+    then <span data-count="912783">o</span>neof [ ma<span data-count="912783">p</span> (fun c -&gt; <span data-count="62592">C</span>onst c) gen_constant; ma<span data-count="912783">p</span> (fun n -&gt; <span data-count="61878">V</span>ar n) gen_name ]
+    else <span data-count="294261">(</span>
       let deep = aux (depth - 1) in
-      <span data-count="292551">l</span>et medium = aux (depth / 2) in
-      <span data-count="292551">l</span>et simple = aux (ma<span data-count="292551">x</span> 0 (depth / 3)) in
-      <span data-count="292551">f</span>requency
-        [ 4, au<span data-count="292551">x</span> 0
-        ; 2, map<span data-count="292551">3</span> (fun op e1 e2 -&gt; <span data-count="16734">B</span>inOp (op, e1, e2)) gen_binop medium medium
-        ; 2, map<span data-count="292551">3</span> (fun op e1 e2 -&gt; <span data-count="16863">C</span>omp (op, e1, e2)) gen_compop medium medium
-        ; 2, map<span data-count="292551">2</span> (fun f arg -&gt; <span data-count="16944">A</span>pp (f, arg)) deep simple
-        ; 2, map<span data-count="292551">3</span> (fun c t e -&gt; <span data-count="16929">I</span>f (c, t, e)) medium deep deep
+      <span data-count="294261">l</span>et medium = aux (depth / 2) in
+      <span data-count="294261">l</span>et simple = aux (depth / 3) in
+      <span data-count="294261">f</span>requency
+        [ 4, au<span data-count="294261">x</span> 0
+        ; 2, map<span data-count="294261">3</span> (fun op e1 e2 -&gt; <span data-count="17316">B</span>inOp (op, e1, e2)) gen_binop medium medium
+        ; 2, map<span data-count="294261">3</span> (fun op e1 e2 -&gt; <span data-count="17166">C</span>omp (op, e1, e2)) gen_compop medium medium
+        ; 2, map<span data-count="294261">2</span> (fun f arg -&gt; <span data-count="16749">A</span>pp (f, arg)) deep simple
+        ; 2, map<span data-count="294261">3</span> (fun c t e -&gt; <span data-count="17229">I</span>f (c, t, e)) medium deep deep
         ; ( 1
-          , let* params = list_siz<span data-count="292551">e</span> (int_rang<span data-count="292551">e</span> 1 3) gen_name in
-            <span data-count="8460">l</span>et* body = deep in
-            <span data-count="8460">r</span>eturn (Abs (params, body)) )
+          , let* params = list_siz<span data-count="294261">e</span> (int_rang<span data-count="294261">e</span> 1 3) gen_name in
+            <span data-count="8283">l</span>et* body = deep in
+            <span data-count="8283">r</span>eturn (Abs (params, body)) )
         ; ( 1
           , let* flag = gen_rec_flag in
-            <span data-count="8691">l</span>et* name = gen_name in
-            <span data-count="8691">l</span>et* value = medium in
-            <span data-count="8691">l</span>et* body = deep in
-            <span data-count="8691">r</span>eturn (Let (flag, name, value, body)) )
+            <span data-count="8781">l</span>et* name = gen_name in
+            <span data-count="8781">l</span>et* value = medium in
+            <span data-count="8781">l</span>et* body = deep in
+            <span data-count="8781">r</span>eturn (Let (flag, name, value, body)) )
         ])
   in
   Gen.size<span data-count="10">d</span> (fun size -&gt;
@@ -428,10 +428,10 @@ let gen_invalid_program =
     ; pur<span data-count="10">e</span> "fun x -&gt;"
     ; pur<span data-count="10">e</span> "x + "
     ; pur<span data-count="10">e</span> "("
-    ; ma<span data-count="10">p</span> (fun n -&gt; <span data-count="244">P</span>rintf.sprintf "%d + + %d" n n) small_int
-    ; ma<span data-count="10">p</span> (fun n -&gt; <span data-count="253">P</span>rintf.sprintf "%d * * %d" n n) small_int
+    ; ma<span data-count="10">p</span> (fun n -&gt; <span data-count="276">P</span>rintf.sprintf "%d + + %d" n n) small_int
+    ; ma<span data-count="10">p</span> (fun n -&gt; <span data-count="271">P</span>rintf.sprintf "%d * * %d" n n) small_int
     ; ma<span data-count="10">p</span>
-        (fun kw -&gt; <span data-count="253">P</span>rintf.sprintf "let %s = 5 in x" kw)
+        (fun kw -&gt; <span data-count="284">P</span>rintf.sprintf "let %s = 5 in x" kw)
         (oneof<span data-count="10">l</span> [ "let"; "in"; "rec"; "if"; "then"; "else"; "fun" ])
     ; pur<span data-count="10">e</span> "fun x .. -&gt; x"
     ; pur<span data-count="10">e</span> "let let x = 5 in x"
