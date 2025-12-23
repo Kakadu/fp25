@@ -1,0 +1,10 @@
+(executable
+ (name REPL)
+ (public_name REPL)
+ (libraries Filichkin_lib angstrom)
+ (instrumentation
+  (backend bisect_ppx))
+ (modules REPL))
+
+(cram
+ (deps ./REPL.exe %{bin:REPL}))
