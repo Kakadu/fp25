@@ -21,7 +21,7 @@ let gen_name =
     ]
 ;;
 
-let gen_int = Gen.(oneof [ small_int; int_range 0 100; int_range 1 1000 ])
+let gen_int = Gen.(oneof [ int_range 0 100; int_range 1 1000 ])
 let gen_constant = Gen.map (fun i -> Int i) gen_int
 let gen_binop = Gen.oneofl [ Plus; Minus; Mul; Div ]
 let gen_compop = Gen.oneofl [ Equal; NotEqual; Less; LessEq; Greater; GreaterEq ]
@@ -30,7 +30,7 @@ let gen_rec_flag = Gen.oneofl [ NonRecursive; Recursive ]
 let gen_expr =
   let rec aux depth =
     let open Gen in
-    if depth <= 0
+    if depth = 0
     then oneof [ map (fun c -> Const c) gen_constant; map (fun n -> Var n) gen_name ]
     else (
       let deep = aux (depth - 1) in
@@ -52,6 +52,9 @@ let gen_expr =
             let* value = medium in
             let* body = deep in
             return (Let (flag, name, value, body)) )
+        ; ( 1
+          , let* e = simple in
+            return (UnOp (Neg, e)) )
         ])
   in
   Gen.sized (fun size ->
