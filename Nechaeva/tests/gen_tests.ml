@@ -35,7 +35,7 @@ let gen_expr =
     else (
       let deep = aux (depth - 1) in
       let medium = aux (depth / 2) in
-      let simple = aux (max 0 (depth / 3)) in
+      let simple = aux (depth / 3) in
       frequency
         [ 4, aux 0
         ; 2, map3 (fun op e1 e2 -> BinOp (op, e1, e2)) gen_binop medium medium
