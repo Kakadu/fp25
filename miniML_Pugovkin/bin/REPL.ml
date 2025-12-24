@@ -1,8 +1,16 @@
+[@@@ocaml.text "/*"]
+
+(** Copyright 2021-2024, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+[@@@ocaml.text "/*"]
+
 open Lambda_lib
 
 type opts =
-  { mutable steps : int
-  ; mutable dump_parsetree : bool
+  { mutable steps : int (** Mutated by Arg.parse for CLI flags. *)
+  ; mutable dump_parsetree : bool (** Mutated by Arg.parse for CLI flags. *)
   }
 
 let () =

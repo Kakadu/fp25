@@ -1,3 +1,11 @@
+[@@@ocaml.text "/*"]
+
+(** Copyright 2021-2024, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+[@@@ocaml.text "/*"]
+
 open Ast
 
 let string_of_unop = function
@@ -93,9 +101,10 @@ let pp_toplevel fmt = function
       | Rec -> "rec "
     in
     let params, body = collect_lams [] rhs in
-    if params = []
-    then Format.fprintf fmt "let %s%s = %a" rec_kw name pp_expr rhs
-    else Format.fprintf fmt "let %s%s %a = %a" rec_kw name pp_params params pp_expr body
+    (match params with
+     | [] -> Format.fprintf fmt "let %s%s = %a" rec_kw name pp_expr rhs
+     | _ ->
+       Format.fprintf fmt "let %s%s %a = %a" rec_kw name pp_params params pp_expr body)
 ;;
 
 let pp_program fmt program =
