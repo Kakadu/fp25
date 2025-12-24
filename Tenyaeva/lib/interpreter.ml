@@ -158,24 +158,24 @@ module Eval = struct
       let* v = eval_expression env e in
       eval_un_op (op, v)
     | Expr_apply (exp1, exp2) ->
-       let* fun_val = eval_expression env exp1 in
-       let* arg_val = eval_expression env exp2 in
-       (match fun_val with
+      let* fun_val = eval_expression env exp1 in
+      let* arg_val = eval_expression env exp2 in
+      (match fun_val with
        | ValFun (rec_flag, pat, exp, fun_env) ->
-       let* new_env =
-       match rec_flag, match_pattern fun_env (pat, arg_val) with
-       | Recursive, Some extended_env -> return (compose env extended_env)
-       | NonRecursive, Some extended_env -> return extended_env
-       | _, None -> fail MatchFailure
-       in
-       eval_expression new_env exp
+         let* new_env =
+           match rec_flag, match_pattern fun_env (pat, arg_val) with
+           | Recursive, Some extended_env -> return (compose env extended_env)
+           | NonRecursive, Some extended_env -> return extended_env
+           | _, None -> fail MatchFailure
+         in
+         eval_expression new_env exp
        | ValFunction (case_list, env) -> find_and_eval_case env arg_val case_list
        | ValBuiltin builtin ->
-       (match builtin, arg_val with
-       | "print_int", ValInt integer ->
-       Format.printf "%d\n" integer;
-       return ValUnit
-       | _ -> fail TypeError)
+         (match builtin, arg_val with
+          | "print_int", ValInt integer ->
+            Format.printf "%d\n" integer;
+            return ValUnit
+          | _ -> fail TypeError)
        | _ -> fail TypeError)
     | Expr_option None -> return (ValOption None)
     | Expr_option (Some expr) ->
