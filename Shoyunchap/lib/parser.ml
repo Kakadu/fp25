@@ -5,6 +5,9 @@
 open Angstrom
 open Ast
 
+(* map operator for angstrom *)
+let ( let+ ) = Angstrom.( >>| )
+
 (* polymorphic variant with one constructor *)
 type error = [ `Parsing_error of string ]
 
@@ -71,7 +74,9 @@ let integer : int Angstrom.t =
   return (sign * int_of_string digits)
 ;;
 
-let const_int = integer >>| fun n -> Const (Int n)
+let const_int =
+  let+ n = integer in
+  Const (Int n)
 let const_unit = lexeme (string "()") *> return (Const Unit)
 
 let const_bool =
@@ -79,7 +84,9 @@ let const_bool =
 ;;
 
 (* variables *)
-let var_expr : expression Angstrom.t = identifier >>| fun x -> Var x
+let var_expr : expression Angstrom.t =
+  let+ x = identifier in
+  Var x
 let parens p = sym '(' *> p <* sym ')'
 
 (* operations *)
@@ -132,7 +139,8 @@ let expr : expression Angstrom.t =
     let lambda =
       let args = kwd "fun" *> spaces *> many1 identifier <* spaces <* kwd "->" in
       let* xs = args in
-      expr >>| fun body -> curry_fun xs body
+      let+ body = expr in
+      curry_fun xs body
     in
     (* basic atom without application *)
     let atom0 =
@@ -144,18 +152,24 @@ let expr : expression Angstrom.t =
     let application =
       let open Angstrom in
       let* f = atom0 in
-      many1 (spaces1 *> atom0)
-      >>| fun args -> List.fold_left (fun acc a -> App (acc, a)) f args
+      let+ args = many1 (spaces1 *> atom0) in
+      List.fold_left (fun acc a -> App (acc, a)) f args
     in
     let atom = application <|> atom0 in
     (* level * and / *)
     let mul_div =
-      let op = parse_op_mul <|> parse_op_div >>| fun op l r -> BinOp (op, l, r) in
+      let op =
+        let+ op = parse_op_mul <|> parse_op_div in
+        fun l r -> BinOp (op, l, r)
+      in
       chainl1 atom op
     in
     (* level + and - *)
     let add_sub =
-      let op = parse_op_add <|> parse_op_sub >>| fun op l r -> BinOp (op, l, r) in
+      let op =
+        let+ op = parse_op_add <|> parse_op_sub in
+        fun l r -> BinOp (op, l, r)
+      in
       chainl1 mul_div op
     in
     (* comparisons we allow only one comparison in the chain:
@@ -167,14 +181,15 @@ let expr : expression Angstrom.t =
       option
         left
         (let* op = parse_cmp_op in
-         add_sub >>| fun right -> BinOp (op, left, right))
+         let+ right = add_sub in
+         BinOp (op, left, right))
     in
     (* if ... then ... else ... *)
     let if_expr =
       let open Angstrom in
       let* cond = kwd "if" *> cmp_level in
       let* thn = kwd "then" *> expr in
-      let* els = option None (kwd "else" *> expr >>| fun e -> Some e) in
+      let* els = option None (let+ e = kwd "else" *> expr in Some e) in
       return (If (cond, thn, els))
     in
     (* let / let rec *)
@@ -186,7 +201,7 @@ let expr : expression Angstrom.t =
       let* args = many identifier in
       let* bound = sym '=' *> expr in
       let value = curry_fun args bound in
-      let* body_opt = option None (kwd "in" *> expr >>| fun body -> Some body) in
+      let* body_opt = option None (let+ body = kwd "in" *> expr in Some body) in
       let scope =
         match body_opt with
         | None -> GlobalVar
