@@ -1,6 +1,6 @@
 (library
  (name parser_tests)
- (modules parser_tests)
+ (modules parser_tests interpret_tests)
  (libraries lambda_lib)
  (preprocess
   (pps ppx_expect))

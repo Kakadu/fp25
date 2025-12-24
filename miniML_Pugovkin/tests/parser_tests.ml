@@ -173,3 +173,15 @@ let%expect_test "fix" =
   pp_expr "fix (fun f -> fun x -> f x)";
   [%expect {| (Fix (Lam ("f", (Lam ("x", (App ((Var "f"), (Var "x")))))))) |}]
 ;;
+
+let%expect_test "parse errors" =
+  pp_expr "let";
+  pp_top "let rec";
+  pp_prog "let x =";
+  [%expect
+    {|
+    Error: : no more choices
+    Error: : not enough input
+    Error: : end_of_input
+  |}]
+;;

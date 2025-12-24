@@ -30,3 +30,20 @@
   > EOF
   Runtime error: step limit exceeded
   [1]
+
+  $ printf '' | ../bin/REPL.exe
+
+  $ ../bin/REPL.exe -dparsetree <<'EOF'
+  > 1
+  > EOF
+  Parsed: [(TExpr (Const (Int 1)))]
+
+  $ ../bin/REPL.exe foo
+  Positional arguments are not supported
+  [1]
+
+  $ ../bin/REPL.exe <<'EOF'
+  > let
+  > EOF
+  Parse error: : end_of_input
+  [1]

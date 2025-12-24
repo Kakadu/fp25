@@ -93,11 +93,33 @@ let arb_expr = make ~print:Ast.show_expr (Gen.sized gen_expr)
 let arb_toplevel = make ~print:Ast.show_toplevel (Gen.sized gen_toplevel)
 let arb_program = make ~print:Ast.show_program gen_program
 
+let expr_roundtrip printed expr =
+  try Ast.equal_expr expr (Parser.expr_of_string printed) with
+  | Parser.Error _ -> false
+;;
+
+let toplevel_roundtrip printed item =
+  try Ast.equal_toplevel item (Parser.toplevel_of_string printed) with
+  | Parser.Error _ -> false
+;;
+
+let program_roundtrip printed program =
+  try Ast.equal_program program (Parser.program_of_string printed) with
+  | Parser.Error _ -> false
+;;
+
+let expect_failure f =
+  try
+    f ();
+    false
+  with
+  | Failure _ -> true
+;;
+
 let roundtrip_expr =
   Test.make ~name:"parser/printer roundtrip (expr)" ~count:300 arb_expr (fun expr ->
     let printed = Pprintast.string_of_expr expr in
-    try Ast.equal_expr expr (Parser.expr_of_string printed) with
-    | Parser.Error _ -> false)
+    expr_roundtrip printed expr)
 ;;
 
 let roundtrip_toplevel =
@@ -107,8 +129,7 @@ let roundtrip_toplevel =
     arb_toplevel
     (fun item ->
        let printed = Pprintast.string_of_toplevel item in
-       try Ast.equal_toplevel item (Parser.toplevel_of_string printed) with
-       | Parser.Error _ -> false)
+       toplevel_roundtrip printed item)
 ;;
 
 let roundtrip_program =
@@ -118,13 +139,42 @@ let roundtrip_program =
     arb_program
     (fun program ->
        let printed = Pprintast.string_of_program program in
-       try Ast.equal_program program (Parser.program_of_string printed) with
-       | Parser.Error _ -> false)
+       program_roundtrip printed program)
+;;
+
+let generator_errors =
+  Test.make ~name:"generator errors" QCheck.unit (fun () ->
+    expect_failure (fun () -> ignore (Gen.generate1 (oneof_list_gen [])))
+    && expect_failure (fun () -> ignore (Gen.generate1 (oneof_weighted_gen [])))
+    && expect_failure (fun () ->
+      ignore (Gen.generate1 (oneof_weighted_gen [ 0, Gen.int ]))))
+;;
+
+let parser_error_expr =
+  Test.make ~name:"parser error (expr)" QCheck.unit (fun () ->
+    not (expr_roundtrip "let" (Ast.Const (Ast.Int 0))))
+;;
+
+let parser_error_toplevel =
+  Test.make ~name:"parser error (toplevel)" QCheck.unit (fun () ->
+    not (toplevel_roundtrip "let" (Ast.TExpr (Ast.Const (Ast.Int 0)))))
+;;
+
+let parser_error_program =
+  Test.make ~name:"parser error (program)" QCheck.unit (fun () ->
+    not (program_roundtrip "let" [ Ast.TExpr (Ast.Const (Ast.Int 0)) ]))
 ;;
 
 let () =
   QCheck_runner.run_tests
     ~verbose:true
-    [ roundtrip_expr; roundtrip_toplevel; roundtrip_program ]
+    [ roundtrip_expr
+    ; roundtrip_toplevel
+    ; roundtrip_program
+    ; generator_errors
+    ; parser_error_expr
+    ; parser_error_toplevel
+    ; parser_error_program
+    ]
   |> Stdlib.exit
 ;;
