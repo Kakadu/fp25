@@ -1,14 +1,13 @@
-type ident = string
-[@@deriving show { with_path = false }, eq]
+type ident = string [@@deriving show { with_path = false }, eq]
 
 (** Рекурсивность связывания в let *)
-type rec_flag = 
+type rec_flag =
   | Nonrec (** [let x = e1 in e2] *)
   | Rec (** [let rec f = e1 in e2] *)
 [@@deriving show { with_path = false }, eq]
 
 (** Унарные операции *)
-type unop = 
+type unop =
   | UMinus (** [-(e)] *)
   | UPlus (** [+(e)] *)
   | Not (** [not e] *)
@@ -23,7 +22,7 @@ type arithmetic_binops =
 [@@deriving show { with_path = false }, eq]
 
 (** Бинарные сравнения *)
-type cmp_binops = 
+type cmp_binops =
   | Eq (** [=] *)
   | Neq (** [<>] *)
   | Lt (** [<] *)
@@ -67,5 +66,4 @@ type toplevel =
 [@@deriving show { with_path = false }, eq]
 
 (** Сама программа *)
-type program = toplevel list
-[@@deriving show { with_path = false }, eq]
+type program = toplevel list [@@deriving show { with_path = false }, eq]

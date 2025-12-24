@@ -21,13 +21,13 @@ and error =
   | Invalid_comparison of value * value
   | Step_limit_exceeded
 
-and 'a eval = int -> (('a * int), error) result
+and 'a eval = int -> ('a * int, error) result
 
 let return x : 'a eval = fun fuel -> Ok (x, fuel)
 let fail err : 'a eval = fun _ -> Error err
 
 let ( let* ) (m : 'a eval) (f : 'a -> 'b eval) : 'b eval =
- fun fuel ->
+  fun fuel ->
   match m fuel with
   | Ok (x, fuel') -> f x fuel'
   | Error _ as err -> err
@@ -49,8 +49,7 @@ let string_of_value = function
 let string_of_error = function
   | Unbound_variable name -> Printf.sprintf "unbound variable: %s" name
   | Expected_int v -> Printf.sprintf "expected int, got %s" (string_of_value v)
-  | Expected_bool v ->
-    Printf.sprintf "expected bool or int, got %s" (string_of_value v)
+  | Expected_bool v -> Printf.sprintf "expected bool or int, got %s" (string_of_value v)
   | Expected_function v -> Printf.sprintf "expected function, got %s" (string_of_value v)
   | Division_by_zero -> "division by zero"
   | Invalid_recursion name -> Printf.sprintf "let rec expects a function for %s" name
@@ -143,8 +142,7 @@ let rec eval (env : env) (expr : expr) : value eval =
 
 and apply (fn_val : value) (arg_val : value) : value eval =
   match fn_val with
-  | VClosure (param, body, closure_env) ->
-    eval ((param, arg_val) :: closure_env) body
+  | VClosure (param, body, closure_env) -> eval ((param, arg_val) :: closure_env) body
   | VRecClosure (fname, param, body, closure_env) ->
     eval ((param, arg_val) :: (fname, fn_val) :: closure_env) body
   | VBuiltin fn -> fn arg_val
@@ -169,22 +167,19 @@ and eval_arith op l r =
   | Add -> return (VInt (l_int + r_int))
   | Sub -> return (VInt (l_int - r_int))
   | Mul -> return (VInt (l_int * r_int))
-  | Div ->
-    if r_int = 0
-    then fail Division_by_zero
-    else return (VInt (l_int / r_int))
+  | Div -> if r_int = 0 then fail Division_by_zero else return (VInt (l_int / r_int))
 
 and eval_cmp op l r =
   match op with
-  | Eq | Neq -> (
-    match l, r with
-    | VInt l_int, VInt r_int ->
-      let b = if op = Eq then l_int = r_int else l_int <> r_int in
-      return (VBool b)
-    | VBool l_bool, VBool r_bool ->
-      let b = if op = Eq then l_bool = r_bool else l_bool <> r_bool in
-      return (VBool b)
-    | _ -> fail (Invalid_comparison (l, r)))
+  | Eq | Neq ->
+    (match l, r with
+     | VInt l_int, VInt r_int ->
+       let b = if op = Eq then l_int = r_int else l_int <> r_int in
+       return (VBool b)
+     | VBool l_bool, VBool r_bool ->
+       let b = if op = Eq then l_bool = r_bool else l_bool <> r_bool in
+       return (VBool b)
+     | _ -> fail (Invalid_comparison (l, r)))
   | Lt | Le | Gt | Ge ->
     let* l_int = expect_int l in
     let* r_int = expect_int r in
@@ -204,25 +199,26 @@ and eval_bool op env left right =
   match op with
   | And ->
     if l_bool
-    then (
+    then
       let* r = eval env right in
       let* r_bool = expect_bool r in
-      return (VBool r_bool))
+      return (VBool r_bool)
     else return (VBool false)
   | Or ->
     if l_bool
     then return (VBool true)
-    else (
+    else
       let* r = eval env right in
       let* r_bool = expect_bool r in
-      return (VBool r_bool))
+      return (VBool r_bool)
 ;;
 
 let builtin_print_int =
-  VBuiltin (fun v ->
-    let* n = expect_int v in
-    Printf.printf "%d\n%!" n;
-    return VUnit)
+  VBuiltin
+    (fun v ->
+      let* n = expect_int v in
+      Printf.printf "%d\n%!" n;
+      return VUnit)
 ;;
 
 let initial_env : env = [ "print_int", builtin_print_int; "print", builtin_print_int ]
@@ -252,8 +248,12 @@ let eval_program ?(fuel = 10_000) (program : program) =
   let rec loop env outputs = function
     | [] -> return (List.rev outputs)
     | item :: rest ->
-      let* (env', out) = eval_toplevel env item in
-      let outputs' = match out with None -> outputs | Some v -> v :: outputs in
+      let* env', out = eval_toplevel env item in
+      let outputs' =
+        match out with
+        | None -> outputs
+        | Some v -> v :: outputs
+      in
       loop env' outputs' rest
   in
   match loop initial_env [] program fuel with

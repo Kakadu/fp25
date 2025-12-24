@@ -15,6 +15,5 @@ type error =
 
 val string_of_value : value -> string
 val string_of_error : error -> string
-
 val eval_expr : ?fuel:int -> expr -> (value, error) result
 val eval_program : ?fuel:int -> program -> (value list, error) result

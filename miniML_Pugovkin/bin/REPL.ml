@@ -10,9 +10,7 @@ let () =
   let () =
     let open Stdlib.Arg in
     parse
-      [ ( "-steps"
-        , Int (fun n -> opts.steps <- n)
-        , "Max evaluation steps (default: 10000)" )
+      [ "-steps", Int (fun n -> opts.steps <- n), "Max evaluation steps (default: 10000)"
       ; ( "-dparsetree"
         , Unit (fun () -> opts.dump_parsetree <- true)
         , "Dump parse tree, don't evaluate" )
@@ -41,3 +39,4 @@ let () =
     | Parser.Error msg ->
       Printf.eprintf "Parse error: %s\n%!" msg;
       Stdlib.exit 1)
+;;

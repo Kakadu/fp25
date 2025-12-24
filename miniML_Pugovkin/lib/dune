@@ -1,7 +1,7 @@
 (library
  (name lambda_lib)
  (public_name miniML_Pugovkin.Lib)
-(modules :standard)
+ (modules :standard)
  (libraries base angstrom)
  (preprocess
   (pps ppx_deriving.show ppx_deriving.eq))
