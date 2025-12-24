@@ -53,7 +53,6 @@ let identifier : name Angstrom.t =
     return (String.make 1 first ^ rest)
   in
   let* name = lexeme raw_ident in
-
   if is_keyword name then fail "keyword cannot be used as an identifier" else return name
 ;;
 
@@ -67,17 +66,16 @@ let integer : int Angstrom.t =
   let open Angstrom in
   spaces
   *>
-  (let* sign = option 1 (char '-' *> return (-1)) in
-   let* digits = take_while1 is_digit in
-   return (sign * int_of_string digits))
+  let* sign = option 1 (char '-' *> return (-1)) in
+  let* digits = take_while1 is_digit in
+  return (sign * int_of_string digits)
 ;;
 
 let const_int = integer >>| fun n -> Const (Int n)
 let const_unit = lexeme (string "()") *> return (Const Unit)
 
 let const_bool =
-  kwd "true" *> return (Const (Int 1))
-  <|> kwd "false" *> return (Const (Int 0))
+  kwd "true" *> return (Const (Int 1)) <|> kwd "false" *> return (Const (Int 0))
 ;;
 
 (* variables *)
@@ -91,22 +89,23 @@ let parse_op_sub = sym '-' *> return OpSub
 let parse_op_mul = sym '*' *> return OpMul
 let parse_op_div = sym '/' *> return OpDiv
 
-let parse_cmp_op : operation_id Angstrom.t = 
-  let open Angstrom in 
-  spaces 
-  *> choice 
-    [ string "<=" *> return OpLte
-    ; string ">=" *> return OpGte
-    ; string ">" *> return OpGt
-    ; string "<" *> return OpLt
-    ; string "=" *> return OpEq
-    ]
-;;  
+let parse_cmp_op : operation_id Angstrom.t =
+  let open Angstrom in
+  spaces
+  *> choice
+       [ string "<=" *> return OpLte
+       ; string ">=" *> return OpGte
+       ; string ">" *> return OpGt
+       ; string "<" *> return OpLt
+       ; string "=" *> return OpEq
+       ]
+;;
+
 (* syntax sugar for fun x y -> e
    example result: Fun ("x", Fun ("y", Fun ("z", body)))
    with args : [x, y, z]
 *)
-let curry_fun (args : name list) (body : expression) : expression = 
+let curry_fun (args : name list) (body : expression) : expression =
   List.fold_right (fun x e -> Fun (x, e)) args body
 ;;
 
@@ -114,17 +113,16 @@ let curry_fun (args : name list) (body : expression) : expression =
    ((1 + 2) + 3)
    with "1+2+3"
 *)
-let chainl1 p op = 
-  let open Angstrom in 
-
-  let rec loop acc = 
-    (let* apply = op in 
-     let* operand = p in 
+let chainl1 p op =
+  let open Angstrom in
+  let rec loop acc =
+    (let* apply = op in
+     let* operand = p in
      loop (apply acc operand))
     <|> return acc
   in
-  let* first = p in 
-  loop first 
+  let* first = p in
+  loop first
 ;;
 
 (* basic grammar levels *)
@@ -140,11 +138,14 @@ let expr : expression Angstrom.t =
     let atom0 =
       choice [ const_unit; const_bool; const_int; lambda; var_expr; parens expr ]
     in
-    (* application: f a b c *)
+    (* application: f a b c
+       example input: f x y
+       output: App (App (Var "f", Var "x"), Var "y") *)
     let application =
       let open Angstrom in
       let* f = atom0 in
-      many1 (spaces1 *> atom0) >>| fun args -> List.fold_left (fun acc a -> App (acc, a)) f args
+      many1 (spaces1 *> atom0)
+      >>| fun args -> List.fold_left (fun acc a -> App (acc, a)) f args
     in
     let atom = application <|> atom0 in
     (* level * and / *)

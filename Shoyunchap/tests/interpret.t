@@ -29,6 +29,7 @@ $ dune exec -- ./tests/interpret_cli.exe "let x = 7 in let function a b = if x >
 $ dune exec -- ./tests/interpret_cli.exe "let x = 7 in let y = x in x + y + 8"
 22
 
+
 $ dune exec -- ./tests/interpret_cli.exe "let rec fact n = if n = 0 then 1 else n * fact (n - 1) in fact 5"
 120
 

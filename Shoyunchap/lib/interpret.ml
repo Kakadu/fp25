@@ -32,12 +32,13 @@ module type MONAD = sig
   val bind : 'a t -> ('a -> 'b t) -> 'b t
   val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
 end
-(* A monad is a special data type in functional programming languages 
-​​for which it is possible to specify an imperative sequence of operations
-on stored values. Monads allow one to specify the sequence of operations, 
-perform operations with side effects, and perform other actions that are 
-difficult or impossible to implement in the functional programming paradigm 
-by other means. *)
+
+(* A monad is a special data type in functional programming languages
+   ​​for which it is possible to specify an imperative sequence of operations
+   on stored values. Monads allow one to specify the sequence of operations,
+   perform operations with side effects, and perform other actions that are
+   difficult or impossible to implement in the functional programming paradigm
+   by other means. *)
 module EvalM : MONAD = struct
   type 'a t = 'a eval
 
@@ -66,8 +67,8 @@ let step : unit eval =
 
 (* List.assoc_opt x env tries to find the cell value
    ref by name x in the list of pairs
-  (The ! operator dereferences the reference,
-  so !cell retrieves the stored value)
+   (The ! operator dereferences the reference,
+   so !cell retrieves the stored value)
 *)
 let lookup (env : env) (x : name) : value eval =
   fun fuel ->
@@ -93,14 +94,13 @@ let int_binop (op : operation_id) (n1 : int) (n2 : int) : int eval =
   | OpLte -> return (if n1 <= n2 then 1 else 0)
 ;;
 
+(* common types *)
 let eval_binop (op : operation_id) (v1 : value) (v2 : value) : value eval =
   match v1, v2 with
   | IntVal n1, IntVal n2 ->
     let* n = int_binop op n1 n2 in
     return (IntVal n)
-  | _ ->
-    (* expect int arguments *)
-    error (Not_an_int v1)
+  | _ -> error (Not_an_int v1)
 ;;
 
 (* function application *)
@@ -113,7 +113,6 @@ let rec apply (f : value) (arg : value) : value eval =
   | BuiltinVal g -> g arg
   | _ -> error (Not_a_function f)
 
-(* eval *)
 and eval (env : env) (e : expression) : value eval =
   let* () = step in
   match e with
@@ -133,8 +132,8 @@ and eval (env : env) (e : expression) : value eval =
     let* v2 = eval env e2 in
     eval_binop op v1 v2
   | If (cond, thn, els_opt) ->
- let* v_cond = eval env cond in
-  (match v_cond with
+    let* v_cond = eval env cond in
+    (match v_cond with
      | IntVal 0 ->
        (* false branch *)
        (match els_opt with
@@ -180,7 +179,6 @@ let builtin_fix : value =
 ;;
 
 (* builtin printing *)
-
 let builtin_print_int : value =
   BuiltinVal
     (fun v ->

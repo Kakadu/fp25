@@ -8,12 +8,12 @@ open Parser
 open Printer
 open QCheck
 
+let ( let* ) m f = Gen.(m >>= f)
 
 let gen_name =
   let names = [ "x"; "y"; "z"; "n"; "m"; "f"; "g"; "h"; "a"; "b"; "c" ] in
   Gen.oneofl names
 ;;
-
 
 let gen_const =
   Gen.frequency [ 4, Gen.map (fun n -> Int n) Gen.small_int; 1, Gen.return Unit ]
@@ -32,22 +32,20 @@ let rec gen_expr depth =
     let simpler = gen_expr (depth - 1) in
     let let_gen =
       let open Gen in
-      oneofl [ NonRec; Rec ]
-      >>= fun kind ->
-      gen_name
-      >>= fun name ->
-      (match kind with
-       | Rec -> map2 (fun arg body -> Ast.Fun (arg, body)) gen_name simpler
-       | NonRec -> simpler)
-      >>= fun rhs ->
-      option sub
-      >|= fun body_opt ->
+      let* kind = oneofl [ NonRec; Rec ] in
+      let* name = gen_name in
+      let* rhs =
+        match kind with
+        | Rec -> map2 (fun arg body -> Ast.Fun (arg, body)) gen_name simpler
+        | NonRec -> simpler
+      in
+      let* body_opt = option sub in
       let scope =
         match body_opt with
         | None -> GlobalVar
         | Some _ -> LocalVar
       in
-      Ast.Let (scope, kind, name, rhs, body_opt)
+      return (Ast.Let (scope, kind, name, rhs, body_opt))
     in
     Gen.oneof
       (leaf
@@ -84,7 +82,6 @@ let prop_roundtrip =
     | Error _ -> false)
 ;;
 
-
 let prop_stable_string =
   Test.make ~name:"pretty-print is idempotent after parse" ~count:500 arb_expr (fun e ->
     let first = string_of_expr e in
@@ -107,7 +104,7 @@ let prop_invalid_fails =
 ;;
 
 let () =
-  (* Keep progress lines but suppress frequent interim updates; we only want the final tallies. *)
+  (* Keep progress lines but suppress frequent interim updates *)
   QCheck_base_runner.set_time_between_msg 1e9
 ;;
 
