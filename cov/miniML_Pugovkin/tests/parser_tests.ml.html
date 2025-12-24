@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>parser_tests.ml &mdash; Coverage report</title>
-    <meta name="description" content="96.10% coverage in tests/parser_tests.ml">
+    <meta name="description" content="100.00% coverage in tests/parser_tests.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,12 +15,9 @@
           <span class="dirname">tests/</span>parser_tests.ml
         </a>
       </h1>
-      <h2>96.10%</h2>
+      <h2>100.00%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="top:3.43%"></span>
-      <span class="unvisited" style="top:6.29%"></span>
-      <span class="unvisited" style="top:9.14%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -30,17 +27,17 @@
 <a id="L3"></a><span > </span>
 <a id="L4"></a><span > </span>
 <a id="L5"></a><span class="visited"> </span>
-<a id="L6"></a><span class="unvisited"> </span>
+<a id="L6"></a><span class="visited"> </span>
 <a id="L7"></a><span > </span>
 <a id="L8"></a><span > </span>
 <a id="L9"></a><span > </span>
 <a id="L10"></a><span class="visited"> </span>
-<a id="L11"></a><span class="unvisited"> </span>
+<a id="L11"></a><span class="visited"> </span>
 <a id="L12"></a><span > </span>
 <a id="L13"></a><span > </span>
 <a id="L14"></a><span > </span>
 <a id="L15"></a><span class="visited"> </span>
-<a id="L16"></a><span class="unvisited"> </span>
+<a id="L16"></a><span class="visited"> </span>
 <a id="L17"></a><span > </span>
 <a id="L18"></a><span > </span>
 <a id="L19"></a><span > </span>
@@ -200,6 +197,18 @@
 <a id="L173"></a><span class="visited"> </span>
 <a id="L174"></a><span class="visited"> </span>
 <a id="L175"></a><span > </span>
+<a id="L176"></a><span > </span>
+<a id="L177"></a><span > </span>
+<a id="L178"></a><span class="visited"> </span>
+<a id="L179"></a><span class="visited"> </span>
+<a id="L180"></a><span class="visited"> </span>
+<a id="L181"></a><span class="visited"> </span>
+<a id="L182"></a><span > </span>
+<a id="L183"></a><span > </span>
+<a id="L184"></a><span > </span>
+<a id="L185"></a><span > </span>
+<a id="L186"></a><span class="visited"> </span>
+<a id="L187"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -379,23 +388,35 @@
 <a href="#L173">173</a>
 <a href="#L174">174</a>
 <a href="#L175">175</a>
+<a href="#L176">176</a>
+<a href="#L177">177</a>
+<a href="#L178">178</a>
+<a href="#L179">179</a>
+<a href="#L180">180</a>
+<a href="#L181">181</a>
+<a href="#L182">182</a>
+<a href="#L183">183</a>
+<a href="#L184">184</a>
+<a href="#L185">185</a>
+<a href="#L186">186</a>
+<a href="#L187">187</a>
 </pre>
 <pre><code class="ocaml">open Lambda_lib
 
 (* Утилиты печати через deriving-show *)
 let pp_expr s =
-  <span data-count="32">t</span>ry Parser.expr_of_string s |&gt; <span data-count="32">A</span>st.show_expr |&gt; <span data-count="32">p</span>rint_endlin<span data-count="32">e</span> with
-  | <span data-count="0">P</span>arser.Error msg -&gt; Printf.printf "Error: %s\n" msg
+  <span data-count="33">t</span>ry Parser.expr_of_string s |&gt; <span data-count="32">A</span>st.show_expr |&gt; <span data-count="32">p</span>rint_endlin<span data-count="32">e</span> with
+  | <span data-count="1">P</span>arser.Error msg -&gt; Printf.printf "Error: %s\n" msg
 ;;
 
 let pp_top s =
-  <span data-count="3">t</span>ry Parser.toplevel_of_string s |&gt; <span data-count="3">A</span>st.show_toplevel |&gt; <span data-count="3">p</span>rint_endlin<span data-count="3">e</span> with
-  | <span data-count="0">P</span>arser.Error msg -&gt; Printf.printf "Error: %s\n" msg
+  <span data-count="4">t</span>ry Parser.toplevel_of_string s |&gt; <span data-count="3">A</span>st.show_toplevel |&gt; <span data-count="3">p</span>rint_endlin<span data-count="3">e</span> with
+  | <span data-count="1">P</span>arser.Error msg -&gt; Printf.printf "Error: %s\n" msg
 ;;
 
 let pp_prog s =
-  <span data-count="1">t</span>ry Parser.program_of_string s |&gt; <span data-count="1">A</span>st.show_program |&gt; <span data-count="1">p</span>rint_endlin<span data-count="1">e</span> with
-  | <span data-count="0">P</span>arser.Error msg -&gt; Printf.printf "Error: %s\n" msg
+  <span data-count="2">t</span>ry Parser.program_of_string s |&gt; <span data-count="1">A</span>st.show_program |&gt; <span data-count="1">p</span>rint_endlin<span data-count="1">e</span> with
+  | <span data-count="1">P</span>arser.Error msg -&gt; Printf.printf "Error: %s\n" msg
 ;;
 
 let%expect_test "literals &amp; vars" =
@@ -411,7 +432,7 @@ let%expect_test "literals &amp; vars" =
     (Const (Bool false))
     (Const (Unit ()))
     (Var "x")
-  |}<span data-count="5">]</span>
+  |}<span data-count="7">]</span>
 ;;
 
 let%expect_test "unary operators" =
@@ -423,7 +444,7 @@ let%expect_test "unary operators" =
     (Unop (UMinus, (Var "x")))
     (Unop (UPlus, (Var "x")))
     (Unop (Not, (Var "x")))
-  |}<span data-count="5">]</span>
+  |}<span data-count="7">]</span>
 ;;
 
 let%expect_test "application &amp; precedence with unary" =
@@ -436,7 +457,7 @@ let%expect_test "application &amp; precedence with unary" =
     (App ((App ((Var "f"), (App ((Var "g"), (Const (Int 1)))))), (Const (Int 2))
        ))
     (Unop (UMinus, (App ((Var "f"), (Var "x")))))
-  |}<span data-count="5">]</span>
+  |}<span data-count="7">]</span>
 ;;
 
 let%expect_test "arithmetic binops" =
@@ -457,7 +478,7 @@ let%expect_test "arithmetic binops" =
     (BinopArithmetic (Div,
        (BinopArithmetic (Div, (Const (Int 8)), (Const (Int 2)))), (Const (Int 2))
        ))
-  |}<span data-count="5">]</span>
+  |}<span data-count="7">]</span>
 ;;
 
 let%expect_test "comparisons" =
@@ -475,7 +496,7 @@ let%expect_test "comparisons" =
     (BinopComp (Le, (Var "a"), (Var "b")))
     (BinopComp (Gt, (Var "a"), (Var "b")))
     (BinopComp (Ge, (Var "a"), (Var "b")))
-  |}<span data-count="5">]</span>
+  |}<span data-count="7">]</span>
 ;;
 
 let%expect_test "boolean operators" =
@@ -486,7 +507,7 @@ let%expect_test "boolean operators" =
     (BinopBool (And, (Const (Bool true)), (Const (Bool false))))
     (BinopBool (Or, (Const (Bool true)),
        (BinopBool (And, (Const (Bool false)), (Const (Bool true))))))
-  |}<span data-count="5">]</span>
+  |}<span data-count="7">]</span>
 ;;
 
 let%expect_test "if-then[-else]" =
@@ -496,7 +517,7 @@ let%expect_test "if-then[-else]" =
     {|
     (If ((Var "x"), (Var "y"), (Some (Var "z"))))
     (If ((Var "t"), (Var "u"), None))
-  |}<span data-count="5">]</span>
+  |}<span data-count="7">]</span>
 ;;
 
 let%expect_test "lambdas and let-desugaring" =
@@ -510,7 +531,7 @@ let%expect_test "lambdas and let-desugaring" =
     (Let (Rec, "f",
        (Lam ("x", (Lam ("y", (BinopArithmetic (Add, (Var "x"), (Var "y"))))))),
        (App ((App ((Var "f"), (Const (Int 1)))), (Const (Int 2))))))
-  |}<span data-count="5">]</span>
+  |}<span data-count="7">]</span>
 ;;
 
 let%expect_test "let-in (nonrec/rec)" =
@@ -520,14 +541,14 @@ let%expect_test "let-in (nonrec/rec)" =
     {|
     (Let (Nonrec, "x", (Const (Int 1)), (Var "x")))
     (Let (Rec, "f", (Lam ("x", (Var "x"))), (App ((Var "f"), (Const (Int 1))))))
-  |}<span data-count="5">]</span>
+  |}<span data-count="7">]</span>
 ;;
 
 let%expect_test "comments (nested)" =
   <span data-count="1">p</span>p_expr "(* nested *) 1 (* a (* b *) c *) + 2";
   <span data-count="1">[</span>%expect {|
     (BinopArithmetic (Add, (Const (Int 1)), (Const (Int 2))))
-  |}<span data-count="5">]</span>
+  |}<span data-count="7">]</span>
 ;;
 
 let%expect_test "toplevel items" =
@@ -539,7 +560,7 @@ let%expect_test "toplevel items" =
     (TExpr (BinopArithmetic (Add, (Var "x"), (Const (Int 1)))))
     (TLet (Nonrec, "x", (Const (Int 1))))
     (TLet (Rec, "f", (Lam ("x", (Var "x")))))
-  |}<span data-count="5">]</span>
+  |}<span data-count="7">]</span>
 ;;
 
 let%expect_test "program" =
@@ -548,12 +569,24 @@ let%expect_test "program" =
     {|
     [(TLet (Nonrec, "x", (Const (Int 1))));
       (TExpr (BinopArithmetic (Add, (Var "x"), (Const (Int 2)))))]
-  |}<span data-count="5">]</span>
+  |}<span data-count="7">]</span>
 ;;
 
 let%expect_test "fix" =
   <span data-count="1">p</span>p_expr "fix (fun f -&gt; fun x -&gt; f x)";
-  <span data-count="1">[</span>%expect {| (Fix (Lam ("f", (Lam ("x", (App ((Var "f"), (Var "x")))))))) |}<span data-count="5">]</span>
+  <span data-count="1">[</span>%expect {| (Fix (Lam ("f", (Lam ("x", (App ((Var "f"), (Var "x")))))))) |}<span data-count="7">]</span>
+;;
+
+let%expect_test "parse errors" =
+  <span data-count="1">p</span>p_expr "let";
+  <span data-count="1">p</span>p_top "let rec";
+  <span data-count="1">p</span>p_prog "let x =";
+  <span data-count="1">[</span>%expect
+    {|
+    Error: : no more choices
+    Error: : not enough input
+    Error: : end_of_input
+  |}<span data-count="7">]</span>
 ;;
 </code></pre>
       </div>

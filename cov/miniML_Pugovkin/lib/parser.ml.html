@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>parser.ml &mdash; Coverage report</title>
-    <meta name="description" content="97.66% coverage in lib/parser.ml">
+    <meta name="description" content="98.05% coverage in lib/parser.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,14 +15,13 @@
           <span class="dirname">lib/</span>parser.ml
         </a>
       </h1>
-      <h2>97.66%</h2>
+      <h2>98.05%</h2>
     </div>
     <div id="navbar">
       <span class="some-visited" style="top:7.84%"></span>
       <span class="some-visited" style="top:11.76%"></span>
       <span class="some-visited" style="top:26.27%"></span>
       <span class="unvisited" style="top:32.94%"></span>
-      <span class="unvisited" style="bottom:1.96%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -276,7 +275,7 @@
 <a id="L247"></a><span > </span>
 <a id="L248"></a><span class="visited"> </span>
 <a id="L249"></a><span class="visited"> </span>
-<a id="L250"></a><span class="unvisited"> </span>
+<a id="L250"></a><span class="visited"> </span>
 <a id="L251"></a><span > </span>
 <a id="L252"></a><span > </span>
 <a id="L253"></a><span class="visited"> </span>
@@ -550,43 +549,43 @@ exception Error of string
 (* монодический сахар *)
 let ( let* ) = ( &gt;&gt;= )
 let ( let+ ) = ( &gt;&gt;| )
-let many1 p = <span data-count="7">l</span>ift2 (fun x xs -&gt; <span data-count="1660">x</span> :: xs) p (man<span data-count="7">y</span> p)
+let many1 p = <span data-count="9">l</span>ift2 (fun x xs -&gt; <span data-count="1712">x</span> :: xs) p (man<span data-count="9">y</span> p)
 
 (* ---------- утилиты AST ---------- *)
 
 let mk_lams (params : string list) (body : expr) : expr =
-  <span data-count="4075">L</span>ist.fold_right (fun x acc -&gt; <span data-count="1851">L</span>am (x, acc)) params body
+  <span data-count="4269">L</span>ist.fold_right (fun x acc -&gt; <span data-count="1912">L</span>am (x, acc)) params body
 ;;
 
 (* ---------- пробелы и комментарии ---------- *)
 
 let is_space = function
-  | <span data-count="44238">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\r' | <span data-count="326">'</span>\n' -&gt; true
-  | <span data-count="149430">_</span> -&gt; false
+  | <span data-count="44476">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\r' | <span data-count="357">'</span>\n' -&gt; true
+  | <span data-count="149963">_</span> -&gt; false
 ;;
 
 let is_ident_start = function
-  | <span data-count="14364">'</span>a' .. 'z' | <span data-count="694">'</span>_' -&gt; true
-  | <span data-count="40429">_</span> -&gt; false
+  | <span data-count="14836">'</span>a' .. 'z' | <span data-count="698">'</span>_' -&gt; true
+  | <span data-count="39876">_</span> -&gt; false
 ;;
 
 let is_ident_char = function
-  | <span data-count="14595">'</span>a' .. 'z' | <span data-count="0">'</span>A' .. 'Z' | <span data-count="741">'</span>0' .. '9' | <span data-count="1">'</span>_' | <span data-count="713">'</span>\'' -&gt; true
-  | <span data-count="27953">_</span> -&gt; false
+  | <span data-count="15173">'</span>a' .. 'z' | <span data-count="0">'</span>A' .. 'Z' | <span data-count="801">'</span>0' .. '9' | <span data-count="1">'</span>_' | <span data-count="662">'</span>\'' -&gt; true
+  | <span data-count="28460">_</span> -&gt; false
 ;;
 
 let is_digit = function
-  | <span data-count="18363">'</span>0' .. '9' -&gt; true
-  | <span data-count="53420">_</span> -&gt; false
+  | <span data-count="17754">'</span>0' .. '9' -&gt; true
+  | <span data-count="52744">_</span> -&gt; false
 ;;
 
-let skip_while1 p = <span data-count="8">s</span>atisf<span data-count="8">y</span> p *&gt; skip_whil<span data-count="8">e</span> p
+let skip_while1 p = <span data-count="13">s</span>atisf<span data-count="13">y</span> p *&gt; skip_whil<span data-count="13">e</span> p
 
 (* вложенные комментарии:  (*  ...  *) *)
 let comment : unit Angstrom.t =
-  Angstrom.fi<span data-count="8">x</span> (fun comment -&gt;
-    <span data-count="7">A</span>ngstrom.strin<span data-count="7">g</span> "(*"
-    *&gt; Angstrom.fi<span data-count="7">x</span> (fun loop -&gt;
+  Angstrom.fi<span data-count="13">x</span> (fun comment -&gt;
+    <span data-count="9">A</span>ngstrom.strin<span data-count="9">g</span> "(*"
+    *&gt; Angstrom.fi<span data-count="9">x</span> (fun loop -&gt;
       <span data-count="1">A</span>ngstrom.choice
         [ Angstrom.strin<span data-count="1">g</span> "*)" *<span data-count="1">&gt;</span> Angstrom.retur<span data-count="1">n</span> ()
         ; comment *<span data-count="1">&gt;</span> loop
@@ -596,20 +595,20 @@ let comment : unit Angstrom.t =
 
 (* корректный пропуск: за шаг потребляет хотя бы что-то *)
 let spaces : unit Angstrom.t =
-  let ws1 = skip_while<span data-count="8">1</span> is_space *<span data-count="8">&gt;</span> Angstrom.retur<span data-count="8">n</span> () &lt;|&gt; comment in
-  <span data-count="8">A</span>ngstrom.fi<span data-count="8">x</span> (fun loop -&gt; <span data-count="7">w</span>s1 *<span data-count="7">&gt;</span> loop &lt;|&gt; Angstrom.retur<span data-count="7">n</span> ())
+  let ws1 = skip_while<span data-count="13">1</span> is_space *<span data-count="13">&gt;</span> Angstrom.retur<span data-count="13">n</span> () &lt;|&gt; comment in
+  <span data-count="13">A</span>ngstrom.fi<span data-count="13">x</span> (fun loop -&gt; <span data-count="9">w</span>s1 *<span data-count="9">&gt;</span> loop &lt;|&gt; Angstrom.retur<span data-count="9">n</span> ())
 ;;
 
-let lexeme p = <span data-count="139348">p</span> &lt;* spaces
-let sym s = <span data-count="133192">l</span>exeme (strin<span data-count="133192">g</span> s)
+let lexeme p = <span data-count="138455">p</span> &lt;* spaces
+let sym s = <span data-count="132220">l</span>exeme (strin<span data-count="132220">g</span> s)
 
 (* ключевое слово: не допускаем хвост идентификатора после него *)
 let kw s =
-  <span data-count="6140">l</span>exeme
-    (strin<span data-count="6140">g</span> s *<span data-count="6140">&gt;</span> peek_char
-     &gt;&gt;<span data-count="6140">=</span> function
-     | <span data-count="13030">S</span>ome c when is_ident_cha<span data-count="13030">r</span> c -&gt; <span data-count="0">f</span>ail ("keyword " ^ s ^ " is a prefix")
-     | <span data-count="13034">_</span> -&gt; return ())
+  <span data-count="6209">l</span>exeme
+    (strin<span data-count="6209">g</span> s *<span data-count="6209">&gt;</span> peek_char
+     &gt;&gt;<span data-count="6209">=</span> function
+     | <span data-count="13355">S</span>ome c when is_ident_cha<span data-count="13355">r</span> c -&gt; <span data-count="0">f</span>ail ("keyword " ^ s ^ " is a prefix")
+     | <span data-count="13864">_</span> -&gt; return ())
 ;;
 
 let reserved =
@@ -617,186 +616,186 @@ let reserved =
 ;;
 
 let not_reserved s =
-  <span data-count="15058">i</span>f List.mem s reserved then <span data-count="5064">f</span>ail ("reserved word: " ^ s) else <span data-count="9994">r</span>eturn s
+  <span data-count="15534">i</span>f List.mem s reserved then <span data-count="5439">f</span>ail ("reserved word: " ^ s) else <span data-count="10095">r</span>eturn s
 ;;
 
 (* ---------- атомы ---------- *)
 
 let p_int : expr Angstrom.t =
-  let* s = lexem<span data-count="8">e</span> (take_while<span data-count="8">1</span> is_digit) in
-  <span data-count="6388">t</span>ry retur<span data-count="6388">n</span> (Const (Int (int_of_strin<span data-count="6388">g</span> s))) with
+  let* s = lexem<span data-count="13">e</span> (take_while<span data-count="13">1</span> is_digit) in
+  <span data-count="6172">t</span>ry retur<span data-count="6172">n</span> (Const (Int (int_of_strin<span data-count="6172">g</span> s))) with
   | <span data-count="0">F</span>ailure _ -&gt; fail "int literal out of range"
 ;;
 
 let p_bool : expr Angstrom.t =
-  choic<span data-count="8">e</span>
-    [ k<span data-count="8">w</span> "true" *<span data-count="8">&gt;</span> retur<span data-count="8">n</span> (Const (Bool true)); k<span data-count="8">w</span> "false" *<span data-count="8">&gt;</span> retur<span data-count="8">n</span> (Const (Bool false)) ]
+  choic<span data-count="13">e</span>
+    [ k<span data-count="13">w</span> "true" *<span data-count="13">&gt;</span> retur<span data-count="13">n</span> (Const (Bool true)); k<span data-count="13">w</span> "false" *<span data-count="13">&gt;</span> retur<span data-count="13">n</span> (Const (Bool false)) ]
 ;;
 
 let p_ident : string Angstrom.t =
-  lexem<span data-count="8">e</span>
-    (lift<span data-count="8">2</span>
-       (fun c cs -&gt; <span data-count="15058">S</span>tring.mak<span data-count="15058">e</span> 1 c ^ cs)
-       (satisf<span data-count="8">y</span> is_ident_start)
-       (take_whil<span data-count="8">e</span> is_ident_char))
-  &gt;&gt;<span data-count="8">=</span> not_reserved
+  lexem<span data-count="13">e</span>
+    (lift<span data-count="13">2</span>
+       (fun c cs -&gt; <span data-count="15534">S</span>tring.mak<span data-count="15534">e</span> 1 c ^ cs)
+       (satisf<span data-count="13">y</span> is_ident_start)
+       (take_whil<span data-count="13">e</span> is_ident_char))
+  &gt;&gt;<span data-count="13">=</span> not_reserved
 ;;
 
-let p_var : expr Angstrom.t = p_ident &gt;&gt;<span data-count="8">|</span> fun x -&gt; <span data-count="5728">V</span>ar x
+let p_var : expr Angstrom.t = p_ident &gt;&gt;<span data-count="13">|</span> fun x -&gt; <span data-count="5624">V</span>ar x
 
 (* ---------- выражения (через fix) ---------- *)
 
 let p_expr : expr Angstrom.t =
-  fi<span data-count="8">x</span> (fun expr -&gt;
+  fi<span data-count="13">x</span> (fun expr -&gt;
     (* () | (expr) *)
-    <span data-count="7">l</span>et p_parens : expr Angstrom.t =
-      sy<span data-count="7">m</span> "(" *<span data-count="7">&gt;</span> choic<span data-count="7">e</span> [ sy<span data-count="7">m</span> ")" *<span data-count="7">&gt;</span> retur<span data-count="7">n</span> (Const (Unit ())); expr &lt;<span data-count="7">*</span> sy<span data-count="7">m</span> ")" ]
+    <span data-count="9">l</span>et p_parens : expr Angstrom.t =
+      sy<span data-count="9">m</span> "(" *<span data-count="9">&gt;</span> choic<span data-count="9">e</span> [ sy<span data-count="9">m</span> ")" *<span data-count="9">&gt;</span> retur<span data-count="9">n</span> (Const (Unit ())); expr &lt;<span data-count="9">*</span> sy<span data-count="9">m</span> ")" ]
     in
-    let p_atom : expr Angstrom.t = choic<span data-count="7">e</span> [ p_int; p_bool; p_var; p_parens ] in
+    let p_atom : expr Angstrom.t = choic<span data-count="9">e</span> [ p_int; p_bool; p_var; p_parens ] in
     let p_prefix : expr Angstrom.t =
-      fi<span data-count="7">x</span> (fun pref -&gt; <span data-count="7">c</span>hoice [ k<span data-count="7">w</span> "fix" *<span data-count="7">&gt;</span> (pref &gt;&gt;<span data-count="7">|</span> fun e -&gt; <span data-count="999">F</span>ix e); p_atom ])
+      fi<span data-count="9">x</span> (fun pref -&gt; <span data-count="9">c</span>hoice [ k<span data-count="9">w</span> "fix" *<span data-count="9">&gt;</span> (pref &gt;&gt;<span data-count="9">|</span> fun e -&gt; <span data-count="991">F</span>ix e); p_atom ])
     in
     (* application: f a b *)
     let p_apply : expr Angstrom.t =
       let* f = p_prefix in
-      <span data-count="25513">l</span>et+ args = man<span data-count="25513">y</span> p_prefix in
-      <span data-count="25513">L</span>ist.fold_left (fun acc a -&gt; <span data-count="3074">A</span>pp (acc, a)) f args
+      <span data-count="25125">l</span>et+ args = man<span data-count="25125">y</span> p_prefix in
+      <span data-count="25125">L</span>ist.fold_left (fun acc a -&gt; <span data-count="2860">A</span>pp (acc, a)) f args
     in
     (* unary — поверх application: -f x == -(f x) *)
     let p_unary : expr Angstrom.t =
-      choic<span data-count="7">e</span>
-        [ sy<span data-count="7">m</span> "-" *<span data-count="7">&gt;</span> (p_apply &gt;&gt;<span data-count="7">|</span> fun e -&gt; <span data-count="956">U</span>nop (UMinus, e))
-        ; sy<span data-count="7">m</span> "+" *<span data-count="7">&gt;</span> (p_apply &gt;&gt;<span data-count="7">|</span> fun e -&gt; <span data-count="971">U</span>nop (UPlus, e))
-        ; k<span data-count="7">w</span> "not" *<span data-count="7">&gt;</span> (p_apply &gt;&gt;<span data-count="7">|</span> fun e -&gt; <span data-count="1">U</span>nop (Not, e))
+      choic<span data-count="9">e</span>
+        [ sy<span data-count="9">m</span> "-" *<span data-count="9">&gt;</span> (p_apply &gt;&gt;<span data-count="9">|</span> fun e -&gt; <span data-count="906">U</span>nop (UMinus, e))
+        ; sy<span data-count="9">m</span> "+" *<span data-count="9">&gt;</span> (p_apply &gt;&gt;<span data-count="9">|</span> fun e -&gt; <span data-count="982">U</span>nop (UPlus, e))
+        ; k<span data-count="9">w</span> "not" *<span data-count="9">&gt;</span> (p_apply &gt;&gt;<span data-count="9">|</span> fun e -&gt; <span data-count="1">U</span>nop (Not, e))
         ; p_apply
         ]
     in
     let chainl1 p op =
-      <span data-count="28">l</span>et* x = p in
-      <span data-count="91024">l</span>et rec rest acc =
-        <span data-count="93001">(</span>let* f = op in
-         <span data-count="1977">l</span>et* y = p in
-         <span data-count="1977">r</span>est (<span data-count="1977">f</span> acc y))
-        &lt;|&gt; retur<span data-count="93001">n</span> acc
+      <span data-count="36">l</span>et* x = p in
+      <span data-count="89822">l</span>et rec rest acc =
+        <span data-count="91812">(</span>let* f = op in
+         <span data-count="1990">l</span>et* y = p in
+         <span data-count="1990">r</span>est (<span data-count="1990">f</span> acc y))
+        &lt;|&gt; retur<span data-count="91812">n</span> acc
       in
       rest x
     in
     let p_mul : expr Angstrom.t =
       let op =
         choice
-          [ sy<span data-count="7">m</span> "*" *<span data-count="7">&gt;</span> retur<span data-count="7">n</span> (fun l r -&gt; <span data-count="490">B</span>inopArithmetic (Mul, l, r))
-          ; sy<span data-count="7">m</span> "/" *<span data-count="7">&gt;</span> retur<span data-count="7">n</span> (fun l r -&gt; <span data-count="541">B</span>inopArithmetic (Div, l, r))
+          [ sy<span data-count="9">m</span> "*" *<span data-count="9">&gt;</span> retur<span data-count="9">n</span> (fun l r -&gt; <span data-count="510">B</span>inopArithmetic (Mul, l, r))
+          ; sy<span data-count="9">m</span> "/" *<span data-count="9">&gt;</span> retur<span data-count="9">n</span> (fun l r -&gt; <span data-count="534">B</span>inopArithmetic (Div, l, r))
           ]
       in
-      <span data-count="7">c</span>hainl<span data-count="7">1</span> p_unary op
+      <span data-count="9">c</span>hainl<span data-count="9">1</span> p_unary op
     in
     let p_add : expr Angstrom.t =
       let op =
         choice
-          [ sy<span data-count="7">m</span> "+" *<span data-count="7">&gt;</span> retur<span data-count="7">n</span> (fun l r -&gt; <span data-count="488">B</span>inopArithmetic (Add, l, r))
-          ; sy<span data-count="7">m</span> "-" *<span data-count="7">&gt;</span> retur<span data-count="7">n</span> (fun l r -&gt; <span data-count="455">B</span>inopArithmetic (Sub, l, r))
+          [ sy<span data-count="9">m</span> "+" *<span data-count="9">&gt;</span> retur<span data-count="9">n</span> (fun l r -&gt; <span data-count="470">B</span>inopArithmetic (Add, l, r))
+          ; sy<span data-count="9">m</span> "-" *<span data-count="9">&gt;</span> retur<span data-count="9">n</span> (fun l r -&gt; <span data-count="473">B</span>inopArithmetic (Sub, l, r))
           ]
       in
-      <span data-count="7">c</span>hainl<span data-count="7">1</span> p_mul op
+      <span data-count="9">c</span>hainl<span data-count="9">1</span> p_mul op
     in
     let p_cmp : expr Angstrom.t =
       let* a = p_add in
-      <span data-count="21504">l</span>et op =
+      <span data-count="21304">l</span>et op =
         choice
-          [ sy<span data-count="21504">m</span> "=" *<span data-count="21504">&gt;</span> retur<span data-count="21504">n</span> (fun l r -&gt; <span data-count="363">B</span>inopComp (Eq, l, r))
-          ; sy<span data-count="21504">m</span> "&lt;&gt;" *<span data-count="21504">&gt;</span> retur<span data-count="21504">n</span> (fun l r -&gt; <span data-count="350">B</span>inopComp (Neq, l, r))
-          ; sy<span data-count="21504">m</span> "&lt;=" *<span data-count="21504">&gt;</span> retur<span data-count="21504">n</span> (fun l r -&gt; <span data-count="340">B</span>inopComp (Le, l, r))
-          ; sy<span data-count="21504">m</span> "&gt;=" *<span data-count="21504">&gt;</span> retur<span data-count="21504">n</span> (fun l r -&gt; <span data-count="322">B</span>inopComp (Ge, l, r))
-          ; sy<span data-count="21504">m</span> "&lt;" *<span data-count="21504">&gt;</span> retur<span data-count="21504">n</span> (fun l r -&gt; <span data-count="322">B</span>inopComp (Lt, l, r))
-          ; sy<span data-count="21504">m</span> "&gt;" *<span data-count="21504">&gt;</span> retur<span data-count="21504">n</span> (fun l r -&gt; <span data-count="338">B</span>inopComp (Gt, l, r))
+          [ sy<span data-count="21304">m</span> "=" *<span data-count="21304">&gt;</span> retur<span data-count="21304">n</span> (fun l r -&gt; <span data-count="317">B</span>inopComp (Eq, l, r))
+          ; sy<span data-count="21304">m</span> "&lt;&gt;" *<span data-count="21304">&gt;</span> retur<span data-count="21304">n</span> (fun l r -&gt; <span data-count="304">B</span>inopComp (Neq, l, r))
+          ; sy<span data-count="21304">m</span> "&lt;=" *<span data-count="21304">&gt;</span> retur<span data-count="21304">n</span> (fun l r -&gt; <span data-count="293">B</span>inopComp (Le, l, r))
+          ; sy<span data-count="21304">m</span> "&gt;=" *<span data-count="21304">&gt;</span> retur<span data-count="21304">n</span> (fun l r -&gt; <span data-count="307">B</span>inopComp (Ge, l, r))
+          ; sy<span data-count="21304">m</span> "&lt;" *<span data-count="21304">&gt;</span> retur<span data-count="21304">n</span> (fun l r -&gt; <span data-count="307">B</span>inopComp (Lt, l, r))
+          ; sy<span data-count="21304">m</span> "&gt;" *<span data-count="21304">&gt;</span> retur<span data-count="21304">n</span> (fun l r -&gt; <span data-count="306">B</span>inopComp (Gt, l, r))
           ]
       in
-      <span data-count="21504">(</span>let* f = op in
-       <span data-count="2035">l</span>et+ b = p_add in
-       <span data-count="2035">f</span> a b)
-      &lt;|&gt; retur<span data-count="21504">n</span> a
+      <span data-count="21304">(</span>let* f = op in
+       <span data-count="1834">l</span>et+ b = p_add in
+       <span data-count="1834">f</span> a b)
+      &lt;|&gt; retur<span data-count="21304">n</span> a
     in
     let p_and : expr Angstrom.t =
-      let op = sy<span data-count="7">m</span> "&amp;&amp;" *&gt; retur<span data-count="7">n</span> (fun l r -&gt; <span data-count="2">B</span>inopBool (And, l, r)) in
-      <span data-count="7">c</span>hainl<span data-count="7">1</span> p_cmp op
+      let op = sy<span data-count="9">m</span> "&amp;&amp;" *&gt; retur<span data-count="9">n</span> (fun l r -&gt; <span data-count="2">B</span>inopBool (And, l, r)) in
+      <span data-count="9">c</span>hainl<span data-count="9">1</span> p_cmp op
     in
     let p_or : expr Angstrom.t =
-      let op = sy<span data-count="7">m</span> "||" *&gt; retur<span data-count="7">n</span> (fun l r -&gt; <span data-count="1">B</span>inopBool (Or, l, r)) in
-      <span data-count="7">c</span>hainl<span data-count="7">1</span> p_and op
+      let op = sy<span data-count="9">m</span> "||" *&gt; retur<span data-count="9">n</span> (fun l r -&gt; <span data-count="1">B</span>inopBool (Or, l, r)) in
+      <span data-count="9">c</span>hainl<span data-count="9">1</span> p_and op
     in
     let p_if : expr Angstrom.t =
-      k<span data-count="7">w</span> "if"
-      *<span data-count="7">&gt;</span>
+      k<span data-count="9">w</span> "if"
+      *<span data-count="9">&gt;</span>
       let* c = expr in
-      <span data-count="1967">k</span><span data-count="1967">w</span> "then"
+      <span data-count="1915">k</span><span data-count="1915">w</span> "then"
       *&gt;
       let* t = expr in
-      <span data-count="1967">k</span><span data-count="1967">w</span> "else" *<span data-count="1967">&gt;</span> (expr &gt;&gt;<span data-count="1967">|</span> fun e -&gt; <span data-count="965">I</span>f (c, t, Some e)) &lt;|&gt; retur<span data-count="1967">n</span> (If (c, t, None))
+      <span data-count="1915">k</span><span data-count="1915">w</span> "else" *<span data-count="1915">&gt;</span> (expr &gt;&gt;<span data-count="1915">|</span> fun e -&gt; <span data-count="947">I</span>f (c, t, Some e)) &lt;|&gt; retur<span data-count="1915">n</span> (If (c, t, None))
     in
     let p_fun : expr Angstrom.t =
-      k<span data-count="7">w</span> "fun"
-      *<span data-count="7">&gt;</span>
+      k<span data-count="9">w</span> "fun"
+      *<span data-count="9">&gt;</span>
       let* params =
-        many<span data-count="7">1</span> p_ident &lt;|<span data-count="7">&gt;</span> fai<span data-count="7">l</span> "Expected at least one parameter after 'fun'"
+        many<span data-count="9">1</span> p_ident &lt;|<span data-count="9">&gt;</span> fai<span data-count="9">l</span> "Expected at least one parameter after 'fun'"
       in
-      <span data-count="1660">s</span>y<span data-count="1660">m</span> "-&gt;"
+      <span data-count="1712">s</span>y<span data-count="1712">m</span> "-&gt;"
       *&gt;
       let+ body = expr in
-      <span data-count="1660">m</span>k_lams params body
+      <span data-count="1712">m</span>k_lams params body
     in
     let p_let_expr : expr Angstrom.t =
-      k<span data-count="7">w</span> "let"
-      *<span data-count="7">&gt;</span>
-      let* rf = k<span data-count="7">w</span> "rec" *<span data-count="7">&gt;</span> retur<span data-count="7">n</span> Rec &lt;|<span data-count="7">&gt;</span> retur<span data-count="7">n</span> Nonrec in
-      <span data-count="2132">l</span>et* name = p_ident in
-      <span data-count="2132">l</span>et* params = man<span data-count="2132">y</span> p_ident in
-      <span data-count="2132">s</span>y<span data-count="2132">m</span> "="
+      k<span data-count="9">w</span> "let"
+      *<span data-count="9">&gt;</span>
+      let* rf = k<span data-count="9">w</span> "rec" *<span data-count="9">&gt;</span> retur<span data-count="9">n</span> Rec &lt;|<span data-count="9">&gt;</span> retur<span data-count="9">n</span> Nonrec in
+      <span data-count="2577">l</span>et* name = p_ident in
+      <span data-count="2274">l</span>et* params = man<span data-count="2274">y</span> p_ident in
+      <span data-count="2274">s</span>y<span data-count="2274">m</span> "="
       *&gt;
       let* rhs = expr in
-      <span data-count="2132">l</span>et rhs = mk_lams params rhs in
-      <span data-count="2132">k</span><span data-count="2132">w</span> "in"
+      <span data-count="2273">l</span>et rhs = mk_lams params rhs in
+      <span data-count="2273">k</span><span data-count="2273">w</span> "in"
       *&gt;
       let+ body = expr in
-      <span data-count="1849">L</span>et (rf, name, rhs, body)
+      <span data-count="1989">L</span>et (rf, name, rhs, body)
     in
-    spaces *&gt; choic<span data-count="7">e</span> [ p_let_expr; p_if; p_fun; p_or ])
+    spaces *&gt; choic<span data-count="9">e</span> [ p_let_expr; p_if; p_fun; p_or ])
 ;;
 
 (* ---------- top-level и программа ---------- *)
 
-let sep : unit Angstrom.t = choic<span data-count="8">e</span> [ sy<span data-count="8">m</span> ";;" *<span data-count="8">&gt;</span> retur<span data-count="8">n</span> (); sy<span data-count="8">m</span> ";" *<span data-count="8">&gt;</span> retur<span data-count="8">n</span> () ]
+let sep : unit Angstrom.t = choic<span data-count="13">e</span> [ sy<span data-count="13">m</span> ";;" *<span data-count="13">&gt;</span> retur<span data-count="13">n</span> (); sy<span data-count="13">m</span> ";" *<span data-count="13">&gt;</span> retur<span data-count="13">n</span> () ]
 
 let p_toplevel : toplevel Angstrom.t =
   (* сначала пробуем выражение (обработает let ... in ...),
      если не вышло — это let без in *)
   p_expr
-  &gt;&gt;<span data-count="8">|</span> (fun e -&gt; <span data-count="409">T</span>Expr e)
-  &lt;|<span data-count="8">&gt;</span> k<span data-count="8">w</span> "let"
-      *<span data-count="8">&gt;</span>
-      let* rf = k<span data-count="8">w</span> "rec" *<span data-count="8">&gt;</span> retur<span data-count="8">n</span> Rec &lt;|<span data-count="8">&gt;</span> retur<span data-count="8">n</span> Nonrec in
-      <span data-count="283">l</span>et* name = p_ident in
-      <span data-count="283">l</span>et* params = man<span data-count="283">y</span> p_ident in
-      <span data-count="283">s</span>y<span data-count="283">m</span> "="
+  &gt;&gt;<span data-count="13">|</span> (fun e -&gt; <span data-count="446">T</span>Expr e)
+  &lt;|<span data-count="13">&gt;</span> k<span data-count="13">w</span> "let"
+      *<span data-count="13">&gt;</span>
+      let* rf = k<span data-count="13">w</span> "rec" *<span data-count="13">&gt;</span> retur<span data-count="13">n</span> Rec &lt;|<span data-count="13">&gt;</span> retur<span data-count="13">n</span> Nonrec in
+      <span data-count="487">l</span>et* name = p_ident in
+      <span data-count="285">l</span>et* params = man<span data-count="285">y</span> p_ident in
+      <span data-count="285">s</span>y<span data-count="285">m</span> "="
       *&gt;
       let+ rhs = p_expr in
-      <span data-count="283">T</span>Let (rf, name, mk_lam<span data-count="283">s</span> params rhs)
+      <span data-count="284">T</span>Let (rf, name, mk_lam<span data-count="284">s</span> params rhs)
 ;;
 
 let p_program : program Angstrom.t =
-  spaces *<span data-count="8">&gt;</span> man<span data-count="8">y</span> (p_toplevel &lt;<span data-count="8">*</span> man<span data-count="8">y</span> sep) &lt;<span data-count="8">*</span> end_of_input
+  spaces *<span data-count="13">&gt;</span> man<span data-count="13">y</span> (p_toplevel &lt;<span data-count="13">*</span> man<span data-count="13">y</span> sep) &lt;<span data-count="13">*</span> end_of_input
 ;;
 
 (* ---------- API ---------- *)
 
 let run_exn p s =
-  <span data-count="741">m</span>atch parse_string ~consume:All p s with
-  | <span data-count="741">O</span>k v -&gt; v
-  | <span data-count="0">E</span>rror msg -&gt; raise (Error msg)
+  <span data-count="1046">m</span>atch parse_string ~consume:All p s with
+  | <span data-count="742">O</span>k v -&gt; v
+  | <span data-count="304">E</span>rror msg -&gt; raise (Error msg)
 ;;
 
-let expr_of_string s = <span data-count="332">r</span>un_exn (spaces *<span data-count="332">&gt;</span> p_expr &lt;<span data-count="332">*</span> optio<span data-count="332">n</span> () sep &lt;<span data-count="332">*</span> end_of_input) s
-let toplevel_of_string s = <span data-count="203">r</span>un_exn (spaces *<span data-count="203">&gt;</span> p_toplevel &lt;<span data-count="203">*</span> man<span data-count="203">y</span> sep &lt;<span data-count="203">*</span> end_of_input) s
-let program_of_string s = <span data-count="206">r</span>un_exn p_program s
+let expr_of_string s = <span data-count="433">r</span>un_exn (spaces *<span data-count="433">&gt;</span> p_expr &lt;<span data-count="433">*</span> optio<span data-count="433">n</span> () sep &lt;<span data-count="433">*</span> end_of_input) s
+let toplevel_of_string s = <span data-count="304">r</span>un_exn (spaces *<span data-count="304">&gt;</span> p_toplevel &lt;<span data-count="304">*</span> man<span data-count="304">y</span> sep &lt;<span data-count="304">*</span> end_of_input) s
+let program_of_string s = <span data-count="309">r</span>un_exn p_program s
 </code></pre>
       </div>
     </div>

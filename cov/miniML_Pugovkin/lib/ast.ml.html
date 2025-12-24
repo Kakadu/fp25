@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>ast.ml &mdash; Coverage report</title>
-    <meta name="description" content="79.66% coverage in lib/ast.ml">
+    <meta name="description" content="86.44% coverage in lib/ast.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,20 +15,17 @@
           <span class="dirname">lib/</span>ast.ml
         </a>
       </h1>
-      <h2>79.66%</h2>
+      <h2>86.44%</h2>
     </div>
     <div id="navbar">
       <span class="some-visited" style="top:1.45%"></span>
       <span class="unvisited" style="top:5.80%"></span>
       <span class="unvisited" style="top:14.49%"></span>
-      <span class="unvisited" style="top:18.84%"></span>
       <span class="unvisited" style="top:24.64%"></span>
       <span class="unvisited" style="top:36.23%"></span>
       <span class="unvisited" style="bottom:49.28%"></span>
       <span class="unvisited" style="bottom:47.83%"></span>
-      <span class="unvisited" style="bottom:46.38%"></span>
       <span class="some-visited" style="bottom:37.68%"></span>
-      <span class="unvisited" style="bottom:15.94%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -45,7 +42,7 @@
 <a id="L10"></a><span class="unvisited"> </span>
 <a id="L11"></a><span class="visited"> </span>
 <a id="L12"></a><span class="visited"> </span>
-<a id="L13"></a><span class="unvisited"> </span>
+<a id="L13"></a><span class="visited"> </span>
 <a id="L14"></a><span > </span>
 <a id="L15"></a><span > </span>
 <a id="L16"></a><span > </span>
@@ -69,7 +66,7 @@
 <a id="L34"></a><span > </span>
 <a id="L35"></a><span class="unvisited"> </span>
 <a id="L36"></a><span class="unvisited"> </span>
-<a id="L37"></a><span class="unvisited"> </span>
+<a id="L37"></a><span class="visited"> </span>
 <a id="L38"></a><span > </span>
 <a id="L39"></a><span > </span>
 <a id="L40"></a><span > </span>
@@ -90,7 +87,7 @@
 <a id="L55"></a><span class="visited"> </span>
 <a id="L56"></a><span class="visited"> </span>
 <a id="L57"></a><span class="visited"> </span>
-<a id="L58"></a><span class="unvisited"> </span>
+<a id="L58"></a><span class="visited"> </span>
 <a id="L59"></a><span class="visited"> </span>
 <a id="L60"></a><span > </span>
 <a id="L61"></a><span > </span>
@@ -176,75 +173,75 @@
 <a href="#L68">68</a>
 <a href="#L69">69</a>
 </pre>
-<pre><code class="ocaml"><span data-count="0">t</span>ype ident = <span data-count="57">s</span>tring [@@deriving show { with_path = false }, eq]
+<pre><code class="ocaml"><span data-count="0">t</span>ype ident = <span data-count="60">s</span>tring [@@deriving show { with_path = false }, eq]
 
 (** Рекурсивность связывания в let *)
 <span data-count="0">t</span>ype rec_flag =
-  <span data-count="878">|</span> Nonrec (** [let x = e1 in e2] *)
-  <span data-count="873">|</span> Rec (** [let rec f = e1 in e2] *)
+  <span data-count="919">|</span> Nonrec (** [let x = e1 in e2] *)
+  <span data-count="988">|</span> Rec (** [let rec f = e1 in e2] *)
 [@@deriving show { with_path = false }, eq]
 
 (** Унарные операции *)
 <span data-count="0">t</span>ype unop =
-  <span data-count="772">|</span> UMinus (** [-(e)] *)
+  <span data-count="739">|</span> UMinus (** [-(e)] *)
   <span data-count="788">|</span> UPlus (** [+(e)] *)
-  <span data-count="0">|</span> Not (** [not e] *)
+  <span data-count="1">|</span> Not (** [not e] *)
 [@@deriving show { with_path = false }, eq]
 
 (** Бинарные арифметические операции *)
 <span data-count="0">t</span>ype arithmetic_binops =
-  <span data-count="393">|</span> Add (** [+] *)
-  <span data-count="359">|</span> Sub (** [-] *)
-  <span data-count="426">|</span> Div (** [/] *)
-  <span data-count="386">|</span> Mul (** [*] *)
+  <span data-count="382">|</span> Add (** [+] *)
+  <span data-count="374">|</span> Sub (** [-] *)
+  <span data-count="436">|</span> Div (** [/] *)
+  <span data-count="414">|</span> Mul (** [*] *)
 [@@deriving show { with_path = false }, eq]
 
 (** Бинарные сравнения *)
 <span data-count="0">t</span>ype cmp_binops =
-  <span data-count="289">|</span> Eq (** [=] *)
-  <span data-count="278">|</span> Neq (** [&lt;&gt;] *)
-  <span data-count="269">|</span> Lt (** [&lt;] *)
-  <span data-count="272">|</span> Le (** [&lt;=] *)
-  <span data-count="267">|</span> Gt (** [&gt;] *)
-  <span data-count="269">|</span> Ge (** [&gt;=] *)
+  <span data-count="253">|</span> Eq (** [=] *)
+  <span data-count="248">|</span> Neq (** [&lt;&gt;] *)
+  <span data-count="248">|</span> Lt (** [&lt;] *)
+  <span data-count="227">|</span> Le (** [&lt;=] *)
+  <span data-count="253">|</span> Gt (** [&gt;] *)
+  <span data-count="247">|</span> Ge (** [&gt;=] *)
 [@@deriving show { with_path = false }, eq]
 
 (** Бинарные логические операции *)
 <span data-count="0">t</span>ype bool_binops =
   <span data-count="0">|</span> And (** [&amp;&amp;] *)
-  <span data-count="0">|</span> Or (** [||] *)
+  <span data-count="1">|</span> Or (** [||] *)
 [@@deriving show { with_path = false }, eq]
 
 (** Константы *)
-<span data-count="66">t</span>ype const =
-  <span data-count="10086">|</span> Int of in<span data-count="25">t</span> (** Целое число *)
+<span data-count="68">t</span>ype const =
+  <span data-count="9940">|</span> Int of in<span data-count="26">t</span> (** Целое число *)
   <span data-count="0">|</span> Bool of boo<span data-count="7">l</span> (** Логическая константа *)
-  <span data-count="1686">|</span> Unit of <span data-count="1">u</span>nit (** [()] *)
+  <span data-count="1756">|</span> Unit of <span data-count="1">u</span>nit (** [()] *)
 [@@deriving show { with_path = false }, eq]
 
 (** Узлы выражений *)
-<span data-count="234">t</span>ype expr =
-  <span data-count="5886">|</span> Const of const (** Литерал *)
-  <span data-count="4543">|</span> Var of ident (** Идентификатор *)
-  <span data-count="2988">|</span> Lam of ident * exp<span data-count="1494">r</span> (** Лямбда-абстракция: [fun x -&gt; e] *)
-  <span data-count="4864">|</span> App of expr * exp<span data-count="2432">r</span> (** Аппликация: [e1 e2] *)
-  <span data-count="5900">|</span> Let of rec_flag * ident * expr * exp<span data-count="4425">r</span> (** Связывание: [let x = e1 in e2] *)
-  <span data-count="7855">|</span> If of expr * expr * <span data-count="6">e</span>xpr optio<span data-count="3144">n</span> (** Условие: [if c then t else e] *)
-  <span data-count="3120">|</span> Unop of unop * exp<span data-count="1560">r</span> (** Унарная операция *)
-  <span data-count="4692">|</span> BinopArithmetic of arithmetic_binops * expr * exp<span data-count="3128">r</span> (** Арифметика *)
-  <span data-count="4932">|</span> BinopComp of cmp_binops * expr * exp<span data-count="3288">r</span> (** Сравнение *)
-  <span data-count="0">|</span> BinopBool of bool_binops * expr * exp<span data-count="0">r</span> (** Логические операции *)
-  <span data-count="812">|</span> Fix of expr (** Фиксация: [fix e] *)
+<span data-count="246">t</span>ype expr =
+  <span data-count="5848">|</span> Const of const (** Литерал *)
+  <span data-count="4502">|</span> Var of ident (** Идентификатор *)
+  <span data-count="3026">|</span> Lam of ident * exp<span data-count="1513">r</span> (** Лямбда-абстракция: [fun x -&gt; e] *)
+  <span data-count="4582">|</span> App of expr * exp<span data-count="2291">r</span> (** Аппликация: [e1 e2] *)
+  <span data-count="6520">|</span> Let of rec_flag * ident * expr * exp<span data-count="4890">r</span> (** Связывание: [let x = e1 in e2] *)
+  <span data-count="7805">|</span> If of expr * expr * <span data-count="6">e</span>xpr optio<span data-count="3124">n</span> (** Условие: [if c then t else e] *)
+  <span data-count="3056">|</span> Unop of unop * exp<span data-count="1528">r</span> (** Унарная операция *)
+  <span data-count="4818">|</span> BinopArithmetic of arithmetic_binops * expr * exp<span data-count="3212">r</span> (** Арифметика *)
+  <span data-count="4428">|</span> BinopComp of cmp_binops * expr * exp<span data-count="2952">r</span> (** Сравнение *)
+  <span data-count="3">|</span> BinopBool of bool_binops * expr * exp<span data-count="2">r</span> (** Логические операции *)
+  <span data-count="811">|</span> Fix of expr (** Фиксация: [fix e] *)
 [@@deriving show { with_path = false }, eq]
 
 (** Конструкции программы *)
-<span data-count="10">t</span>ype toplevel =
-  <span data-count="828">|</span> TLet of rec_flag * ident * exp<span data-count="552">r</span> (** Вершинное связывание *)
-  <span data-count="401">|</span> TExpr of expr (** Вершинное выражение *)
+<span data-count="12">t</span>ype toplevel =
+  <span data-count="831">|</span> TLet of rec_flag * ident * exp<span data-count="554">r</span> (** Вершинное связывание *)
+  <span data-count="437">|</span> TExpr of expr (** Вершинное выражение *)
 [@@deriving show { with_path = false }, eq]
 
 (** Сама программа *)
-<span data-count="201">t</span>ype program = <span data-count="9">t</span>oplevel lis<span data-count="2">t</span> [@@deriving show { with_path = false }, eq]
+<span data-count="202">t</span>ype program = <span data-count="14">t</span>oplevel lis<span data-count="3">t</span> [@@deriving show { with_path = false }, eq]
 </code></pre>
       </div>
     </div>
