@@ -16,7 +16,7 @@ let mk_lams (params : string list) (body : expr) : expr =
 (* ---------- пробелы и комментарии ---------- *)
 
 let is_space = function ' ' | '\t' | '\r' | '\n' -> true | _ -> false
-let is_ident_start = function 'a'..'z' | 'A'..'Z' | '_' -> true | _ -> false
+let is_ident_start = function 'a'..'z' | '_' -> true | _ -> false
 let is_ident_char  = function
   | 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' | '\'' -> true
   | _ -> false
@@ -56,7 +56,7 @@ let kw s =
 
 let reserved =
   [ "if"; "then"; "else"; "let"; "rec"; "in"
-  ; "fun"; "not"; "true"; "false"
+  ; "fun"; "fix"; "not"; "true"; "false"
   ]
 
 let not_reserved s =
@@ -65,7 +65,9 @@ let not_reserved s =
 (* ---------- атомы ---------- *)
 
 let p_int  : expr Angstrom.t =
-  lexeme (take_while1 is_digit >>| int_of_string >>| fun n -> Const (Int n))
+  let* s = lexeme (take_while1 is_digit) in
+  try return (Const (Int (int_of_string s))) with
+  | Failure _ -> fail "int literal out of range"
 
 let p_bool : expr Angstrom.t =
   choice [ kw "true"  *> return (Const (Bool true))
@@ -95,10 +97,18 @@ let p_expr : expr Angstrom.t =
 
     let p_atom : expr Angstrom.t = choice [ p_int; p_bool; p_var; p_parens ] in
 
+    let p_prefix : expr Angstrom.t =
+      fix (fun pref ->
+        choice
+          [ kw "fix" *> (pref >>| fun e -> Fix e)
+          ; p_atom
+          ])
+    in
+
     (* application: f a b *)
     let p_apply : expr Angstrom.t =
-      let* f = p_atom in
-      let+ args = many p_atom in
+      let* f = p_prefix in
+      let+ args = many p_prefix in
       List.fold_left (fun acc a -> App (acc, a)) f args
     in
 
