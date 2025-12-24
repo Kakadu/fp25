@@ -1,6 +1,6 @@
 (library
  (name lambda_lib)
- (public_name Lambda.Lib)
+ (public_name miniML_Pugovkin.Lib)
 (modules :standard)
  (libraries base angstrom)
  (preprocess

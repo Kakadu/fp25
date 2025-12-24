@@ -3,19 +3,18 @@ open QCheck
 
 let gen_ident =
   let open Gen in
-  oneofl [ "x"; "y"; "z"; "f"; "g"; "h"; "n"; "m"; "k"; "foo"; "bar"; "_x"; "x1"; "y'" ]
+  oneof_list [ "x"; "y"; "z"; "f"; "g"; "h"; "n"; "m"; "k"; "foo"; "bar"; "_x"; "x1"; "y'" ]
 ;;
 
-let gen_rec_flag = Gen.oneofl [ Ast.Nonrec; Ast.Rec ]
-let gen_unop = Gen.oneofl [ Ast.UMinus; Ast.UPlus; Ast.Not ]
-let gen_arith = Gen.oneofl [ Ast.Add; Ast.Sub; Ast.Mul; Ast.Div ]
-let gen_cmp = Gen.oneofl [ Ast.Eq; Ast.Neq; Ast.Lt; Ast.Le; Ast.Gt; Ast.Ge ]
+let gen_rec_flag = Gen.oneof_list [ Ast.Nonrec; Ast.Rec ]
+let gen_unop = Gen.oneof_list [ Ast.UMinus; Ast.UPlus ]
+let gen_arith = Gen.oneof_list [ Ast.Add; Ast.Sub; Ast.Mul; Ast.Div ]
+let gen_cmp = Gen.oneof_list [ Ast.Eq; Ast.Neq; Ast.Lt; Ast.Le; Ast.Gt; Ast.Ge ]
 
 let gen_const =
   let open Gen in
-  frequency
+  oneof_weighted
     [ 6, map (fun n -> Ast.Int n) (int_bound 1000)
-    ; 2, map (fun b -> Ast.Bool b) bool
     ; 1, return (Ast.Unit ())
     ]
 ;;
@@ -23,7 +22,7 @@ let gen_const =
 let rec gen_expr size =
   let open Gen in
   let atom =
-    frequency
+    oneof_weighted
       [ 4, map (fun c -> Ast.Const c) gen_const
       ; 3, map (fun name -> Ast.Var name) gen_ident
       ]
@@ -32,7 +31,7 @@ let rec gen_expr size =
   then atom
   else (
     let next = gen_expr (size / 2) in
-    frequency
+    oneof_weighted
       [ 5, atom
       ; 3, map2 (fun f x -> Ast.App (f, x)) next next
       ; 2, map2 (fun name body -> Ast.Lam (name, body)) gen_ident next
@@ -48,7 +47,7 @@ let rec gen_expr size =
 
 let gen_toplevel size =
   let open Gen in
-  frequency
+  oneof_weighted
     [ 3, map (fun expr -> Ast.TExpr expr) (gen_expr size)
     ; 2, map3 (fun rf name rhs -> Ast.TLet (rf, name, rhs)) gen_rec_flag gen_ident (gen_expr size)
     ]

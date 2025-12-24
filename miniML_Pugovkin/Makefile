@@ -32,7 +32,7 @@ ODIG_SWITCHES = --odoc-theme=odig.gruvbox.light
 ODIG_SWITCHES += --no-tag-index
 ODIG_SWITCHES += --no-pkg-deps
 odig:
-	odig odoc $(ODIG_SWITCHES) Lambda
+	odig odoc $(ODIG_SWITCHES) miniML_Pugovkin
 
 TEST_COV_D = /tmp/cov
 COVERAGE_OPTS = --coverage-path $(TEST_COV_D) --expect lib/ --expect tests/

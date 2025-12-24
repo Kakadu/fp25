@@ -7,7 +7,7 @@ maintainer: ["Vladimir Pugovkin <vladimirpugovkinspb@gmail.com>"]
 authors: ["Vladimir Pugovkin <vladimirpugovkinspb@gmail.com>"]
 license: "LGPL-3.0-or-later WITH OCaml-LGPL-linking-exception"
 homepage: "https://github.com/Kakadu/fp25"
-doc: "https://kakadu.github.io/fp25/docs/Lambda"
+doc: "https://kakadu.github.io/fp25/docs/miniML_Pugovkin"
 bug-reports: "https://github.com/Kakadu/fp25"
 depends: [
   "dune" {>= "3.7" & = "3.19.1"}

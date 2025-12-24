@@ -16,11 +16,11 @@
 (homepage "https://github.com/Kakadu/fp25")
 
 (package
- (name Lambda) ; FIXME and regenerate .opam file using 'dune build @install'
+ (name miniML_Pugovkin) ; FIXME and regenerate .opam file using 'dune build @install'
  (synopsis "FIXME An interpreter for language")
  (description
   "Simple interpret with basic arithmetic and lambdas")
- (documentation "https://kakadu.github.io/fp25/docs/Lambda")
+ (documentation "https://kakadu.github.io/fp25/docs/miniML_Pugovkin")
  (version 0.1)
  (depends
   (dune
