@@ -5,10 +5,10 @@
 open Ast
 
 type value =
-  | VInt of int
-  | VUnit
-  | VClosure of name * expression * env
-  | VBuiltin of (value -> value eval)
+  | IntVal of int
+  | UnitVal
+  | ClosureVal of name * expression * env
+  | BuiltinVal of (value -> value eval)
 
 and env = (name * value ref) list
 
@@ -32,7 +32,12 @@ module type MONAD = sig
   val bind : 'a t -> ('a -> 'b t) -> 'b t
   val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
 end
-
+(* A monad is a special data type in functional programming languages 
+​​for which it is possible to specify an imperative sequence of operations
+on stored values. Monads allow one to specify the sequence of operations, 
+perform operations with side effects, and perform other actions that are 
+difficult or impossible to implement in the functional programming paradigm 
+by other means. *)
 module EvalM : MONAD = struct
   type 'a t = 'a eval
 
@@ -61,6 +66,8 @@ let step : unit eval =
 
 (* List.assoc_opt x env tries to find the cell value
    ref by name x in the list of pairs
+  (The ! operator dereferences the reference,
+  so !cell retrieves the stored value)
 *)
 let lookup (env : env) (x : name) : value eval =
   fun fuel ->
@@ -88,9 +95,9 @@ let int_binop (op : operation_id) (n1 : int) (n2 : int) : int eval =
 
 let eval_binop (op : operation_id) (v1 : value) (v2 : value) : value eval =
   match v1, v2 with
-  | VInt n1, VInt n2 ->
+  | IntVal n1, IntVal n2 ->
     let* n = int_binop op n1 n2 in
-    return (VInt n)
+    return (IntVal n)
   | _ ->
     (* expect int arguments *)
     error (Not_an_int v1)
@@ -100,22 +107,22 @@ let eval_binop (op : operation_id) (v1 : value) (v2 : value) : value eval =
 let rec apply (f : value) (arg : value) : value eval =
   let* () = step in
   match f with
-  | VClosure (param, body, closure_env) ->
+  | ClosureVal (param, body, closure_env) ->
     let env' = extend closure_env param arg in
     eval env' body
-  | VBuiltin g -> g arg
+  | BuiltinVal g -> g arg
   | _ -> error (Not_a_function f)
 
 (* eval *)
 and eval (env : env) (e : expression) : value eval =
   let* () = step in
   match e with
-  | Const (Int n) -> return (VInt n)
-  | Const Unit -> return VUnit
+  | Const (Int n) -> return (IntVal n)
+  | Const Unit -> return UnitVal
   | Var x -> lookup env x
   | Fun (param, body) ->
     (* closure keeps environment *)
-    return (VClosure (param, body, env))
+    return (ClosureVal (param, body, env))
   | App (e1, e2) ->
     (* call by value evaluate function then argument *)
     let* v_fun = eval env e1 in
@@ -126,14 +133,14 @@ and eval (env : env) (e : expression) : value eval =
     let* v2 = eval env e2 in
     eval_binop op v1 v2
   | If (cond, thn, els_opt) ->
-    let* v_cond = eval env cond in
-    (match v_cond with
-     | VInt 0 ->
+ let* v_cond = eval env cond in
+  (match v_cond with
+     | IntVal 0 ->
        (* false branch *)
        (match els_opt with
-        | None -> return VUnit
+        | None -> return UnitVal
         | Some e_else -> eval env e_else)
-     | VInt _ ->
+     | IntVal _ ->
        (* true branch *)
        eval env thn
      | _ -> error (Not_an_int v_cond))
@@ -152,7 +159,7 @@ and eval (env : env) (e : expression) : value eval =
           return v_rhs)
      | Rec ->
        (* recursive binding *)
-       let cell = ref VUnit in
+       let cell = ref UnitVal in
        let env' = (name, cell) :: env in
        let* v_rhs = eval env' rhs in
        cell := v_rhs;
@@ -163,11 +170,11 @@ and eval (env : env) (e : expression) : value eval =
 
 (* builtin fix *)
 let builtin_fix : value =
-  VBuiltin
+  BuiltinVal
     (fun f ->
       match f with
-      | VClosure (self_name, Fun (arg_name, body), env_f) ->
-        let rec v_self = VClosure (arg_name, body, (self_name, ref v_self) :: env_f) in
+      | ClosureVal (self_name, Fun (arg_name, body), env_f) ->
+        let rec v_self = ClosureVal (arg_name, body, (self_name, ref v_self) :: env_f) in
         return v_self
       | _ -> error Fix_argument_shape)
 ;;
@@ -175,22 +182,22 @@ let builtin_fix : value =
 (* builtin printing *)
 
 let builtin_print_int : value =
-  VBuiltin
+  BuiltinVal
     (fun v ->
       match v with
-      | VInt n ->
+      | IntVal n ->
         print_int n;
         flush stdout;
-        return VUnit
+        return UnitVal
       | _ -> error (Not_an_int v))
 ;;
 
 let builtin_print_newline : value =
-  VBuiltin
+  BuiltinVal
     (fun _ ->
       print_newline ();
       flush stdout;
-      return VUnit)
+      return UnitVal)
 ;;
 
 (* initial environment *)
@@ -209,10 +216,10 @@ let run ?(max_steps = 100_000) (e : expression) : (value, eval_error) result =
 ;;
 
 let string_of_value = function
-  | VInt n -> string_of_int n
-  | VUnit -> "()"
-  | VClosure _ -> "<fun>"
-  | VBuiltin _ -> "<builtin>"
+  | IntVal n -> string_of_int n
+  | UnitVal -> "()"
+  | ClosureVal _ -> "<fun>"
+  | BuiltinVal _ -> "<builtin>"
 ;;
 
 let string_of_error = function

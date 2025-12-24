@@ -48,11 +48,12 @@ let is_keyword s = List.mem s keywords
 let identifier : name Angstrom.t =
   let open Angstrom in
   let raw_ident =
-    satisfy is_ident_start
-    >>= fun first -> take_while is_ident_char >>| fun rest -> String.make 1 first ^ rest
+    let* first = satisfy is_ident_start in
+    let* rest = take_while is_ident_char in
+    return (String.make 1 first ^ rest)
   in
-  lexeme raw_ident
-  >>= fun name ->
+  let* name = lexeme raw_ident in
+
   if is_keyword name then fail "keyword cannot be used as an identifier" else return name
 ;;
 
@@ -65,15 +66,18 @@ let is_digit = function
 let integer : int Angstrom.t =
   let open Angstrom in
   spaces
-  *> (option 1 (char '-' *> return (-1))
-      >>= fun sign -> take_while1 is_digit >>| fun digits -> sign * int_of_string digits)
+  *>
+  (let* sign = option 1 (char '-' *> return (-1)) in
+   let* digits = take_while1 is_digit in
+   return (sign * int_of_string digits))
 ;;
 
 let const_int = integer >>| fun n -> Const (Int n)
 let const_unit = lexeme (string "()") *> return (Const Unit)
 
 let const_bool =
-  kwd "true" *> return (Const (Int 1)) <|> kwd "false" *> return (Const (Int 0))
+  kwd "true" *> return (Const (Int 1))
+  <|> kwd "false" *> return (Const (Int 0))
 ;;
 
 (* variables *)
@@ -87,23 +91,22 @@ let parse_op_sub = sym '-' *> return OpSub
 let parse_op_mul = sym '*' *> return OpMul
 let parse_op_div = sym '/' *> return OpDiv
 
-let parse_cmp_op : operation_id Angstrom.t =
-  let open Angstrom in
-  spaces
-  *> choice
-       [ string ">=" *> return OpGte
-       ; string "<=" *> return OpLte
-       ; string "=" *> return OpEq
-       ; string ">" *> return OpGt
-       ; string "<" *> return OpLt
-       ]
-;;
-
+let parse_cmp_op : operation_id Angstrom.t = 
+  let open Angstrom in 
+  spaces 
+  *> choice 
+    [ string "<=" *> return OpLte
+    ; string ">=" *> return OpGte
+    ; string ">" *> return OpGt
+    ; string "<" *> return OpLt
+    ; string "=" *> return OpEq
+    ]
+;;  
 (* syntax sugar for fun x y -> e
    example result: Fun ("x", Fun ("y", Fun ("z", body)))
    with args : [x, y, z]
 *)
-let curry_fun (args : name list) (body : expression) : expression =
+let curry_fun (args : name list) (body : expression) : expression = 
   List.fold_right (fun x e -> Fun (x, e)) args body
 ;;
 
@@ -111,14 +114,17 @@ let curry_fun (args : name list) (body : expression) : expression =
    ((1 + 2) + 3)
    with "1+2+3"
 *)
-let chainl1 p op =
-  let open Angstrom in
-  let rec loop acc =
-    (* parse one operator and the next operand, then accumulate *)
-    op >>= (fun apply -> p >>= fun operand -> loop (apply acc operand)) <|> return acc
+let chainl1 p op = 
+  let open Angstrom in 
+
+  let rec loop acc = 
+    (let* apply = op in 
+     let* operand = p in 
+     loop (apply acc operand))
+    <|> return acc
   in
-  (* start with the first parsed value, then fold operators left *)
-  p >>= loop
+  let* first = p in 
+  loop first 
 ;;
 
 (* basic grammar levels *)
@@ -127,7 +133,8 @@ let expr : expression Angstrom.t =
     (* fun x y -> e *)
     let lambda =
       let args = kwd "fun" *> spaces *> many1 identifier <* spaces <* kwd "->" in
-      args >>= fun xs -> expr >>| fun body -> curry_fun xs body
+      let* xs = args in
+      expr >>| fun body -> curry_fun xs body
     in
     (* basic atom without application *)
     let atom0 =
@@ -136,10 +143,8 @@ let expr : expression Angstrom.t =
     (* application: f a b c *)
     let application =
       let open Angstrom in
-      atom0
-      >>= fun f ->
-      many1 (spaces1 *> atom0)
-      >>| fun args -> List.fold_left (fun acc a -> App (acc, a)) f args
+      let* f = atom0 in
+      many1 (spaces1 *> atom0) >>| fun args -> List.fold_left (fun acc a -> App (acc, a)) f args
     in
     let atom = application <|> atom0 in
     (* level * and / *)
@@ -157,37 +162,30 @@ let expr : expression Angstrom.t =
     *)
     let cmp_level =
       let open Angstrom in
-      add_sub
-      >>= fun left ->
+      let* left = add_sub in
       option
         left
-        (parse_cmp_op >>= fun op -> add_sub >>| fun right -> BinOp (op, left, right))
+        (let* op = parse_cmp_op in
+         add_sub >>| fun right -> BinOp (op, left, right))
     in
     (* if ... then ... else ... *)
     let if_expr =
       let open Angstrom in
-      kwd "if" *> cmp_level
-      >>= fun cond ->
-      kwd "then" *> expr
-      >>= fun thn ->
-      option None (kwd "else" *> expr >>| fun e -> Some e)
-      >>| fun els -> If (cond, thn, els)
+      let* cond = kwd "if" *> cmp_level in
+      let* thn = kwd "then" *> expr in
+      let* els = option None (kwd "else" *> expr >>| fun e -> Some e) in
+      return (If (cond, thn, els))
     in
     (* let / let rec *)
     let let_expr =
       let open Angstrom in
-      kwd "let" *> spaces *> option NonRec (kwd "rec" *> return Rec)
-      >>= fun kind ->
-      identifier
-      >>= fun name ->
+      let* kind = kwd "let" *> spaces *> option NonRec (kwd "rec" *> return Rec) in
+      let* name = identifier in
       (* function parameters: let f x y = e *)
-      many identifier
-      >>= fun args ->
-      sym '=' *> expr
-      >>= fun bound ->
+      let* args = many identifier in
+      let* bound = sym '=' *> expr in
       let value = curry_fun args bound in
-      option None (kwd "in" *> expr >>| fun body -> Some body)
-      >>= fun body_opt ->
+      let* body_opt = option None (kwd "in" *> expr >>| fun body -> Some body) in
       let scope =
         match body_opt with
         | None -> GlobalVar

@@ -7,11 +7,12 @@ open Lambda_lib
 let parse_args () =
   let rec loop steps acc = function
     | [] -> steps, List.rev acc
-    | ("--steps" | "--fuel") :: n :: tl -> loop (Some (int_of_string n)) acc tl
-    | opt :: tl when String.starts_with ~prefix:"--steps=" opt ->
-      let n = String.sub opt 8 (String.length opt - 8) in
+    | ("--steps" | "--fuel") :: n :: tl ->
       loop (Some (int_of_string n)) acc tl
-    | arg :: tl -> loop steps (arg :: acc) tl
+    | opt :: tl ->
+      (match String.split_on_char '=' opt with
+       | [ "--steps"; n ] -> loop (Some (int_of_string n)) acc tl
+       | _ -> loop steps (opt :: acc) tl)
   in
   loop None [] (List.tl (Array.to_list Sys.argv))
 ;;

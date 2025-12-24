@@ -23,7 +23,10 @@ let string_of_op = function
   | OpLte -> "<="
 ;;
 
-(** Gather arguments of nested fun x -> fun y -> ... *)
+(** Gather arguments of nested fun x -> fun y -> ... 
+example input: ("x", Fun ("y", App (Var "f", Var "y"))))
+([x y], App (Var "f", Var "y"))
+*)
 let rec collect_fun args = function
   | Fun (x, body) -> collect_fun (x :: args) body
   | e -> List.rev args, e

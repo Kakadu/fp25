@@ -6,10 +6,10 @@
 open Ast
 
 type value =
-  | VInt of int
-  | VUnit
-  | VClosure of name * expression * env
-  | VBuiltin of (value -> value eval)
+  | IntVal of int
+  | UnitVal
+  | ClosureVal of name * expression * env
+  | BuiltinVal of (value -> value eval)
 
 and env = (name * value ref) list
 

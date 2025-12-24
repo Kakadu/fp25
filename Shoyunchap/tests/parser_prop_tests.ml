@@ -8,10 +8,12 @@ open Parser
 open Printer
 open QCheck
 
+
 let gen_name =
   let names = [ "x"; "y"; "z"; "n"; "m"; "f"; "g"; "h"; "a"; "b"; "c" ] in
   Gen.oneofl names
 ;;
+
 
 let gen_const =
   Gen.frequency [ 4, Gen.map (fun n -> Int n) Gen.small_int; 1, Gen.return Unit ]
@@ -82,6 +84,7 @@ let prop_roundtrip =
     | Error _ -> false)
 ;;
 
+
 let prop_stable_string =
   Test.make ~name:"pretty-print is idempotent after parse" ~count:500 arb_expr (fun e ->
     let first = string_of_expr e in
@@ -104,5 +107,12 @@ let prop_invalid_fails =
 ;;
 
 let () =
-  QCheck_runner.run_tests_main [ prop_roundtrip; prop_stable_string; prop_invalid_fails ]
+  (* Keep progress lines but suppress frequent interim updates; we only want the final tallies. *)
+  QCheck_base_runner.set_time_between_msg 1e9
+;;
+
+let () =
+  QCheck_runner.run_tests_main
+    ~argv:[| Sys.argv.(0); "-v"; "--colors" |]
+    [ prop_roundtrip; prop_stable_string; prop_invalid_fails ]
 ;;
