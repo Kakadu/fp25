@@ -2,6 +2,7 @@ open Ast
 
 type value =
   | VInt of int
+  | VBool of bool
   | VUnit
   | VClosure of ident * expr * env
   | VRecClosure of ident * ident * expr * env
@@ -12,10 +13,12 @@ and env = (ident * value) list
 and error =
   | Unbound_variable of ident
   | Expected_int of value
+  | Expected_bool of value
   | Expected_function of value
   | Division_by_zero
   | Invalid_recursion of ident
   | Invalid_fix of value
+  | Invalid_comparison of value * value
   | Step_limit_exceeded
 
 and 'a eval = int -> (('a * int), error) result
@@ -37,6 +40,8 @@ let tick : unit eval = function
 
 let string_of_value = function
   | VInt n -> string_of_int n
+  | VBool true -> "true"
+  | VBool false -> "false"
   | VUnit -> "()"
   | VClosure _ | VRecClosure _ | VBuiltin _ -> "<fun>"
 ;;
@@ -44,17 +49,23 @@ let string_of_value = function
 let string_of_error = function
   | Unbound_variable name -> Printf.sprintf "unbound variable: %s" name
   | Expected_int v -> Printf.sprintf "expected int, got %s" (string_of_value v)
+  | Expected_bool v ->
+    Printf.sprintf "expected bool or int, got %s" (string_of_value v)
   | Expected_function v -> Printf.sprintf "expected function, got %s" (string_of_value v)
   | Division_by_zero -> "division by zero"
   | Invalid_recursion name -> Printf.sprintf "let rec expects a function for %s" name
   | Invalid_fix v -> Printf.sprintf "fix expects a function, got %s" (string_of_value v)
+  | Invalid_comparison (l, r) ->
+    Printf.sprintf
+      "invalid comparison between %s and %s"
+      (string_of_value l)
+      (string_of_value r)
   | Step_limit_exceeded -> "step limit exceeded"
 ;;
 
 let value_of_const = function
   | Int n -> VInt n
-  | Bool true -> VInt 1
-  | Bool false -> VInt 0
+  | Bool b -> VBool b
   | Unit () -> VUnit
 ;;
 
@@ -71,7 +82,13 @@ let expect_int (v : value) : int eval =
 ;;
 
 let bool_of_int n = n <> 0
-let int_of_bool b = if b then 1 else 0
+
+let expect_bool (v : value) : bool eval =
+  match v with
+  | VBool b -> return b
+  | VInt n -> return (bool_of_int n)
+  | _ -> fail (Expected_bool v)
+;;
 
 let rec eval (env : env) (expr : expr) : value eval =
   let* () = tick in
@@ -94,8 +111,8 @@ let rec eval (env : env) (expr : expr) : value eval =
      | _ -> fail (Invalid_recursion name))
   | If (cond, then_e, else_e) ->
     let* cond_val = eval env cond in
-    let* cond_int = expect_int cond_val in
-    if bool_of_int cond_int
+    let* cond_bool = expect_bool cond_val in
+    if cond_bool
     then eval env then_e
     else (
       match else_e with
@@ -112,6 +129,7 @@ let rec eval (env : env) (expr : expr) : value eval =
     let* l = eval env left in
     let* r = eval env right in
     eval_cmp op l r
+  | BinopBool (op, left, right) -> eval_bool op env left right
   | Fix expr ->
     let* v = eval env expr in
     (match v with
@@ -141,8 +159,8 @@ and eval_unop op v =
     let* n = expect_int v in
     return (VInt n)
   | Not ->
-    let* n = expect_int v in
-    return (VInt (int_of_bool (not (bool_of_int n))))
+    let* b = expect_bool v in
+    return (VBool (not b))
 
 and eval_arith op l r =
   let* l_int = expect_int l in
@@ -157,18 +175,47 @@ and eval_arith op l r =
     else return (VInt (l_int / r_int))
 
 and eval_cmp op l r =
-  let* l_int = expect_int l in
-  let* r_int = expect_int r in
-  let b =
-    match op with
-    | Eq -> l_int = r_int
-    | Neq -> l_int <> r_int
-    | Lt -> l_int < r_int
-    | Le -> l_int <= r_int
-    | Gt -> l_int > r_int
-    | Ge -> l_int >= r_int
-  in
-  return (VInt (int_of_bool b))
+  match op with
+  | Eq | Neq -> (
+    match l, r with
+    | VInt l_int, VInt r_int ->
+      let b = if op = Eq then l_int = r_int else l_int <> r_int in
+      return (VBool b)
+    | VBool l_bool, VBool r_bool ->
+      let b = if op = Eq then l_bool = r_bool else l_bool <> r_bool in
+      return (VBool b)
+    | _ -> fail (Invalid_comparison (l, r)))
+  | Lt | Le | Gt | Ge ->
+    let* l_int = expect_int l in
+    let* r_int = expect_int r in
+    let b =
+      match op with
+      | Lt -> l_int < r_int
+      | Le -> l_int <= r_int
+      | Gt -> l_int > r_int
+      | Ge -> l_int >= r_int
+      | Eq | Neq -> false
+    in
+    return (VBool b)
+
+and eval_bool op env left right =
+  let* l = eval env left in
+  let* l_bool = expect_bool l in
+  match op with
+  | And ->
+    if l_bool
+    then (
+      let* r = eval env right in
+      let* r_bool = expect_bool r in
+      return (VBool r_bool))
+    else return (VBool false)
+  | Or ->
+    if l_bool
+    then return (VBool true)
+    else (
+      let* r = eval env right in
+      let* r_bool = expect_bool r in
+      return (VBool r_bool))
 ;;
 
 let builtin_print_int =

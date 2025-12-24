@@ -32,6 +32,12 @@ type cmp_binops =
   | Ge (** [>=] *)
 [@@deriving show { with_path = false }, eq]
 
+(** Бинарные логические операции *)
+type bool_binops =
+  | And (** [&&] *)
+  | Or (** [||] *)
+[@@deriving show { with_path = false }, eq]
+
 (** Константы *)
 type const =
   | Int of int (** Целое число *)
@@ -50,6 +56,7 @@ type expr =
   | Unop of unop * expr (** Унарная операция *)
   | BinopArithmetic of arithmetic_binops * expr * expr (** Арифметика *)
   | BinopComp of cmp_binops * expr * expr (** Сравнение *)
+  | BinopBool of bool_binops * expr * expr (** Логические операции *)
   | Fix of expr (** Фиксация: [fix e] *)
 [@@deriving show { with_path = false }, eq]
 

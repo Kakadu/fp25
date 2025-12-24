@@ -10,22 +10,7 @@ let oneof_list xs =
     return (List.nth xs i)
 ;;
 
-let oneof_weighted xs =
-  let open Gen in
-  let total = List.fold_left (fun acc (w, _) -> acc + w) 0 xs in
-  if total <= 0
-  then failwith "oneof_weighted: empty list"
-  else (
-    int_bound (total - 1) >>= fun pick ->
-    let rec select n = function
-      | [] -> failwith "oneof_weighted: empty list"
-      | (w, gen) :: rest -> if n < w then gen else select (n - w) rest
-    in
-    select pick xs)
-;;
-
 let gen_ident =
-  let open Gen in
   oneof_list [ "x"; "y"; "z"; "f"; "g"; "h"; "n"; "m"; "k"; "foo"; "bar"; "_x"; "x1"; "y'" ]
 ;;
 

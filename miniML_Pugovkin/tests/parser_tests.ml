@@ -83,6 +83,15 @@ let%expect_test "comparisons" =
     (BinopComp (Ge, (Var "a"), (Var "b")))
   |}]
 
+let%expect_test "boolean operators" =
+  pp_expr "true && false";
+  pp_expr "true || false && true";
+  [%expect {|
+    (BinopBool (And, (Const (Bool true)), (Const (Bool false))))
+    (BinopBool (Or, (Const (Bool true)),
+       (BinopBool (And, (Const (Bool false)), (Const (Bool true))))))
+  |}]
+
 let%expect_test "if-then[-else]" =
   pp_expr "if x then y else z";
   pp_expr "if t then u";

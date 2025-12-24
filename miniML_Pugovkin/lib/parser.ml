@@ -25,20 +25,21 @@ let is_digit = function '0'..'9' -> true | _ -> false
 let skip_while1 p = satisfy p *> skip_while p
 
 (* вложенные комментарии:  (*  ...  *)  *)
-let rec comment () : unit Angstrom.t =
-  Angstrom.string "(*" *>
-  Angstrom.fix (fun loop ->
-    Angstrom.choice
-      [ Angstrom.string "*)" *> Angstrom.return ()
-      ; comment () *> loop
-      ; Angstrom.any_char *> loop
-      ])
+let comment : unit Angstrom.t =
+  Angstrom.fix (fun comment ->
+    Angstrom.string "(*" *>
+    Angstrom.fix (fun loop ->
+      Angstrom.choice
+        [ Angstrom.string "*)" *> Angstrom.return ()
+        ; comment *> loop
+        ; Angstrom.any_char *> loop
+        ]))
 
 (* корректный пропуск: за шаг потребляет хотя бы что-то *)
 let spaces : unit Angstrom.t =
   let ws1 =
     (skip_while1 is_space *> Angstrom.return ())
-    <|> (comment ())
+    <|> comment
   in
   Angstrom.fix (fun loop ->
     (ws1 *> loop) <|> Angstrom.return ())
@@ -171,6 +172,16 @@ let p_expr : expr Angstrom.t =
       <|> return a
     in
 
+    let p_and : expr Angstrom.t =
+      let op = sym "&&" *> return (fun l r -> BinopBool (And, l, r)) in
+      chainl1 p_cmp op
+    in
+
+    let p_or : expr Angstrom.t =
+      let op = sym "||" *> return (fun l r -> BinopBool (Or, l, r)) in
+      chainl1 p_and op
+    in
+
     let p_if : expr Angstrom.t =
       kw "if" *>
       let* c  = expr in
@@ -201,7 +212,7 @@ let p_expr : expr Angstrom.t =
       Let (rf, name, rhs, body)
     in
 
-    spaces *> choice [ p_let_expr; p_if; p_fun; p_cmp ]
+    spaces *> choice [ p_let_expr; p_if; p_fun; p_or ]
   )
 
 (* ---------- top-level и программа ---------- *)

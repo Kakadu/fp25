@@ -22,6 +22,11 @@ let string_of_cmp = function
   | Ge -> ">="
 ;;
 
+let string_of_bool = function
+  | And -> "&&"
+  | Or -> "||"
+;;
+
 let rec collect_lams acc = function
   | Lam (x, body) -> collect_lams (x :: acc) body
   | body -> List.rev acc, body
@@ -62,6 +67,8 @@ let rec pp_expr fmt = function
     Format.fprintf fmt "(%a %s %a)" pp_expr left (string_of_arith op) pp_expr right
   | BinopComp (op, left, right) ->
     Format.fprintf fmt "(%a %s %a)" pp_expr left (string_of_cmp op) pp_expr right
+  | BinopBool (op, left, right) ->
+    Format.fprintf fmt "(%a %s %a)" pp_expr left (string_of_bool op) pp_expr right
   | Fix expr -> Format.fprintf fmt "(fix %a)" pp_expr expr
 ;;
 
