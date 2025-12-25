@@ -18,10 +18,10 @@ let default_opts = { steps = 10_000; dump_parsetree = false }
 let parse_args argv =
   let rec loop opts = function
     | [] -> Ok opts
-    | "-steps" :: n :: rest -> (
-      match int_of_string_opt n with
-      | Some steps -> loop { opts with steps } rest
-      | None -> Error "Invalid value for -steps")
+    | "-steps" :: n :: rest ->
+      (match int_of_string_opt n with
+       | Some steps -> loop { opts with steps } rest
+       | None -> Error "Invalid value for -steps")
     | "-steps" :: [] -> Error "Missing value for -steps"
     | "-dparsetree" :: rest -> loop { opts with dump_parsetree = true } rest
     | _ :: _ -> Error "Positional arguments are not supported"
