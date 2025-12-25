@@ -9,24 +9,34 @@
 open Lambda_lib
 
 type opts =
-  { mutable steps : int (** Mutated by Arg.parse for CLI flags. *)
-  ; mutable dump_parsetree : bool (** Mutated by Arg.parse for CLI flags. *)
+  { steps : int
+  ; dump_parsetree : bool
   }
 
+let default_opts = { steps = 10_000; dump_parsetree = false }
+
+let parse_args argv =
+  let rec loop opts = function
+    | [] -> Ok opts
+    | "-steps" :: n :: rest -> (
+      match int_of_string_opt n with
+      | Some steps -> loop { opts with steps } rest
+      | None -> Error "Invalid value for -steps")
+    | "-steps" :: [] -> Error "Missing value for -steps"
+    | "-dparsetree" :: rest -> loop { opts with dump_parsetree = true } rest
+    | _ :: _ -> Error "Positional arguments are not supported"
+  in
+  loop default_opts argv
+;;
+
 let () =
-  let opts = { steps = 10_000; dump_parsetree = false } in
-  let () =
-    let open Stdlib.Arg in
-    parse
-      [ "-steps", Int (fun n -> opts.steps <- n), "Max evaluation steps (default: 10000)"
-      ; ( "-dparsetree"
-        , Unit (fun () -> opts.dump_parsetree <- true)
-        , "Dump parse tree, don't evaluate" )
-      ]
-      (fun _ ->
-        Stdlib.Format.eprintf "Positional arguments are not supported\n%!";
-        Stdlib.exit 1)
-      "MiniML interpreter"
+  let argv = Array.to_list Sys.argv |> List.tl in
+  let opts =
+    match parse_args argv with
+    | Ok opts -> opts
+    | Error msg ->
+      Stdlib.Format.eprintf "%s\n%!" msg;
+      Stdlib.exit 1
   in
   let input = In_channel.(input_all stdin) |> String.trim in
   if String.equal input ""

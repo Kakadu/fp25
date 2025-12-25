@@ -8,8 +8,7 @@
 
 open Lambda_lib
 
-let print_result result =
-  match result with
+let print_result = function
   | Ok v -> Printf.printf "Ok %s\n" (Interpret.string_of_value v)
   | Error err -> Printf.printf "Error %s\n" (Interpret.string_of_error err)
 ;;
