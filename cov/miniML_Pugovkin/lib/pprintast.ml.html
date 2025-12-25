@@ -281,25 +281,25 @@
 open Ast
 
 let string_of_unop = function
-  | <span data-count="705">U</span>Minus -&gt; "-"
-  | <span data-count="683">U</span>Plus -&gt; "+"
+  | <span data-count="838">U</span>Minus -&gt; "-"
+  | <span data-count="769">U</span>Plus -&gt; "+"
   | <span data-count="1">N</span>ot -&gt; "not"
 ;;
 
 let string_of_arith = function
-  | <span data-count="369">A</span>dd -&gt; "+"
-  | <span data-count="377">S</span>ub -&gt; "-"
-  | <span data-count="363">D</span>iv -&gt; "/"
+  | <span data-count="372">A</span>dd -&gt; "+"
+  | <span data-count="356">S</span>ub -&gt; "-"
+  | <span data-count="376">D</span>iv -&gt; "/"
   | <span data-count="364">M</span>ul -&gt; "*"
 ;;
 
 let string_of_cmp = function
-  | <span data-count="222">E</span>q -&gt; "="
+  | <span data-count="251">E</span>q -&gt; "="
   | <span data-count="233">N</span>eq -&gt; "&lt;&gt;"
-  | <span data-count="216">L</span>t -&gt; "&lt;"
-  | <span data-count="201">L</span>e -&gt; "&lt;="
-  | <span data-count="240">G</span>t -&gt; "&gt;"
-  | <span data-count="234">G</span>e -&gt; "&gt;="
+  | <span data-count="254">L</span>t -&gt; "&lt;"
+  | <span data-count="261">L</span>e -&gt; "&lt;="
+  | <span data-count="243">G</span>t -&gt; "&gt;"
+  | <span data-count="242">G</span>e -&gt; "&gt;="
 ;;
 
 let string_of_bool = function
@@ -308,43 +308,43 @@ let string_of_bool = function
 ;;
 
 let rec collect_lams acc = function
-  | <span data-count="1298">L</span>am (x, body) -&gt; collect_lams (x :: acc) body
-  | <span data-count="1465">b</span>ody -&gt; List.re<span data-count="1465">v</span> acc, body
+  | <span data-count="1644">L</span>am (x, body) -&gt; collect_lams (x :: acc) body
+  | <span data-count="1790">b</span>ody -&gt; List.re<span data-count="1790">v</span> acc, body
 ;;
 
-let pp_id fmt ident = <span data-count="1298">F</span>ormat.fprintf fmt "%s" ident
+let pp_id fmt ident = <span data-count="1644">F</span>ormat.fprintf fmt "%s" ident
 
 let pp_params fmt params =
-  <span data-count="1221">m</span>atch params with
+  <span data-count="1507">m</span>atch params with
   | <span data-count="0">[</span>] -&gt; ()
-  | <span data-count="1221">_</span> -&gt;
+  | <span data-count="1507">_</span> -&gt;
     Format.pp_print_list
-      ~pp_sep:(fun fmt () -&gt; <span data-count="77">F</span>ormat.pp_print_string fmt " ")
+      ~pp_sep:(fun fmt () -&gt; <span data-count="137">F</span>ormat.pp_print_string fmt " ")
       pp_id
       fmt
       params
 ;;
 
 let rec pp_expr fmt = function
-  | <span data-count="4537">C</span>onst (Int n) -&gt; Format.fprintf fmt "%d" n
+  | <span data-count="4904">C</span>onst (Int n) -&gt; Format.fprintf fmt "%d" n
   | <span data-count="1">C</span>onst (Bool true) -&gt; Format.fprintf fmt "true"
   | <span data-count="1">C</span>onst (Bool false) -&gt; Format.fprintf fmt "false"
-  | <span data-count="791">C</span>onst (Unit ()) -&gt; Format.fprintf fmt "()"
-  | <span data-count="4012">V</span>ar name -&gt; Format.fprintf fmt "%s" name
-  | <span data-count="1185">L</span>am _ as expr -&gt;
+  | <span data-count="778">C</span>onst (Unit ()) -&gt; Format.fprintf fmt "()"
+  | <span data-count="4227">V</span>ar name -&gt; Format.fprintf fmt "%s" name
+  | <span data-count="1467">L</span>am _ as expr -&gt;
     let params, body = collect_lams [] expr in
-    <span data-count="1185">F</span>ormat.fprintf fmt "(fun %a -&gt; %a)" pp_params params pp_expr body
-  | <span data-count="2083">A</span>pp (f, arg) -&gt; Format.fprintf fmt "(%a %a)" pp_expr f pp_expr arg
-  | <span data-count="1351">L</span>et (rf, name, rhs, body) -&gt;
+    <span data-count="1467">F</span>ormat.fprintf fmt "(fun %a -&gt; %a)" pp_params params pp_expr body
+  | <span data-count="2227">A</span>pp (f, arg) -&gt; Format.fprintf fmt "(%a %a)" pp_expr f pp_expr arg
+  | <span data-count="1538">L</span>et (rf, name, rhs, body) -&gt;
     let rec_kw =
       match rf with
-      | <span data-count="675">N</span>onrec -&gt; ""
-      | <span data-count="676">R</span>ec -&gt; "rec "
+      | <span data-count="786">N</span>onrec -&gt; ""
+      | <span data-count="752">R</span>ec -&gt; "rec "
     in
     Format.fprintf fmt "(let %s%s = %a in %a)" rec_kw name pp_expr rhs pp_expr body
-  | <span data-count="636">I</span>f (cond, then_e, None) -&gt;
+  | <span data-count="723">I</span>f (cond, then_e, None) -&gt;
     Format.fprintf fmt "(if %a then %a)" pp_expr cond pp_expr then_e
-  | <span data-count="719">I</span>f (cond, then_e, Some else_e) -&gt;
+  | <span data-count="710">I</span>f (cond, then_e, Some else_e) -&gt;
     Format.fprintf
       fmt
       "(if %a then %a else %a)"
@@ -354,35 +354,35 @@ let rec pp_expr fmt = function
       then_e
       pp_expr
       else_e
-  | <span data-count="1389">U</span>nop (op, expr) -&gt; Format.fprintf fmt "(%s %a)" (string_of_uno<span data-count="1389">p</span> op) pp_expr expr
-  | <span data-count="1473">B</span>inopArithmetic (op, left, right) -&gt;
-    Format.fprintf fmt "(%a %s %a)" pp_expr left (string_of_arit<span data-count="1473">h</span> op) pp_expr right
-  | <span data-count="1346">B</span>inopComp (op, left, right) -&gt;
-    Format.fprintf fmt "(%a %s %a)" pp_expr left (string_of_cm<span data-count="1346">p</span> op) pp_expr right
+  | <span data-count="1608">U</span>nop (op, expr) -&gt; Format.fprintf fmt "(%s %a)" (string_of_uno<span data-count="1608">p</span> op) pp_expr expr
+  | <span data-count="1468">B</span>inopArithmetic (op, left, right) -&gt;
+    Format.fprintf fmt "(%a %s %a)" pp_expr left (string_of_arit<span data-count="1468">h</span> op) pp_expr right
+  | <span data-count="1484">B</span>inopComp (op, left, right) -&gt;
+    Format.fprintf fmt "(%a %s %a)" pp_expr left (string_of_cm<span data-count="1484">p</span> op) pp_expr right
   | <span data-count="2">B</span>inopBool (op, left, right) -&gt;
     Format.fprintf fmt "(%a %s %a)" pp_expr left (string_of_boo<span data-count="2">l</span> op) pp_expr right
-  | <span data-count="700">F</span>ix expr -&gt; Format.fprintf fmt "(fix %a)" pp_expr expr
+  | <span data-count="719">F</span>ix expr -&gt; Format.fprintf fmt "(fix %a)" pp_expr expr
 ;;
 
 let pp_toplevel fmt = function
-  | <span data-count="428">T</span>Expr expr -&gt; pp_expr fmt expr
-  | <span data-count="280">T</span>Let (rf, name, rhs) -&gt;
+  | <span data-count="421">T</span>Expr expr -&gt; pp_expr fmt expr
+  | <span data-count="323">T</span>Let (rf, name, rhs) -&gt;
     let rec_kw =
       match rf with
-      | <span data-count="144">N</span>onrec -&gt; ""
-      | <span data-count="136">R</span>ec -&gt; "rec "
+      | <span data-count="167">N</span>onrec -&gt; ""
+      | <span data-count="156">R</span>ec -&gt; "rec "
     in
     let params, body = collect_lams [] rhs in
-    <span data-count="280">(</span>match params with
-     | <span data-count="244">[</span>] -&gt; Format.fprintf fmt "let %s%s = %a" rec_kw name pp_expr rhs
-     | <span data-count="36">_</span> -&gt;
+    <span data-count="323">(</span>match params with
+     | <span data-count="283">[</span>] -&gt; Format.fprintf fmt "let %s%s = %a" rec_kw name pp_expr rhs
+     | <span data-count="40">_</span> -&gt;
        Format.fprintf fmt "let %s%s %a = %a" rec_kw name pp_params params pp_expr body)
 ;;
 
 let pp_program fmt program =
-  <span data-count="200">l</span>et pp_item fmt item = <span data-count="508">F</span>ormat.fprintf fmt "%a" pp_toplevel item in
+  <span data-count="200">l</span>et pp_item fmt item = <span data-count="544">F</span>ormat.fprintf fmt "%a" pp_toplevel item in
   Format.pp_print_list
-    ~pp_sep:(fun fmt () -&gt; <span data-count="335">F</span>ormat.fprintf fmt ";;\n")
+    ~pp_sep:(fun fmt () -&gt; <span data-count="373">F</span>ormat.fprintf fmt ";;\n")
     pp_item
     fmt
     program

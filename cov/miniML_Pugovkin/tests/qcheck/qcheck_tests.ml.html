@@ -424,20 +424,20 @@ let oneof_list_gen xs =
   <span data-count="105">l</span>et open Gen in
   match xs with
   | <span data-count="100">[</span>] -&gt; failwith "oneof_list: empty list"
-  | <span data-count="5">_</span> -&gt; int_boun<span data-count="5">d</span> (List.lengt<span data-count="5">h</span> xs - 1) &gt;&gt;= fun i -&gt; <span data-count="12774">r</span>eturn (List.nt<span data-count="12774">h</span> xs i)
+  | <span data-count="5">_</span> -&gt; int_boun<span data-count="5">d</span> (List.lengt<span data-count="5">h</span> xs - 1) &gt;&gt;= fun i -&gt; <span data-count="14147">r</span>eturn (List.nt<span data-count="14147">h</span> xs i)
 ;;
 
 let oneof_weighted_gen xs =
-  <span data-count="11503">l</span>et open Gen in
-  let total = List.fold_left (fun acc (w, _) -&gt; <span data-count="61914">a</span>cc + w) 0 xs in
-  <span data-count="11503">i</span>f total &lt;= 0
+  <span data-count="12145">l</span>et open Gen in
+  let total = List.fold_left (fun acc (w, _) -&gt; <span data-count="65766">a</span>cc + w) 0 xs in
+  <span data-count="12145">i</span>f total &lt;= 0
   then <span data-count="200">f</span>ailwith "oneof_weighted: empty list"
   else
-    <span data-count="11303">i</span>nt_boun<span data-count="11303">d</span> (total - 1)
+    <span data-count="11945">i</span>nt_boun<span data-count="11945">d</span> (total - 1)
     &gt;&gt;= fun pick -&gt;
-    <span data-count="29852">l</span>et rec select n = function
+    <span data-count="32214">l</span>et rec select n = function
       | <span data-count="0">[</span>] -&gt; failwith "oneof_weighted: empty list"
-      | <span data-count="85508">(</span>w, gen) :: rest -&gt; if n &lt; w then <span data-count="29852">g</span>en else <span data-count="55656">s</span>elect (n - w) rest
+      | <span data-count="92369">(</span>w, gen) :: rest -&gt; if n &lt; w then <span data-count="32214">g</span>en else <span data-count="60155">s</span>elect (n - w) rest
     in
     select pick xs
 ;;
@@ -455,48 +455,48 @@ let gen_cmp = oneof_list_ge<span data-count="1">n</span> [ Ast.Eq; Ast.Neq; Ast.
 let gen_const =
   let open Gen in
   oneof_weighted_ge<span data-count="1">n</span>
-    [ 6, ma<span data-count="1">p</span> (fun n -&gt; <span data-count="4537">A</span>st.Int n) (int_boun<span data-count="1">d</span> 1000); 1, retur<span data-count="1">n</span> (Ast.Unit ()) ]
+    [ 6, ma<span data-count="1">p</span> (fun n -&gt; <span data-count="4904">A</span>st.Int n) (int_boun<span data-count="1">d</span> 1000); 1, retur<span data-count="1">n</span> (Ast.Unit ()) ]
 ;;
 
 let rec gen_expr size =
-  <span data-count="6001">l</span>et open Gen in
+  <span data-count="6322">l</span>et open Gen in
   let atom =
     oneof_weighted_gen
-      [ 4, ma<span data-count="6001">p</span> (fun c -&gt; <span data-count="5328">A</span>st.Const c) gen_const
-      ; 3, ma<span data-count="6001">p</span> (fun name -&gt; <span data-count="4007">A</span>st.Var name) gen_ident
+      [ 4, ma<span data-count="6322">p</span> (fun c -&gt; <span data-count="5682">A</span>st.Const c) gen_const
+      ; 3, ma<span data-count="6322">p</span> (fun name -&gt; <span data-count="4222">A</span>st.Var name) gen_ident
       ]
   in
-  <span data-count="6001">i</span>f size = 0
+  <span data-count="6322">i</span>f size = 0
   then <span data-count="1100">a</span>tom
-  else <span data-count="4901">(</span>
+  else <span data-count="5222">(</span>
     let next = gen_expr (size / 2) in
-    <span data-count="4901">o</span>neof_weighted_gen
+    <span data-count="5222">o</span>neof_weighted_gen
       [ 5, atom
-      ; 3, map<span data-count="4901">2</span> (fun f x -&gt; <span data-count="2083">A</span>st.App (f, x)) next next
-      ; 2, map<span data-count="4901">2</span> (fun name body -&gt; <span data-count="1298">A</span>st.Lam (name, body)) gen_ident next
+      ; 3, map<span data-count="5222">2</span> (fun f x -&gt; <span data-count="2227">A</span>st.App (f, x)) next next
+      ; 2, map<span data-count="5222">2</span> (fun name body -&gt; <span data-count="1644">A</span>st.Lam (name, body)) gen_ident next
       ; ( 2
-        , map<span data-count="4901">4</span>
-            (fun rf name rhs body -&gt; <span data-count="1351">A</span>st.Let (rf, name, rhs, body))
+        , map<span data-count="5222">4</span>
+            (fun rf name rhs body -&gt; <span data-count="1538">A</span>st.Let (rf, name, rhs, body))
             gen_rec_flag
             gen_ident
             next
             next )
-      ; 1, map<span data-count="4901">2</span> (fun c t -&gt; <span data-count="636">A</span>st.If (c, t, None)) next next
-      ; 1, map<span data-count="4901">3</span> (fun c t e -&gt; <span data-count="719">A</span>st.If (c, t, Some e)) next next next
-      ; 2, map<span data-count="4901">2</span> (fun op e -&gt; <span data-count="1388">A</span>st.Unop (op, e)) gen_unop next
-      ; 2, map<span data-count="4901">3</span> (fun op l r -&gt; <span data-count="1473">A</span>st.BinopArithmetic (op, l, r)) gen_arith next next
-      ; 2, map<span data-count="4901">3</span> (fun op l r -&gt; <span data-count="1346">A</span>st.BinopComp (op, l, r)) gen_cmp next next
-      ; 1, ma<span data-count="4901">p</span> (fun e -&gt; <span data-count="700">A</span>st.Fix e) next
+      ; 1, map<span data-count="5222">2</span> (fun c t -&gt; <span data-count="723">A</span>st.If (c, t, None)) next next
+      ; 1, map<span data-count="5222">3</span> (fun c t e -&gt; <span data-count="710">A</span>st.If (c, t, Some e)) next next next
+      ; 2, map<span data-count="5222">2</span> (fun op e -&gt; <span data-count="1607">A</span>st.Unop (op, e)) gen_unop next
+      ; 2, map<span data-count="5222">3</span> (fun op l r -&gt; <span data-count="1468">A</span>st.BinopArithmetic (op, l, r)) gen_arith next next
+      ; 2, map<span data-count="5222">3</span> (fun op l r -&gt; <span data-count="1484">A</span>st.BinopComp (op, l, r)) gen_cmp next next
+      ; 1, ma<span data-count="5222">p</span> (fun e -&gt; <span data-count="719">A</span>st.Fix e) next
       ])
 ;;
 
 let gen_toplevel size =
   <span data-count="400">l</span>et open Gen in
   oneof_weighted_gen
-    [ 3, ma<span data-count="400">p</span> (fun expr -&gt; <span data-count="428">A</span>st.TExpr expr) (gen_exp<span data-count="400">r</span> size)
+    [ 3, ma<span data-count="400">p</span> (fun expr -&gt; <span data-count="421">A</span>st.TExpr expr) (gen_exp<span data-count="400">r</span> size)
     ; ( 2
       , map<span data-count="400">3</span>
-          (fun rf name rhs -&gt; <span data-count="280">A</span>st.TLet (rf, name, rhs))
+          (fun rf name rhs -&gt; <span data-count="323">A</span>st.TLet (rf, name, rhs))
           gen_rec_flag
           gen_ident
           (gen_exp<span data-count="400">r</span> size) )
