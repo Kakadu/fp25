@@ -172,10 +172,10 @@ let default_opts = { steps = 10_000; dump_parsetree = false }
 let parse_args argv =
   <span data-count="9">l</span>et rec loop opts = function
     | <span data-count="8">[</span>] -&gt; Ok opts
-    | <span data-count="1">"</span>-steps" :: n :: rest -&gt; (
-      match int_of_string_opt n with
-      | <span data-count="1">S</span>ome steps -&gt; loop { opts with steps } rest
-      | <span data-count="0">N</span>one -&gt; Error "Invalid value for -steps")
+    | <span data-count="1">"</span>-steps" :: n :: rest -&gt;
+      (match int_of_string_opt n with
+       | <span data-count="1">S</span>ome steps -&gt; loop { opts with steps } rest
+       | <span data-count="0">N</span>one -&gt; Error "Invalid value for -steps")
     | <span data-count="0">"</span>-steps" :: [] -&gt; Error "Missing value for -steps"
     | <span data-count="1">"</span>-dparsetree" :: rest -&gt; loop { opts with dump_parsetree = true } rest
     | <span data-count="1">_</span> :: _ -&gt; Error "Positional arguments are not supported"

@@ -201,33 +201,33 @@
 
 (** Рекурсивность связывания в let *)
 <span data-count="0">t</span>ype rec_flag =
-  <span data-count="953">|</span> Nonrec (** [let x = e1 in e2] *)
-  <span data-count="908">|</span> Rec (** [let rec f = e1 in e2] *)
+  <span data-count="1024">|</span> Nonrec (** [let x = e1 in e2] *)
+  <span data-count="1005">|</span> Rec (** [let rec f = e1 in e2] *)
 [@@deriving show { with_path = false }, eq]
 
 (** Унарные операции *)
 <span data-count="0">t</span>ype unop =
-  <span data-count="838">|</span> UMinus (** [-(e)] *)
-  <span data-count="769">|</span> UPlus (** [+(e)] *)
+  <span data-count="866">|</span> UMinus (** [-(e)] *)
+  <span data-count="874">|</span> UPlus (** [+(e)] *)
   <span data-count="1">|</span> Not (** [not e] *)
 [@@deriving show { with_path = false }, eq]
 
 (** Бинарные арифметические операции *)
 <span data-count="0">t</span>ype arithmetic_binops =
-  <span data-count="372">|</span> Add (** [+] *)
-  <span data-count="356">|</span> Sub (** [-] *)
-  <span data-count="376">|</span> Div (** [/] *)
-  <span data-count="364">|</span> Mul (** [*] *)
+  <span data-count="458">|</span> Add (** [+] *)
+  <span data-count="442">|</span> Sub (** [-] *)
+  <span data-count="432">|</span> Div (** [/] *)
+  <span data-count="389">|</span> Mul (** [*] *)
 [@@deriving show { with_path = false }, eq]
 
 (** Бинарные сравнения *)
 <span data-count="0">t</span>ype cmp_binops =
-  <span data-count="251">|</span> Eq (** [=] *)
-  <span data-count="233">|</span> Neq (** [&lt;&gt;] *)
-  <span data-count="254">|</span> Lt (** [&lt;] *)
-  <span data-count="261">|</span> Le (** [&lt;=] *)
-  <span data-count="243">|</span> Gt (** [&gt;] *)
-  <span data-count="242">|</span> Ge (** [&gt;=] *)
+  <span data-count="273">|</span> Eq (** [=] *)
+  <span data-count="273">|</span> Neq (** [&lt;&gt;] *)
+  <span data-count="295">|</span> Lt (** [&lt;] *)
+  <span data-count="275">|</span> Le (** [&lt;=] *)
+  <span data-count="246">|</span> Gt (** [&gt;] *)
+  <span data-count="281">|</span> Ge (** [&gt;=] *)
 [@@deriving show { with_path = false }, eq]
 
 (** Бинарные логические операции *)
@@ -238,30 +238,30 @@
 
 (** Константы *)
 <span data-count="68">t</span>ype const =
-  <span data-count="9808">|</span> Int of in<span data-count="26">t</span> (** Целое число *)
+  <span data-count="11086">|</span> Int of in<span data-count="26">t</span> (** Целое число *)
   <span data-count="0">|</span> Bool of boo<span data-count="7">l</span> (** Логическая константа *)
-  <span data-count="1556">|</span> Unit of <span data-count="1">u</span>nit (** [()] *)
+  <span data-count="1882">|</span> Unit of <span data-count="1">u</span>nit (** [()] *)
 [@@deriving show { with_path = false }, eq]
 
 (** Узлы выражений *)
 <span data-count="246">t</span>ype expr =
-  <span data-count="5682">|</span> Const of const (** Литерал *)
-  <span data-count="4225">|</span> Var of ident (** Идентификатор *)
-  <span data-count="3288">|</span> Lam of ident * exp<span data-count="1644">r</span> (** Лямбда-абстракция: [fun x -&gt; e] *)
-  <span data-count="4454">|</span> App of expr * exp<span data-count="2227">r</span> (** Аппликация: [e1 e2] *)
-  <span data-count="6152">|</span> Let of rec_flag * ident * expr * exp<span data-count="4614">r</span> (** Связывание: [let x = e1 in e2] *)
-  <span data-count="7165">|</span> If of expr * expr * <span data-count="6">e</span>xpr optio<span data-count="2868">n</span> (** Условие: [if c then t else e] *)
-  <span data-count="3216">|</span> Unop of unop * exp<span data-count="1608">r</span> (** Унарная операция *)
-  <span data-count="4404">|</span> BinopArithmetic of arithmetic_binops * expr * exp<span data-count="2936">r</span> (** Арифметика *)
-  <span data-count="4452">|</span> BinopComp of cmp_binops * expr * exp<span data-count="2968">r</span> (** Сравнение *)
+  <span data-count="6484">|</span> Const of const (** Литерал *)
+  <span data-count="4862">|</span> Var of ident (** Идентификатор *)
+  <span data-count="3602">|</span> Lam of ident * exp<span data-count="1801">r</span> (** Лямбда-абстракция: [fun x -&gt; e] *)
+  <span data-count="4960">|</span> App of expr * exp<span data-count="2480">r</span> (** Аппликация: [e1 e2] *)
+  <span data-count="6916">|</span> Let of rec_flag * ident * expr * exp<span data-count="5187">r</span> (** Связывание: [let x = e1 in e2] *)
+  <span data-count="9145">|</span> If of expr * expr * <span data-count="6">e</span>xpr optio<span data-count="3660">n</span> (** Условие: [if c then t else e] *)
+  <span data-count="3482">|</span> Unop of unop * exp<span data-count="1741">r</span> (** Унарная операция *)
+  <span data-count="5163">|</span> BinopArithmetic of arithmetic_binops * expr * exp<span data-count="3442">r</span> (** Арифметика *)
+  <span data-count="4929">|</span> BinopComp of cmp_binops * expr * exp<span data-count="3286">r</span> (** Сравнение *)
   <span data-count="3">|</span> BinopBool of bool_binops * expr * exp<span data-count="2">r</span> (** Логические операции *)
-  <span data-count="719">|</span> Fix of expr (** Фиксация: [fix e] *)
+  <span data-count="832">|</span> Fix of expr (** Фиксация: [fix e] *)
 [@@deriving show { with_path = false }, eq]
 
 (** Конструкции программы *)
 <span data-count="12">t</span>ype toplevel =
-  <span data-count="969">|</span> TLet of rec_flag * ident * exp<span data-count="646">r</span> (** Вершинное связывание *)
-  <span data-count="421">|</span> TExpr of expr (** Вершинное выражение *)
+  <span data-count="900">|</span> TLet of rec_flag * ident * exp<span data-count="600">r</span> (** Вершинное связывание *)
+  <span data-count="443">|</span> TExpr of expr (** Вершинное выражение *)
 [@@deriving show { with_path = false }, eq]
 
 (** Сама программа *)
