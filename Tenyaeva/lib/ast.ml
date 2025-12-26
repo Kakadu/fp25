@@ -14,6 +14,7 @@ let gen_ident = string_size (int_range 1 8) ~gen:gen_char
 
 type constant =
   | Const_int of (int[@gen small_int])
+  | Const_bool of bool
   | Const_unit
 [@@deriving show { with_path = false }, qcheck]
 
@@ -28,25 +29,27 @@ type binary_op =
   | Mult
   | Sub
   | Div
-    (* | Gt
-       | Lt
-       | Eq
-       | Neq
-       | Gte
-       | Lte *)
+  | Gt
+  | Lt
+  | Eq
+  | Neq
+  | Gte
+  | Lte
 [@@deriving show { with_path = false }, qcheck]
 
 type unary_op =
   | Negative
   | Positive
+  | Not
 [@@deriving show { with_path = false }, qcheck]
 
 type type_annot =
   | Type_int
+  | Type_bool
   | Type_unit
   | Type_var of (ident[@gen gen_ident])
   | Type_arrow of type_annot * type_annot
-  | Type_option of type_annot
+  | Type_option of (type_annot[@gen gen_type_annot_sized (n / 20)])
 [@@deriving show { with_path = false }, qcheck]
 
 type pattern =

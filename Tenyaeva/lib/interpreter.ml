@@ -20,6 +20,7 @@ let pp_eval_error ppf : eval_error -> _ = function
 
 type value =
   | ValInt of int
+  | ValBool of bool
   | ValUnit
   | ValFun of Ast.rec_flag * Ast.pattern * Ast.expression * environment
   | ValFunction of Ast.case list * environment
@@ -32,6 +33,7 @@ let rec pp_value ppf =
   let open Stdlib.Format in
   function
   | ValInt int -> fprintf ppf "%i" int
+  | ValBool bool -> fprintf ppf "%b" bool
   | ValUnit -> fprintf ppf "()"
   | ValOption value ->
     (match value with
@@ -50,7 +52,7 @@ module StepCounter = struct
 
   let tick =
     let* st = get in
-    put (st + 1) >>| fun _ -> st
+    put (st + 1) >>| fun _ -> ()
   ;;
 end
 
@@ -87,34 +89,37 @@ module Eval = struct
   open StepCounter
   open Env
 
-  let eval_un_op = function
+  let eval_un_op (op, v) =
+    let* () = tick in
+    match op, v with
     | Negative, ValInt val1 -> return (ValInt (-val1))
     | Positive, ValInt val1 -> return (ValInt val1)
+    | Not, ValBool val1 -> return (ValBool (not val1))
     | _ -> fail TypeError
   ;;
 
-  let eval_bin_op = function
+  let eval_bin_op (op, v1, v2) =
+    let* () = tick in
+    match op, v1, v2 with
     | Mult, ValInt val1, ValInt val2 -> return (ValInt (val1 * val2))
     | Div, ValInt val1, ValInt val2 when val2 <> 0 -> return (ValInt (val1 / val2))
     | Div, _, ValInt 0 -> fail DivisionByZero
     | Add, ValInt val1, ValInt val2 -> return (ValInt (val1 + val2))
     | Sub, ValInt val1, ValInt val2 -> return (ValInt (val1 - val2))
-    (* | GreaterEquals, val1, val2 -> eval_eq ( >= ) val1 val2
-       | LessEquals, val1, val2 -> eval_eq ( <= ) val1 val2
-       | NotEquals, val1, val2 -> eval_eq ( <> ) val1 val2
-       | Equals, val1, val2 -> eval_eq ( = ) val1 val2
-       | GreaterThan, val1, val2 -> eval_eq ( > ) val1 val2
-       | LessThan, val1, val2 -> eval_eq ( < ) val1 val2
-       | And, ValBool val1, ValBool val2 -> eval_bool ( && ) val1 val2
-       | Or, ValBool val1, ValBool val2 -> eval_bool ( || ) val1 val2 *)
-    | _ -> fail TypeError (* not implemented*)
+    | Gte, val1, val2 -> return (ValBool (val1 >= val2))
+    | Lte, val1, val2 -> return (ValBool (val1 <= val2))
+    | Neq, val1, val2 -> return (ValBool (val1 <> val2))
+    | Eq, val1, val2 -> return (ValBool (val1 = val2))
+    | Gt, val1, val2 -> return (ValBool (val1 > val2))
+    | Lt, val1, val2 -> return (ValBool (val1 < val2))
+    | _ -> fail TypeError
   ;;
 
   let rec match_pattern (env : environment) = function
     | Pat_any, _ -> Some env
     | Pat_var id, value -> Some (extend env id value)
     | Pat_constant (Const_int pat), ValInt value when pat = value -> Some env
-    (* | PatConst (Bool pat), ValBool value when pat = value -> Some env *)
+    | Pat_constant (Const_bool pat), ValBool value when pat = value -> Some env
     | Pat_constant Const_unit, _ -> Some env
     | Pat_constraint (_, pat), value -> match_pattern env (pat, value)
     | Pat_option None, ValOption None -> Some env
@@ -137,7 +142,7 @@ module Eval = struct
     | Expr_const const ->
       (match const with
        | Const_int int -> return (ValInt int)
-       (* | Bool bool -> return (ValBool bool) *)
+       | Const_bool bool -> return (ValBool bool)
        | Const_unit -> return ValUnit)
     | Expr_let (NonRecursive, value_binding, value_binding_list, exp) ->
       let* env = eval_value_binding_list env (value_binding :: value_binding_list) in
@@ -184,18 +189,18 @@ module Eval = struct
     | Expr_if (if_exp, then_exp, Some else_exp) ->
       let* value_if_exp = eval_expression env if_exp in
       (match value_if_exp with
-       | ValInt 0 -> eval_expression env else_exp
-       | ValInt _ -> eval_expression env then_exp
+       | ValBool true -> eval_expression env then_exp
+       | ValBool false -> eval_expression env else_exp
        | _ -> fail TypeError)
     | Expr_if (fst_val, snd_val, None) ->
       let* value_fst_val = eval_expression env fst_val in
       (match value_fst_val with
-       | ValInt 0 -> return ValUnit
-       | ValInt _ ->
+       | ValBool true ->
          let* value_snd_val = eval_expression env snd_val in
          (match value_snd_val with
           | ValUnit as v -> return v
           | _ -> fail TypeError)
+       | ValBool false -> return ValUnit
        | _ -> fail TypeError)
     | Expr_constraint (_, exp) -> eval_expression env exp
 

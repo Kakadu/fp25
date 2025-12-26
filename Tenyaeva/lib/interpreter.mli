@@ -14,6 +14,7 @@ type eval_error =
 
 type value =
   | ValInt of int
+  | ValBool of bool
   | ValUnit
   | ValFun of Ast.rec_flag * Ast.pattern * Ast.expression * environment
   | ValFunction of Ast.case list * environment

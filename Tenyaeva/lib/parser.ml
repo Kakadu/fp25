@@ -52,7 +52,15 @@ let parse_int =
 ;;
 
 let parse_unit = token "()" *> return Const_unit
-let parse_const = ws *> choice [ parse_int; parse_unit ]
+
+let parse_bool =
+  choice
+    [ token "true" *> return (Const_bool true)
+    ; token "false" *> return (Const_bool false)
+    ]
+;;
+
+let parse_const = ws *> choice [ parse_int; parse_unit; parse_bool ]
 
 (* ==================== ident ==================== *)
 
@@ -84,7 +92,11 @@ let parse_type_var =
 ;;
 
 let parse_base_type =
-  choice [ token "unit" *> return Type_unit; token "int" *> return Type_int ]
+  choice
+    [ token "unit" *> return Type_unit
+    ; token "int" *> return Type_int
+    ; token "bool" *> return Type_bool
+    ]
 ;;
 
 let parse_type_option p_type =
@@ -140,16 +152,16 @@ let parse_pattern =
 
 (* -------------------- operation -------------------- *)
 
-(* let cmp =
-   choice
-   [ token "=" *> return Eq
+let cmp =
+  choice
+    [ token "=" *> return Eq
     ; token "<>" *> return Neq
     ; token "<=" *> return Lte
     ; token ">=" *> return Gte
     ; token "<" *> return Lt
     ; token ">" *> return Gt
     ]
-   ;; *)
+;;
 
 let add_sub = choice [ token "+" *> return Add; token "-" *> return Sub ]
 let mult_div = choice [ token "/" *> return Div; token "*" *> return Mult ]
@@ -160,12 +172,11 @@ let parse_binop parse_expr parse_op =
 
 let parse_expr_binop parse_expr =
   let parse_expr = parse_binop parse_expr mult_div in
-  parse_binop parse_expr add_sub
+  let parse_expr = parse_binop parse_expr add_sub in
+  parse_binop parse_expr cmp
 ;;
 
-(* parse_binop parse_expr cmp *)
-
-let parse_unop = choice [ token "-" *> return Negative; token "+" *> return Positive ]
+let parse_unop = choice [ token "-" *> return Negative; token "+" *> return Positive ; token "not" *> return Not ]
 
 let parse_expr_unop parse_expr =
   let* op = parse_unop in

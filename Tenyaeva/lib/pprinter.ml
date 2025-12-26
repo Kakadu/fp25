@@ -7,6 +7,7 @@ open Format
 
 let pp_constant ppf = function
   | Const_int n -> fprintf ppf "%d" n
+  | Const_bool n -> fprintf ppf "%b" n
   | Const_unit -> fprintf ppf "()"
 ;;
 
@@ -20,6 +21,12 @@ let pp_binop ppf = function
   | Mult -> fprintf ppf "*"
   | Sub -> fprintf ppf "-"
   | Div -> fprintf ppf "/"
+  | Gt -> fprintf ppf ">"
+  | Lt -> fprintf ppf "<"
+  | Eq -> fprintf ppf "="
+  | Neq -> fprintf ppf "<>"
+  | Gte -> fprintf ppf ">="
+  | Lte -> fprintf ppf "<="
 ;;
 
 (* | Gt -> fprintf ppf ">"
@@ -32,10 +39,12 @@ let pp_binop ppf = function
 let pp_unop ppf = function
   | Negative -> fprintf ppf "-"
   | Positive -> fprintf ppf "+"
+  | Not -> fprintf ppf "not"
 ;;
 
 let rec pp_type_annot ppf = function
   | Type_int -> fprintf ppf "int"
+  | Type_bool -> fprintf ppf "bool"
   | Type_unit -> fprintf ppf "unit"
   | Type_var a -> fprintf ppf "'%s" a
   | Type_arrow (ty1, ty2) -> fprintf ppf "(%a -> %a)" pp_type_annot ty1 pp_type_annot ty2
