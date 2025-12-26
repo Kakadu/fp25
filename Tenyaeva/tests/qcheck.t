@@ -2,7 +2,7 @@
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-  $ ../lib/qcheck.exe -seed 122 -gen 3
-  random seed: 122
+  $ ../lib/qcheck.exe -seed 1108234 -gen 3
+  random seed: 1108234
   ================================================================================
   success (ran 1 tests)

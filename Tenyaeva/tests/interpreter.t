@@ -15,6 +15,19 @@
   - = 7
 
   $ ../bin/REPL.exe <<EOF
+  > (4 <= 8) = true
+  - = true
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = false;; not x;;
+  val x = false
+  - = true
+
+  $ ../bin/REPL.exe <<EOF
+  > if 6 < 10 then 1 else 2;;
+  - = 1
+
+  $ ../bin/REPL.exe <<EOF
   > let x = 5
   val x = 5
 

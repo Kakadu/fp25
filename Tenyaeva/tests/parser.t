@@ -148,3 +148,26 @@
       (Expr_binop (Gt, (Expr_binop (Add, (Expr_ident "x"), (Expr_ident "y"))),
          (Expr_binop (Sub, (Expr_ident "x"), (Expr_ident "y"))))))
     ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > x = y
+  [(Str_eval (Expr_binop (Eq, (Expr_ident "x"), (Expr_ident "y"))))]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > not true
+  [(Str_eval (Expr_unop (Not, (Expr_const (Const_bool true)))))]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > match mnc with | _ -> (hwumibc : 'ftxcdkouhyyumgetu) | 310 -> ()
+  [(Str_eval
+      (Expr_match ((Expr_ident "mnc"),
+         { case_pat = Pat_any;
+           case_expr =
+           (Expr_constraint ((Type_var "'ftxcdkouhyyumgetu"),
+              (Expr_ident "hwumibc")))
+           },
+         [{ case_pat = (Pat_constant (Const_int 310));
+            case_expr = (Expr_const Const_unit) }
+           ]
+         )))
+    ]
