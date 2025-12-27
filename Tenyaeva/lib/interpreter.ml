@@ -10,12 +10,14 @@ type eval_error =
   | DivisionByZero
   | MatchFailure
   | NoVariable of Ast.ident
+  | OutOfSteps
 
 let pp_eval_error ppf : eval_error -> _ = function
   | TypeError -> Format.fprintf ppf "Type error"
   | DivisionByZero -> Format.fprintf ppf "Division by zero"
   | MatchFailure -> Format.fprintf ppf "Matching failure"
   | NoVariable id -> Format.fprintf ppf "Undefined variable '%s'" id
+  | OutOfSteps -> Format.fprintf ppf "OutOfSteps"
 ;;
 
 type value =
@@ -52,7 +54,7 @@ module StepCounter = struct
 
   let tick =
     let* st = get in
-    put (st + 1) >>| fun _ -> ()
+    if st <= 0 then fail OutOfSteps else put (st - 1) >>| fun _ -> ()
   ;;
 end
 
@@ -89,18 +91,14 @@ module Eval = struct
   open StepCounter
   open Env
 
-  let eval_un_op (op, v) =
-    let* () = tick in
-    match op, v with
+  let eval_un_op = function
     | Negative, ValInt val1 -> return (ValInt (-val1))
     | Positive, ValInt val1 -> return (ValInt val1)
     | Not, ValBool val1 -> return (ValBool (not val1))
     | _ -> fail TypeError
   ;;
 
-  let eval_bin_op (op, v1, v2) =
-    let* () = tick in
-    match op, v1, v2 with
+  let eval_bin_op = function
     | Mult, ValInt val1, ValInt val2 -> return (ValInt (val1 * val2))
     | Div, ValInt val1, ValInt val2 when val2 <> 0 -> return (ValInt (val1 / val2))
     | Div, _, ValInt 0 -> fail DivisionByZero
@@ -115,7 +113,7 @@ module Eval = struct
     | _ -> fail TypeError
   ;;
 
-  let rec match_pattern (env : environment) = function
+  let rec match_pattern env = function
     | Pat_any, _ -> Some env
     | Pat_var id, value -> Some (extend env id value)
     | Pat_constant (Const_int pat), ValInt value when pat = value -> Some env
@@ -137,7 +135,9 @@ module Eval = struct
     | _ -> fail TypeError
   ;;
 
-  let rec eval_expression (env : environment) = function
+  let rec eval_expression env ex =
+    let* () = tick in
+    match ex with
     | Expr_ident id -> find_exn env id
     | Expr_const const ->
       (match const with
@@ -259,16 +259,19 @@ module Eval = struct
     function
     | Str_eval exp ->
       let* val' = eval_expression env exp in
+      let* () = tick in
       return (env, out_list @ [ None, val' ])
     | Str_value (NonRecursive, value_binding, value_binding_list) ->
       let value_binding_list = value_binding :: value_binding_list in
       let* env = eval_value_binding_list env value_binding_list in
       let eval_list = get_names_from_let_binds env value_binding_list in
+      let* () = tick in
       return (env, out_list @ eval_list)
     | Str_value (Recursive, value_binding, value_binding_list) ->
       let value_binding_list = value_binding :: value_binding_list in
       let* env = eval_rec_value_binding_list env value_binding_list in
       let eval_list = get_names_from_let_binds env value_binding_list in
+      let* () = tick in
       return (env, out_list @ eval_list)
   ;;
 
@@ -297,8 +300,8 @@ module Eval = struct
   ;;
 end
 
-let run_interpreter structure =
-  match StepCounter.run (Eval.eval_structure Env.empty structure) 0 with
+let run_interpreter structure n =
+  match StepCounter.run (Eval.eval_structure Env.empty structure) n with
   | _state, Ok (_env, value) -> Ok value
   | _state, Error err -> Error err
 ;;

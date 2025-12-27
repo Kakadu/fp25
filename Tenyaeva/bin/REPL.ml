@@ -6,7 +6,10 @@ open Tenyaeva_lib.Parser
 open Tenyaeva_lib.Interpreter
 open Tenyaeva_lib.Ast
 
-type options = { mutable dump_parsetree : bool }
+type options =
+  { mutable dump_parsetree : bool
+  ; mutable max_steps : int
+  }
 
 let run_single options =
   let text = Stdlib.String.trim (In_channel.input_all stdin) in
@@ -14,7 +17,7 @@ let run_single options =
   then (
     match parse text with
     | Ok structure ->
-      (match run_interpreter structure with
+      (match run_interpreter structure options.max_steps with
        | Ok out_list ->
          List.iter
            (function
@@ -31,13 +34,16 @@ let run_single options =
 ;;
 
 let () =
-  let options = { dump_parsetree = false } in
+  let options = { dump_parsetree = false; max_steps = 10_000 } in
   let () =
     let open Stdlib.Arg in
     parse
       [ ( "-dparsetree"
         , Unit (fun () -> options.dump_parsetree <- true)
         , "Dump parse tree, don't eval enything" )
+      ; ( "-max-steps"
+        , Arg.Int (fun n -> options.max_steps <- n)
+        , "Set a limit on interpretation steps (default: 10_000)" )
       ]
       (fun _ ->
         Stdlib.Format.eprintf "Anonymous arguments are not supported\n";

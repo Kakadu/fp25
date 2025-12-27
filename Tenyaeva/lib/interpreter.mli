@@ -11,6 +11,8 @@ type eval_error =
   (** Represents a match error occurs when a pattern matching attempt fails. *)
   | NoVariable of Ast.ident
   (** Represents an error that occurs when attempting to use a variable that has not been declared or initialized. *)
+  | OutOfSteps
+  (** Represents an error that occurs when the permissible number of interpretation steps is exceeded. *)
 
 type value =
   | ValInt of int
@@ -28,4 +30,5 @@ val pp_eval_error : Format.formatter -> eval_error -> unit
 
 val run_interpreter
   :  Ast.structure
+  -> int
   -> ((Ast.ident option * value) list, eval_error) Result.t
