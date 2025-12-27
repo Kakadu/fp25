@@ -176,7 +176,13 @@ let parse_expr_binop parse_expr =
   parse_binop parse_expr cmp
 ;;
 
-let parse_unop = choice [ token "-" *> return Negative; token "+" *> return Positive ; token "not" *> return Not ]
+let parse_unop =
+  choice
+    [ token "-" *> return Negative
+    ; token "+" *> return Positive
+    ; token "not" *> return Not
+    ]
+;;
 
 let parse_expr_unop parse_expr =
   let* op = parse_unop in
@@ -277,12 +283,12 @@ let parse_expression =
         ]
     in
     let expr_if = parse_expr_if self <|> atom in
-    let expr_unop = parse_expr_unop expr_if <|> expr_if in
+    let expr_app = parse_expr_apply expr_if <|> expr_if in
+    let expr_unop = parse_expr_unop expr_app <|> expr_app in
     let expr_binop = parse_expr_binop expr_unop <|> expr_unop in
     let expr_match = parse_expr_match expr_binop <|> expr_binop in
     let expr_functon = parse_expr_function expr_match <|> expr_match in
-    let expr_app = parse_expr_apply expr_functon <|> expr_functon in
-    let expr_fun = parse_expr_fun expr_app <|> expr_app in
+    let expr_fun = parse_expr_fun expr_functon <|> expr_functon in
     let expr_let = parse_let expr_fun <|> expr_fun in
     expr_let)
 ;;
