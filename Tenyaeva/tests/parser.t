@@ -171,3 +171,41 @@
            ]
          )))
     ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > let rec fix f x = f (fix f) x
+  [(Str_value (Recursive,
+      { vb_pat = (Pat_var "fix");
+        vb_expr =
+        (Expr_fun ((Pat_var "f"),
+           (Expr_fun ((Pat_var "x"),
+              (Expr_apply (
+                 (Expr_apply ((Expr_ident "f"),
+                    (Expr_apply ((Expr_ident "fix"), (Expr_ident "f"))))),
+                 (Expr_ident "x")))
+              ))
+           ))
+        },
+      []))
+    ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > let rec fact n = if n = 1 then 1 else n * fact (n - 1);;
+  [(Str_value (Recursive,
+      { vb_pat = (Pat_var "fact");
+        vb_expr =
+        (Expr_fun ((Pat_var "n"),
+           (Expr_if (
+              (Expr_binop (Eq, (Expr_ident "n"), (Expr_const (Const_int 1)))),
+              (Expr_const (Const_int 1)),
+              (Some (Expr_binop (Mult, (Expr_ident "n"),
+                       (Expr_apply ((Expr_ident "fact"),
+                          (Expr_binop (Sub, (Expr_ident "n"),
+                             (Expr_const (Const_int 1))))
+                          ))
+                       )))
+              ))
+           ))
+        },
+      []))
+    ]

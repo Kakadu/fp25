@@ -27,6 +27,11 @@
   > if 6 < 10 then 1 else 2;;
   - = 1
 
+  $ ../bin/REPL.exe -max-steps=1000 <<EOF
+  > let rec fact n = if n = 1 then 1 else n * fact (n - 1);; fact 4;;
+  val fact = <fun>
+  - = 24
+
   $ ../bin/REPL.exe <<EOF
   > let x = 5
   val x = 5
@@ -39,7 +44,7 @@
   > (fun x y -> x + y) 5 4
   - = 9
 
-  $ ../bin/REPL.exe <<EOF
+  $ ../bin/REPL.exe -max-steps=10 <<EOF
   > Some(7 + 17)
   - = Some 24
 
@@ -69,6 +74,14 @@
   $ ../bin/REPL.exe <<EOF
   > let x = 1;; match x with | 0 -> x + 2;;
   Matching failure
+
+  $ ../bin/REPL.exe -max-steps=5 <<EOF
+  > let x = 1;; match x with | 0 -> x + 2 | 1 -> x + 3;;
+  OutOfSteps
+
+  $ ../bin/REPL.exe -max-steps=1000 <<EOF
+  > let rec loop x = loop x;; loop 0;;
+  OutOfSteps
 
   $ ../bin/REPL.exe <<EOF
   > let x = 1;; x + 2;;
