@@ -37,13 +37,6 @@ let chain_left parse p_function =
   parse >>= go
 ;;
 
-let rec chain_right parse p_function =
-  let* left = parse in
-  (let* f = p_function in
-   let* right = chain_right parse p_function in
-   return (f left right))
-  <|> return left
-;;
 
 (* ==================== constant ==================== *)
 

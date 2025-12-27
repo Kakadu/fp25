@@ -301,7 +301,7 @@ module Eval = struct
 end
 
 let run_interpreter structure n =
-  match StepCounter.run (Eval.eval_structure Env.empty structure) n with
+  match StepCounter.run (Eval.eval_structure Env.env_with_print_funs structure) n with
   | _state, Ok (_env, value) -> Ok value
   | _state, Error err -> Error err
 ;;
