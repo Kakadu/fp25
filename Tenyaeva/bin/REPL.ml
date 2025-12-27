@@ -22,7 +22,7 @@ let run_single options =
          List.iter
            (function
              | Some id, val' -> Format.printf "val %s = %a\n" id pp_value val'
-             | None, val' -> Format.printf "- = %a\n" pp_value val')
+             | None, val' -> Format.printf "%a\n" pp_value val')
            out_list
        | Error err -> Stdlib.Format.printf "%a\n" pp_eval_error err)
     | Error err -> Stdlib.Format.printf "%s\n" err);
