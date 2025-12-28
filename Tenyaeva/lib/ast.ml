@@ -9,8 +9,36 @@ open Stdlib
 
 type ident = string [@@deriving show { with_path = false }] (* identifier *)
 
+let is_keyword = function
+  | "let"
+  | "rec"
+  | "and"
+  | "in"
+  | "if"
+  | "then"
+  | "else"
+  | "match"
+  | "with"
+  | "true"
+  | "false"
+  | "Some"
+  | "None"
+  | "type"
+  | "_" -> true
+  | _ -> false
+;;
 let gen_char = map Char.chr (int_range (Char.code 'a') (Char.code 'z'))
-let gen_ident = string_size (int_range 1 8) ~gen:gen_char
+
+let rec gen_filtered_ident non_filtered =
+  non_filtered
+  >>= fun ident ->
+  if is_keyword ident then gen_filtered_ident non_filtered else return ident
+;;
+
+let gen_ident =
+  let non_filtered = string_size (int_range 1 8) ~gen:gen_char in
+  gen_filtered_ident non_filtered
+;;
 
 type constant =
   | Const_int of (int[@gen small_int]) (** integer, e.g. 122 *)
@@ -47,7 +75,9 @@ type type_annot =
   | Type_bool (** boolean type - [bool] *)
   | Type_unit (** unit type - [unit] *)
   | Type_var of (ident[@gen gen_ident]) (** variable type *)
-  | Type_arrow of type_annot * type_annot (** arrow type *)
+  | Type_arrow of
+      (type_annot[@gen gen_type_annot_sized (n / 20)])
+      * (type_annot[@gen gen_type_annot_sized (n / 20)]) (** arrow type *)
   | Type_option of (type_annot[@gen gen_type_annot_sized (n / 20)]) (** type option *)
 [@@deriving show { with_path = false }, qcheck]
 
@@ -57,7 +87,8 @@ type pattern =
   (** matches any value and binds it to a variable, e.g. x *)
   | Pat_constant of constant (** matches a constant value, e.g. 42, true *)
   | Pat_option of pattern option (** matches an optional pattern, e.g. Some x or None *)
-  | Pat_constraint of type_annot * (pattern[@gen gen_pattern_sized (n / 20)]) (** typed pattern, e.g. a: int *)
+  | Pat_constraint of type_annot * (pattern[@gen gen_pattern_sized (n / 20)])
+  (** typed pattern, e.g. a: int *)
 [@@deriving show { with_path = false }, qcheck]
 
 type expression =
