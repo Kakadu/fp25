@@ -29,17 +29,10 @@ let pp_binop ppf = function
   | Lte -> fprintf ppf "<="
 ;;
 
-(* | Gt -> fprintf ppf ">"
-   | Lt -> fprintf ppf "<"
-   | Eq -> fprintf ppf "="
-   | Neq -> fprintf ppf "<>"
-   | Gte -> fprintf ppf ">="
-   | Lte -> fprintf ppf "<=" *)
-
 let pp_unop ppf = function
   | Negative -> fprintf ppf "-"
   | Positive -> fprintf ppf "+"
-  | Not -> fprintf ppf "not"
+  | Not -> fprintf ppf "not "
 ;;
 
 let rec pp_type_annot ppf = function
@@ -93,7 +86,7 @@ let rec pp_expression ppf = function
   | Expr_let (recf, vb, vbl, e) ->
     fprintf
       ppf
-      "let %a %a in %a"
+      "let %a %a in (%a)"
       pp_rec_flag
       recf
       (fun ppf () ->
@@ -112,7 +105,7 @@ let rec pp_expression ppf = function
         fprintf ppf "| %a -> (%a)\n" pp_pattern case_pat pp_expression case_expr)
       (case :: casel)
   | Expr_match (e, case, casel) ->
-    fprintf ppf "match %a with\n" pp_expression e;
+    fprintf ppf "match (%a) with\n" pp_expression e;
     List.iter
       (fun { case_pat; case_expr } ->
         fprintf ppf "| %a -> %a\n" pp_pattern case_pat pp_expression case_expr)
