@@ -73,7 +73,7 @@ let parse_base_type =
 ;;
 
 let parse_type_option p_type =
-  let* t = p_type <* token "option" in
+  let* t = p_type <* ws1 <* token "option" in
   return (Type_option t)
 ;;
 
@@ -99,7 +99,7 @@ let parse_pat_const = parse_const >>| fun c -> Pat_constant c
 let parse_pat_var = parse_ident >>| fun i -> Pat_var i
 
 let parse_pat_option parse_pat =
-  token "Some" *> parse_pat
+  token "Some" *> ws1 *> parse_pat
   >>| (fun e -> Some e)
   <|> token "None" *> return None
   >>| fun e -> Pat_option e
@@ -153,7 +153,7 @@ let parse_unop =
   choice
     [ token "-" *> return Negative
     ; token "+" *> return Positive
-    ; token "not" *> return Not
+    ; token "not" *> ws1 *> return Not
     ]
 ;;
 
@@ -165,12 +165,12 @@ let parse_expr_unop parse_expr =
 
 (* -------------------- expression -------------------- *)
 
-let parse_rec_flag = token "rec" *> return Recursive <|> return NonRecursive
+let parse_rec_flag = token "rec" *> ws1 *> return Recursive <|> return NonRecursive
 let parse_expr_const = parse_const >>| fun c -> Expr_const c
 let parse_expr_ident = parse_ident >>| fun i -> Expr_ident i
 
 let parse_expr_option parse_expr =
-  token "Some" *> parse_expr
+  token "Some" *> ws1 *> parse_expr
   >>| (fun op -> Some op)
   <|> token "None" *> return None
   >>| fun e -> Expr_option e
@@ -183,7 +183,7 @@ let parse_expr_constraint parse_expr =
 ;;
 
 let parse_expr_fun parse_expr =
-  let* pat = token "fun" *> parse_pattern in
+  let* pat = token "fun" *> ws1 *> parse_pattern in
   let* params = many parse_pattern in
   let* body_expr = token "->" *> parse_expr in
   let expr =
@@ -195,13 +195,15 @@ let parse_expr_fun parse_expr =
 ;;
 
 let parse_expr_apply parse_expr =
-  chain_left parse_expr (return (fun e1 e2 -> Expr_apply (e1, e2)))
+  chain_left parse_expr (ws1*> return (fun e1 e2 -> Expr_apply (e1, e2)))
 ;;
 
 let parse_expr_if parse_expr =
-  let* cond = token "if" *> parse_expr in
-  let* expr_then = token "then" *> parse_expr in
-  let* expr_else = token "else" *> parse_expr >>| (fun e -> Some e) <|> return None in
+  let* cond = token "if" *> ws1 *> parse_expr in
+  let* expr_then = ws1 *> token "then" *> ws1 *> parse_expr in
+  let* expr_else =
+    ws1 *> token "else" *> ws1 *> parse_expr >>| (fun e -> Some e) <|> return None
+  in
   return (Expr_if (cond, expr_then, expr_else))
 ;;
 
@@ -218,10 +220,12 @@ let parse_value_binding parse_expr =
 ;;
 
 let parse_let parse_expr =
-  let* rec_flag = token "let" *> parse_rec_flag in
+  let* rec_flag = token "let" *> ws1 *> parse_rec_flag in
   let* vb = parse_value_binding parse_expr in
-  let* value_bindings = many (token "and" *> parse_value_binding parse_expr) in
-  let+ expr = token "in" *> parse_expr in
+  let* value_bindings =
+    many (ws1 *> token "and" *> ws1 *> parse_value_binding parse_expr)
+  in
+  let+ expr = ws1 *> token "in" *> ws1 *> parse_expr in
   Expr_let (rec_flag, vb, value_bindings, expr)
 ;;
 
@@ -232,15 +236,15 @@ let parse_case parse_expr =
 ;;
 
 let parse_expr_function parse_expr =
-  let* case = token "function" *> parse_case parse_expr in
-  let* casel = many (parse_case parse_expr) in
+  let* case = token "function" *> ws1 *> parse_case parse_expr in
+  let* casel = many (ws1 *> parse_case parse_expr) in
   return (Expr_function (case, casel))
 ;;
 
 let parse_expr_match parse_expr =
-  let* expr = token "match" *> parse_expr <* token "with" in
+  let* expr = token "match" *> ws1 *> parse_expr <* ws1 <* token "with" <* ws1 in
   let* case = parse_case parse_expr in
-  let* casel = many (parse_case parse_expr) in
+  let* casel = many (ws1 *> parse_case parse_expr) in
   return (Expr_match (expr, case, casel))
 ;;
 
@@ -261,19 +265,22 @@ let parse_expression =
     let expr_binop = parse_expr_binop expr_unop <|> expr_unop in
     let expr_match = parse_expr_match expr_binop <|> expr_binop in
     let expr_functon = parse_expr_function expr_match <|> expr_match in
-    let expr_fun = parse_expr_fun expr_functon <|> expr_functon in
-    let expr_let = parse_let expr_fun <|> expr_fun in
-    expr_let)
+    let expr_let = parse_let expr_functon <|> expr_functon in
+    let expr_fun = parse_expr_fun expr_let <|> expr_let in
+    expr_fun)
 ;;
 
 (* ==================== structure ==================== *)
 
 let parse_structure_value =
   token "let"
+  *> ws1
   *>
   let* rec_flag = parse_rec_flag in
   let* vb = parse_value_binding parse_expression in
-  let+ value_bindings = many (token "and" *> parse_value_binding parse_expression) in
+  let+ value_bindings =
+    many (token "and" *> ws1 *> parse_value_binding parse_expression)
+  in
   Str_value (rec_flag, vb, value_bindings)
 ;;
 
