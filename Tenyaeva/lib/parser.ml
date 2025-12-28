@@ -13,30 +13,10 @@ let ws1 = skip Char.is_whitespace *> ws
 let token str = ws *> string str
 let skip_round_par parse = token "(" *> parse <* token ")"
 
-let is_keyword = function
-  | "let"
-  | "rec"
-  | "and"
-  | "in"
-  | "if"
-  | "then"
-  | "else"
-  | "match"
-  | "with"
-  | "true"
-  | "false"
-  | "Some"
-  | "None"
-  | "type"
-  | "_" -> true
-  | _ -> false
-;;
-
 let chain_left parse p_function =
   let rec go acc = lift2 (fun f x -> f acc x) p_function parse >>= go <|> return acc in
   parse >>= go
 ;;
-
 
 (* ==================== constant ==================== *)
 
@@ -81,7 +61,7 @@ let parse_type_var =
   token "'"
   *>
   let* name = parse_ident in
-  return (Type_var ("'" ^ name))
+  return (Type_var name)
 ;;
 
 let parse_base_type =
@@ -288,20 +268,21 @@ let parse_expression =
 
 (* ==================== structure ==================== *)
 
-let parse_structure_value parse_exp =
+let parse_structure_value =
   token "let"
   *>
   let* rec_flag = parse_rec_flag in
-  let* vb = parse_value_binding parse_exp in
-  let+ value_bindings = many (token "and" *> parse_value_binding parse_exp) in
+  let* vb = parse_value_binding parse_expression in
+  let+ value_bindings = many (token "and" *> parse_value_binding parse_expression) in
   Str_value (rec_flag, vb, value_bindings)
 ;;
 
+let parse_structure_eval = parse_expression >>| fun ex -> Str_eval ex
+let parse_structure_item = parse_structure_eval <|> parse_structure_value
+
 let parse_structure =
-  let str_value = parse_structure_value parse_expression in
-  let str_eval = str_value <|> (parse_expression >>| fun ex -> Str_eval ex) in
-  let semicolons = many (token ";;") in
-  sep_by semicolons str_eval <* semicolons <* ws
+  let psemicolon = many (token ";;") in
+  sep_by psemicolon parse_structure_item <* psemicolon <* ws
 ;;
 
 (* ==================== execute ==================== *)
