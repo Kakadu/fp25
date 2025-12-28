@@ -2,9 +2,10 @@
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-open Tenyaeva_lib.Ast
+(* open Tenyaeva_lib.Ast *)
 open Tenyaeva_lib.Parser
 open Tenyaeva_lib.Pprinter
+open Generators
 
 let arbitrary_structure =
   QCheck.make gen_structure ~print:(Format.asprintf "%a" pp_structure)
@@ -18,16 +19,7 @@ let run n =
     ]
 ;;
 
-let run_tests n =
-  let _ = run n in
-  ()
-;;
-
 let () =
-  Arg.parse
-    [ "-seed", Arg.Int QCheck_base_runner.set_seed, " Set seed"
-    ; "-gen", Arg.Int run_tests, " Number of runs"
-    ]
-    (fun _ -> assert false)
-    "help"
+  let _ = run 3 in
+  ()
 ;;
