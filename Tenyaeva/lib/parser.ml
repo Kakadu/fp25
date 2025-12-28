@@ -195,7 +195,7 @@ let parse_expr_fun parse_expr =
 ;;
 
 let parse_expr_apply parse_expr =
-  chain_left parse_expr (ws1*> return (fun e1 e2 -> Expr_apply (e1, e2)))
+  chain_left parse_expr (ws1 *> return (fun e1 e2 -> Expr_apply (e1, e2)))
 ;;
 
 let parse_expr_if parse_expr =

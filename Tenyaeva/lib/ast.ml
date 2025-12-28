@@ -27,6 +27,7 @@ let is_keyword = function
   | "_" -> true
   | _ -> false
 ;;
+
 let gen_char = map Char.chr (int_range (Char.code 'a') (Char.code 'z'))
 
 let rec gen_filtered_ident non_filtered =
