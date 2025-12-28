@@ -4,33 +4,37 @@
 
   $ ../bin/REPL.exe <<EOF
   > 122
-  - = 122
+  122
 
   $ ../bin/REPL.exe <<EOF
   > (08 + 122 / 2) * 3 - 4
-  - = 203
+  203
 
   $ ../bin/REPL.exe <<EOF
   > -4 + 8 + (+3)
-  - = 7
+  7
+
+  $ ../bin/REPL.exe <<EOF
+  > 5 <> 3
+  true
 
   $ ../bin/REPL.exe <<EOF
   > (4 <= 8) = true
-  - = true
+  true
 
   $ ../bin/REPL.exe <<EOF
   > let x = false;; not x;;
   val x = false
-  - = true
+  true
 
   $ ../bin/REPL.exe <<EOF
-  > if 6 < 10 then 1 else 2;;
-  - = 1
+  > if 6 < 10 then 1 else (if 6 >= 0 then 2 else (if 9 > 10 then 3 else 4));;
+  1
 
   $ ../bin/REPL.exe -max-steps=1000 <<EOF
   > let rec fact n = if n = 1 then 1 else n * fact (n - 1);; fact 4;;
   val fact = <fun>
-  - = 24
+  24
 
   $ ../bin/REPL.exe <<EOF
   > let x = 5
@@ -42,16 +46,21 @@
 
   $ ../bin/REPL.exe <<EOF
   > (fun x y -> x + y) 5 4
-  - = 9
+  9
 
   $ ../bin/REPL.exe -max-steps=10 <<EOF
-  > Some(7 + 17)
-  - = Some 24
+  > Some (7 + 17);; None
+  Some 24
+  None
 
   $ ../bin/REPL.exe <<EOF
   > let rec x = 21 and y = x + 1;;
   val x = 21
   val y = 22
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = let y = 1 and z = 2 and w = y + 3 in w;;
+  val x = 4
 
   $ ../bin/REPL.exe <<EOF
   > let foo x y = x * y;; let q = foo 1 6;; let w = foo 2 (-5)
@@ -84,14 +93,30 @@
   OutOfSteps
 
   $ ../bin/REPL.exe <<EOF
+  > let loak ==0ih
+  : end_of_input
+
+  $ ../bin/REPL.exe <<EOF
+  > let y = let x = 1 in x + 1;; x + 1;;
+  Undefined variable 'x'
+
+  $ ../bin/REPL.exe -max-steps=1000 <<EOF
+  > let x = true in not x 
+  false
+
+  $ ../bin/REPL.exe -max-steps=1000 <<EOF
+  > - (let x = true in not x)
+  Type error
+
+  $ ../bin/REPL.exe <<EOF
   > let x = 1;; x + 2;;
   val x = 1
-  - = 3
+  3
 
   $ ../bin/REPL.exe <<EOF
   > let x = 1;; match x with | 0 -> x + 2 | 1 -> x + 3;;
   val x = 1
-  - = 4
+  4
 
   $ ../bin/REPL.exe <<EOF
   > let x = let y = 5 in y + 1;;
@@ -100,8 +125,33 @@
   $ ../bin/REPL.exe <<EOF
   > let f = function | 1 -> 1 | 2 -> 2;; f 1;;
   val f = <function>
-  - = 1
+  1
 
   $ ../bin/REPL.exe <<EOF
   > let (x : int) = 5;;
   val x = 5
+
+  $ ../bin/REPL.exe <<EOF
+  > let (x : int option) = Some 5;; match x with | Some val -> print_int (-val) | None -> ()
+  -5
+  val x = Some 5
+  ()
+
+  $ ../bin/REPL.exe <<EOF
+  > if true then print_int 1
+  1
+  ()
+
+  $ ../bin/REPL.exe <<EOF
+  > print_int 42
+  42
+  ()
+
+  $ ../bin/REPL.exe <<EOF
+  > print_int
+  <builtin>
+
+  $ ../bin/REPL.exe <<EOF
+  > let rec fib n = if n<2 then n else fib (n - 1) + fib (n - 2);; fib 4
+  val fib = <fun>
+  3

@@ -54,6 +54,20 @@
     ]
 
   $ ../bin/REPL.exe -dparsetree <<EOF
+  > let x = 5 and y = 6 and z = 7 in x + y + z
+  [(Str_eval
+      (Expr_let (NonRecursive,
+         { vb_pat = (Pat_var "x"); vb_expr = (Expr_const (Const_int 5)) },
+         [{ vb_pat = (Pat_var "y"); vb_expr = (Expr_const (Const_int 6)) };
+           { vb_pat = (Pat_var "z"); vb_expr = (Expr_const (Const_int 7)) }],
+         (Expr_binop (Add,
+            (Expr_binop (Add, (Expr_ident "x"), (Expr_ident "y"))),
+            (Expr_ident "z")))
+         )))
+    ]
+
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
   > if x then if y then z
   [(Str_eval
       (Expr_if ((Expr_ident "x"),
@@ -163,7 +177,7 @@
       (Expr_match ((Expr_ident "mnc"),
          { case_pat = Pat_any;
            case_expr =
-           (Expr_constraint ((Type_var "'ftxcdkouhyyumgetu"),
+           (Expr_constraint ((Type_var "ftxcdkouhyyumgetu"),
               (Expr_ident "hwumibc")))
            },
          [{ case_pat = (Pat_constant (Const_int 310));
@@ -208,4 +222,27 @@
            ))
         },
       []))
+    ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > varKatya
+  [(Str_eval (Expr_ident "varKatya"))]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > ifx theny
+  [(Str_eval (Expr_apply ((Expr_ident "ifx"), (Expr_ident "theny"))))]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > Katya
+  : end_of_input
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > katya_08Katya
+  [(Str_eval (Expr_ident "katya_08Katya"))]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > letrec x = x
+  [(Str_eval
+      (Expr_binop (Eq, (Expr_apply ((Expr_ident "letrec"), (Expr_ident "x"))),
+         (Expr_ident "x"))))
     ]
