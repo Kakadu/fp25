@@ -1,43 +1,87 @@
 [@@@ocaml.text "/*"]
 
-(** Copyright 2021-2025, Kakadu and contributors *)
+(** Copyright 2021-2025, Kakadu *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-open QCheck
+[@@@ocaml.text "/*"]
+
+open QCheck.Gen
 open Lambda_lib
 open Ast
 
-let gen_name =
-  Gen.oneof
-    [ Gen.pure "x"
-    ; Gen.pure "y"
-    ; Gen.pure "z"
-    ; Gen.pure "a"
-    ; Gen.pure "b"
-    ; Gen.pure "c"
-    ; Gen.pure "f"
-    ; Gen.pure "g"
+let ident_start_gen =
+  oneof
+    [ map Char.chr (int_range (Char.code 'a') (Char.code 'z'))
+    ; map Char.chr (int_range (Char.code 'A') (Char.code 'Z'))
+    ; return '_'
     ]
 ;;
 
-let gen_int = Gen.(oneof [ int_range 0 100; int_range 1 1000 ])
-let gen_constant = Gen.map (fun i -> Int i) gen_int
-let gen_binop = Gen.oneofl [ Plus; Minus; Mul; Div ]
-let gen_compop = Gen.oneofl [ Equal; NotEqual; Less; LessEq; Greater; GreaterEq ]
-let gen_rec_flag = Gen.oneofl [ NonRecursive; Recursive ]
+let ident_cont_gen =
+  oneof [ ident_start_gen; map Char.chr (int_range (Char.code '0') (Char.code '9')) ]
+;;
 
-let gen_expr =
-  let rec aux depth =
-    let open Gen in
-    if depth = 0
-    then oneof [ map (fun c -> Const c) gen_constant; map (fun n -> Var n) gen_name ]
-    else (
-      let deep = aux (depth - 1) in
-      let medium = aux (depth / 2) in
-      let simple = aux (depth / 3) in
-      frequency
-        [ 4, aux 0
+let gen_name =
+  ident_start_gen
+  >>= fun first ->
+  list ident_cont_gen
+  >>= fun rest ->
+  let name = String.of_seq (List.to_seq (first :: rest)) in
+  match name with
+  | "let" | "in" | "rec" | "if" | "then" | "else" | "fun" -> return (name ^ "_id")
+  | _ -> return name
+;;
+
+let gen_int = oneof [ int_range 0 100; int_range 1 1000 ]
+let gen_constant = map (fun i -> Int i) gen_int
+
+type gen_rec_flag = rec_flag =
+  | NonRecursive
+  | Recursive
+[@@deriving qcheck]
+
+type gen_binop = binop =
+  | Plus
+  | Minus
+  | Mul
+  | Div
+[@@deriving qcheck]
+
+type gen_compop = compop =
+  | Equal
+  | NotEqual
+  | Less
+  | LessEq
+  | Greater
+  | GreaterEq
+[@@deriving qcheck]
+
+type gen_unop = unop = Neg [@@deriving qcheck]
+
+type gen_expr = expr =
+  | Const of (constant[@gen gen_constant])
+  | Var of (string[@gen gen_name])
+  | Abs of (string list[@gen list_size (int_range 1 3) gen_name]) * gen_expr
+  | App of gen_expr * gen_expr
+  | Let of gen_rec_flag * (string[@gen gen_name]) * gen_expr * gen_expr
+  | BinOp of gen_binop * gen_expr * gen_expr
+  | UnOp of gen_unop * gen_expr
+  | Comp of gen_compop * gen_expr * gen_expr
+  | If of gen_expr * gen_expr * gen_expr
+[@@deriving qcheck]
+
+(* let gen_expr =
+   let rec aux depth =
+   let open Gen in
+   if depth = 0
+   then oneof [ map (fun c -> Const c) gen_constant; map (fun n -> Var n) gen_name ]
+   else (
+   let deep = aux (depth - 1) in
+   let medium = aux (depth / 2) in
+   let simple = aux (depth / 3) in
+   frequency
+   [ 4, aux 0
         ; 2, map3 (fun op e1 e2 -> BinOp (op, e1, e2)) gen_binop medium medium
         ; 2, map3 (fun op e1 e2 -> Comp (op, e1, e2)) gen_compop medium medium
         ; 2, map2 (fun f arg -> App (f, arg)) deep simple
@@ -56,20 +100,22 @@ let gen_expr =
           , let* e = simple in
             return (UnOp (Neg, e)) )
         ])
-  in
-  Gen.sized (fun size ->
+   in
+   Gen.sized (fun size ->
+   let depth = min (size / 2) 5 in
+   aux depth)
+   ;; *)
+
+let gen_expr =
+  sized (fun size ->
     let depth = min (size / 2) 5 in
-    aux depth)
+    gen_gen_expr_sized depth)
 ;;
 
 let arb_expr = QCheck.make ~print:Printast.string_of_expr gen_expr
-
-let arb_program =
-  QCheck.make ~print:(fun s -> s) Gen.(map Printast.string_of_expr gen_expr)
-;;
+let arb_program = QCheck.make ~print:(fun s -> s) (map Printast.string_of_expr gen_expr)
 
 let gen_invalid_program =
-  let open Gen in
   oneof
     [ pure "let x = "
     ; pure "if x > 5 then"
