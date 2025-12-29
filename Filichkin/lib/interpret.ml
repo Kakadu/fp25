@@ -30,6 +30,7 @@ type env = (string * value) list
 and value =
   | VInt of int
   | VUnit
+  | VBool of bool
   | VClosure of string * expr * env
   | VBuiltin of (value -> value eval_result)
 
@@ -49,12 +50,18 @@ let eval_binop op v1 v2 =
   | Mult, VInt a, VInt b -> return (VInt (a * b))
   | Div, VInt _, VInt 0 -> err DivisionByZero
   | Div, VInt a, VInt b -> return (VInt (a / b))
-  | Equal, VInt a, VInt b -> return (VInt (if a = b then 1 else 0))
-  | More, VInt a, VInt b -> return (VInt (if a > b then 1 else 0))
-  | Less, VInt a, VInt b -> return (VInt (if a < b then 1 else 0))
-  | EMore, VInt a, VInt b -> return (VInt (if a >= b then 1 else 0))
-  | ELess, VInt a, VInt b -> return (VInt (if a <= b then 1 else 0))
-  | _, _, _ -> err (TypeError "binary operation expected two integers")
+  | Equal, VInt a, VInt b -> return (VBool (a = b))
+  | NotEqual, VInt a, VInt b -> return (VBool (a <> b))
+  | More, VInt a, VInt b -> return (VBool (a > b))
+  | Less, VInt a, VInt b -> return (VBool (a < b))
+  | EMore, VInt a, VInt b -> return (VBool (a >= b))
+  | ELess, VInt a, VInt b -> return (VBool (a <= b))
+  | And, VBool a, VBool b -> return (VBool (a && b))
+  | Or, VBool a, VBool b -> return (VBool (a || b))
+  | And, _, _ | Or, _, _ -> err (TypeError "&& and || expect booleans")
+  | (Equal | NotEqual | More | Less | EMore | ELess), _, _ ->
+    err (TypeError "comparisons expect integers")
+  | _ -> err (TypeError "binary operation expected two integers")
 ;;
 
 (** Main interpretation function *)
@@ -69,6 +76,7 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
       (match look_up x env with
        | Some v -> return v
        | None -> err (UnboundVariable x))
+    | Bool b -> return (VBool b)
     | BinOp (op, e1, e2) ->
       let* v1 = eval env e1 steps in
       let* v2 = eval env e2 steps in
@@ -76,12 +84,12 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
     | If (cond, then_e, else_opt) ->
       let* v = eval env cond steps in
       (match v with
-       | VInt 0 ->
+       | VBool false ->
          (match else_opt with
           | Some e -> eval env e steps
           | None -> return VUnit)
-       | VInt _ -> eval env then_e steps
-       | _ -> err IncorrectExpression)
+       | VBool true -> eval env then_e steps
+       | _ -> err (TypeError "if condition must be boolean"))
     | Let (flag, name, bound, body_opt) ->
       (match flag with
        | NonRec ->
@@ -103,8 +111,10 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
     | UnOp (op, e1) ->
       let* v1 = eval env e1 steps in
       (match op, v1 with
-       | "-", VInt n -> return (VInt (-n))
-       | _ -> err (TypeError "unsupported unary operator"))
+       | Neg, VInt n -> return (VInt (-n))
+       | Not, VBool n -> return (VBool (not n))
+       | Neg, _ -> err (TypeError "negation expects integer")
+       | Not, _ -> err (TypeError "not expects boolean"))
     | App (f, arg) ->
       let* vf = eval env f steps in
       let* va = eval env arg steps in
@@ -125,7 +135,7 @@ let init_env =
           return VUnit
         | _ -> err (TypeError "print_int expects an integer"))
   in
-  [ "print_int", print_int_fun ]
+  [ "print_int", print_int_fun; "true", VBool true; "false", VBool false ]
 ;;
 
 let run_interpret expr = eval init_env expr 1000

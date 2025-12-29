@@ -25,7 +25,19 @@ let parens p = char '(' *> spaces *> p <* spaces <* char ')'
 
 (** This is a reserved word *)
 let is_keyword = function
-  | "let" | "in" | "fun" | "true" | "false" | "rec" | "else" | "if" | "then" | "_" -> true
+  | "let"
+  | "in"
+  | "fun"
+  | "true"
+  | "false"
+  | "rec"
+  | "else"
+  | "if"
+  | "then"
+  | "_"
+  | "not"
+  | "and"
+  | "or" -> true
   | _ -> false
 ;;
 
@@ -35,6 +47,12 @@ let integer =
     | '0' .. '9' -> true
     | _ -> false)
   >>| fun digits -> Int (int_of_string digits)
+;;
+
+let boolean =
+  spaces *> (string "true" *> return (Bool true))
+  <|> string "false" *> return (Bool false)
+  <* spaces
 ;;
 
 let is_first = function
@@ -81,14 +99,20 @@ let expr =
       kw_arrow *> expr
       >>| fun body -> List.fold_right (fun arg f -> Abs (arg, f)) params body
     in
-    let atom = spaces *> choice [ integer; var; fun_expr; parens expr ] <* spaces in
-    let unary_minus =
-      fix (fun unary_minus ->
-        let base = choice [ atom; parens unary_minus ] in
-        choice [ (char '-' *> spaces *> base >>| fun e -> UnOp ("-", e)); base ])
+    let atom =
+      spaces *> choice [ integer; boolean; var; fun_expr; parens expr ] <* spaces
+    in
+    let unary_expr =
+      fix (fun unary_expr ->
+        let base = choice [ atom; parens unary_expr ] in
+        choice
+          [ (char '-' *> spaces *> base >>| fun e -> UnOp (Neg, e))
+          ; (string "not" *> spaces1 *> base >>| fun e -> UnOp (Not, e))
+          ; base
+          ])
     in
     let application =
-      let* f = unary_minus in
+      let* f = unary_expr in
       let* args = many atom in
       match args with
       | [] -> return f
@@ -141,15 +165,21 @@ let expr =
           (choice
              [ spaces *> string "+" *> return Plus; spaces *> string "-" *> return Minus ])
       in
-      make_chain
-        add_sub
-        (choice
-           [ spaces *> string ">=" *> return EMore
-           ; spaces *> string "<=" *> return ELess
-           ; spaces *> string "=" *> return Equal
-           ; spaces *> string ">" *> return More
-           ; spaces *> string "<" *> return Less
-           ])
+      let comp =
+        make_chain
+          add_sub
+          (choice
+             [ spaces *> string ">=" *> spaces *> return EMore
+             ; spaces *> string "<=" *> spaces *> return ELess
+             ; spaces *> string "<>" *> spaces *> return NotEqual
+             ; spaces *> string "=" *> spaces *> return Equal
+             ; spaces *> string ">" *> spaces *> return More
+             ; spaces *> string "<" *> spaces *> return Less
+             ])
+      in
+      let and_expr = make_chain comp (spaces *> string "&&" *> spaces *> return And) in
+      let or_expr = make_chain and_expr (spaces *> string "||" *> spaces *> return Or) in
+      or_expr
     in
     choice [ let_expr; if_expr; bin_ops ])
 ;;

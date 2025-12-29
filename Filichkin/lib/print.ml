@@ -23,6 +23,9 @@ let rec print_ast = function
       | Less -> "Less"
       | ELess -> "ELess"
       | EMore -> "EMore"
+      | NotEqual -> "NotEqual"
+      | And -> "And"
+      | Or -> "Or"
     in
     Printf.sprintf "BinOp (%s, %s, %s)" op_str (print_ast l) (print_ast r)
   | If (c, t, None) -> Printf.sprintf "If (%s, %s, None)" (print_ast c) (print_ast t)
@@ -38,6 +41,7 @@ let rec print_ast = function
   | Abs (param, body) -> Printf.sprintf "Abs (%S, %s)" param (print_ast body)
   | App (f, a) -> Printf.sprintf "App (%s, %s)" (print_ast f) (print_ast a)
   | UnOp (_, e) -> Printf.sprintf "UnOp (%s, %s)" "-" (print_ast e)
+  | Bool b -> Printf.sprintf "Bool (%b)" b
 ;;
 
 let rec print_expr = function
@@ -55,6 +59,9 @@ let rec print_expr = function
       | Less -> "<"
       | EMore -> ">="
       | ELess -> "<="
+      | NotEqual -> "<>"
+      | And -> "&&"
+      | Or -> "||"
     in
     let left_str = print_expr left in
     let right_str = print_expr right in
@@ -84,4 +91,5 @@ let rec print_expr = function
     Printf.sprintf "(let %s%s = %s%s)" rec_prefix name value_str body_str
   | Abs (param, body) -> Printf.sprintf "(fun %s -> %s)" param (print_expr body)
   | App (func, arg) -> Printf.sprintf "(%s %s)" (print_expr func) (print_expr arg)
+  | Bool b -> Printf.sprintf "%b" b
 ;;

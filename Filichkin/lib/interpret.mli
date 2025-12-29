@@ -23,6 +23,7 @@ type env = (string * value) list
 and value =
   | VInt of int
   | VUnit
+  | VBool of bool
   | VClosure of string * expr * env
   | VBuiltin of (value -> value eval_result)
 
