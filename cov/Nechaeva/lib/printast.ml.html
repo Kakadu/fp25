@@ -159,49 +159,49 @@
 open Ast
 
 let string_of_binop = function
-  | <span data-count="4892">P</span>lus -&gt; "+"
-  | <span data-count="4828">M</span>inus -&gt; "-"
-  | <span data-count="4850">M</span>ul -&gt; "*"
-  | <span data-count="4811">D</span>iv -&gt; "/"
+  | <span data-count="3792">P</span>lus -&gt; "+"
+  | <span data-count="3588">M</span>inus -&gt; "-"
+  | <span data-count="3494">M</span>ul -&gt; "*"
+  | <span data-count="3667">D</span>iv -&gt; "/"
 ;;
 
 let string_of_compop = function
-  | <span data-count="3091">E</span>qual -&gt; "="
-  | <span data-count="3385">N</span>otEqual -&gt; "&lt;&gt;"
-  | <span data-count="3193">L</span>ess -&gt; "&lt;"
-  | <span data-count="3207">L</span>essEq -&gt; "&lt;="
-  | <span data-count="3338">G</span>reater -&gt; "&gt;"
-  | <span data-count="3201">G</span>reaterEq -&gt; "&gt;="
+  | <span data-count="2227">E</span>qual -&gt; "="
+  | <span data-count="2453">N</span>otEqual -&gt; "&lt;&gt;"
+  | <span data-count="2281">L</span>ess -&gt; "&lt;"
+  | <span data-count="2335">L</span>essEq -&gt; "&lt;="
+  | <span data-count="2322">G</span>reater -&gt; "&gt;"
+  | <span data-count="2397">G</span>reaterEq -&gt; "&gt;="
 ;;
 
 let string_of_rec_flag = function
-  | <span data-count="4897">N</span>onRecursive -&gt; ""
-  | <span data-count="4915">R</span>ecursive -&gt; "rec "
+  | <span data-count="7405">N</span>onRecursive -&gt; ""
+  | <span data-count="7091">R</span>ecursive -&gt; "rec "
 ;;
 
 let rec pp_expr fmt = function
-  | <span data-count="72705">C</span>onst (Int n) -&gt; Format.fprintf fmt "%d" n
+  | <span data-count="63577">C</span>onst (Int n) -&gt; Format.fprintf fmt "%d" n
   | <span data-count="0">C</span>onst Unit -&gt; Format.fprintf fmt "()"
-  | <span data-count="73323">V</span>ar name -&gt; Format.fprintf fmt "%s" name
-  | <span data-count="9840">A</span>bs (params, body) -&gt;
-    Format.fprintf fmt "(fun %s -&gt; %a)" (String.conca<span data-count="9840">t</span> " " params) pp_expr body
-  | <span data-count="19095">A</span>pp (func, arg) -&gt; Format.fprintf fmt "(%a %a)" pp_expr func pp_expr arg
-  | <span data-count="9812">L</span>et (flag, name, value, body) -&gt;
+  | <span data-count="63771">V</span>ar name -&gt; Format.fprintf fmt "%s" name
+  | <span data-count="14484">A</span>bs (params, body) -&gt;
+    Format.fprintf fmt "(fun %s -&gt; %a)" (String.conca<span data-count="14484">t</span> " " params) pp_expr body
+  | <span data-count="14723">A</span>pp (func, arg) -&gt; Format.fprintf fmt "(%a %a)" pp_expr func pp_expr arg
+  | <span data-count="14496">L</span>et (flag, name, value, body) -&gt;
     Format.fprintf
       fmt
       "(let %s%s = %a in %a)"
-      (string_of_rec_fla<span data-count="9812">g</span> flag)
+      (string_of_rec_fla<span data-count="14496">g</span> flag)
       name
       pp_expr
       value
       pp_expr
       body
-  | <span data-count="19381">B</span>inOp (op, left, right) -&gt;
-    Format.fprintf fmt "(%a %s %a)" pp_expr left (string_of_bino<span data-count="19381">p</span> op) pp_expr right
-  | <span data-count="9840">U</span>nOp (Neg, e) -&gt; Format.fprintf fmt "(-%a)" pp_expr e
-  | <span data-count="19415">C</span>omp (op, left, right) -&gt;
-    Format.fprintf fmt "(%a %s %a)" pp_expr left (string_of_compo<span data-count="19415">p</span> op) pp_expr right
-  | <span data-count="19127">I</span>f (cond, then_expr, else_expr) -&gt;
+  | <span data-count="14541">B</span>inOp (op, left, right) -&gt;
+    Format.fprintf fmt "(%a %s %a)" pp_expr left (string_of_bino<span data-count="14541">p</span> op) pp_expr right
+  | <span data-count="14836">U</span>nOp (Neg, e) -&gt; Format.fprintf fmt "(-%a)" pp_expr e
+  | <span data-count="14015">C</span>omp (op, left, right) -&gt;
+    Format.fprintf fmt "(%a %s %a)" pp_expr left (string_of_compo<span data-count="14015">p</span> op) pp_expr right
+  | <span data-count="14751">I</span>f (cond, then_expr, else_expr) -&gt;
     Format.fprintf
       fmt
       "(if %a then %a else %a)"
