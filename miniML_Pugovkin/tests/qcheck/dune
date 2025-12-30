@@ -1,0 +1,6 @@
+(test
+ (name qcheck_tests)
+ (modules qcheck_tests)
+ (libraries lambda_lib qcheck)
+ (instrumentation
+  (backend bisect_ppx)))
