@@ -1,0 +1,10 @@
+(executable
+ (name REPL)
+ (public_name Balyshev.REPL)
+ (modules REPL)
+ (libraries MiniML stdio)
+ (modes native byte)
+ (flags
+  (:standard -g))
+ (instrumentation
+  (backend bisect_ppx)))
