@@ -1,0 +1,5 @@
+let fib n =
+  let rec fib_iter a b count = if count then fib_iter b (a + b) (count - 1) else a in
+  fib_iter 0 1 n
+;;
+let () = print_int (fib 9)
