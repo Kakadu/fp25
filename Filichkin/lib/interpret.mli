@@ -24,7 +24,8 @@ and value =
   | VInt of int
   | VUnit
   | VBool of bool
-  | VClosure of string * expr * env
+  | VTuple of value list
+  | VClosure of pattern * expr * env
   | VBuiltin of (value -> value eval_result)
 
 val string_of_value : value -> string

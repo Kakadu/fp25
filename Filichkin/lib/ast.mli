@@ -19,16 +19,24 @@ type binop =
   | ELess (** Less than or equal: `<=` *)
   | And (** `&&` *)
   | Or (** `||` *)
+[@@deriving show { with_path = false }]
 
 type rec_flag =
   | NonRec (** Non-recursive binding *)
   | Rec (** Recursive binding *)
+[@@deriving show { with_path = false }]
 
 type unop =
   | Neg (** Unary negation *)
   | Not (** Logical NOT *)
+[@@deriving show { with_path = false }]
 
 type ident = string [@@deriving show { with_path = false }]
+
+type pattern =
+  | PVar of ident
+  | PTuple of pattern list
+[@@deriving show { with_path = false }]
 
 type expr =
   | Int of int (** Integer literal *)
@@ -39,10 +47,12 @@ type expr =
   | UnOp of unop * expr (** Unary operation: operator, operand *)
   | If of expr * expr * expr option
   (** Conditional expression: condition, then branch, optional else branch *)
-  | Let of rec_flag * string * expr * expr option
+  | Let of rec_flag * pattern * expr * expr option
   (** Let expression: recursiveness flag, name, bound expression, body (optional)
       The last parameter is the optional expression body (for parsing convenience) *)
-  | Abs of ident * expr
+  | Abs of pattern * expr
   (** Abstraction (lambda function): parameter list, function body
       Syntactic sugar for functions with multiple arguments *)
   | App of expr * expr (** Application (function call): function, argument *)
+  | Tuple of expr list    
+[@@deriving show { with_path = false }]

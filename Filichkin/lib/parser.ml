@@ -91,16 +91,40 @@ let kw_then = simple_keyword "then"
 let kw_else = simple_keyword "else"
 let kw_rec = kw "rec"
 let kw_arrow = simple_keyword "->"
+let comma = spaces *> char ',' <* spaces
+
+let tuple_p expr =
+  char '(' *> spaces *> sep_by1 comma expr
+  <* spaces
+  <* char ')'
+  >>| function
+  | [ e ] -> e
+  | es -> Tuple es
+;;
+
+let pattern =
+  fix (fun pattern ->
+    let pvar = identifier >>| fun x -> PVar x in
+    let ptuple =
+      char '(' *> spaces *> sep_by1 comma pattern
+      <* spaces
+      <* char ')'
+      >>| function
+      | [ p ] -> p
+      | ps -> PTuple ps
+    in
+    spaces *> choice [ ptuple; pvar ] <* spaces)
+;;
 
 let expr =
   fix (fun expr ->
     let fun_expr =
-      let* params = kw_fun *> many1 identifier in
+      let* params = kw_fun *> many1 pattern in
       kw_arrow *> expr
-      >>| fun body -> List.fold_right (fun arg f -> Abs (arg, f)) params body
+      >>| fun body -> List.fold_right (fun pat acc -> Abs (pat, acc)) params body
     in
     let atom =
-      spaces *> choice [ integer; boolean; var; fun_expr; parens expr ] <* spaces
+      spaces *> choice [ integer; boolean; var; fun_expr; tuple_p expr ] <* spaces
     in
     let unary_expr =
       fix (fun unary_expr ->
@@ -120,24 +144,19 @@ let expr =
     in
     let let_expr =
       let rec_flag = kw_rec *> return Rec <|> return NonRec in
-      let make_without_in =
+      let make with_in =
         let* rf = kw_let *> rec_flag in
-        let* name = identifier in
-        let* args = many (spaces *> identifier) in
+        let* pat = pattern in
+        let* args = many (spaces *> pattern) in
         let* bound_expr = spaces *> char '=' *> spaces *> expr in
-        let fun_expr = List.fold_right (fun arg acc -> Abs (arg, acc)) args bound_expr in
-        return (Let (rf, name, fun_expr, None))
+        let fun_expr = List.fold_right (fun p acc -> Abs (p, acc)) args bound_expr in
+        match with_in with
+        | None -> return (Let (rf, pat, fun_expr, None))
+        | Some () ->
+          let* body = kw_in *> expr in
+          return (Let (rf, pat, fun_expr, Some body))
       in
-      let make_with_in =
-        let* rf = kw_let *> rec_flag in
-        let* name = identifier in
-        let* args = many (spaces *> identifier) in
-        let* bound_expr = spaces *> char '=' *> spaces *> expr in
-        let* body = kw_in *> expr in
-        let fun_expr = List.fold_right (fun arg acc -> Abs (arg, acc)) args bound_expr in
-        return (Let (rf, name, fun_expr, Some body))
-      in
-      choice [ make_with_in; make_without_in ]
+      choice [ make (Some ()); make None ]
     in
     let if_expr =
       let* cond = kw_if *> expr in
