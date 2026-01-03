@@ -42,9 +42,8 @@ let rec print_ast = function
       | Or -> "Or"
     in
     Printf.sprintf "BinOp (%s, %s, %s)" op_str (print_ast l) (print_ast r)
-  | If (c, t, None) -> Printf.sprintf "If (%s, %s, None)" (print_ast c) (print_ast t)
-  | If (c, t, Some e) ->
-    Printf.sprintf "If (%s, %s, Some %s)" (print_ast c) (print_ast t) (print_ast e)
+  | If (c, t, e) ->
+    Printf.sprintf "If (%s, %s, %s)" (print_ast c) (print_ast t) (print_ast e)
   | Let (NonRec, x, e, None) ->
     Printf.sprintf "Let (NonRec, %S, %s, None)" (pattern_ast x) (print_ast e)
   | Let (NonRec, x, e, Some b) ->
@@ -108,11 +107,7 @@ let rec print_expr = function
   | If (cond, thn, els) ->
     let cond_str = print_expr cond in
     let thn_str = print_expr thn in
-    let els_str =
-      match els with
-      | None -> ""
-      | Some e -> Printf.sprintf " else %s" (print_expr e)
-    in
+    let els_str = Printf.sprintf " else %s" (print_expr els) in
     Printf.sprintf "(if %s then %s%s)" cond_str thn_str els_str
   | Let (rec_f, name, value, body) ->
     let rec_prefix =

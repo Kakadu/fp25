@@ -109,14 +109,20 @@ let instantiate (Forall (vars, t)) =
     | (TInt | TBool | TUnit) as t -> t
     | TFun (t1, t2) -> TFun (go t1, go t2)
     | TTuple ts -> TTuple (List.map go ts)
-    | TVar ({ contents = Unbound id } as r) ->
+    | TVar { contents = Unbound id } ->
       (match List.assoc_opt id subst with
        | Some t -> t
-       | None -> TVar r)
+       | None -> fresh_tyvar ())
     | TVar { contents = Link t } -> go t
   in
   go t
 ;;
+
+[ "print_int", Forall ([], TFun (TInt, TUnit))
+; "print_bool", Forall ([], TFun (TBool, TUnit))
+; "true", Forall ([], TBool)
+; "false", Forall ([], TBool)
+]
 
 (* Вспомогательная функция для извлечения переменных из паттерна и их типов *)
 let rec bind_pattern p t =
@@ -181,19 +187,13 @@ let rec infer env e =
      | None -> TUnit)
   | Let (Rec, _, _, _) ->
     raise (TypeError "recursive let only supports simple variables, not patterns")
-  | If (c, t, Some e) ->
+  | If (c, t, e) ->
     let tc = infer env c in
     unify tc TBool;
     let tt = infer env t in
     let te = infer env e in
     unify tt te;
     tt
-  | If (c, t, None) ->
-    let tc = infer env c in
-    unify tc TBool;
-    let tt = infer env t in
-    unify tt TUnit;
-    TUnit
   | BinOp (op, e1, e2) ->
     let t1 = infer env e1 in
     let t2 = infer env e2 in

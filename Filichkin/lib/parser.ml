@@ -161,7 +161,7 @@ let expr =
     let if_expr =
       let* cond = kw_if *> expr in
       let* t = kw_then *> expr in
-      kw_else *> expr >>| (fun e -> If (cond, t, Some e)) <|> return (If (cond, t, None))
+      kw_else *> expr >>| fun e -> If (cond, t, e)
     in
     let bin_ops =
       let make_chain next ops =
