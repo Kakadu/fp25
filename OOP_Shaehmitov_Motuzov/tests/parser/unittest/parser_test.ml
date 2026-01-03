@@ -146,6 +146,50 @@ let%expect_test "fun with two arguments" =
     (FunExpr ([(PVar "x"); (PVar "y")], (BinOp (Add, (Var "x"), (Var "y"))))) |}]
 ;;
 
+let%expect_test "tuple pattern" =
+  run_test "let (x, y) = (1, 2) in x + y";
+  [%expect
+    {|
+    (Let (NonRec, (PTuple [(PVar "x"); (PVar "y")]),
+       (Tuple [(Const (CInt 1)); (Const (CInt 2))]),
+       (BinOp (Add, (Var "x"), (Var "y"))))) |}]
+;;
+
+let%expect_test "boolean constants" =
+  run_test "true && false || not (true)";
+  [%expect
+    {|
+    (BinOp (Or, (BinOp (And, (Const (CBool true)), (Const (CBool false)))),
+       (UnOp (Not, (Const (CBool true)))))) |}]
+;;
+
+let%expect_test "oop test" =
+  run_test "let obj = new ClassName in obj#methodName 42";
+  [%expect
+    {|
+    (Let (NonRec, (PVar "obj"), (New ("ClassName", [])),
+       (MethodCall ((Var "obj"), "methodName", [(Const (CInt 42))])))) |}]
+;;
+
+let%expect_test "new with constructor args" =
+  run_test "let obj = new Point 10 20 in obj#x";
+  [%expect
+    {|
+    (Let (NonRec, (PVar "obj"),
+       (New ("Point", [(Const (CInt 10)); (Const (CInt 20))])),
+       (FieldAccess ((Var "obj"), "x")))) |}]
+;;
+
+let%expect_test "new with expression args" =
+  run_test "new Calculator (1 + 2) (3 * 4)";
+  [%expect
+    {|
+    (New ("Calculator",
+       [(BinOp (Add, (Const (CInt 1)), (Const (CInt 2))));
+         (BinOp (Mul, (Const (CInt 3)), (Const (CInt 4))))]
+       )) |}]
+;;
+
 let run_program_parser input =
   match parse_structure_items input with
   | Ok expr -> Stdlib.print_endline (show_program expr)
@@ -301,5 +345,68 @@ let%expect_test "test2" =
         (Rec, (PVar "f"),
          (If ((Var "n"), (Const (CInt 1)),
             (App ((Var "f"), (BinOp (Sub, (Var "n"), (Const (CInt 1))))))))))
+      ] |}]
+;;
+
+let%expect_test "class definition" =
+  run_program_parser
+    "class Point = object (boba) \n\
+    \  val x = 0\n\
+    \  val y = 0\n\
+    \  method move dx dy = x + dx \n\
+     end;;";
+  [%expect {|
+    [(ClassDef
+        { class_name = "Point"; parent_class = None; self_name = (Some "boba");
+          fields = [("x", (Const (CInt 0))); ("y", (Const (CInt 0)))];
+          methods =
+          [{ method_name = "move"; method_params = [(PVar "dx"); (PVar "dy")];
+             method_body = (BinOp (Add, (Var "x"), (Var "dx"))) }
+            ]
+          })
+      ] |}]
+;;
+
+let%expect_test "class definition simple" =
+  run_program_parser
+    "class Point = object val x = 0 val y = 0 method get_x = this#x end;;";
+  [%expect {|
+    [(ClassDef
+        { class_name = "Point"; parent_class = None; self_name = None;
+          fields = [("x", (Const (CInt 0))); ("y", (Const (CInt 0)))];
+          methods =
+          [{ method_name = "get_x"; method_params = [];
+             method_body = (FieldAccess ((Var "this"), "x")) }
+            ]
+          })
+      ] |}]
+;;
+
+let%expect_test "class definition inheritance" =
+  run_program_parser
+    "class ColorPoint = object inherit Point val c = 0 method get_color = this#c end;;";
+  [%expect {|
+    [(ClassDef
+        { class_name = "ColorPoint"; parent_class = (Some "Point");
+          self_name = None; fields = [("c", (Const (CInt 0)))];
+          methods =
+          [{ method_name = "get_color"; method_params = [];
+             method_body = (FieldAccess ((Var "this"), "c")) }
+            ]
+          })
+      ] |}]
+;;
+
+let%expect_test "class with method params" =
+  run_program_parser "class Calculator = object method add a b = a + b end;;";
+  [%expect {|
+    [(ClassDef
+        { class_name = "Calculator"; parent_class = None; self_name = None;
+          fields = [];
+          methods =
+          [{ method_name = "add"; method_params = [(PVar "a"); (PVar "b")];
+             method_body = (BinOp (Add, (Var "a"), (Var "b"))) }
+            ]
+          })
       ] |}]
 ;;

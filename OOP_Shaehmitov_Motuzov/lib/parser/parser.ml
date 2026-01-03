@@ -12,17 +12,28 @@ open Angstrom
 
 let whitespace = take_while Char.is_whitespace
 let whitespace1 = take_while1 Char.is_whitespace
-let keyword s = string s <* whitespace1
 
-let keyword1 s =
-  string s
-  <* (whitespace1 *> return ()
-      <|> (peek_char
-           >>= function
-           | Some '(' -> return ()
-           | _ -> fail "expected whitespace or '('"))
+let is_name_start = function
+  | 'a' .. 'z' | 'A' .. 'Z' -> true
+  | _ -> false
 ;;
 
+let is_name_char = function
+  | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' -> true
+  | _ -> false
+;;
+
+let keyword s =
+  string s
+  <* (peek_char
+      >>= function
+      | Some c when is_name_char c ->
+        fail ("keyword " ^ s ^ " cannot be a prefix of identifier")
+      | _ -> return ())
+  <* whitespace
+;;
+
+let keyword1 = keyword
 let parens p = char '(' *> whitespace *> p <* whitespace <* char ')' <* whitespace
 let token p = p <* whitespace
 let token1 p = p <* whitespace1
@@ -37,27 +48,63 @@ let parse_boolean =
     [ (token (string "true") >>| fun _ -> Const (CBool true))
     ; (token (string "false") >>| fun _ -> Const (CBool false))
     ]
-
-let is_name_start = function
-  | 'a' .. 'z' | 'A' .. 'Z' -> true
-  | _ -> false
 ;;
 
-let is_name_char = function
-  | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' -> true
-  | _ -> false
+let keywords =
+  [ "let"
+  ; "rec"
+  ; "in"
+  ; "if"
+  ; "then"
+  ; "else"
+  ; "fun"
+  ; "true"
+  ; "false"
+  ; "not"
+  ; "class"
+  ; "new"
+  ; "method"
+  ; "val"
+  ; "this"
+  ; "object"
+  ; "end"
+  ; "inherit"
+  ]
 ;;
 
-let keywords = [ "let"; "rec"; "in"; "if"; "then"; "else"; "fun"; "true"; "false"; "not";  ]
-
-let parse_name =
+let parse_ident =
   let* first = satisfy is_name_start in
   let* rest = take_while is_name_char in
   let* _ = whitespace in
   let name = String.of_char first ^ rest in
   if List.mem keywords name ~equal:String.equal
   then fail ("keyword " ^ name ^ " cannot be an identifier")
-  else return (Var name)
+  else return name
+;;
+
+let parse_name = parse_ident >>| fun name -> Var name
+
+let parse_class_name =
+  let* first =
+    satisfy (function
+      | 'A' .. 'Z' -> true
+      | _ -> false)
+  in
+  let* rest = take_while is_name_char in
+  let* _ = whitespace in
+  return (String.of_char first ^ rest)
+;;
+
+let parse_field_def expr =
+  let* _ = keyword "val" in
+  let* first = satisfy is_name_start in
+  let* rest = take_while is_name_char in
+  let* _ = whitespace in
+  let name = String.of_char first ^ rest in
+  let* _ = token (char '=') in
+  let* init_expr = expr in
+  let* _ = whitespace in
+  return (name, init_expr)
 ;;
 
 (**Binary operators *)
@@ -78,6 +125,8 @@ let or_op = token (string "||") *> return Or
 (**Unary operators *)
 let neg_op = token (string "-") *> return Neg
 
+let not_op = keyword1 "not" *> return Not
+
 (**Keywords*)
 
 let kw_let = keyword "let"
@@ -93,18 +142,121 @@ let parse_unit = token (string "()") *> return (Const CUnit)
 let parse_binary_op parsed_bin_op e1 e2 = BinOp (parsed_bin_op, e1, e2)
 
 (** Patterns *)
-let parse_pattern =
+let mk_simple_pattern parse_pattern_rec =
   choice
-    [ (let* first = satisfy is_name_start in
+    [ (token (string "()") >>| fun _ -> PUnit)
+    ; (char '_'
+       *> (peek_char
+           >>= function
+           | Some c when is_name_char c -> fail "underscore must be separated"
+           | _ -> return ())
+       *> whitespace
+       >>| fun _ -> PAny)
+    ; (let* first = satisfy is_name_start in
        let* rest = take_while is_name_char in
        let* _ = whitespace in
        let name = String.of_char first ^ rest in
        if List.mem keywords name ~equal:String.equal || String.equal name "_"
        then fail ("keyword " ^ name ^ " cannot be an identifier")
        else return (PVar name))
-    ; (token1 (char '_') >>| fun _ -> PAny)
-    ; (token1 (string "()") >>| fun _ -> PUnit)
+    ; parens parse_pattern_rec
     ]
+;;
+
+let parse_pattern =
+  fix (fun parse_pattern ->
+    let simple = mk_simple_pattern parse_pattern in
+    sep_by1 (char ',' *> whitespace) simple
+    >>| function
+    | [ single ] -> single
+    | lst -> PTuple lst)
+;;
+
+let parse_simple_pattern = mk_simple_pattern parse_pattern
+
+let parse_method_def expr =
+  let* _ = keyword "method" in
+  let* first = satisfy is_name_start in
+  let* rest = take_while is_name_char in
+  let* _ = whitespace in
+  let method_name = String.of_char first ^ rest in
+  let* params = many parse_simple_pattern in
+  let* _ = token (char '=') in
+  let* body = expr in
+  let* _ = whitespace in
+  return { method_name; method_params = params; method_body = body }
+;;
+
+let parse_class_def expr =
+  let* _ = keyword "class" in
+  let* class_name = parse_class_name in
+  let* _ = token (char '=') in
+  let* _ = keyword "object" in
+  let* self_name = option None (parens parse_ident >>| Option.some) in
+  let* parent = option None (keyword "inherit" *> parse_class_name >>| Option.some) in
+  let* fields_and_methods =
+    many
+      (choice
+         [ (parse_field_def expr >>| fun f -> `Field f)
+         ; (parse_method_def expr >>| fun m -> `Method m)
+         ])
+  in
+  let* _ = keyword "end" in
+  let fields =
+    List.filter_map fields_and_methods ~f:(function
+      | `Field f -> Some f
+      | _ -> None)
+  in
+  let methods =
+    List.filter_map fields_and_methods ~f:(function
+      | `Method m -> Some m
+      | _ -> None)
+  in
+  return { class_name; parent_class = parent; self_name; fields; methods }
+;;
+
+let parse_new expr =
+  let* _ = keyword "new" in
+  let* class_name = parse_class_name in
+  let parse_atom =
+    choice
+      [ token (string "()") *> return (Const CUnit)
+      ; parse_integer
+      ; parse_boolean
+      ; parse_name
+      ; parens expr
+      ]
+  in
+  let* args = many parse_atom in
+  return (New (class_name, args))
+;;
+
+let parse_this = token (string "this") *> return (Var "this")
+
+let parse_postfix base =
+  many
+    (char '#'
+     *> let* first = satisfy is_name_start in
+        let* rest = take_while is_name_char in
+        let* _ = whitespace in
+        let name = String.of_char first ^ rest in
+        return (fun obj -> FieldAccess (obj, name)))
+  >>| fun ops -> List.fold_left ~f:(fun acc op -> op acc) ~init:base ops
+;;
+
+let parse_app_with_methods atom =
+  let* first = atom in
+  let* rest = many atom in
+  return
+    (List.fold_left
+       ~f:(fun acc arg ->
+         match acc with
+         | FieldAccess (obj, method_name) -> MethodCall (obj, method_name, [ arg ])
+         | MethodCall (obj, method_name, args) ->
+           MethodCall (obj, method_name, args @ [ arg ])
+         | _ -> App (acc, arg))
+       ~init:first
+       rest)
 ;;
 
 let parse_if expr =
@@ -119,7 +271,7 @@ let parse_if expr =
 
 let parse_lambda expr =
   let* _ = kw_fun in
-  let* params = many1 parse_pattern in
+  let* params = many1 parse_simple_pattern in
   let* _ = token (string "->") in
   let* body = expr in
   return (FunExpr (params, body))
@@ -134,7 +286,7 @@ let parse_app atom =
 let parse_let expr =
   let* is_rec = kw_let *> option false (kw_rec *> return true) in
   let* pat = parse_pattern in
-  let* params = many parse_pattern in
+  let* params = many parse_simple_pattern in
   let* _ = token (char '=') in
   let* value = expr in
   let* _ = kw_in in
@@ -152,7 +304,11 @@ let parse_operators base_parser =
   (* Unary operators *)
   let unary =
     fix (fun unary_rec ->
-      choice [ (neg_op *> unary_rec >>| fun e -> UnOp (Neg, e)); token base_parser ])
+      choice
+        [ (neg_op *> unary_rec >>| fun e -> UnOp (Neg, e))
+        ; (not_op *> unary_rec >>| fun e -> UnOp (Not, e))
+        ; token base_parser
+        ])
   in
   (* helper for left accociativity *)
   let helper p op =
@@ -169,21 +325,37 @@ let parse_operators base_parser =
   in
   let logical_and = helper compare_ops (and_op >>| parse_binary_op) in
   let logical_or = helper logical_and (or_op >>| parse_binary_op) in
-  
   logical_or
 ;;
 
 let parse_expr =
   fix (fun parse_expr ->
-    let atom = choice [ parse_unit; parens parse_expr; parse_integer; parse_name ] in
-    let application = parse_app atom in
+    let atom =
+      choice
+        [ parse_unit
+        ; parse_boolean
+        ; parse_integer
+        ; parse_this
+        ; parse_new parse_expr
+        ; parse_name
+        ; parens parse_expr
+        ]
+    in
+    let with_postfix = atom >>= parse_postfix in
+    let application = parse_app_with_methods with_postfix in
     let expr_with_ops = parse_operators application in
-    choice
-      [ parse_if parse_expr
-      ; parse_lambda parse_expr
-      ; parse_let parse_expr
-      ; expr_with_ops
-      ])
+    let expr_non_tuple =
+      choice
+        [ parse_if parse_expr
+        ; parse_lambda parse_expr
+        ; parse_let parse_expr
+        ; expr_with_ops
+        ]
+    in
+    sep_by1 (char ',' *> whitespace) expr_non_tuple
+    >>| function
+    | [ single ] -> single
+    | exprs -> Tuple exprs)
 ;;
 
 let parse_full_expr = whitespace *> parse_expr <* whitespace <* end_of_input
@@ -197,7 +369,7 @@ let parse s =
 let parse_binding expr =
   let* is_rec = kw_let *> option false (kw_rec *> return true) in
   let* pat = parse_pattern in
-  let* params = many parse_pattern in
+  let* params = many parse_simple_pattern in
   let* _ = token (char '=') in
   let* value = expr in
   let value_with_lambdas =
@@ -206,7 +378,12 @@ let parse_binding expr =
   return ((if is_rec then Rec else NonRec), pat, value_with_lambdas)
 ;;
 
-let parse_program_item expr = parse_binding expr >>| fun e -> Value e
+let parse_program_item expr =
+  choice
+    [ (parse_class_def expr >>| fun cdef -> ClassDef cdef)
+    ; (parse_binding expr >>| fun e -> Value e)
+    ]
+;;
 
 let parse_program =
   let items = sep_by (token (string ";;")) (parse_program_item parse_expr) in

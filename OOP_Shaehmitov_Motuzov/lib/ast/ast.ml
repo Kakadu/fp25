@@ -69,7 +69,8 @@ type expr =
   | FunExpr of pattern list * expr (** Abstraction (function), e.g. `fun x -> e` *)
   | App of expr * expr (** Function application, e.g. `f x` *)
   | Tuple of expr list (** Tuple, e.g. `(e1, e2, ..., en)` *)
-  | New of class_def (** Class instantiation, e.g. `new ClassName` *)
+  | New of name * expr list
+  (** Class instantiation with constructor args, e.g. `new className args` *)
   | MethodCall of expr * name * expr list (** Method call, e.g. `obj#methodName(args)` *)
   | FieldAccess of expr * name (** Field access, e.g. `obj#fieldName` *)
 [@@deriving show { with_path = false }]
@@ -86,6 +87,7 @@ and field_def = name * expr [@@deriving show { with_path = false }]
 and class_def =
   { class_name : name
   ; parent_class : name option
+  ; self_name : name option
   ; fields : field_def list
   ; methods : method_def list
   }
@@ -144,10 +146,15 @@ let rec pp_expr fmt = function
   | If (cond, t, f) ->
     Format.fprintf fmt "(if %a then %a else %a)" pp_expr cond pp_expr t pp_expr f
   | FunExpr (params, body) ->
+    let pp_param fmt p =
+      match p with
+      | PVar _ | PAny | PUnit -> pp_pattern fmt p
+      | PTuple _ -> Format.fprintf fmt "(%a)" pp_pattern p
+    in
     Format.fprintf
       fmt
       "(fun %a -> %a)"
-      (Format.pp_print_list ~pp_sep:Format.pp_print_space pp_pattern)
+      (Format.pp_print_list ~pp_sep:Format.pp_print_space pp_param)
       params
       pp_expr
       body
@@ -161,15 +168,24 @@ let rec pp_expr fmt = function
       "(%a)"
       (Format.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ") pp_expr)
       es
-  | New class_def -> Format.fprintf fmt "(new %a)" pp_class_def class_def
+  | New (class_name, args) ->
+    if List.length args = 0
+    then Format.fprintf fmt "(new %s)" class_name
+    else
+      Format.fprintf
+        fmt
+        "(new %s %a)"
+        class_name
+        (Format.pp_print_list ~pp_sep:Format.pp_print_space pp_expr)
+        args
   | MethodCall (obj, method_name, args) ->
     Format.fprintf
       fmt
-      "(%a#%s(%a))"
+      "(%a#%s %a)"
       pp_expr
       obj
       method_name
-      (Format.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ") pp_expr)
+      (Format.pp_print_list ~pp_sep:Format.pp_print_space pp_expr)
       args
   | FieldAccess (obj, field_name) -> Format.fprintf fmt "(%a#%s)" pp_expr obj field_name
 
@@ -186,15 +202,18 @@ and pp_method_def fmt { method_name; method_params; method_body } =
 and pp_field_def fmt (name, init_expr) =
   Format.fprintf fmt "val %s = %a" name pp_expr init_expr
 
-and pp_class_def fmt { class_name; parent_class; fields; methods } =
-  Format.fprintf fmt "class %s" class_name;
-  (match parent_class with
-   | Some parent -> Format.fprintf fmt " extends %s" parent
+and pp_class_def fmt { class_name; parent_class; self_name; fields; methods } =
+  Format.fprintf fmt "class %s = object" class_name;
+  (match self_name with
+   | Some self -> Format.fprintf fmt " (%s)" self
    | None -> ());
-  Format.fprintf fmt " {\n";
-  List.iter (fun f -> Format.fprintf fmt "  %a;\n" pp_field_def f) fields;
-  List.iter (fun m -> Format.fprintf fmt "  %a;\n" pp_method_def m) methods;
-  Format.fprintf fmt "}"
+  (match parent_class with
+   | Some parent -> Format.fprintf fmt "\n  inherit %s" parent
+   | None -> ());
+  Format.fprintf fmt "\n";
+  List.iter (fun f -> Format.fprintf fmt "  %a\n" pp_field_def f) fields;
+  List.iter (fun m -> Format.fprintf fmt "  %a\n" pp_method_def m) methods;
+  Format.fprintf fmt "end"
 ;;
 
 let pp_program_item fmt = function
