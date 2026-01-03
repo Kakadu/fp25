@@ -4,8 +4,8 @@
  (modules parser_test interprate_test)
  (preprocess
   (pps ppx_expect ppx_deriving.show))
- (instrumentation
-  (backend bisect_ppx)))
+ (inline_tests
+  (backend ppx_expect)))
 
 (test
  (name qcheck_test)

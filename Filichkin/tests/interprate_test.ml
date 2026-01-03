@@ -9,8 +9,8 @@ let%expect_test "Fibonacci" =
   let res =
     run_interpret
       (parser
-         "let rec fib n = if n then if n - 1 then fib (n - 1) + fib (n - 2) else 1 else \
-          0 in fib 10"
+         "let rec fib n = if n <> 0 then if (n - 1) <> 0 then fib (n - 1) + fib (n - 2) \
+          else 1 else 0 in fib 10"
        |> Result.get_ok)
   in
   match res with
@@ -52,7 +52,7 @@ let%expect_test "2" =
   let res =
     run_interpret
       (parser
-         "let r = (fun s k -> s+k) 5 7 in let p = (fun s->s*2) ((fun k -> k*3) 10) in \
+         "let r = (fun s k -> s+k) 5 7 in let p = (fun s-> s*2) ((fun k -> k*3) 10) in \
           p/2 + r"
        |> Result.get_ok)
   in
