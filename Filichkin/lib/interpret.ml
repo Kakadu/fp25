@@ -110,13 +110,10 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
       let* v1 = eval env e1 steps in
       let* v2 = eval env e2 steps in
       eval_binop op v1 v2
-    | If (cond, then_e, else_opt) ->
+    | If (cond, then_e, else_e) ->
       let* v = eval env cond steps in
       (match v with
-       | VBool false ->
-         (match else_opt with
-          | Some e -> eval env e steps
-          | None -> return VUnit)
+       | VBool false -> eval env else_e steps
        | VBool true -> eval env then_e steps
        | _ -> err (TypeError "if condition must be boolean"))
     | Let (flag, pat, bound, body_opt) ->
@@ -173,15 +170,22 @@ let init_env =
           return VUnit
         | _ -> err (TypeError "print_int expects an integer"))
   in
-  [ "print_int", print_int_fun; "true", VBool true; "false", VBool false ]
+  let print_bool_fun =
+    VBuiltin
+      (function
+        | VBool b ->
+          Stdlib.Printf.printf "%b\n" b;
+          return VUnit
+        | _ -> err (TypeError "print_bool expects a boolean"))
+  in
+  [ "print_int", print_int_fun
+  ; "true", VBool true
+  ; "false", VBool false
+  ; "print_bool", print_bool_fun
+  ]
 ;;
 
 let run_interpret expr = eval init_env expr 1000
-
-(* let string_of_value = function
-   | VInt n -> Int.to_string n
-   | _ -> "()"
-   ;; *)
 
 let rec string_of_value = function
   | VInt n -> Int.to_string n
