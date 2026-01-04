@@ -219,58 +219,17 @@ let rec infer env e =
      | Not ->
        unify t TBool;
        TBool)
+  | Match (scrutinee, cases) ->
+    let t_scrutinee = infer env scrutinee in
+    let t_result = fresh_tyvar () in
+    List.iter
+      (fun (pat, expr) ->
+        let bindings = bind_pattern pat t_scrutinee in
+        let env' =
+          List.fold_left (fun acc (x, t) -> (x, Forall ([], t)) :: acc) env bindings
+        in
+        let t_branch = infer env' expr in
+        unify t_branch t_result)
+      cases;
+    t_result
 ;;
-
-(* let rec type_equal t1 t2 =
-   match t1, t2 with
-   | TInt, TInt -> true
-   | TBool, TBool -> true
-   | TUnit, TUnit -> true
-   | TFun (a1, r1), TFun (a2, r2) -> type_equal a1 a2 && type_equal r1 r2
-   | _ -> false
-   ;;
-
-   let rec type_of env e =
-   match e with
-   | Int _ -> Ok TInt
-   | Bool _ -> Ok TBool
-   | Var x ->
-   (match look_up x env with
-   | Some t -> Ok t
-   | None -> Error (UnboundVariable x))
-   | UnOp (Neg, e) ->
-   let* t = type_of env e in
-   (match t with
-   | TInt -> Ok TInt
-   | _ -> Error (Mismatch (TInt, t)))
-   | UnOp (Not, e) ->
-   let* t = type_of env e in
-   (match t with
-   | TBool -> Ok TBool
-   | _ -> Error (Mismatch (TBool, t)))
-   | BinOp (op, e1, e2) ->
-   let* t1 = type_of env e1 in
-   let* t2 = type_of env e2 in
-   (match op, t1, t2 with
-   | (Plus | Minus | Div | Mult), TInt, TInt -> Ok TInt
-   | (ELess | EMore | Equal | NotEqual | More | Less), TInt, TInt -> Ok TBool
-   | (And | Or), TBool, TBool -> Ok TBool
-   | (Plus | Minus | Div | Mult), _, _ -> Error (Mismatch (TInt, t1))
-   | (ELess | EMore | Equal | NotEqual | More | Less), _, _ ->
-   Error (Mismatch (TInt, t1))
-   | (And | Or), _, _ -> Error (Mismatch (TBool, t1)))
-   | If (cond, t, e) ->
-   let* tc = type_of env cond in
-   (match tc with
-   | TBool ->
-   let* tt = type_of env t in
-   (match e with
-   | None -> Ok TUnit
-   | Some e1 ->
-   let* te = type_of env e1 in
-   (match type_equal tt te with
-   | true -> Ok tt
-   | false -> Error (BranchesHaveDifferentTypes (tt, te))))
-   | _ -> Error (IfConditionNotBool tc))
-   | _ -> Ok TInt
-   ;; *)

@@ -34,6 +34,7 @@ and value =
   | VTuple of value list
   | VClosure of pattern * expr * env
   | VBuiltin of (value -> value eval_result)
+  | VConstr of string * value list
 
 let rec look_up x = function
   | [] -> None
@@ -82,6 +83,20 @@ let rec match_pattern (pat : pattern) (v : value) : (string * value) list option
         Some (List.concat bindings)
       with
       | _ -> None)
+  | PConstr (name, ps), VConstr (vname, vs) ->
+    if String.equal name vname && List.length ps = List.length vs
+    then (
+      let rec collect acc ps vs =
+        match ps, vs with
+        | [], [] -> Some acc
+        | p :: ps', v :: vs' ->
+          (match match_pattern p v with
+           | Some bs -> collect (acc @ bs) ps' vs'
+           | None -> None)
+        | _ -> None
+      in
+      collect [] ps vs)
+    else None
   | _ -> None
 ;;
 
@@ -96,7 +111,10 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
     | Var x ->
       (match look_up x env with
        | Some v -> return v
-       | None -> err (UnboundVariable x))
+       | None ->
+         if Char.is_uppercase x.[0]
+         then return (VConstr (x, []))
+         else err (UnboundVariable x))
     | Bool b -> return (VBool b)
     | Tuple es ->
       let rec eval_elements acc = function
@@ -140,6 +158,18 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
              | _ -> err (TypeError "recursive binding must be a function"))
           | PTuple _ -> err (TypeError "Recursive let-tuple is not supported")))
     | Abs (pat, body) -> return (VClosure (pat, body, env))
+    | Match (scrutinee, cases) ->
+      let* v = eval env scrutinee steps in
+      let rec try_cases = function
+        | [] -> err (TypeError "non-exhaustive pattern matching")
+        | (pat, expr) :: rest ->
+          (match match_pattern pat v with
+           | Some bindings ->
+             let new_env = bindings @ env in
+             eval new_env expr steps
+           | None -> try_cases rest)
+      in
+      try_cases cases
     | UnOp (op, e1) ->
       let* v1 = eval env e1 steps in
       (match op, v1 with
@@ -151,6 +181,7 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
       let* vf = eval env f steps in
       let* va = eval env arg steps in
       (match vf with
+       | VConstr (name, args) -> return (VConstr (name, args @ [ va ]))
        | VClosure (pat, body, closure_env) ->
          (match match_pattern pat va with
           | Some bindings ->
@@ -194,6 +225,8 @@ let rec string_of_value = function
   | VTuple vs -> "(" ^ (List.map vs ~f:string_of_value |> String.concat ~sep:", ") ^ ")"
   | VClosure _ -> "<fun>"
   | VBuiltin _ -> "<builtin>"
+  | VClosure _ -> "<fun>"
+  | VConstr (name, _) -> name
 ;;
 
 let string_of_error = function

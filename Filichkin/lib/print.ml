@@ -13,6 +13,9 @@ let rec pattern = function
   | PTuple ps ->
     let ps_str = List.map pattern ps |> String.concat ", " in
     "(" ^ ps_str ^ ")"
+  | PConstr (name, args) ->
+    let ars_s = List.map pattern args |> String.concat ", " in
+    "(" ^ name ^ ", " ^ ars_s ^ ")"
 ;;
 
 let rec pattern_ast = function
@@ -20,6 +23,9 @@ let rec pattern_ast = function
   | PTuple ps ->
     let ps_str = List.map pattern_ast ps |> String.concat "; " in
     Printf.sprintf "PTuple [%s]" ps_str
+  | PConstr (name, args) ->
+    let ps_str = List.map pattern_ast args |> String.concat "; " in
+    Printf.sprintf "PConstr %s, [%s]" name ps_str
 ;;
 
 let rec print_ast = function
@@ -73,6 +79,14 @@ let rec print_ast = function
   | Tuple es ->
     let es_str = List.map print_ast es |> String.concat "; " in
     Printf.sprintf "Tuple [%s]" es_str
+  | Match (scrutinee, cases) ->
+    let cases_str =
+      List.map
+        (fun (p, e) -> Printf.sprintf "(%s, %s)" (pattern_ast p) (print_ast e))
+        cases
+      |> String.concat "; "
+    in
+    Printf.sprintf "Match (%s, [%s])" (print_ast scrutinee) cases_str
 ;;
 
 let rec print_expr = function
@@ -128,4 +142,12 @@ let rec print_expr = function
   | Tuple es ->
     let es_str = List.map print_expr es |> String.concat ", " in
     Printf.sprintf "(%s)" es_str
+  | Match (scrutinee, cases) ->
+    let cases_str =
+      List.map
+        (fun (p, e) -> Printf.sprintf "| %s -> %s" (pattern p) (print_expr e))
+        cases
+      |> String.concat " "
+    in
+    Printf.sprintf "(match %s with %s)" (print_expr scrutinee) cases_str
 ;;

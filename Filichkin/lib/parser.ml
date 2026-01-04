@@ -37,7 +37,9 @@ let is_keyword = function
   | "_"
   | "not"
   | "and"
-  | "or" -> true
+  | "or"
+  | "match"
+  | "with" -> true
   | _ -> false
 ;;
 
@@ -63,6 +65,12 @@ let is_first = function
 let is_other = function
   | 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' -> true
   | _ -> false
+;;
+
+let is_uppercase_ident s =
+  String.length s > 0
+  && Char.uppercase_ascii s.[0] = s.[0]
+  && Char.lowercase_ascii s.[0] <> s.[0]
 ;;
 
 let identifier =
@@ -92,6 +100,9 @@ let kw_else = simple_keyword "else"
 let kw_rec = kw "rec"
 let kw_arrow = simple_keyword "->"
 let comma = spaces *> char ',' <* spaces
+let kw_match = kw "match"
+let kw_with = spaces *> string "with" <* spaces
+let kw_bar = spaces *> char '|' <* spaces
 
 let tuple_p expr =
   char '(' *> spaces *> sep_by1 comma expr
@@ -105,6 +116,14 @@ let tuple_p expr =
 let pattern =
   fix (fun pattern ->
     let pvar = identifier >>| fun x -> PVar x in
+    let pconstr =
+      let* name = identifier in
+      if not (is_uppercase_ident name)
+      then fail "not a constructor"
+      else
+        let* args = many (choice [ parens pattern; pattern ]) in
+        return (PConstr (name, args))
+    in
     let ptuple =
       char '(' *> spaces *> sep_by1 comma pattern
       <* spaces
@@ -113,7 +132,7 @@ let pattern =
       | [ p ] -> p
       | ps -> PTuple ps
     in
-    spaces *> choice [ ptuple; pvar ] <* spaces)
+    spaces *> choice [ ptuple; pconstr; pvar ] <* spaces)
 ;;
 
 let expr =
@@ -200,7 +219,20 @@ let expr =
       let or_expr = make_chain and_expr (spaces *> string "||" *> spaces *> return Or) in
       or_expr
     in
-    choice [ let_expr; if_expr; bin_ops ])
+    let match_case =
+      let* _ = kw_bar in
+      let* pat = pattern in
+      let* _ = kw_arrow in
+      let* expr = expr <* spaces in
+      return (pat, expr)
+    in
+    let match_expr =
+      let* scrutinee = kw_match *> expr in
+      let* _ = kw_with in
+      let* cases = many1 match_case in
+      return (Match (scrutinee, cases))
+    in
+    choice [ let_expr; if_expr; match_expr; bin_ops ])
 ;;
 
 let top = spaces *> expr <* spaces <* end_of_input

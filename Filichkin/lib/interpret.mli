@@ -27,6 +27,7 @@ and value =
   | VTuple of value list
   | VClosure of pattern * expr * env
   | VBuiltin of (value -> value eval_result)
+  | VConstr of string * value list
 
 val string_of_value : value -> string
 val string_of_error : error -> string

@@ -19,24 +19,41 @@ type binop =
   | ELess (** Less than or equal: `<=` *)
   | And (** `&&` *)
   | Or (** `||` *)
-[@@deriving show { with_path = false }]
 
 type rec_flag =
   | NonRec (** Non-recursive binding *)
   | Rec (** Recursive binding *)
-[@@deriving show { with_path = false }]
 
 type unop =
   | Neg (** Unary negation *)
   | Not (** Logical NOT *)
-[@@deriving show { with_path = false }]
 
 type ident = string [@@deriving show { with_path = false }]
+
+type type_expr =
+  | TEInt
+  | TEBool
+  | TEUnit
+  | TEVar of ident
+  | TEArrow of type_expr * type_expr
+  | TETuple of type_expr list
+  | TEConstr of ident * type_expr list
+
+type constructor_decl =
+  { ctor_name : ident
+  ; ctor_args : type_expr list
+  }
+
+type type_decl =
+  { type_name : ident
+  ; type_params : ident list
+  ; constructors : constructor_decl list
+  }
 
 type pattern =
   | PVar of ident
   | PTuple of pattern list
-[@@deriving show { with_path = false }]
+  | PConstr of ident * pattern list
 
 type expr =
   | Int of int (** Integer literal *)
@@ -55,4 +72,4 @@ type expr =
       Syntactic sugar for functions with multiple arguments *)
   | App of expr * expr (** Application (function call): function, argument *)
   | Tuple of expr list
-[@@deriving show { with_path = false }]
+  | Match of expr * (pattern * expr) list
