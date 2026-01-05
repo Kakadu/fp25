@@ -36,6 +36,8 @@ and value =
   | VBuiltin of (value -> value eval_result)
   | VConstr of string * value list
 
+type state = { env : env (* позже добавим type_env *) }
+
 let rec look_up x = function
   | [] -> None
   | (y, v) :: _ when String.equal x y -> Some v
@@ -105,44 +107,42 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
   if steps < 0
   then err StepCountIsZero
   else (
-    let steps = steps - 1 in
+    let steps' = steps - 1 in
     match e with
     | Int n -> return (VInt n)
     | Var x ->
       (match look_up x env with
        | Some v -> return v
-       | None ->
-         if Char.is_uppercase x.[0]
-         then return (VConstr (x, []))
-         else err (UnboundVariable x))
+       | None -> err (UnboundVariable x))
+    | Constr name -> return (VConstr (name, []))
     | Bool b -> return (VBool b)
     | Tuple es ->
       let rec eval_elements acc = function
         | [] -> return (VTuple (List.rev acc))
         | head :: tail ->
-          let* v = eval env head steps in
+          let* v = eval env head steps' in
           eval_elements (v :: acc) tail
       in
       eval_elements [] es
     | BinOp (op, e1, e2) ->
-      let* v1 = eval env e1 steps in
-      let* v2 = eval env e2 steps in
+      let* v1 = eval env e1 steps' in
+      let* v2 = eval env e2 steps' in
       eval_binop op v1 v2
     | If (cond, then_e, else_e) ->
-      let* v = eval env cond steps in
+      let* v = eval env cond steps' in
       (match v with
-       | VBool false -> eval env else_e steps
-       | VBool true -> eval env then_e steps
+       | VBool false -> eval env else_e steps'
+       | VBool true -> eval env then_e steps'
        | _ -> err (TypeError "if condition must be boolean"))
     | Let (flag, pat, bound, body_opt) ->
       (match flag with
        | NonRec ->
-         let* v_bound = eval env bound steps in
+         let* v_bound = eval env bound steps' in
          (match match_pattern pat v_bound with
           | Some bindings ->
             let new_env = bindings @ env in
             (match body_opt with
-             | Some body -> eval new_env body steps
+             | Some body -> eval new_env body steps'
              | None -> return VUnit)
           | None -> err (TypeError "Pattern match failed in let-binding"))
        | Rec ->
@@ -153,40 +153,42 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
                let rec closure = VClosure (pat', fun_body, rec_env)
                and rec_env = (name, closure) :: env in
                (match body_opt with
-                | Some body -> eval rec_env body steps
+                | Some body -> eval rec_env body steps'
                 | None -> return VUnit)
              | _ -> err (TypeError "recursive binding must be a function"))
-          | PTuple _ -> err (TypeError "Recursive let-tuple is not supported")))
+          | PTuple _ -> err (TypeError "Recursive let-tuple is not supported")
+          | _ -> err (TypeError "Recursive let-tuple is not supported")))
+      (* Затычка *)
     | Abs (pat, body) -> return (VClosure (pat, body, env))
     | Match (scrutinee, cases) ->
-      let* v = eval env scrutinee steps in
+      let* v = eval env scrutinee steps' in
       let rec try_cases = function
         | [] -> err (TypeError "non-exhaustive pattern matching")
         | (pat, expr) :: rest ->
           (match match_pattern pat v with
            | Some bindings ->
              let new_env = bindings @ env in
-             eval new_env expr steps
+             eval new_env expr steps'
            | None -> try_cases rest)
       in
       try_cases cases
     | UnOp (op, e1) ->
-      let* v1 = eval env e1 steps in
+      let* v1 = eval env e1 steps' in
       (match op, v1 with
        | Neg, VInt n -> return (VInt (-n))
        | Not, VBool n -> return (VBool (not n))
        | Neg, _ -> err (TypeError "negation expects integer")
        | Not, _ -> err (TypeError "not expects boolean"))
     | App (f, arg) ->
-      let* vf = eval env f steps in
-      let* va = eval env arg steps in
+      let* vf = eval env f steps' in
+      let* va = eval env arg steps' in
       (match vf with
        | VConstr (name, args) -> return (VConstr (name, args @ [ va ]))
        | VClosure (pat, body, closure_env) ->
          (match match_pattern pat va with
           | Some bindings ->
             let new_env = bindings @ closure_env in
-            eval new_env body steps
+            eval new_env body steps'
           | None -> err (TypeError "Pattern match failed in function application"))
        | VBuiltin f -> f va
        | _ -> err (TypeError "application expects a function")))
@@ -216,7 +218,17 @@ let init_env =
   ]
 ;;
 
+let initial_state = { env = init_env }
 let run_interpret expr = eval init_env expr 1000
+
+let interpret_toplevel (st : state) (tl : toplevel) : (state * value option, error) result
+  =
+  match tl with
+  | TLExpr expr ->
+    let* v = eval st.env expr 1000 in
+    Ok (st, Some v)
+  | TLType _type_decl -> Ok (st, None)
+;;
 
 let rec string_of_value = function
   | VInt n -> Int.to_string n
@@ -225,7 +237,6 @@ let rec string_of_value = function
   | VTuple vs -> "(" ^ (List.map vs ~f:string_of_value |> String.concat ~sep:", ") ^ ")"
   | VClosure _ -> "<fun>"
   | VBuiltin _ -> "<builtin>"
-  | VClosure _ -> "<fun>"
   | VConstr (name, _) -> name
 ;;
 

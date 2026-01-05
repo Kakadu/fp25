@@ -29,6 +29,9 @@ and value =
   | VBuiltin of (value -> value eval_result)
   | VConstr of string * value list
 
+type state = { env : env }
+
+val initial_state : state
 val string_of_value : value -> string
 val string_of_error : error -> string
-val run_interpret : expr -> value eval_result
+val interpret_toplevel : state -> toplevel -> (state * value option, error) result
