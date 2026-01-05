@@ -39,7 +39,7 @@ type type_expr =
   | TETuple of type_expr list
   | TEConstr of ident * type_expr list
 
-type constructor_decl =
+type constr_decl =
   { ctor_name : ident
   ; ctor_args : type_expr list
   }
@@ -47,7 +47,7 @@ type constructor_decl =
 type type_decl =
   { type_name : ident
   ; type_params : ident list
-  ; constructors : constructor_decl list
+  ; constructors : constr_decl list
   }
 
 type pattern =
@@ -58,6 +58,7 @@ type pattern =
 type expr =
   | Int of int (** Integer literal *)
   | Var of ident (** Variable name *)
+  | Constr of ident (** Constr name *)
   | BinOp of binop * expr * expr
   (** Binary operation: operator, left and right operands *)
   | Bool of bool (** Boolean literal *)
@@ -73,3 +74,7 @@ type expr =
   | App of expr * expr (** Application (function call): function, argument *)
   | Tuple of expr list
   | Match of expr * (pattern * expr) list
+
+type toplevel =
+  | TLExpr of expr
+  | TLType of type_decl

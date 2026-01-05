@@ -39,7 +39,9 @@ let is_keyword = function
   | "and"
   | "or"
   | "match"
-  | "with" -> true
+  | "with"
+  | "type"
+  | "of" -> true
   | _ -> false
 ;;
 
@@ -67,17 +69,13 @@ let is_other = function
   | _ -> false
 ;;
 
-let is_uppercase_ident s =
-  String.length s > 0
-  && Char.uppercase_ascii s.[0] = s.[0]
-  && Char.lowercase_ascii s.[0] <> s.[0]
-;;
-
 let identifier =
   spaces
   *> lift2 (fun h t -> String.make 1 h ^ t) (satisfy is_first) (take_while is_other)
   >>= fun s -> if is_keyword s then fail ("keyword: " ^ s) else return s
 ;;
+
+(* let type_params = many (spaces *> char '\'' *> identifier) пока без реализации *)
 
 let simple_keyword s =
   spaces *> string s
@@ -89,7 +87,14 @@ let simple_keyword s =
            | _ -> fail "Invalid entry"))
 ;;
 
-let var = identifier >>= fun s -> return (Var s)
+let ident_expr =
+  identifier
+  >>= fun name ->
+  match name.[0] with
+  | 'A' .. 'Z' -> return (Constr name)
+  | _ -> return (Var name)
+;;
+
 let kw s = spaces *> string s <* spaces1
 let kw_let = kw "let"
 let kw_in = simple_keyword "in"
@@ -103,6 +108,8 @@ let comma = spaces *> char ',' <* spaces
 let kw_match = kw "match"
 let kw_with = spaces *> string "with" <* spaces
 let kw_bar = spaces *> char '|' <* spaces
+let kw_type = kw "type"
+let kw_of = kw "of"
 
 let tuple_p expr =
   char '(' *> spaces *> sep_by1 comma expr
@@ -115,15 +122,6 @@ let tuple_p expr =
 
 let pattern =
   fix (fun pattern ->
-    let pvar = identifier >>| fun x -> PVar x in
-    let pconstr =
-      let* name = identifier in
-      if not (is_uppercase_ident name)
-      then fail "not a constructor"
-      else
-        let* args = many (choice [ parens pattern; pattern ]) in
-        return (PConstr (name, args))
-    in
     let ptuple =
       char '(' *> spaces *> sep_by1 comma pattern
       <* spaces
@@ -132,7 +130,15 @@ let pattern =
       | [ p ] -> p
       | ps -> PTuple ps
     in
-    spaces *> choice [ ptuple; pconstr; pvar ] <* spaces)
+    let p_ident =
+      let* name = identifier in
+      match name.[0] with
+      | 'A' .. 'Z' ->
+        let* args = many (choice [ parens pattern; pattern ]) in
+        return (PConstr (name, args))
+      | _ -> return (PVar name)
+    in
+    spaces *> choice [ ptuple; p_ident ] <* spaces)
 ;;
 
 let expr =
@@ -143,7 +149,7 @@ let expr =
       >>| fun body -> List.fold_right (fun pat acc -> Abs (pat, acc)) params body
     in
     let atom =
-      spaces *> choice [ integer; boolean; var; fun_expr; tuple_p expr ] <* spaces
+      spaces *> choice [ integer; boolean; ident_expr; fun_expr; tuple_p expr ] <* spaces
     in
     let unary_expr =
       fix (fun unary_expr ->
@@ -235,8 +241,54 @@ let expr =
     choice [ let_expr; if_expr; match_expr; bin_ops ])
 ;;
 
-let top = spaces *> expr <* spaces <* end_of_input
+let type_expr =
+  fix (fun type_expr ->
+    let atom =
+      spaces
+      *> choice
+           [ string "int" *> return TEInt
+           ; string "bool" *> return TEBool
+           ; string "unit" *> return TEUnit
+           ; (char '\'' *> identifier >>| fun v -> TEVar v)
+           ; (identifier
+              >>= fun name -> many type_expr >>| fun args -> TEConstr (name, args))
+           ; parens type_expr
+           ]
+      <* spaces
+    in
+    let arrow =
+      let* t1 = atom in
+      option t1 (kw_arrow *> type_expr >>| fun t2 -> TEArrow (t1, t2))
+    in
+    arrow)
+;;
 
+let constr_decl =
+  let* name = identifier in
+  let* args = option [] (kw_of *> sep_by1 (spaces *> char '*' <* spaces) type_expr) in
+  return { ctor_name = name; ctor_args = args }
+;;
+
+let type_decl =
+  let* _ = kw_type in
+  let* params = many (spaces *> char '\'' *> identifier) in
+  let* name = identifier in
+  let* _ = spaces *> char '=' <* spaces in
+  let* _ = option () (spaces *> char '|' *> spaces) in
+  let* ctors = sep_by1 (spaces *> char '|' <* spaces) constr_decl in
+  return { type_name = name; type_params = params; constructors = ctors }
+;;
+
+let toplevel =
+  spaces *> choice [ (type_decl >>| fun td -> TLType td); (expr >>| fun e -> TLExpr e) ]
+  <* spaces
+  <* end_of_input
+;;
+
+let top = toplevel
+(* spaces *> expr <* spaces <* end_of_input *)
+
+(* let toplevel = spaces *> (expr >>| fun e -> TLExpr e) <* spaces <* end_of_input *)
 let parser str =
   match Angstrom.parse_string ~consume:Angstrom.Consume.All top str with
   | Result.Ok x -> Result.Ok x

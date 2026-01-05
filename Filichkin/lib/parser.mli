@@ -8,4 +8,4 @@
 
 type error = [ `parse_error of string ]
 
-val parser : string -> (Ast.expr, error) result
+val parser : string -> (Ast.toplevel, error) result
