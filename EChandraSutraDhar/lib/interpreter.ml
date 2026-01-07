@@ -8,6 +8,13 @@ open Stdlib.Format
 
 type env = (ident, value, String.comparator_witness) Map.t
 
+and value_error =
+  | UnboundVariable of ident
+  | TypeError
+  | DivisionByZeroError
+  | PatternMatchingError
+  | LHS
+  
 and value =
   | ValueInt of int
   | ValueBool of bool
@@ -19,12 +26,6 @@ and value =
   | ValueOption of value option
   | ValueBuiltin of (value -> (value, value_error) Result.t)
 
-and value_error =
-  | UnboundVariable of ident
-  | TypeError
-  | DivisionByZeroError
-  | PatternMatchingError
-  | LHS
 
 let pp_value_error fmt = function
   | UnboundVariable ident -> fprintf fmt "UnboundVariable: %S" ident
