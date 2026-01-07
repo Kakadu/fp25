@@ -245,7 +245,7 @@ let parse_expr_let parse_expr =
   token "let"
   *> lift4
        (fun rec_flag value_bindings and_bindings body ->
-         ExpLet (rec_flag, value_bindings, and_bindings, body))
+          ExpLet (rec_flag, value_bindings, and_bindings, body))
        (token "rec" *> (take_while1 Char.is_whitespace *> return true) <|> return false)
        (lift2
           (fun pat expr -> pat, expr)

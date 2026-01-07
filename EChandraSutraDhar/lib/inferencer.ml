@@ -255,10 +255,10 @@ let instantiate : Scheme.t -> ty ResultMonad.t =
   fun (S (vars, ty)) ->
   IntSet.fold
     (fun var typ ->
-      let* typ = typ in
-      let* fresh_ty = fresh_var in
-      let* subst = Substitution.singleton var fresh_ty in
-      return (Substitution.apply subst typ))
+       let* typ = typ in
+       let* fresh_ty = fresh_var in
+       let* subst = Substitution.singleton var fresh_ty in
+       return (Substitution.apply subst typ))
     vars
     (return ty)
 ;;

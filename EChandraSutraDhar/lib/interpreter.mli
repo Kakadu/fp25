@@ -7,14 +7,14 @@ open Base
 
 type env = (ident, value, String.comparator_witness) Map.t
 
-and value_error =
+type value_error =
   | UnboundVariable of ident
   | TypeError
   | DivisionByZeroError
   | PatternMatchingError
   | LHS
 
-and value =
+type value =
   | ValueInt of int
   | ValueBool of bool
   | ValueString of string

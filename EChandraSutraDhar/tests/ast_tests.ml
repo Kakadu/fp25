@@ -10,7 +10,8 @@ let%expect_test "test_const" =
   print_const (ConstInt 42);
   print_const (ConstBool true);
   print_const (ConstString "hello");
-  [%expect {|
+  [%expect
+    {|
 (ConstInt 42)
 (ConstBool true)
 (ConstString "hello")
@@ -22,7 +23,8 @@ let%expect_test "test_bin_oper" =
   print_bin_oper Plus;
   print_bin_oper And;
   print_bin_oper Equal;
-  [%expect {|
+  [%expect
+    {|
 Plus
 And
 Equal
@@ -33,7 +35,8 @@ let%expect_test "test_unar_oper" =
   let print_unar_oper op = print_endline (show_unar_oper op) in
   print_unar_oper Negative;
   print_unar_oper Not;
-  [%expect {|
+  [%expect
+    {|
 Negative
 Not
 |}]
@@ -44,7 +47,8 @@ let%expect_test "test_pattern" =
   print_pattern (PatVariable "x");
   print_pattern (PatConst (ConstInt 42));
   print_pattern PatAny;
-  [%expect {|
+  [%expect
+    {|
 (PatVariable "x")
 (PatConst (ConstInt 42))
 PatAny
@@ -61,7 +65,8 @@ let%expect_test "test_ty" =
   print_ty (TyVar 1);
   print_ty (TyArrow (TyPrim "int", TyPrim "bool"));
   print_ty (TyTuple [ TyPrim "int"; TyPrim "bool" ]);
-  [%expect {|
+  [%expect
+    {|
 int
 '1
 int -> bool
@@ -92,7 +97,8 @@ let%expect_test "test_pp_ty_complex" =
   print_ty (TyArrow (TyArrow (TyPrim "int", TyPrim "bool"), TyPrim "string"));
   print_ty (TyList (TyArrow (TyPrim "int", TyPrim "bool")));
   print_ty (TyOption (TyTuple [ TyPrim "int"; TyPrim "bool" ]));
-  [%expect {|
+  [%expect
+    {|
 (int -> bool) -> string
 (int -> bool) list
 ((int * bool)) option
