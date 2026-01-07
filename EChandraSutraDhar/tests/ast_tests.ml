@@ -74,7 +74,8 @@ let%expect_test "test_expr" =
   print_expr (ExpConst (ConstInt 42));
   print_expr (ExpBinOper (Plus, ExpConst (ConstInt 1), ExpConst (ConstInt 2)));
   print_expr (ExpLambda ([ PatVariable "x" ], ExpIdent "x"));
-  [%expect {|
+  [%expect
+    {|
 (ExpConst (ConstInt 42))
 (ExpBinOper (Plus, (ExpConst (ConstInt 1)), (ExpConst (ConstInt 2))))
 (ExpLambda ([(PatVariable "x")], (ExpIdent "x")))
@@ -103,10 +104,10 @@ let%expect_test "test_pattern_complex" =
   print_pattern (PatTuple (PatVariable "x", PatVariable "y", [ PatVariable "z" ]));
   print_pattern (PatType (PatVariable "x", TyPrim "int"));
   print_pattern (PatList [ PatVariable "x"; PatVariable "y" ]);
-  [%expect {|
+  [%expect
+    {|
 (PatTuple ((PatVariable "x"), (PatVariable "y"), [(PatVariable "z")]))
 (PatType ((PatVariable "x"), (TyPrim "int")))
 (PatList [(PatVariable "x"); (PatVariable "y")])
 |}]
 ;;
-

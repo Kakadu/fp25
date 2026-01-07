@@ -14,7 +14,7 @@ and value_error =
   | DivisionByZeroError
   | PatternMatchingError
   | LHS
-  
+
 and value =
   | ValueInt of int
   | ValueBool of bool
