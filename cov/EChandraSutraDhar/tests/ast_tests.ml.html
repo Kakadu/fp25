@@ -102,38 +102,39 @@
 <a id="L78"></a><span > </span>
 <a id="L79"></a><span > </span>
 <a id="L80"></a><span > </span>
-<a id="L81"></a><span class="visited"> </span>
-<a id="L82"></a><span > </span>
+<a id="L81"></a><span > </span>
+<a id="L82"></a><span class="visited"> </span>
 <a id="L83"></a><span > </span>
 <a id="L84"></a><span > </span>
-<a id="L85"></a><span class="visited"> </span>
+<a id="L85"></a><span > </span>
 <a id="L86"></a><span class="visited"> </span>
-<a id="L87"></a><span > </span>
-<a id="L88"></a><span class="visited"> </span>
-<a id="L89"></a><span > </span>
+<a id="L87"></a><span class="visited"> </span>
+<a id="L88"></a><span > </span>
+<a id="L89"></a><span class="visited"> </span>
 <a id="L90"></a><span > </span>
 <a id="L91"></a><span > </span>
-<a id="L92"></a><span class="visited"> </span>
+<a id="L92"></a><span > </span>
 <a id="L93"></a><span class="visited"> </span>
 <a id="L94"></a><span class="visited"> </span>
-<a id="L95"></a><span > </span>
+<a id="L95"></a><span class="visited"> </span>
 <a id="L96"></a><span > </span>
 <a id="L97"></a><span > </span>
-<a id="L98"></a><span class="visited"> </span>
-<a id="L99"></a><span > </span>
+<a id="L98"></a><span > </span>
+<a id="L99"></a><span class="visited"> </span>
 <a id="L100"></a><span > </span>
 <a id="L101"></a><span > </span>
-<a id="L102"></a><span class="visited"> </span>
-<a id="L103"></a><span > </span>
-<a id="L104"></a><span class="visited"> </span>
+<a id="L102"></a><span > </span>
+<a id="L103"></a><span class="visited"> </span>
+<a id="L104"></a><span > </span>
 <a id="L105"></a><span class="visited"> </span>
 <a id="L106"></a><span class="visited"> </span>
-<a id="L107"></a><span > </span>
+<a id="L107"></a><span class="visited"> </span>
 <a id="L108"></a><span > </span>
 <a id="L109"></a><span > </span>
-<a id="L110"></a><span class="visited"> </span>
+<a id="L110"></a><span > </span>
 <a id="L111"></a><span > </span>
-<a id="L112"></a><span > </span>
+<a id="L112"></a><span class="visited"> </span>
+<a id="L113"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -250,6 +251,7 @@
 <a href="#L110">110</a>
 <a href="#L111">111</a>
 <a href="#L112">112</a>
+<a href="#L113">113</a>
 </pre>
 <pre><code class="ocaml">(** Copyright 2025-2026, Ram Prosad Chandra Sutra Dhar *)
 
@@ -327,7 +329,8 @@ let%expect_test "test_expr" =
   print_expr (ExpConst (ConstInt 42));
   <span data-count="1">p</span>rint_expr (ExpBinOper (Plus, ExpConst (ConstInt 1), ExpConst (ConstInt 2)));
   <span data-count="1">p</span>rint_expr (ExpLambda ([ PatVariable "x" ], ExpIdent "x"));
-  <span data-count="1">[</span>%expect {|
+  <span data-count="1">[</span>%expect
+    {|
 (ExpConst (ConstInt 42))
 (ExpBinOper (Plus, (ExpConst (ConstInt 1)), (ExpConst (ConstInt 2))))
 (ExpLambda ([(PatVariable "x")], (ExpIdent "x")))
@@ -356,13 +359,13 @@ let%expect_test "test_pattern_complex" =
   print_pattern (PatTuple (PatVariable "x", PatVariable "y", [ PatVariable "z" ]));
   <span data-count="1">p</span>rint_pattern (PatType (PatVariable "x", TyPrim "int"));
   <span data-count="1">p</span>rint_pattern (PatList [ PatVariable "x"; PatVariable "y" ]);
-  <span data-count="1">[</span>%expect {|
+  <span data-count="1">[</span>%expect
+    {|
 (PatTuple ((PatVariable "x"), (PatVariable "y"), [(PatVariable "z")]))
 (PatType ((PatVariable "x"), (TyPrim "int")))
 (PatList [(PatVariable "x"); (PatVariable "y")])
 |}<span data-count="11">]</span>
 ;;
-
 </code></pre>
       </div>
     </div>
