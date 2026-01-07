@@ -28,6 +28,7 @@ type 'name t = 'name Ast.t =
   | Let of 'name * 'name t * 'name t
   | If of 'name t * 'name t * 'name t
   | LetRec of 'name * 'name t * 'name t
+  | Fix
 [@@deriving show { with_path = false }]
 
 let pp_named = pp Format.pp_print_string

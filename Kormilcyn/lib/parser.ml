@@ -25,7 +25,8 @@ let varname =
       | _ -> false)
   in
   match var with
-  | "fun" | "if" | "then" | "else" | "let" | "in" | "rec" -> fail "Name not permitted"
+  | "fun" | "if" | "then" | "else" | "let" | "in" | "rec" | "fix" ->
+    fail "Name not permitted"
   | _ -> return var
 ;;
 
@@ -106,6 +107,8 @@ let parse_miniml =
            and+ _ = no_ws (string "in")
            and+ e = pack.comp pack in
            return (Ast.LetRec (fvar, f, e)))
+        ; (let* _ = no_ws (string "fix") in
+           return Ast.Fix)
           (* переменная *)
         ; (let* s = no_ws varname in
            return (Ast.Var s))

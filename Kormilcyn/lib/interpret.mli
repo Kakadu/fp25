@@ -6,4 +6,17 @@
 
 [@@@ocaml.text "/*"]
 
+type error =
+  [ `NotAValue of string
+  | `Type_error of string
+  | `Unbound of string
+  | `Division_by_zero
+  ]
+
+val pp_error : Format.formatter -> [< error ] -> unit
+
+(* module Interpret (M : Utils.MONAD_FAIL) : sig *)
+(*   val run : 'name Ast.t -> (int, [> error ]) M.t *)
+(* end *)
+
 val parse_and_run : string -> unit

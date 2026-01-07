@@ -26,7 +26,7 @@ let pp_error ppf = function
 ;;
 
 module Interpret (M : MONAD_FAIL) : sig
-  val run : _ Ast.t -> (int, [> error ]) M.t
+  val run : 'name Ast.t -> (int, [> error ]) M.t
 end = struct
   let ( let* ) m f = M.bind m ~f
   let return = M.return
@@ -35,6 +35,7 @@ end = struct
   type 'name value =
     | VInt of int
     | VClosure of 'name * 'name Ast.t * 'name env
+    | VFix
 
   and 'name env = ('name * 'name value) list
 
@@ -44,10 +45,12 @@ end = struct
     | (y, v) :: rest -> if y = x then Some v else resolve rest x
   ;;
 
+  let max_steps = 100000
+
   let rec eval (env : 'name env) (e : 'name Ast.t) (steps : int)
     : ('name value, [> error ]) M.t
     =
-    if steps > 100000
+    if steps > max_steps
     then fail (`NotAValue "Steps limit exceeded")
     else (
       match e with
@@ -59,13 +62,14 @@ end = struct
       | If (e1, e2, e3) -> eval_if env e1 e2 e3 (steps + 1)
       | Fun (x, e) -> return (VClosure (x, e, env))
       | App (e1, e2) -> eval_app env e1 e2 (steps + 1)
+      | Fix -> return VFix
       | LetRec (f, Fun (x, b), e2) -> eval_letrec env f x b e2 (steps + 1)
       | LetRec _ -> fail (`Type_error "let rec expects a function on the right"))
 
   and eval_var env x =
     match resolve env x with
     | Some v -> return v
-    | None -> fail (`Unbound "<unbound variable>")
+    | None -> fail (`Unbound "<unbound>")
 
   and eval_neg env e steps : ('name value, [> error ]) M.t =
     let* v = eval env e (steps + 1) in
@@ -104,7 +108,19 @@ end = struct
     | VClosure (x, body, defenv) ->
       let* varg = eval env e2 (steps + 1) in
       eval ((x, varg) :: defenv) body (steps + 1)
+    | VFix -> eval_fix env e2 steps
     | _ -> fail (`Type_error "application of a non-function")
+
+  and eval_fix env f steps =
+    let* vfun = eval env f (steps + 1) in
+    match vfun with
+    | VClosure (farg, fbody, fenv) ->
+      (match fbody with
+       | Fun (x, body) ->
+         let rec self = VClosure (x, body, (farg, self) :: fenv) in
+         return self
+       | _ -> fail (`Type_error "fix expects a function returning a function"))
+    | _ -> fail (`Type_error "fix expects a function")
 
   and eval_letrec env f x b e2 steps : ('name value, [> error ]) M.t =
     let rec env' = (f, VClosure (x, b, env')) :: env in
@@ -114,9 +130,10 @@ end = struct
   let int_of_value = function
     | VInt i -> return i
     | VClosure _ -> fail (`NotAValue "cannot represent function as integer")
+    | VFix -> fail (`NotAValue "cannot represent fix as a value")
   ;;
 
-  let run e =
+  let run (e : 'name Ast.t) : (int, [> error ]) M.t =
     let* v = eval [] e 0 in
     int_of_value v
   ;;
