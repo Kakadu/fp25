@@ -1784,10 +1784,10 @@ let instantiate : Scheme.t -&gt; ty ResultMonad.t =
   fun (S (vars, ty)) -&gt;
   <span data-count="50">I</span>ntSet.fold
     (fun var typ -&gt;
-      <span data-count="0">l</span>et* typ = typ in
-      <span data-count="0">l</span>et* fresh_ty = fresh_var in
-      <span data-count="0">l</span>et* subst = Substitution.singleto<span data-count="0">n</span> var fresh_ty in
-      <span data-count="0">r</span>eturn (Substitution.appl<span data-count="0">y</span> subst typ))
+       <span data-count="0">l</span>et* typ = typ in
+       <span data-count="0">l</span>et* fresh_ty = fresh_var in
+       <span data-count="0">l</span>et* subst = Substitution.singleto<span data-count="0">n</span> var fresh_ty in
+       <span data-count="0">r</span>eturn (Substitution.appl<span data-count="0">y</span> subst typ))
     vars
     (retur<span data-count="50">n</span> ty)
 ;;

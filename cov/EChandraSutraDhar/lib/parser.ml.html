@@ -917,7 +917,7 @@ let parse_expr_let parse_expr =
   <span data-count="3">t</span>oke<span data-count="3">n</span> "let"
   *&gt; lift<span data-count="3">4</span>
        (fun rec_flag value_bindings and_bindings body -&gt;
-         <span data-count="15">E</span>xpLet (rec_flag, value_bindings, and_bindings, body))
+          <span data-count="15">E</span>xpLet (rec_flag, value_bindings, and_bindings, body))
        (toke<span data-count="3">n</span> "rec" *<span data-count="3">&gt;</span> (take_while<span data-count="3">1</span> Char.is_whitespace *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> true) &lt;|<span data-count="3">&gt;</span> retur<span data-count="3">n</span> false)
        (lift<span data-count="3">2</span>
           (fun pat expr -&gt; <span data-count="79">p</span>at, expr)
