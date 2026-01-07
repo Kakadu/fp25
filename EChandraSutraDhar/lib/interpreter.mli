@@ -25,7 +25,6 @@ and value =
   | ValueOption of value option
   | ValueBuiltin of (value -> (value, value_error) Result.t)
 
-
 val pp_value_error : Stdlib.Format.formatter -> value_error -> unit
 
 module Inter : sig

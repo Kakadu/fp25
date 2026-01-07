@@ -26,7 +26,6 @@ and value =
   | ValueOption of value option
   | ValueBuiltin of (value -> (value, value_error) Result.t)
 
-
 let pp_value_error fmt = function
   | UnboundVariable ident -> fprintf fmt "UnboundVariable: %S" ident
   | TypeError -> fprintf fmt "TypeError"
