@@ -6,15 +6,9 @@ open Ast
 open Base
 open Stdlib.Format
 
+type env = (ident, value, String.comparator_witness) Map.t
 
-type value_error =
-  | UnboundVariable of ident
-  | TypeError
-  | DivisionByZeroError
-  | PatternMatchingError
-  | LHS
-
-type value =
+and value =
   | ValueInt of int
   | ValueBool of bool
   | ValueString of string
@@ -25,7 +19,12 @@ type value =
   | ValueOption of value option
   | ValueBuiltin of (value -> (value, value_error) Result.t)
 
-and env = (ident, value, String.comparator_witness) Map.t
+and value_error =
+  | UnboundVariable of ident
+  | TypeError
+  | DivisionByZeroError
+  | PatternMatchingError
+  | LHS
 
 let pp_value_error fmt = function
   | UnboundVariable ident -> fprintf fmt "UnboundVariable: %S" ident
