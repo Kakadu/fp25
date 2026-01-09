@@ -1,7 +1,7 @@
 (library
  (name miniml_lib)
  (public_name Miniml.Lib)
- (modules Ast Interpret Parser Printast Pprintast utils)
+ (modules Ast Interpret Parser Pprintast utils)
  (modules_without_implementation ast)
  (libraries base angstrom)
  (preprocess

@@ -6,22 +6,7 @@
 
 [@@@ocaml.text "/*"]
 
-(** ***** UNIT TESTS COULD GO HERE (JUST AN EXAMPLE) *)
-let rec fact n = if n = 1 then 1 else n * fact (n - 1)
-
-let%test _ = fact 5 = 120
-
-(* These is a simple unit test that tests a single function 'fact'
-   If you want to test something large, like interpretation of a piece
-   of a minilanguge, it is not longer a unit tests but an integration test.
-   Read about dune's cram tests and put the test into `demos/somefile.t`.
-*)
-
 open Miniml_lib
-open Parser
-
-let parse_optimistically str = Result.get_ok (parse str)
-let pp = Printast.pp_named
 
 (* Property-based tests (QuickCheck) *)
 module Qc = struct
@@ -74,6 +59,7 @@ module Qc = struct
   ;;
 
   let binop_gen = Gen.oneofl Ast.[ Add; Sub; Mul; Div; Leq; Eq; Geq ]
+  let pprint_to_string ast = Format.asprintf "%a" Pprintast.pp ast
 
   let rec gen_ast depth =
     let open Gen in
@@ -127,32 +113,23 @@ module Qc = struct
          | Result.Error _ -> false)
   ;;
 
+  let prop_parse_pprint_roundtrip =
+    QCheck2.Test.make
+      ~count:200
+      ~name:"parser/pprint roundtrip"
+      ~print:pprint_to_string
+      gen_ast_sized
+      (fun ast ->
+         match Parser.parse (pprint_to_string ast) with
+         | Result.Ok ast' -> equal ast ast'
+         | Result.Error _ -> false)
+  ;;
+
   let%test_unit "parser/pretty-printer roundtrip" =
     QCheck2.Test.check_exn prop_parse_print_roundtrip
   ;;
+
+  let%test_unit "parser/pprint roundtrip" =
+    QCheck2.Test.check_exn prop_parse_pprint_roundtrip
+  ;;
 end
-
-let%expect_test _ =
-  Format.printf "%a" pp (parse_optimistically "x y");
-  [%expect {| (App ((Var x), (Var y))) |}]
-;;
-
-let%expect_test _ =
-  Format.printf "%a" pp (parse_optimistically "(x y)");
-  [%expect {| (App ((Var x), (Var y))) |}]
-;;
-
-let%expect_test _ =
-  Format.printf "%a" pp (parse_optimistically "(fun x -> x x)");
-  [%expect {| (Fun (x, (App ((Var x), (Var x))))) |}]
-;;
-
-let%expect_test _ =
-  Format.printf "%a" pp (parse_optimistically "(fun f -> fun x -> f (x x))");
-  [%expect {| (Fun (f, (Fun (x, (App ((Var f), (App ((Var x), (Var x))))))))) |}]
-;;
-
-let _ = Miniml_lib.Interpret.parse_and_run
-let _ = Miniml_lib.Parser.parse_miniml
-let _ = Miniml_lib.Printast.pp
-let _ = Miniml_lib.Printast.show

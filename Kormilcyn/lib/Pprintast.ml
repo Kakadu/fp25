@@ -6,58 +6,29 @@
 
 [@@@ocaml.text "/*"]
 
-(* Pretty printer goes here *)
-
 open Ast
 
-(* let pp ?(compact = true) = *)
-(*   let open Format in *)
-(*   let mangle t fmt x = *)
-(*     if is_free_in x t || not compact then fprintf fmt "%s" x else fprintf fmt "_" *)
-(*   in *)
-(*   let rec pp fmt = function *)
-(*     | Var s -> Format.fprintf fmt "%s" s *)
-(*     | App (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r *)
-(*     | Fun (x, Fun (y, Var z)) when x = z && y <> z && compact -> *)
-(*       if compact then Format.fprintf fmt "⊤" *)
-(*     | Fun (x, Fun (y, Var z)) when y = z && x <> z && compact -> Format.fprintf fmt "⊥" *)
-(*     | Fun (f, Fun (x, Var z)) when x = z && x <> f && compact -> Format.fprintf fmt "0" *)
-(*     | Fun (f, Fun (x, App (Var g, Var z))) when x = z && x <> f && g = f && compact -> *)
-(*       Format.fprintf fmt "1" *)
-(*     | Fun (f, Fun (x, App (Var g, App (Var h, Var z)))) *)
-(*       when x = z && x <> f && g = f && h = g && compact -> Format.fprintf fmt "2" *)
-(*     | Fun (v1, Fun (v2, Fun (v3, Fun (v4, t)))) when compact -> *)
-(*       Format.fprintf *)
-(*         fmt *)
-(*         "(λ %a %a %a %a -> %a)" *)
-(*         (mangle t) *)
-(*         v1 *)
-(*         (mangle t) *)
-(*         v2 *)
-(*         (mangle t) *)
-(*         v3 *)
-(*         (mangle t) *)
-(*         v4 *)
-(*         pp *)
-(*         t *)
-(*     | Fun (v1, Fun (v2, Fun (v3, t))) when compact -> *)
-(*       Format.fprintf *)
-(*         fmt *)
-(*         "(λ %a %a %a -> %a)" *)
-(*         (mangle t) *)
-(*         v1 *)
-(*         (mangle t) *)
-(*         v2 *)
-(*         (mangle t) *)
-(*         v3 *)
-(*         pp *)
-(*         t *)
-(*     | Fun (v1, Fun (v2, t)) when compact -> *)
-(*       Format.fprintf fmt "(λ %a %a -> %a)" (mangle t) v1 (mangle t) v2 pp t *)
-(*     | Fun (x, t) -> Format.fprintf fmt "(λ %a . %a)" (mangle t) x pp t *)
-(*   in *)
-(*   pp *)
-(* ;; *)
-(**)
-(* let pp_hum = pp ~compact:true *)
-(* let pp = pp ~compact:false *)
+let pp_binop fmt = function
+  | Add -> Format.fprintf fmt "+"
+  | Mul -> Format.fprintf fmt "*"
+  | Sub -> Format.fprintf fmt "-"
+  | Div -> Format.fprintf fmt "/"
+  | Leq -> Format.fprintf fmt "<="
+  | Eq -> Format.fprintf fmt "="
+  | Geq -> Format.fprintf fmt ">="
+;;
+
+let rec pp fmt = function
+  | Var v -> Format.pp_print_string fmt v
+  | Int i -> Format.pp_print_int fmt i
+  | Fix -> Format.pp_print_string fmt "fix"
+  | Neg e -> Format.fprintf fmt "(-%a)" pp e
+  | Bin (op, l, r) -> Format.fprintf fmt "(%a %a %a)" pp l pp_binop op pp r
+  | App (f, a) -> Format.fprintf fmt "(%a %a)" pp f pp a
+  | Fun (x, body) -> Format.fprintf fmt "(fun %s -> %a)" x pp body
+  | Let (x, e1, e2) -> Format.fprintf fmt "(let %s = %a in %a)" x pp e1 pp e2
+  | If (c, t, e) -> Format.fprintf fmt "(if %a then %a else %a)" pp c pp t pp e
+  | LetRec (f, e1, e2) -> Format.fprintf fmt "(let rec %s = %a in %a)" f pp e1 pp e2
+;;
+
+let pp_hum = pp
