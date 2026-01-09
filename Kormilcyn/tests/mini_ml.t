@@ -1,3 +1,8 @@
+  $ ./mini_cli.exe << 'EOF'
+  > 1 + 2 * 3
+  > EOF
+  Result: 7
+
   $ ./mini_cli.exe <<'EOF'
   > let rec fact = fun n -> if n = 1 then 1 else n * fact (n-1) in fact 4
   > EOF
