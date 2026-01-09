@@ -9,56 +9,55 @@
 (* Pretty printer goes here *)
 
 open Ast
-open Utils
 
-let pp ?(compact = true) =
-  let open Format in
-  let mangle t fmt x =
-    if is_free_in x t || not compact then fprintf fmt "%s" x else fprintf fmt "_"
-  in
-  let rec pp fmt = function
-    | Var s -> Format.fprintf fmt "%s" s
-    | App (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
-    | Fun (x, Fun (y, Var z)) when x = z && y <> z && compact ->
-      if compact then Format.fprintf fmt "⊤"
-    | Fun (x, Fun (y, Var z)) when y = z && x <> z && compact -> Format.fprintf fmt "⊥"
-    | Fun (f, Fun (x, Var z)) when x = z && x <> f && compact -> Format.fprintf fmt "0"
-    | Fun (f, Fun (x, App (Var g, Var z))) when x = z && x <> f && g = f && compact ->
-      Format.fprintf fmt "1"
-    | Fun (f, Fun (x, App (Var g, App (Var h, Var z))))
-      when x = z && x <> f && g = f && h = g && compact -> Format.fprintf fmt "2"
-    | Fun (v1, Fun (v2, Fun (v3, Fun (v4, t)))) when compact ->
-      Format.fprintf
-        fmt
-        "(λ %a %a %a %a -> %a)"
-        (mangle t)
-        v1
-        (mangle t)
-        v2
-        (mangle t)
-        v3
-        (mangle t)
-        v4
-        pp
-        t
-    | Fun (v1, Fun (v2, Fun (v3, t))) when compact ->
-      Format.fprintf
-        fmt
-        "(λ %a %a %a -> %a)"
-        (mangle t)
-        v1
-        (mangle t)
-        v2
-        (mangle t)
-        v3
-        pp
-        t
-    | Fun (v1, Fun (v2, t)) when compact ->
-      Format.fprintf fmt "(λ %a %a -> %a)" (mangle t) v1 (mangle t) v2 pp t
-    | Fun (x, t) -> Format.fprintf fmt "(λ %a . %a)" (mangle t) x pp t
-  in
-  pp
-;;
-
-let pp_hum = pp ~compact:true
-let pp = pp ~compact:false
+(* let pp ?(compact = true) = *)
+(*   let open Format in *)
+(*   let mangle t fmt x = *)
+(*     if is_free_in x t || not compact then fprintf fmt "%s" x else fprintf fmt "_" *)
+(*   in *)
+(*   let rec pp fmt = function *)
+(*     | Var s -> Format.fprintf fmt "%s" s *)
+(*     | App (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r *)
+(*     | Fun (x, Fun (y, Var z)) when x = z && y <> z && compact -> *)
+(*       if compact then Format.fprintf fmt "⊤" *)
+(*     | Fun (x, Fun (y, Var z)) when y = z && x <> z && compact -> Format.fprintf fmt "⊥" *)
+(*     | Fun (f, Fun (x, Var z)) when x = z && x <> f && compact -> Format.fprintf fmt "0" *)
+(*     | Fun (f, Fun (x, App (Var g, Var z))) when x = z && x <> f && g = f && compact -> *)
+(*       Format.fprintf fmt "1" *)
+(*     | Fun (f, Fun (x, App (Var g, App (Var h, Var z)))) *)
+(*       when x = z && x <> f && g = f && h = g && compact -> Format.fprintf fmt "2" *)
+(*     | Fun (v1, Fun (v2, Fun (v3, Fun (v4, t)))) when compact -> *)
+(*       Format.fprintf *)
+(*         fmt *)
+(*         "(λ %a %a %a %a -> %a)" *)
+(*         (mangle t) *)
+(*         v1 *)
+(*         (mangle t) *)
+(*         v2 *)
+(*         (mangle t) *)
+(*         v3 *)
+(*         (mangle t) *)
+(*         v4 *)
+(*         pp *)
+(*         t *)
+(*     | Fun (v1, Fun (v2, Fun (v3, t))) when compact -> *)
+(*       Format.fprintf *)
+(*         fmt *)
+(*         "(λ %a %a %a -> %a)" *)
+(*         (mangle t) *)
+(*         v1 *)
+(*         (mangle t) *)
+(*         v2 *)
+(*         (mangle t) *)
+(*         v3 *)
+(*         pp *)
+(*         t *)
+(*     | Fun (v1, Fun (v2, t)) when compact -> *)
+(*       Format.fprintf fmt "(λ %a %a -> %a)" (mangle t) v1 (mangle t) v2 pp t *)
+(*     | Fun (x, t) -> Format.fprintf fmt "(λ %a . %a)" (mangle t) x pp t *)
+(*   in *)
+(*   pp *)
+(* ;; *)
+(**)
+(* let pp_hum = pp ~compact:true *)
+(* let pp = pp ~compact:false *)

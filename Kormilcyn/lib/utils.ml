@@ -9,23 +9,6 @@
 open Base
 open Ast
 
-let list_remove x = List.filter ~f:(fun a -> not (String.equal a x))
-
-let free_vars =
-  let rec helper acc = function
-    | Var s -> s :: acc
-    | Fun (s, l) -> acc @ list_remove s (helper [] l)
-    | App (l, r) -> helper (helper acc r) l
-    | _ -> failwith "legacy"
-  in
-  helper []
-;;
-
-let is_free_in x term = List.mem (free_vars term) x ~equal:String.equal
-let var x = Var x
-let abs x l = Fun (x, l)
-let app l r = App (l, r)
-
 module type MONAD_FAIL = sig
   include Base.Monad.S2
 

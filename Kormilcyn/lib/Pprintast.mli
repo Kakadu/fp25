@@ -7,7 +7,7 @@
 [@@@ocaml.text "/*"]
 
 (** Verbose printing. Usable for paring *)
-val pp : Format.formatter -> string Ast.t -> unit
+(* val pp : Format.formatter -> string Ast.t -> unit *)
 
 (** Print in fancy human-readable form *)
-val pp_hum : Format.formatter -> string Ast.t -> unit
+(* val pp_hum : Format.formatter -> string Ast.t -> unit *)
