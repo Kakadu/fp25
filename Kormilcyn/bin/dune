@@ -2,7 +2,7 @@
  (name REPL)
  (public_name REPL)
  (modules REPL)
- (libraries lambda_lib)
+ (libraries miniml_lib)
  (instrumentation
   (backend bisect_ppx)))
 

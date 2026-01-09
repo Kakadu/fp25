@@ -15,8 +15,8 @@ type error =
 
 val pp_error : Format.formatter -> [< error ] -> unit
 
-(* module Interpret (M : Utils.MONAD_FAIL) : sig *)
-(*   val run : 'name Ast.t -> (int, [> error ]) M.t *)
-(* end *)
+module Interpret (M : Utils.MONAD_FAIL) : sig
+  val run : int -> 'name Ast.t -> (int, [> error ]) M.t
+end
 
 val parse_and_run : ?max_steps:int -> string -> unit
