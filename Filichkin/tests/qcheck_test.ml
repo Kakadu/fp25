@@ -143,10 +143,10 @@ let rec shrink_expr = function
     of_list [ x2 ] <+> (shrink_expr x2 >|= fun e2 -> Abs (x1, e2))
 ;;
 
-let arb_expr = QCheck.make ~print:print_expr ~shrink:shrink_expr (gen_expr 20)
+let arb_expr = QCheck.make ~print:print_p ~shrink:shrink_expr (gen_expr 20)
 
 let parse_after_print expr =
-  let s = print_expr expr in
+  let s = print_p expr in
   match parser s with
   | Ok e -> Ok e
   | Error (`parse_error msg) -> Error (Printf.sprintf "parse error on `%s`: %s" s msg)
@@ -155,20 +155,20 @@ let parse_after_print expr =
 let print_parse_roundtrip =
   QCheck.Test.make
     ~count:10000
-    ~name:"AST -> print_expr -> parser -> AST"
+    ~name:"AST -> print_p -> parser -> AST"
     arb_expr
     (fun expr ->
        match parse_after_print expr with
        | Ok expr' ->
-         let original_ast_str = print_expr expr in
-         let parsed_ast_str = print_expr expr' in
+         let original_ast_str = print_p expr in
+         let parsed_ast_str = print_p expr' in
          if original_ast_str = parsed_ast_str
          then true
          else (
            Printf.eprintf
              "\nORIGINAL STR: %s\nPARSED STR:   %s\n"
-             (print_expr expr)
-             (print_expr expr');
+             (print_p expr)
+             (print_p expr');
            Printf.eprintf
              "\nORIGINAL AST: %s\nPARSED AST:   %s\n"
              original_ast_str

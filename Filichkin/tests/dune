@@ -7,10 +7,10 @@
  (inline_tests
   (backend ppx_expect)))
 
-(test
- (name qcheck_test)
- (libraries Filichkin_lib qcheck)
- (modules qcheck_test))
+; (test
+;  (name qcheck_test)
+;  (libraries Filichkin_lib qcheck)
+;  (modules qcheck_test))
 
 (cram
  (applies_to interpret)

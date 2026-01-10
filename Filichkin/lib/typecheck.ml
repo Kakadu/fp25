@@ -356,6 +356,32 @@ let initial_env =
 ;;
 
 let initial_tc_state = { tenv = initial_env; last_type = None }
+let tc_state = ref initial_tc_state
+let reset () = tc_state := initial_tc_state
+
+let typecheck_toplevel tl =
+  try
+    match check_toplevel !tc_state tl with
+    | Ok new_state ->
+      tc_state := new_state;
+      Ok ()
+    | Error err -> Error err
+  with
+  | TypeError msg -> Error msg
+;;
+
+let typecheck_program toplevels =
+  let rec loop = function
+    | [] -> Ok ()
+    | tl :: tls ->
+      (match typecheck_toplevel tl with
+       | Error err -> Error err
+       | Ok () -> loop tls)
+  in
+  loop toplevels
+;;
+
+let get_last_type () = !tc_state.last_type
 
 let rec string_of_type = function
   | TInt -> "int"

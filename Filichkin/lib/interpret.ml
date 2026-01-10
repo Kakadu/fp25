@@ -239,23 +239,6 @@ let interpret_toplevel st = function
     Ok (st, Some v)
 ;;
 
-let interpret_program state toplevels =
-  let rec loop state last_result = function
-    | [] -> Ok (state, last_result)
-    | tl :: tls ->
-      (match interpret_toplevel state tl with
-       | Error err -> Error err
-       | Ok (new_state, result_opt) ->
-         let last_result =
-           match result_opt with
-           | Some v -> Some v
-           | None -> last_result
-         in
-         loop new_state last_result tls)
-  in
-  loop state None toplevels
-;;
-
 let init_env =
   let print_int_fun =
     VBuiltin
@@ -282,6 +265,33 @@ let init_env =
 
 let initial_state = { env = init_env }
 let run_interpret expr = eval init_env expr 1000
+let state = ref initial_state
+let reset () = state := initial_state
+
+let interpret_toplevel tl =
+  match interpret_toplevel !state tl with
+  | Ok (new_state, result) ->
+    state := new_state;
+    Ok result
+  | Error err -> Error err
+;;
+
+let interpret_program toplevels =
+  let rec loop last_result = function
+    | [] -> Ok last_result
+    | tl :: tls ->
+      (match interpret_toplevel tl with
+       | Error err -> Error err
+       | Ok result_opt ->
+         let last_result =
+           match result_opt with
+           | Some v -> Some v
+           | None -> last_result
+         in
+         loop last_result tls)
+  in
+  loop None toplevels
+;;
 
 let rec string_of_value = function
   | VInt n -> Int.to_string n

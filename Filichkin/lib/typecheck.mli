@@ -39,3 +39,7 @@ val string_of_type : typ -> string
 val initial_env : type_env
 val infer : type_env -> expr -> typ
 val check_toplevel : tc_state -> toplevel -> (tc_state, ident) result
+val reset : unit -> unit
+val typecheck_toplevel : Ast.toplevel -> (unit, string) result
+val typecheck_program : Ast.toplevel list -> (unit, string) result
+val get_last_type : unit -> typ option
