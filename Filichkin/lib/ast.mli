@@ -54,6 +54,7 @@ type pattern =
   | PVar of ident
   | PTuple of pattern list
   | PConstr of ident * pattern list
+  | PWildcard
 
 type expr =
   | Int of int (** Integer literal *)

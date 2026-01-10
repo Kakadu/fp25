@@ -110,6 +110,7 @@ let kw_with = spaces *> string "with" <* spaces
 let kw_bar = spaces *> char '|' <* spaces
 let kw_type = kw "type"
 let kw_of = kw "of"
+let semicolon = spaces *> string ";;" <* spaces
 
 let tuple_p expr =
   char '(' *> spaces *> sep_by1 comma expr
@@ -130,15 +131,15 @@ let pattern =
       | [ p ] -> p
       | ps -> PTuple ps
     in
+    let p_wild = spaces *> char '_' *> return PWildcard in
     let p_ident =
-      let* name = identifier in
+      identifier
+      >>= fun name ->
       match name.[0] with
-      | 'A' .. 'Z' ->
-        let* args = many (choice [ parens pattern; pattern ]) in
-        return (PConstr (name, args))
+      | 'A' .. 'Z' -> many pattern >>= fun args -> return (PConstr (name, args))
       | _ -> return (PVar name)
     in
-    spaces *> choice [ ptuple; p_ident ] <* spaces)
+    spaces *> choice [ ptuple; p_wild; p_ident ] <* spaces)
 ;;
 
 let expr =
@@ -282,15 +283,16 @@ let type_decl =
 let toplevel =
   spaces *> choice [ (type_decl >>| fun td -> TLType td); (expr >>| fun e -> TLExpr e) ]
   <* spaces
-  <* end_of_input
 ;;
 
-let top = toplevel
+let prog = sep_by semicolon toplevel <* end_of_input (* ;; не парсится в конце*)
+
+(* let top = toplevel *)
 (* spaces *> expr <* spaces <* end_of_input *)
 
 (* let toplevel = spaces *> (expr >>| fun e -> TLExpr e) <* spaces <* end_of_input *)
 let parser str =
-  match Angstrom.parse_string ~consume:Angstrom.Consume.All top str with
+  match Angstrom.parse_string ~consume:Angstrom.Consume.All prog str with
   | Result.Ok x -> Result.Ok x
   | Error err -> Result.Error (`parse_error err)
 ;;

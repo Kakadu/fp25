@@ -14,6 +14,7 @@ type typ =
   | TUnit
   | TFun of typ * typ
   | TTuple of typ list
+  | TCon of string * typ list
   | TVar of tvar ref
 
 and tvar =
@@ -23,8 +24,18 @@ and tvar =
 (* Полиморфная схема типов (нужна для сигнатуры infer) *)
 type scheme = Forall of int list * typ
 
-(* Исключение для ошибок типов *)
 exception TypeError of string
 
-(* Основная функция вывода типов *)
-val infer : (string * scheme) list -> expr -> typ
+type type_env =
+  { vars : (string * scheme) list
+  ; ctors : (string * scheme) list
+  ; types : (string * string list) list
+  ; type_def_ctors : (string * string list) list
+  }
+
+type tc_state
+
+val string_of_type : typ -> string
+val initial_env : type_env
+val infer : type_env -> expr -> typ
+val check_toplevel : tc_state -> toplevel -> (tc_state, ident) result

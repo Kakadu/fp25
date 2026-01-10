@@ -36,7 +36,7 @@ and value =
   | VBuiltin of (value -> value eval_result)
   | VConstr of string * value list
 
-type state = { env : env (* позже добавим type_env *) }
+type state = { env : env }
 
 let rec look_up x = function
   | [] -> None
@@ -65,7 +65,7 @@ let eval_binop op v1 v2 =
   | And, _, _ | Or, _, _ -> err (TypeError "&& and || expect booleans")
   | (Equal | NotEqual | More | Less | EMore | ELess), _, _ ->
     err (TypeError "comparisons expect integers")
-  | _ -> err (TypeError "binary operation expected two integers")
+  | _ -> err (TypeError "invalid operands for binary operator")
 ;;
 
 let rec match_pattern (pat : pattern) (v : value) : (string * value) list option =
@@ -90,10 +90,10 @@ let rec match_pattern (pat : pattern) (v : value) : (string * value) list option
     then (
       let rec collect acc ps vs =
         match ps, vs with
-        | [], [] -> Some acc
+        | [], [] -> Some (List.rev acc)
         | p :: ps', v :: vs' ->
           (match match_pattern p v with
-           | Some bs -> collect (acc @ bs) ps' vs'
+           | Some bs -> collect (bs @ acc) ps' vs'
            | None -> None)
         | _ -> None
       in
@@ -102,9 +102,15 @@ let rec match_pattern (pat : pattern) (v : value) : (string * value) list option
   | _ -> None
 ;;
 
+let add_cr env (td : type_decl) =
+  List.fold td.constructors ~init:env ~f:(fun env ctor ->
+    let name = ctor.ctor_name in
+    (name, VConstr (name, [])) :: env)
+;;
+
 (** Main interpretation function *)
 let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
-  if steps < 0
+  if steps <= 0
   then err StepCountIsZero
   else (
     let steps' = steps - 1 in
@@ -194,6 +200,62 @@ let rec eval (env : env) (e : expr) (steps : int) : value eval_result =
        | _ -> err (TypeError "application expects a function")))
 ;;
 
+let interpret_toplevel st = function
+  | TLType td ->
+    let env' = add_cr st.env td in
+    Ok ({ env = env' }, None)
+  | TLExpr (Let (NonRec, pat, bound, None)) ->
+    let* v = eval st.env bound 1000 in
+    (match match_pattern pat v with
+     | Some bindings ->
+       let env' = bindings @ st.env in
+       Ok ({ env = env' }, None)
+     | None -> Error (TypeError "Pattern match failed in toplevel let"))
+  | TLExpr (Let (Rec, PVar name, bound, None)) ->
+    (match bound with
+     | Abs (pat, body) ->
+       let rec closure = VClosure (pat, body, env')
+       and env' = (name, closure) :: st.env in
+       Ok ({ env = env' }, None)
+     | _ -> Error (TypeError "recursive binding must be a function"))
+  | TLExpr (Let (NonRec, pat, bound, Some body)) ->
+    let* v = eval st.env bound 1000 in
+    (match match_pattern pat v with
+     | Some bindings ->
+       let new_env = bindings @ st.env in
+       let* result = eval new_env body 1000 in
+       Ok (st, Some result)
+     | None -> Error (TypeError "Pattern match failed in let-in"))
+  | TLExpr (Let (Rec, pat, bound, Some body)) ->
+    (match pat, bound with
+     | PVar name, Abs (pat', body') ->
+       let rec closure = VClosure (pat', body', env')
+       and env' = (name, closure) :: st.env in
+       let* result = eval env' body 1000 in
+       Ok (st, Some result)
+     | _ -> Error (TypeError "recursive let-in must bind function"))
+  | TLExpr e ->
+    let* v = eval st.env e 1000 in
+    Ok (st, Some v)
+;;
+
+let interpret_program state toplevels =
+  let rec loop state last_result = function
+    | [] -> Ok (state, last_result)
+    | tl :: tls ->
+      (match interpret_toplevel state tl with
+       | Error err -> Error err
+       | Ok (new_state, result_opt) ->
+         let last_result =
+           match result_opt with
+           | Some v -> Some v
+           | None -> last_result
+         in
+         loop new_state last_result tls)
+  in
+  loop state None toplevels
+;;
+
 let init_env =
   let print_int_fun =
     VBuiltin
@@ -221,15 +283,6 @@ let init_env =
 let initial_state = { env = init_env }
 let run_interpret expr = eval init_env expr 1000
 
-let interpret_toplevel (st : state) (tl : toplevel) : (state * value option, error) result
-  =
-  match tl with
-  | TLExpr expr ->
-    let* v = eval st.env expr 1000 in
-    Ok (st, Some v)
-  | TLType _type_decl -> Ok (st, None)
-;;
-
 let rec string_of_value = function
   | VInt n -> Int.to_string n
   | VBool b -> Bool.to_string b
@@ -237,7 +290,9 @@ let rec string_of_value = function
   | VTuple vs -> "(" ^ (List.map vs ~f:string_of_value |> String.concat ~sep:", ") ^ ")"
   | VClosure _ -> "<fun>"
   | VBuiltin _ -> "<builtin>"
-  | VConstr (name, _) -> name
+  | VConstr (name, []) -> name
+  | VConstr (name, args) ->
+    name ^ " " ^ (List.map args ~f:string_of_value |> String.concat ~sep:" ")
 ;;
 
 let string_of_error = function

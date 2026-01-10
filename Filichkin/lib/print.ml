@@ -16,21 +16,57 @@ let rec pattern = function
   | PConstr (name, args) ->
     let ars_s = List.map pattern args |> String.concat ", " in
     "(" ^ name ^ ", " ^ ars_s ^ ")"
+  | PWildcard -> "_"
 ;;
 
 let rec pattern_ast = function
-  | PVar x -> Printf.sprintf "PVar %s" x
+  | PVar x -> Printf.sprintf "Var %s" x
   | PTuple ps ->
     let ps_str = List.map pattern_ast ps |> String.concat "; " in
     Printf.sprintf "PTuple [%s]" ps_str
   | PConstr (name, args) ->
     let ps_str = List.map pattern_ast args |> String.concat "; " in
     Printf.sprintf "PConstr %s, [%s]" name ps_str
+  | PWildcard -> "_"
+;;
+
+let rec string_of_type_expr = function
+  | TEInt -> "int"
+  | TEBool -> "bool"
+  | TEUnit -> "unit"
+  | TEVar v -> "'" ^ v
+  | TEArrow (t1, t2) ->
+    Printf.sprintf "(%s -> %s)" (string_of_type_expr t1) (string_of_type_expr t2)
+  | TETuple ts ->
+    let ts_str = List.map string_of_type_expr ts |> String.concat " * " in
+    Printf.sprintf "(%s)" ts_str
+  | TEConstr (name, args) ->
+    (match args with
+     | [] -> name
+     | _ ->
+       let args_str = List.map string_of_type_expr args |> String.concat " " in
+       Printf.sprintf "%s %s" name args_str)
+;;
+
+let rec type_expr_to_ast = function
+  | TEInt -> "TEInt"
+  | TEBool -> "TEBool"
+  | TEUnit -> "TEUnit"
+  | TEVar v -> Printf.sprintf "TEVar %s" v
+  | TEArrow (t1, t2) ->
+    Printf.sprintf "TEArrow (%s, %s)" (type_expr_to_ast t1) (type_expr_to_ast t2)
+  | TETuple ts ->
+    let ts_str = List.map type_expr_to_ast ts |> String.concat "; " in
+    Printf.sprintf "TETuple [%s]" ts_str
+  | TEConstr (name, args) ->
+    let args_str = List.map type_expr_to_ast args |> String.concat "; " in
+    Printf.sprintf "TEConstr (%s, [%s])" name args_str
 ;;
 
 let rec print_ast = function
   | Int n -> Printf.sprintf "Int %d" n
   | Var x -> Printf.sprintf "Var %S" x
+  | Constr name -> Printf.sprintf "Constr %S" name
   | BinOp (op, l, r) ->
     let op_str =
       match op with
@@ -92,6 +128,7 @@ let rec print_ast = function
 let rec print_expr = function
   | Int n -> string_of_int n
   | Var s -> s
+  | Constr name -> name
   | BinOp (op, left, right) ->
     let oper =
       match op with
@@ -151,3 +188,52 @@ let rec print_expr = function
     in
     Printf.sprintf "(match %s with %s)" (print_expr scrutinee) cases_str
 ;;
+
+let type_decl_to_ast td =
+  let constrs_str =
+    List.map
+      (fun c ->
+        let args_str = List.map type_expr_to_ast c.ctor_args |> String.concat "; " in
+        Printf.sprintf "{ ctor_name = %s; ctor_args = [%s] }" c.ctor_name args_str)
+      td.constructors
+    |> String.concat "; "
+  in
+  Printf.sprintf
+    "[type_name %s, type_params [%s], constructors [%s]]"
+    td.type_name
+    (String.concat "; " td.type_params)
+    constrs_str
+;;
+
+let type_decl_to_string td =
+  let params_str =
+    match td.type_params with
+    | [] -> ""
+    | ps -> "'" ^ String.concat " '" ps ^ " "
+  in
+  let constrs_str =
+    List.map
+      (fun c ->
+        match c.ctor_args with
+        | [] -> c.ctor_name
+        | args ->
+          let args_str = List.map string_of_type_expr args |> String.concat " * " in
+          Printf.sprintf "%s of %s" c.ctor_name args_str)
+      td.constructors
+    |> String.concat " | "
+  in
+  Printf.sprintf "type %s%s = %s" params_str td.type_name constrs_str
+;;
+
+let toplevel_to_ast = function
+  | TLExpr e -> print_ast e
+  | TLType td -> type_decl_to_ast td
+;;
+
+let toplevel_to_string = function
+  | TLExpr e -> print_expr e
+  | TLType td -> type_decl_to_string td
+;;
+
+let print_ast_p tpl = List.iter (fun tl -> Printf.printf "%s\n" (toplevel_to_ast tl)) tpl
+let print_p tpl = List.iter (fun tl -> Printf.printf "%s\n" (toplevel_to_string tl)) tpl
