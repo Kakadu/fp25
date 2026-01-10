@@ -127,8 +127,7 @@ let parse_miniml =
       (let* _ = no_ws (char '+')
        and+ e = pack.unary pack in
        return e)
-      <|>
-      (* унарный минус *)
+      <|> (* унарный минус *)
       (let* _ = no_ws (char '-')
        and+ e = pack.unary pack in
        return (Ast.Neg e))

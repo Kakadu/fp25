@@ -30,5 +30,5 @@ type 'name t =
   | LetRec of 'name * 'name t * 'name t
   | Fix
   (** In type definition above the 3rd constructor is intentionally without documentation
-    to test linter *)
+      to test linter *)
 (* Application [f g ] *)

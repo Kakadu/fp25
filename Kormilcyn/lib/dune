@@ -1,6 +1,6 @@
 (library
  (name miniml_lib)
- (public_name Miniml.Lib)
+ (public_name Kormilcyn.lib)
  (modules Ast Interpret Parser Pprintast utils)
  (modules_without_implementation ast)
  (libraries base angstrom)

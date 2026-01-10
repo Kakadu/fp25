@@ -4,7 +4,7 @@ all:
 	dune build
 
 repl:
-	dune build ./REPL.exe && rlwrap _build/default/REPL.exe
+	dune build bin/REPL.exe && rlwrap _build/default/bin/REPL.exe
 
 tests: test
 test:
@@ -32,7 +32,7 @@ ODIG_SWITCHES = --odoc-theme=odig.gruvbox.light
 ODIG_SWITCHES += --no-tag-index
 ODIG_SWITCHES += --no-pkg-deps
 odig:
-	odig odoc $(ODIG_SWITCHES) Lambda
+	odig odoc $(ODIG_SWITCHES) Kormilcyn
 
 TEST_COV_D = /tmp/cov
 COVERAGE_OPTS = --coverage-path $(TEST_COV_D) --expect lib/ --expect tests/
