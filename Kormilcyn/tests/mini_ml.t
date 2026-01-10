@@ -101,4 +101,4 @@
   $ ./mini_cli.exe << 'EOF'
   > let fun = 1 in fun
   > EOF
-  Parsing error: : no more choices
+  Parsing error

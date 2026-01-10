@@ -21,12 +21,13 @@ let no_ws p =
 let varname =
   let* var =
     take_while1 (function
-      | 'a' .. 'z' -> true
+      | 'a' .. 'z' | '_' | '0' .. '9' | '\'' -> true
       | _ -> false)
   in
   match var with
-  | "fun" | "if" | "then" | "else" | "let" | "in" | "rec" | "fix" ->
-    fail "Name not permitted"
+  | s when s.[0] >= '0' && s.[0] <= '9' -> fail ""
+  | s when s.[0] = '\'' -> fail ""
+  | "_" | "fun" | "if" | "then" | "else" | "let" | "in" | "rec" | "fix" -> fail ""
   | _ -> return var
 ;;
 
@@ -36,9 +37,7 @@ let integer =
       | '0' .. '9' -> true
       | _ -> false)
   in
-  if String.length i > 1 && String.starts_with ~prefix:"0" i
-  then fail "Incorrect integer"
-  else return i
+  if String.length i > 1 && i.[0] = '0' then fail "" else return i
 ;;
 
 type dispatch =
@@ -61,11 +60,7 @@ let chainl1 p op =
   iter x
 ;;
 
-type error = [ `Parsing_error of string ]
-
-let pp_error ppf = function
-  | `Parsing_error s -> Format.fprintf ppf "%s" s
-;;
+type error = [ `Parsing_error ]
 
 let parse_miniml =
   let atom pack =
@@ -107,6 +102,7 @@ let parse_miniml =
            and+ _ = no_ws (string "in")
            and+ e = pack.comp pack in
            return (Ast.LetRec (fvar, f, e)))
+          (* fix *)
         ; (let* _ = no_ws (string "fix") in
            return Ast.Fix)
           (* переменная *)
@@ -123,7 +119,7 @@ let parse_miniml =
          return e)
     in
     match app with
-    | [] -> fail "bad syntax"
+    | [] -> fail ""
     | x :: xs -> return @@ List.fold_left (fun l r -> Ast.App (l, r)) x xs
   and unary pack =
     fix (fun _ ->
@@ -176,5 +172,5 @@ let parse str =
       str
   with
   | Result.Ok x -> Result.Ok x
-  | Error er -> Result.Error (`Parsing_error er)
+  | Error _ -> Result.Error `Parsing_error
 ;;

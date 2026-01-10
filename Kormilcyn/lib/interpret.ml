@@ -131,6 +131,6 @@ let parse_and_run ?(max_steps = 10000) str =
   | Result.Ok n -> Printf.printf "Success: %d\n" n
   | Result.Error err ->
     (match err with
-     | #Parser.error as e -> Format.eprintf "Parsing error: %a\n%!" Parser.pp_error e
+     | #Parser.error -> Format.eprintf "Parsing error\n%!"
      | #error as e -> Format.eprintf "Interpreter error: %a\n%!" pp_error e)
 ;;
