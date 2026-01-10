@@ -11,7 +11,7 @@
 open Base
 open Ast
 
-(** модульный тип монады с ошибкой, вычисление дает 'a или ошибку 'e*)
+(** модульный тип монады с ошибкой, вычисление дает 'a или ошибку 'e *)
 module type MONAD_FAIL = sig
   type ('a, 'e) t
 
@@ -20,140 +20,186 @@ module type MONAD_FAIL = sig
   val fail : 'e -> ('a, 'e) t
 end
 
-(** Тип ошибок интерпритатора.*)
-type error = 
-  [`UnknownVariable of string (** Переменная не найдена в окружении*)
-  | `IfConditionNotInt (** Условие if не является целым числом*)
-  | `BinopOnNonInt (** Бинарная операция применена не к двум int*)
-  | `NotAFunction (** Попытка вызвать не функцию*)
-  | `DivisionByZero (** Деление на ноль*)
-  | `ResultNotInt (** В конце получили не int *)
-  | `FixOnNonFunction (** fix применен к не функции *)
+(** Тип ошибок интерпретатора. *)
+type error =
+  [ `UnknownVariable of string  (** Переменная не найдена в окружении *)
+  | `IfConditionNotInt          (** Условие if не является целым числом *)
+  | `BinopOnNonInt              (** Бинарная операция применена не к двум int *)
+  | `NotAFunction               (** Попытка вызвать не функцию *)
+  | `DivisionByZero             (** Деление на ноль *)
+  | `ResultNotInt               (** В конце получили не int *)
+  | `FixOnNonFunction           (** fix применен к не функции *)
+  | `PrintArgumentNotInt        (** print получил не int *)
   ]
 
-  (** Функтор интерпретатора.
-   На вход получает модуль, реализующий монаду с ошибкой,
-   а на выходе дает модуль с функцией, которая интерпретирует AST и возвращает
-   либо число, либо ошибку.
-  *)
+(** Функтор интерпретатора.
+    На вход получает модуль, реализующий монаду с ошибкой,
+    а на выходе дает модуль с функцией, которая интерпретирует AST и возвращает
+    либо число + лог stdout, либо ошибку. *)
+module Interpret (M : MONAD_FAIL) : sig
+  (** [run expr] интерпретирует выражение [expr] и возвращает
+      пару [(n, out)], где [n] — итоговое целое значение программы,
+      а [out] — список строк, напечатанных встроенной функцией [print]
+      в порядке их появления. *)
+  val run : Ast.name Ast.t -> (int * string list, [> error ]) M.t
+end = struct
+  (** Результаты вычисления выражений. *)
+  type value =
+    | VInt of int
+    (** Целое число времени исполнения. *)
+    | VClosure of name * name Ast.t * env
+    (** Замыкание функции: имя параметра, тело и окружение
+        определения. *)
+    | VBuiltinPrint
+    (** Встроенная функция [print]. *)
 
-  module Interpret (M: MONAD_FAIL) : sig
-    val run : Ast.name Ast.t -> (int, [> error]) M.t
-  end = struct
-    (** Результаты вычисления выражений*)
-    type value = 
-      |VInt of int
-      (** Целое число времени исполнения*)
-      |VClosure of name * name Ast.t * env
-      (** Замыкание функции во время исполнения, name, имя параметра (name Ast.t) тело функции, env окружение в котором была определена*)
-     (** Окружение в виде пар (имя перем и знач)*)
-      and env = (name * value) list
+  (** Окружение в виде списка пар [(имя переменной, значение)]. *)
+  and env = (name * value) list
 
-(** Оборачиваем знач в монаду*)
-      let return (x : 'a) : ('a, 'e) M.t =
-        M.return x
+  (** Обертка над базовой монадай M, которая добавляет лог строк stdout.
+      Каждое вычисление возвращает значение и список строк (вывод программы). *)
 
-        let ( let* ) (m : ('a, 'e) M.t) (f : 'a -> ('b, 'e) M.t) : ('b, 'e) M.t =
-          M.bind m ~f
-          (** завершить вычесление с ошибкой е*)
-          let fail (e : 'e) : ('a, 'e) M.t =
-            M.fail e
-          (** Поиск переменной в окружении
-          env,
-          x - искомое имя,
-          Если нашли возвращаем ок, если не ошибку UnknownVariable*)
-          let rec lookup (env : env) (x : name) : (value, [> error]) M.t =
-            match env with
-            | [] ->
-               fail (`UnknownVariable x)
-            | (y,v) :: rest ->
-               if String.equal x y then
-               return v
-               else
-               lookup rest x
-            (** Вычисление бинарной операции*)
-            let eval_binop (op : binop) (n1 : int) (n2 : int)
-            : (value, [> error]) M.t = match op with
-            |Add -> return (VInt (n1 + n2))
-            |Sub -> return (VInt (n1 - n2))
-            |Mul -> return (VInt (n1 * n2))
-            |Div -> if n2 = 0 then fail `DivisionByZero else return (VInt (n1 / n2))
-            |Eq -> if Int.equal n1 n2 then return (VInt 1) else return (VInt 0)
-            |Lt -> if n1 < n2 then return (VInt 1) else return (VInt 0)
-            |Gt -> if n1 >n2 then return (VInt 1) else return (VInt 0)
-            (** функция интерпретации 
-            env,
-            miniml,
-            возвращает значение или ошибку*)
-            let rec eval (env : env) (expr : name Ast.t) : (value, [> error]) M.t =
-              match expr with
-              |Var x -> lookup env x
-              |Int n -> return (VInt n)
-              |Abs (param, body) ->
-              (** сторим замыкание из парам, тела и текущ окружения*)
-              return (VClosure (param, body, env))
-              |App (f_expr, arg_expr) ->
-              (** сначала сичаем аргумент, потом подставляем*)
-              let* f_val = eval env f_expr in
-              let* arg_val = eval env arg_expr in
-              begin
-                match f_val with
-                |VClosure (param, body, closure_env) ->
-                (** новое окружение = окружение определения + (param -< arg_val)*)
-                let env' : env = (param, arg_val) :: closure_env in
-                eval env' body
-                |VInt _ -> 
-                (** попытка вызвать что не является функцией*)
-                fail `NotAFunction
-              end
-              |Let (x, e1, e2) ->
-              (** вычисляем е1, добавляем х -> знач в окружение, вычисляем е2 в новом окруж*)
-              let* v1 = eval env e1 in
-              let env' = (x, v1) :: env in
-              eval env' e2
-              |Let_rec (f, x, body, in_e) -> 
-              (** делаем самоссылочное окружение, внутри тела функции она сама доступна под именем*)
-              let rec env' : env = (f, VClosure (x, body, env')) :: env in eval env' in_e
-                |If (cond, e_then, e_else) ->
-                (** сначала считаем cond, ожидаем что инт = 0, все ост 1*)
-                let* vcond = eval env cond in
-                begin
-                  match vcond with
-                  |VInt n -> if n = 0 then eval env e_else else eval env e_then
-                  |VClosure _ -> fail `IfConditionNotInt
-                end
-                |Binop (op, e1, e2) ->
-                let* v1 = eval env e1 in
-                let* v2 = eval env e2 in
-                begin 
-                  match v1, v2 with
-                  |VInt n1, VInt n2 -> eval_binop op n1 n2
-                  | _ -> fail `BinopOnNonInt
-                end
-                |Fix e1 ->
-                (** ожидаем на входе функцию (замыкание), из нее строим рекурсивную функцию*)
-                let* v = eval env e1 in
-                begin
-                  match v with
-                  |VClosure (param, body, closure_env) ->
-                  (** vfix это замыкание, которое внутри тела видит само себя*)
-                  let rec vfix : value = VClosure (param, body, (param, vfix) :: closure_env)
-                  in
-                  return vfix
-                  |VInt _ -> fail `FixOnNonFunction
-                end
-                let run (expr : name Ast.t) : (int, [> error]) M.t =
-                  let* v = eval [] expr in
-                  match v with
-                  |VInt n -> return n
-                  |VClosure _ -> fail `ResultNotInt
-                end
-                (** парсит строку, запускает интерпретатор и печатает результат*)
-                let parse_and_run str = let module I = Interpret (Base.Result) in
-                (** сначала парсим строку в ast, потом передаем его в интерпретатор*)
-                let rez = Base.Result.(Parser.parse str >>= I.run) in
-                match rez with
-                | Result.Ok n -> Stdlib.Printf.printf "Success: %d\n" n
-                |Result.Error #Parser.error -> Format.eprintf "Parsing error\n%!"; exit 1
-                |Result.Error #error -> Format.eprintf "Interpreter error\n%!"; exit 1
-                ;;
+  let return (x : 'a) : ('a * string list, [> error ]) M.t =
+    M.return (x, [])
+
+  let ( let* )
+      (m : ('a * string list, [> error ]) M.t)
+      (f : 'a -> ('b * string list, [> error ]) M.t)
+    : ('b * string list, [> error ]) M.t =
+    M.bind m ~f:(fun (v, out1) ->
+        M.bind (f v) ~f:(fun (res, out2) ->
+            M.return (res, out1 @ out2)))
+
+  let fail (e : [> error ]) : ('a * string list, [> error ]) M.t =
+    M.fail e
+
+  (** Добавить строку в лог "stdout". *)
+  let tell (s : string) : (unit * string list, [> error ]) M.t =
+    M.return ((), [ s ])
+
+  (** Поиск переменной в окружении.
+      Если переменная найдена — возвращаем её значение,
+      иначе — ошибку [`UnknownVariable]. *)
+  let rec lookup (env : env) (x : name) =
+    match env with
+    | [] -> fail (`UnknownVariable x)
+    | (y, v) :: rest ->
+      if String.equal x y then
+        return v
+      else
+        lookup rest x
+  ;;
+
+  (** Вычисление бинарной операции над целыми числами. *)
+  let eval_binop (op : binop) (n1 : int) (n2 : int) =
+    match op with
+    | Add -> return (VInt (n1 + n2))
+    | Sub -> return (VInt (n1 - n2))
+    | Mul -> return (VInt (n1 * n2))
+    | Div ->
+      if n2 = 0 then fail `DivisionByZero else return (VInt (n1 / n2))
+    | Eq ->
+      if Int.equal n1 n2 then return (VInt 1) else return (VInt 0)
+    | Lt ->
+      if n1 < n2 then return (VInt 1) else return (VInt 0)
+    | Gt ->
+      if n1 > n2 then return (VInt 1) else return (VInt 0)
+  ;;
+
+  (** Разворачивание [fix e] через [let rec].
+      В простейшем варианте:
+        [fix e] ~~> [let rec f x = e f x in f]
+      В данном мини-языке нас не волнуют коллизии имён. *)
+  let desugar_fix (e : name Ast.t) : name Ast.t =
+    let f = "_fix_f" in
+    let x = "_fix_x" in
+    let body = App (App (e, Var f), Var x) in
+    Let_rec (f, x, body, Var f)
+  ;;
+
+  (** Начальное окружение: в нем сразу есть встроенная функция [print]. *)
+  let initial_env : env = [ "print", VBuiltinPrint ]
+
+  (** Основная функция интерпретации. *)
+  let rec eval (env : env) (expr : name Ast.t) =
+    match expr with
+    | Var x ->
+      lookup env x
+    | Int n ->
+      return (VInt n)
+    | Abs (param, body) ->
+      (* строим замыкание из параметра, тела и текущего окружения *)
+      return (VClosure (param, body, env))
+    | App (f_expr, arg_expr) ->
+      (* сначала считаем функцию и аргумент *)
+      let* f_val = eval env f_expr in
+      let* arg_val = eval env arg_expr in
+      (match f_val with
+       | VClosure (param, body, closure_env) ->
+         let env' : env = (param, arg_val) :: closure_env in
+         eval env' body
+       | VBuiltinPrint ->
+         (* встроенный print: пока печатаем только int *)
+         (match arg_val with
+          | VInt n ->
+            let* () = tell (Int.to_string n) in
+            (* пусть print возвращает 0 *)
+            return (VInt 0)
+          | VClosure _ | VBuiltinPrint ->
+            fail `PrintArgumentNotInt)
+       | VInt _ ->
+         fail `NotAFunction)
+    | Let (x, e1, e2) ->
+      let* v1 = eval env e1 in
+      let env' = (x, v1) :: env in
+      eval env' e2
+    | Let_rec (f, x, body, in_e) ->
+      (* самоссылочное окружение: внутри [body] имя [f] видно как сама функция *)
+      let rec env' : env = (f, VClosure (x, body, env')) :: env in
+      eval env' in_e
+    | If (cond, e_then, e_else) ->
+      let* vcond = eval env cond in
+      (match vcond with
+       | VInt n ->
+         if n = 0 then eval env e_else else eval env e_then
+       | VClosure _ | VBuiltinPrint ->
+         fail `IfConditionNotInt)
+    | Binop (op, e1, e2) ->
+      let* v1 = eval env e1 in
+      let* v2 = eval env e2 in
+      (match v1, v2 with
+       | VInt n1, VInt n2 -> eval_binop op n1 n2
+       | _ -> fail `BinopOnNonInt)
+    | Fix e1 ->
+      (* вместо отдельной логики просто разворачиваем [fix] в [let rec] *)
+      eval env (desugar_fix e1)
+  ;;
+
+  (** Запуск интерпретатора в исходном окружении. *)
+  let run (expr : name Ast.t) =
+    let* v = eval initial_env expr in
+    match v with
+    | VInt n -> return n
+    | VClosure _ | VBuiltinPrint -> fail `ResultNotInt
+  ;;
+end
+
+(** Парсит строку, запускает интерпретатор и печатает результат. *)
+let parse_and_run str =
+  let module I = Interpret (Base.Result) in
+  (* сначала парсим строку в AST, потом передаем его в интерпретатор *)
+  let rez = Base.Result.(Parser.parse str >>= I.run) in
+  match rez with
+  | Result.Ok (n, out) ->
+    (* печатаем всё, что накопила встроенная функция print *)
+    List.iter out ~f:(fun s ->
+        Stdlib.Printf.printf "%s\n" s);
+    (* затем печатаем итоговое значение *)
+    Stdlib.Printf.printf "Success: %d\n" n
+  | Result.Error #Parser.error ->
+    Format.eprintf "Parsing error\n%!";
+    exit 1
+  | Result.Error #error ->
+    Format.eprintf "Interpreter error\n%!";
+    exit 1
+;;

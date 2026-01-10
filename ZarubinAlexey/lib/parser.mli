@@ -16,5 +16,4 @@ type dispatch =
   }
 
 val parse_lam : dispatch
-
-val parse : string -> (Ast.name Ast.t, [> error]) result
+val parse : string -> (Ast.name Ast.t, [> error ]) result

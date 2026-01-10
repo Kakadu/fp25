@@ -21,3 +21,6 @@ type 'name t = 'name Ast.t =
 [@@deriving show { with_path = false }]
 
 let pp_named = pp Format.pp_print_string
+
+let print_ast (e : Ast.name Ast.t) : string =
+  Format.asprintf "%a" pp_named e
