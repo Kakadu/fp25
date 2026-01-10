@@ -6,9 +6,6 @@
 
 [@@@ocaml.text "/*"]
 
-open Base
-open Ast
-
 module type MONAD_FAIL = sig
   include Base.Monad.S2
 
