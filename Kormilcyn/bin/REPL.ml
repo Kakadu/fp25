@@ -31,20 +31,17 @@ let rec repl ~(max_steps : int) =
   match In_channel.input_line stdin with
   | None -> ()
   | Some line ->
-    let line = String.trim line in
-    if String.equal line ""
-    then repl ~max_steps
-    else if String.equal line ":help"
-    then (
-      print_help ();
-      repl ~max_steps)
-    else if String.equal line ":quit" || String.equal line ":q"
-    then ()
-    else if String.starts_with ~prefix:":max_steps" line
-    then repl ~max_steps:(extract_steps line)
-    else (
-      run_line max_steps line;
-      repl ~max_steps)
+    (match String.trim line with
+     | line when String.equal line "" -> repl ~max_steps
+     | line when String.equal line ":help" ->
+       print_help ();
+       repl ~max_steps
+     | line when String.equal line ":quit" || String.equal line ":q" -> ()
+     | line when String.starts_with ~prefix:":max_steps" line ->
+       repl ~max_steps:(extract_steps line)
+     | _ ->
+       run_line max_steps line;
+       repl ~max_steps)
 ;;
 
 let () =
