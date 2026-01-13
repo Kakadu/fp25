@@ -14,14 +14,14 @@ open Ast
 type error =
   [ `NotAValue of string
   | `Type_error of string
-  | `Unbound of string
+  | `Unbound
   | `Division_by_zero
   ]
 
 let pp_error ppf = function
   | `NotAValue msg -> Format.fprintf ppf "Not a value: %s" msg
   | `Type_error msg -> Format.fprintf ppf "Type error: %s" msg
-  | `Unbound x -> Format.fprintf ppf "Unbound variable %s" x
+  | `Unbound -> Format.fprintf ppf "Unbound variable"
   | `Division_by_zero -> Format.fprintf ppf "Division by zero"
 ;;
 
@@ -40,11 +40,7 @@ end = struct
   and 'name env = ('name * 'name value) list
 
   let run max_steps (e : 'name Ast.t) : (int, [> error ]) M.t =
-    let rec resolve env x =
-      match env with
-      | [] -> None
-      | (y, v) :: rest -> if y = x then Some v else resolve rest x
-    and eval (env : 'name env) (e : 'name Ast.t) (steps : int)
+    let rec eval (env : 'name env) (e : 'name Ast.t) (steps : int)
       : ('name value, [> error ]) M.t
       =
       if steps > max_steps
@@ -63,9 +59,9 @@ end = struct
         | LetRec (f, Fun (x, b), e2) -> eval_letrec env f x b e2 (steps + 1)
         | LetRec _ -> fail (`Type_error "let rec expects a function on the right"))
     and eval_var env x =
-      match resolve env x with
-      | Some v -> return v
-      | None -> fail (`Unbound "<unbound>")
+      match env with
+      | [] -> fail `Unbound
+      | (y, v) :: rest -> if y = x then return v else eval_var rest x
     and eval_neg env e steps : ('name value, [> error ]) M.t =
       let* v = eval env e (steps + 1) in
       match v with

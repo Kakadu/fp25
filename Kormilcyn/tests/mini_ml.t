@@ -51,7 +51,7 @@
   $ ./mini_cli.exe <<'EOF'
   > x
   > EOF
-  Interpreter error: Unbound variable <unbound>
+  Interpreter error: Unbound variable
 
   $ ./mini_cli.exe <<'EOF'
   > fun x -> x

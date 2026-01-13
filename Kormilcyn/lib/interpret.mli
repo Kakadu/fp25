@@ -9,7 +9,7 @@
 type error =
   [ `NotAValue of string
   | `Type_error of string
-  | `Unbound of string
+  | `Unbound
   | `Division_by_zero
   ]
 
