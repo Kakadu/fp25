@@ -5,7 +5,7 @@ all:
 
 repl:
 	dune build bin/REPL.exe && rlwrap _build/default/bin/REPL.exe
-
+#   dune build ./REPL.exe && rlwrap _build/default/REPL.exe
 tests: test
 test:
 	dune runtest
