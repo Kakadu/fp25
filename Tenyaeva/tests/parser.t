@@ -237,12 +237,33 @@
   : end_of_input
 
   $ ../bin/REPL.exe -dparsetree <<EOF
-  > katya_08Katya
-  [(Str_eval (Expr_ident "katya_08Katya"))]
+  > let type = 123
+  : end_of_input
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > let rec = true
+  : end_of_input
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > katya_08Kat'ya
+  [(Str_eval (Expr_ident "katya_08Kat'ya"))]
 
   $ ../bin/REPL.exe -dparsetree <<EOF
   > letrec x = x
   [(Str_eval
       (Expr_binop (Eq, (Expr_apply ((Expr_ident "letrec"), (Expr_ident "x"))),
          (Expr_ident "x"))))
+    ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > let x = 123x
+  [(Str_value (NonRecursive,
+      { vb_pat = (Pat_var "x"); vb_expr = (Expr_const (Const_int 123)) }, 
+      []));
+    (Str_eval (Expr_ident "x"))]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > let  _ = 8
+  [(Str_value (NonRecursive,
+      { vb_pat = Pat_any; vb_expr = (Expr_const (Const_int 8)) }, []))
     ]

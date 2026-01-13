@@ -8,3 +8,7 @@
     -max-steps Set a limit on interpretation steps (default: 10_000)
     -help  Display this list of options
     --help  Display this list of options
+
+  $ ./REPL.exe foo
+  Anonymous arguments are not supported
+  [1]
