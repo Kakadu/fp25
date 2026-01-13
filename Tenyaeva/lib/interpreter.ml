@@ -250,6 +250,7 @@ module Eval = struct
     let rec extract_names_from_pat (env : environment) acc = function
       | Pat_var id -> acc @ [ Some id, find_exn1 env id ]
       | Pat_constraint (_, pat) -> extract_names_from_pat env acc pat
+      | Pat_option (Some pat) -> extract_names_from_pat env acc pat
       | _ -> acc
     in
     let get_names_from_let_binds env =
