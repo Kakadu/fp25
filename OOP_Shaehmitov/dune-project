@@ -33,8 +33,7 @@
    (>= v0.15.0))
   ppx_deriving
   (bisect_ppx
-   (>= 2.9.0))
-  ppx_deriving_qcheck
+   (= 2.8.3))
   qcheck
   (odoc :with-doc)
   (ocamlformat
