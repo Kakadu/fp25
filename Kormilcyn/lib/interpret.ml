@@ -49,14 +49,14 @@ end = struct
         match e with
         | Int i -> return (VInt i)
         | Var x -> eval_var env x
-        | Neg e -> eval_neg env e (steps + 1)
-        | Bin (bop, e1, e2) -> eval_bin env bop e1 e2 (steps + 1)
-        | Let (x, e1, e2) -> eval_let env x e1 e2 (steps + 1)
-        | If (e1, e2, e3) -> eval_if env e1 e2 e3 (steps + 1)
+        | Neg e -> eval_neg env e steps
+        | Bin (bop, e1, e2) -> eval_bin env bop e1 e2 steps
+        | Let (x, e1, e2) -> eval_let env x e1 e2 steps
+        | If (e1, e2, e3) -> eval_if env e1 e2 e3 steps
         | Fun (x, e) -> return (VClosure (x, e, env))
-        | App (e1, e2) -> eval_app env e1 e2 (steps + 1)
+        | App (e1, e2) -> eval_app env e1 e2 steps
         | Fix -> return VFix
-        | LetRec (f, Fun (x, b), e2) -> eval_letrec env f x b e2 (steps + 1)
+        | LetRec (f, Fun (x, b), e2) -> eval_letrec env f x b e2 steps
         | LetRec _ -> fail (`Type_error "let rec expects a function on the right"))
     and eval_var env x =
       match env with
