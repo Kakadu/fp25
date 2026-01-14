@@ -8,6 +8,3 @@
 
 (** Verbose printing. Usable for parsing. *)
 val pp : Format.formatter -> string Ast.t -> unit
-
-(** Print in human-readable form. *)
-val pp_hum : Format.formatter -> string Ast.t -> unit

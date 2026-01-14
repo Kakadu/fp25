@@ -18,6 +18,18 @@ let pp_binop fmt = function
   | Geq -> Format.fprintf fmt ">="
 ;;
 
+let rec collect_fun_args acc = function
+  | Fun (x, body) -> collect_fun_args (x :: acc) body
+  | body -> List.rev acc, body
+;;
+
+let pp_fun_args fmt = function
+  | [] -> ()
+  | x :: xs ->
+    Format.pp_print_string fmt x;
+    List.iter (fun arg -> Format.fprintf fmt " %s" arg) xs
+;;
+
 let rec pp fmt = function
   | Var v -> Format.pp_print_string fmt v
   | Int i -> Format.pp_print_int fmt i
@@ -25,7 +37,9 @@ let rec pp fmt = function
   | Neg e -> Format.fprintf fmt "(-%a)" pp e
   | Bin (op, l, r) -> Format.fprintf fmt "(%a %a %a)" pp l pp_binop op pp r
   | App (f, a) -> Format.fprintf fmt "(%a %a)" pp f pp a
-  | Fun (x, body) -> Format.fprintf fmt "(fun %s -> %a)" x pp body
+  | Fun (x, body) ->
+    let args, body = collect_fun_args [ x ] body in
+    Format.fprintf fmt "(fun %a -> %a)" pp_fun_args args pp body
   | Let (x, e1, e2) -> Format.fprintf fmt "(let %s = %a in %a)" x pp e1 pp e2
   | If (c, t, e) -> Format.fprintf fmt "(if %a then %a else %a)" pp c pp t pp e
   | LetRec (f, e1, e2) -> Format.fprintf fmt "(let rec %s = %a in %a)" f pp e1 pp e2

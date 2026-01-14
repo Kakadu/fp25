@@ -103,7 +103,7 @@ let gen_ast_sized =
 let prop_parse_print_roundtrip =
   QCheck2.Test.make
     ~count:200
-    ~name:"parser/pretty-printer roundtrip"
+    ~name:"parser/to_src roundtrip"
     ~print:to_src
     gen_ast_sized
     (fun ast ->
