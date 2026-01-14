@@ -285,7 +285,11 @@ let toplevel =
   <* spaces
 ;;
 
-let prog = sep_by semicolon toplevel <* end_of_input (* ;; не парсится в конце*)
+let prog =
+  let* tl = sep_by semicolon toplevel in
+  let* _ = many (spaces *> string ";;" <* spaces) in
+  end_of_input *> return tl
+;;
 
 (* let top = toplevel *)
 (* spaces *> expr <* spaces <* end_of_input *)
