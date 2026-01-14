@@ -254,6 +254,7 @@ let%expect_test "inheritance_method_override" =
         method greet : int
     end
     class Derived = object
+        method greet : int
     end
     val d : Derived
     val msg : int |}]
