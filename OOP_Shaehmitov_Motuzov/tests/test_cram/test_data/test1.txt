@@ -1,3 +1,0 @@
-let x = 40 + 2 ;;
-let () = print_int x
-

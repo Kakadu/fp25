@@ -1,5 +1,0 @@
-(test
- (name qcheck_parser_test)
- (libraries qcheck ast parser)
- (instrumentation
-  (backend bisect_ppx)))

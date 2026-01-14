@@ -1,2 +1,0 @@
-let div x y = x / y ;;
-let () = print_int (div 20 0)
