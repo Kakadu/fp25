@@ -316,8 +316,7 @@ let process_type_decl env td =
 let check_toplevel state tl =
   try
     match tl with
-    | TLType td ->
-      Ok { state with tenv = process_type_decl state.tenv td; last_type = None }
+    | TLType td -> Ok { tenv = process_type_decl state.tenv td; last_type = None }
     | TLExpr (Let (NonRec, pat, expr, None)) ->
       let ty = infer state.tenv expr in
       let bindings = bind_pattern state.tenv pat ty in

@@ -19,14 +19,17 @@ type binop =
   | ELess (** Less than or equal: `<=` *)
   | And (** `&&` *)
   | Or (** `||` *)
+[@@deriving show { with_path = false }]
 
 type rec_flag =
   | NonRec (** Non-recursive binding *)
   | Rec (** Recursive binding *)
+[@@deriving show { with_path = false }]
 
 type unop =
   | Neg (** Unary negation *)
   | Not (** Logical NOT *)
+[@@deriving show { with_path = false }]
 
 type ident = string [@@deriving show { with_path = false }]
 
@@ -38,6 +41,7 @@ type type_expr =
   | TEArrow of type_expr * type_expr
   | TETuple of type_expr list
   | TEConstr of ident * type_expr list
+[@@deriving show { with_path = false }]
 
 type constr_decl =
   { ctor_name : ident
@@ -55,6 +59,7 @@ type pattern =
   | PTuple of pattern list
   | PConstr of ident * pattern list
   | PWildcard
+[@@deriving show { with_path = false }]
 
 type expr =
   | Int of int (** Integer literal *)
@@ -75,7 +80,9 @@ type expr =
   | App of expr * expr (** Application (function call): function, argument *)
   | Tuple of expr list
   | Match of expr * (pattern * expr) list
+[@@deriving show { with_path = false }]
 
 type toplevel =
   | TLExpr of expr
   | TLType of type_decl
+[@@deriving show { with_path = false }]

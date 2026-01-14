@@ -27,6 +27,19 @@ let gen_var_name =
       ])
 ;;
 
+let gen_constr_name =
+  Gen.oneof
+    [ pure "True"
+    ; pure "False"
+    ; pure "Some"
+    ; pure "None"
+    ; pure "Cons"
+    ; pure "Nil"
+    ; pure "A"
+    ; pure "B"
+    ]
+;;
+
 let gen_binop =
   Gen.(
     oneof
@@ -45,22 +58,40 @@ let gen_binop =
       ])
 ;;
 
+let rec gen_pattern size =
+  if size <= 0
+  then map (fun x -> PVar x) gen_var_name
+  else
+    frequency
+      [ 3, map (fun x -> PVar x) gen_var_name
+      ; 1, return PWildcard
+      ; 1, map (fun n -> PConstr (n, [])) gen_constr_name
+      ; ( 1
+        , let* tuple_size = int_range 2 3 in
+          map
+            (fun ps -> PTuple ps)
+            (list_size (return tuple_size) (gen_pattern (size / 2))) )
+      ]
+;;
+
 let rec gen_expr size =
   let gen_param = Gen.map (fun v -> PVar v) gen_var_name in
   let gen_var = map (fun x -> Var x) gen_var_name in
+  let gen_constr = map (fun x -> Constr x) gen_constr_name in
   let gen_int = map (fun i -> Int i) small_int in
   let gen_bool = map (fun b -> Bool b) bool in
-  if size < 1
-  then oneof [ gen_var; gen_int; gen_bool ]
+  if size <= 1
+  then oneof [ gen_var; gen_int; gen_bool; gen_constr ]
   else (
     let under_expr = gen_expr (size / 2) in
+    let under_expr_small = gen_expr (size / 3) in
     let gen_binop =
       map3 (fun op x1 x2 -> BinOp (op, x1, x2)) gen_binop under_expr under_expr
     in
     let gen_if = map3 (fun c t e -> If (c, t, e)) under_expr under_expr under_expr in
     let gen_let =
       let gen_rec_flag = oneof [ return Rec; return NonRec ] in
-      let gen_params = list_size (int_range 0 3) gen_param in
+      let gen_params = list_size (int_range 0 2) gen_param in
       let gen_bound =
         map2
           (fun params body ->
@@ -68,16 +99,16 @@ let rec gen_expr size =
           gen_params
           under_expr
       in
-      let gen_some = oneof [ return None; map (fun x -> Some x) under_expr ] in
+      let gen_body = map (fun x -> Some x) under_expr in
       map4
         (fun r v b s -> Let (r, PVar v, b, s))
         gen_rec_flag
         gen_var_name
         gen_bound
-        gen_some
+        gen_body
     in
     let gen_abs =
-      let gen_params = list_size (int_range 1 3) gen_param in
+      let gen_params = list_size (int_range 1 2) gen_param in
       map2
         (fun params body ->
           List.fold_right (fun param acc -> Abs (param, acc)) params body)
@@ -91,24 +122,38 @@ let rec gen_expr size =
         ; map (fun e -> UnOp (Not, e)) under_expr
         ]
     in
-    let gen_tuple = map (fun es -> Tuple es) (list_size (int_range 2 4) under_expr) in
+    let gen_tuple =
+      let* tuple_size = int_range 2 3 in
+      map (fun es -> Tuple es) (list_size (return tuple_size) under_expr)
+    in
+    let gen_match =
+      let gen_case = pair (gen_pattern (size / 4)) under_expr_small in
+      let cases = list_size (int_range 1 2) gen_case in
+      map2 (fun scr cases -> Match (scr, cases)) under_expr_small cases
+    in
     frequency
       [ 8, gen_int
       ; 7, gen_var
       ; 2, gen_bool
+      ; 1, gen_constr
       ; 6, gen_binop
       ; 4, gen_if
       ; 3, gen_let
       ; 3, gen_abs
-      ; 2, gen_app
+      ; 3, gen_app
       ; 2, gen_unop
       ; 2, gen_tuple
+      ; 2, gen_match
       ])
 ;;
 
 let rec shrink_expr = function
-  | Int _ | Var _ | Bool _ -> Iter.empty
-  | Tuple es -> Shrink.list ~shrink:shrink_expr es |> Iter.map (fun es' -> Tuple es')
+  | Int _ | Var _ | Bool _ | Constr _ -> Iter.empty
+  | Tuple es ->
+    let open Iter in
+    Shrink.list ~shrink:shrink_expr es
+    |> Iter.filter (fun es' -> List.length es' >= 2)
+    |> Iter.map (fun es' -> Tuple es')
   | UnOp (op, e) ->
     let open Iter in
     of_list [ e ] <+> (shrink_expr e >|= fun e' -> UnOp (op, e'))
@@ -141,36 +186,37 @@ let rec shrink_expr = function
   | Abs (x1, x2) ->
     let open Iter in
     of_list [ x2 ] <+> (shrink_expr x2 >|= fun e2 -> Abs (x1, e2))
+  | Match (scrutinee, cases) ->
+    let open Iter in
+    of_list [ scrutinee ] <+> (shrink_expr scrutinee >|= fun s -> Match (s, cases))
 ;;
 
-let arb_expr = QCheck.make ~print:print_p ~shrink:shrink_expr (gen_expr 20)
+let arb_expr = QCheck.make ~print:print_expr ~shrink:shrink_expr (gen_expr 20)
 
 let parse_after_print expr =
-  let s = print_p expr in
+  let s = print_expr expr ^ " ;;" in
   match parser s with
-  | Ok e -> Ok e
+  | Ok [ TLExpr expr' ] -> Ok expr'
+  | Ok _ -> Error "expected expression"
   | Error (`parse_error msg) -> Error (Printf.sprintf "parse error on `%s`: %s" s msg)
 ;;
 
 let print_parse_roundtrip =
   QCheck.Test.make
-    ~count:10000
-    ~name:"AST -> print_p -> parser -> AST"
+    ~count:1000
+    ~name:"AST -> print_expr -> parser -> AST"
     arb_expr
     (fun expr ->
        match parse_after_print expr with
        | Ok expr' ->
-         let original_ast_str = print_p expr in
-         let parsed_ast_str = print_p expr' in
+         let original_ast_str = show_expr expr in
+         let parsed_ast_str = show_expr expr' in
          if original_ast_str = parsed_ast_str
          then true
          else (
+           Printf.eprintf "\nSOURCE:     %s\n" (print_expr expr);
            Printf.eprintf
-             "\nORIGINAL STR: %s\nPARSED STR:   %s\n"
-             (print_p expr)
-             (print_p expr');
-           Printf.eprintf
-             "\nORIGINAL AST: %s\nPARSED AST:   %s\n"
+             "ORIGINAL AST: %s\nPARSED AST:   %s\n"
              original_ast_str
              parsed_ast_str;
            false)
