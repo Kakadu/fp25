@@ -1,0 +1,16 @@
+class A x y = 
+object 
+val x = x
+val y = y
+method foo = x + y
+end;;
+
+class B x y z w = 
+object inherit A x y 
+val x = z
+val y = w
+method boo = z && v
+end ;;
+
+let a = new A 5 6 ;;
+let b = new B 8 7 true false

@@ -1,0 +1,9 @@
+(library
+ (name inferencer_unittests)
+ (package ShaehmitovShamil)
+ (libraries parser ast inferencer)
+ (inline_tests)
+ (instrumentation
+  (backend bisect_ppx))
+ (preprocess
+  (pps ppx_expect ppx_inline_test)))
