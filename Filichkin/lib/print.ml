@@ -14,8 +14,11 @@ let rec pattern = function
     let ps_str = List.map pattern ps |> String.concat ", " in
     "(" ^ ps_str ^ ")"
   | PConstr (name, args) ->
-    let ars_s = List.map pattern args |> String.concat ", " in
-    "(" ^ name ^ ", " ^ ars_s ^ ")"
+    (match args with
+     | [] -> name
+     | args ->
+       let args_str = List.map pattern args |> String.concat ", " in
+       name ^ " (" ^ args_str ^ ")")
   | PWildcard -> "_"
 ;;
 
