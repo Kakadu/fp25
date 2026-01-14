@@ -1,6 +1,6 @@
 (library
  (name parser)
- (package ShaehmitovShamil)
+ (package OOP_Shaehmitov)
  (libraries base angstrom ast)
  (inline_tests)
  (instrumentation

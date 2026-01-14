@@ -1,6 +1,6 @@
 (library
  (name parser_test)
- (package ShaehmitovShamil)
+ (package OOP_Shaehmitov)
  (modules parser_test)
  (libraries parser ast)
  (instrumentation

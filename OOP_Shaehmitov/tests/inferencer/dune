@@ -1,6 +1,6 @@
 (library
  (name inferencer_unittests)
- (package ShaehmitovShamil)
+ (package OOP_Shaehmitov)
  (libraries parser ast inferencer)
  (inline_tests)
  (instrumentation

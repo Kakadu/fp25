@@ -15,7 +15,7 @@
 (homepage "https://github.com/Kakadu/fp25")
 
 (package
- (name ShaehmitovShamil) ; FIXME and regenerate .opam file using 'dune build @install'
+ (name OOP_Shaehmitov) ; FIXME and regenerate .opam file using 'dune build @install'
  (synopsis "Shaehmitov MiniML")
  (description
   "An interpreter for a small functional programming language similar to OCaml.")
