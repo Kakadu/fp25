@@ -81,7 +81,7 @@
   $ ./mini_cli.exe <<'EOF'
   > if (fun x -> x) then 1 else 2
   > EOF
-  Interpreter error: Type error: if expects an integer condition
+  Interpreter error: Type error: if expects a binary integer condition
 
   $ ./mini_cli.exe <<'EOF'
   > let rec f = 1 in f

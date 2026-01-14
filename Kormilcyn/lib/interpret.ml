@@ -88,7 +88,7 @@ end = struct
       match vcond with
       | VInt 1 -> eval env e2 (steps + 1)
       | VInt 0 -> eval env e3 (steps + 1)
-      | _ -> fail (`Type_error "if expects an integer condition")
+      | _ -> fail (`Type_error "if expects a binary integer condition")
     and eval_app env e1 e2 steps : ('name value, [> error ]) M.t =
       let* vf = eval env e1 (steps + 1) in
       match vf with
@@ -100,10 +100,10 @@ end = struct
     and eval_fix env f steps =
       let* vfun = eval env f (steps + 1) in
       match vfun with
-      | VClosure (farg, fbody, fenv) ->
+      | VClosure (fx, fbody, fenv) ->
         (match fbody with
          | Fun (x, body) ->
-           let rec self = VClosure (x, body, (farg, self) :: fenv) in
+           let rec self = VClosure (x, body, (fx, self) :: fenv) in
            return self
          | _ -> fail (`Type_error "fix expects a function returning a function"))
       | _ -> fail (`Type_error "fix expects a function")
