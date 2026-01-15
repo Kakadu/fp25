@@ -1,0 +1,14 @@
+class a = 
+object 
+method m = 42
+end ;;
+class b = 
+object 
+method m = true
+end ;;
+
+let m = new a;;
+let n = new b;;
+let f x = x#m;;
+let () = print_int(f m);;
+let _ = f n;;

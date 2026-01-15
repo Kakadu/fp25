@@ -135,3 +135,61 @@
   $ ocaml test_data/test10.txt
   145
 
+  $ cat test_data/test11.txt
+  class a x y = 
+  object 
+  val x = x
+  val y = y
+  method foo = x + y
+  end;;
+  
+  class b x y z w = 
+  object inherit a x y 
+  val x = z
+  val y = w
+  method boo = x && y
+  end ;;
+  
+  let n = new a 5 6 ;;
+  let m = new b 8 7 true false
+
+  $ main test_data/test11.txt
+  Type Error: Unify: int vs bool
+
+  $ ocaml test_data/test11.txt
+  File "./test_data/test11.txt", line 10, characters 4-5:
+  10 | val x = z
+           ^
+  Warning 13 [instance-variable-override]: the instance variable x is overridden.
+  File "./test_data/test11.txt", line 11, characters 4-5:
+  11 | val y = w
+           ^
+  Warning 13 [instance-variable-override]: the instance variable y is overridden.
+  File "./test_data/test11.txt", line 12, characters 13-14:
+  12 | method boo = x && y
+                    ^
+  Error: This expression has type int but an expression was expected of type
+           bool
+  [2]
+
+  $ cat test_data/test12.txt
+  class a = 
+  object 
+  method m = 42
+  end ;;
+  class b = 
+  object 
+  method m = true
+  end ;;
+  
+  let m = new a;;
+  let n = new b;;
+  let f x = x#m;;
+  let () = print_int(f m);;
+  let _ = f n;;
+
+  $ main test_data/test12.txt
+  42
+
+  $ ocaml test_data/test12.txt
+  42

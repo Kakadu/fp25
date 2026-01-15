@@ -721,19 +721,8 @@ let%expect_test "field overriding in inheritance" =
        \    let x_p = p#get_x;;\n\
        \    let x_c = c#get_x;;\n\
        \  ");
-  [%expect
-    {|
-    class child = object
-        val x : bool
-    end
-    class parent = object
-        val x : int
-        method get_x : int
-    end
-    val c : child
-    val p : parent
-    val x_c : int
-    val x_p : int |}]
+  [%expect {|
+    Unify: bool vs int |}]
 ;;
 
 let%expect_test "parent class not exist" =

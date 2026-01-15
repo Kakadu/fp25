@@ -462,3 +462,53 @@ let%expect_test "tuple in tuple pattern" =
          (Tuple [(Const (CInt 1)); (Tuple [(Const (CInt 2)); (Const (CInt 3))])])))
       ] |}]
 ;;
+
+let%expect_test "test1" =
+  run_program_parser
+    "class a x y = \n\
+    \  object \n\
+    \  val x = x\n\
+    \  val y = y\n\
+    \  method foo = x + y\n\
+    \  end;;\n\
+    \  \n\
+    \  class b x y z w = \n\
+    \  object inherit a x y \n\
+    \  val x = z\n\
+    \  val y = w\n\
+    \  method boo = x && y\n\
+    \  end ;;\n\
+    \  \n\
+    \  let a = new a 5 6 ;;\n\
+    \  let b = new b 8 7 true false";
+  [%expect
+    {|
+    [(ClassDef
+        { class_name = "a"; class_params = [(PVar "x"); (PVar "y")];
+          parent_class = None; self_name = None;
+          fields = [("x", (Var "x")); ("y", (Var "y"))];
+          methods =
+          [{ method_name = "foo"; method_params = [];
+             method_body = (BinOp (Add, (Var "x"), (Var "y"))) }
+            ]
+          });
+      (ClassDef
+         { class_name = "b";
+           class_params = [(PVar "x"); (PVar "y"); (PVar "z"); (PVar "w")];
+           parent_class = (Some ("a", [(Var "x"); (Var "y")])); self_name = None;
+           fields = [("x", (Var "z")); ("y", (Var "w"))];
+           methods =
+           [{ method_name = "boo"; method_params = [];
+              method_body = (BinOp (And, (Var "x"), (Var "y"))) }
+             ]
+           });
+      (Value
+         (NonRec, (PVar "a"), (New ("a", [(Const (CInt 5)); (Const (CInt 6))]))));
+      (Value
+         (NonRec, (PVar "b"),
+          (New ("b",
+             [(Const (CInt 8)); (Const (CInt 7)); (Const (CBool true));
+               (Const (CBool false))]
+             ))))
+      ] |}]
+;;

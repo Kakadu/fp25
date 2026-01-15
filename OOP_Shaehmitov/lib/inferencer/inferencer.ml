@@ -656,7 +656,18 @@ module TypeChecker = struct
               let* s = acc in
               let f_exp, s1 = instantiate (StrMap.find fn info.fields) s in
               let* ft, s2 = infer env_cls s1 fe in
-              unify s2 ft f_exp)
+              let* s3 = unify s2 ft f_exp in
+              match cd.parent_class with
+              | None -> return s3
+              | Some (p_name, _) ->
+                (match StrMap.find_opt p_name st.ct with
+                 | Some p_info ->
+                   (match StrMap.find_opt fn p_info.fields with
+                    | Some p_field_sch ->
+                      let p_field_t, s4 = instantiate p_field_sch s3 in
+                      unify s4 f_exp p_field_t
+                    | None -> return s3)
+                 | None -> return s3))
             (return st_p)
             cd.fields
         in
