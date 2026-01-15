@@ -164,27 +164,27 @@ let%expect_test "boolean constants" =
 ;;
 
 let%expect_test "oop test" =
-  run_test "let obj = new ClassName in obj#methodName 42";
+  run_test "let obj = new className in obj#methodName 42";
   [%expect
     {|
-    (Let (NonRec, (PVar "obj"), (New ("ClassName", [])),
+    (Let (NonRec, (PVar "obj"), (New ("className", [])),
        (MethodCall ((Var "obj"), "methodName", [(Const (CInt 42))])))) |}]
 ;;
 
 let%expect_test "new with constructor args" =
-  run_test "let obj = new Point 10 20 in obj#x";
+  run_test "let obj = new point 10 20 in obj#x";
   [%expect
     {|
     (Let (NonRec, (PVar "obj"),
-       (New ("Point", [(Const (CInt 10)); (Const (CInt 20))])),
+       (New ("point", [(Const (CInt 10)); (Const (CInt 20))])),
        (MethodCall ((Var "obj"), "x", [])))) |}]
 ;;
 
 let%expect_test "new with expression args" =
-  run_test "new Calculator (1 + 2) (3 * 4)";
+  run_test "new calculator (1 + 2) (3 * 4)";
   [%expect
     {|
-    (New ("Calculator",
+    (New ("calculator",
        [(BinOp (Add, (Const (CInt 1)), (Const (CInt 2))));
          (BinOp (Mul, (Const (CInt 3)), (Const (CInt 4))))]
        )) |}]
@@ -358,7 +358,7 @@ let%expect_test "test2" =
 
 let%expect_test "class definition" =
   run_program_parser
-    "class Point = object (boba) \n\
+    "class point = object (boba) \n\
     \  val x = 0\n\
     \  val y = 0\n\
     \  method move dx dy = x + dx \n\
@@ -366,7 +366,7 @@ let%expect_test "class definition" =
   [%expect
     {|
     [(ClassDef
-        { class_name = "Point"; class_params = []; parent_class = None;
+        { class_name = "point"; class_params = []; parent_class = None;
           self_name = (Some "boba");
           fields = [("x", (Const (CInt 0))); ("y", (Const (CInt 0)))];
           methods =
@@ -379,11 +379,11 @@ let%expect_test "class definition" =
 
 let%expect_test "class definition simple" =
   run_program_parser
-    "class Point = object val x = 0 val y = 0 method get_x = this#x end;;";
+    "class point = object val x = 0 val y = 0 method get_x = this#x end;;";
   [%expect
     {|
     [(ClassDef
-        { class_name = "Point"; class_params = []; parent_class = None;
+        { class_name = "point"; class_params = []; parent_class = None;
           self_name = None;
           fields = [("x", (Const (CInt 0))); ("y", (Const (CInt 0)))];
           methods =
@@ -396,12 +396,12 @@ let%expect_test "class definition simple" =
 
 let%expect_test "class definition inheritance" =
   run_program_parser
-    "class ColorPoint = object inherit Point val c = 0 method get_color = this#c end;;";
+    "class colorPoint = object inherit point val c = 0 method get_color = this#c end;;";
   [%expect
     {|
     [(ClassDef
-        { class_name = "ColorPoint"; class_params = [];
-          parent_class = (Some ("Point", [])); self_name = None;
+        { class_name = "colorPoint"; class_params = [];
+          parent_class = (Some ("point", [])); self_name = None;
           fields = [("c", (Const (CInt 0)))];
           methods =
           [{ method_name = "get_color"; method_params = [];
@@ -412,11 +412,11 @@ let%expect_test "class definition inheritance" =
 ;;
 
 let%expect_test "class with method params" =
-  run_program_parser "class Calculator = object method add a b = a + b end;;";
+  run_program_parser "class calculator = object method add a b = a + b end;;";
   [%expect
     {|
     [(ClassDef
-        { class_name = "Calculator"; class_params = []; parent_class = None;
+        { class_name = "calculator"; class_params = []; parent_class = None;
           self_name = None; fields = [];
           methods =
           [{ method_name = "add"; method_params = [(PVar "a"); (PVar "b")];
@@ -428,11 +428,11 @@ let%expect_test "class with method params" =
 
 let%expect_test "class with constructor args" =
   run_program_parser
-    "class Adder = \n  object\n    val x = 0 \n    method add y = x + y \n  end;; \n";
+    "class adder = \n  object\n    val x = 0 \n    method add y = x + y \n  end;; \n";
   [%expect
     {|
     [(ClassDef
-        { class_name = "Adder"; class_params = []; parent_class = None;
+        { class_name = "adder"; class_params = []; parent_class = None;
           self_name = None; fields = [("x", (Const (CInt 0)))];
           methods =
           [{ method_name = "add"; method_params = [(PVar "y")];

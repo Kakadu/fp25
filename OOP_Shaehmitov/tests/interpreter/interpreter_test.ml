@@ -235,39 +235,39 @@ let%expect_test "inc" =
 
 let%expect_test "class test" =
   run_interpreter_test
-    "class Adder = \n\
+    "class adder = \n\
     \  object\n\
     \    val x = 0 \n\
     \    method add y = x + y \n\
     \  end ;; \n\
-    \ let a = new Adder ;; \n\
+    \ let a = new adder ;; \n\
     \ let () = print_int (a#add 5)";
   [%expect {| 5 |}]
 ;;
 
 let%expect_test "factorial with class" =
   run_interpreter_test
-    "class Factorial = \n\
+    "class factorial = \n\
     \  object(self)\n\
     \    method fact n = \n\
     \      if n = 0 then 1 else n * self#fact (n - 1) \n\
     \  end ;; \n\
-    \ let f = new Factorial ;; \n\
+    \ let f = new factorial ;; \n\
     \ let () = print_int (f#fact 10)";
   [%expect {| 3628800 |}]
 ;;
 
 let%expect_test "class in class" =
   run_interpreter_test
-    "class Point x y = \n\
+    "class point x y = \n\
     \  object\n\
     \    val x = x \n\
     \    val y = y \n\
     \    method get_x = x \n\
     \    method get_y = y \n\
-    \    method move dx dy = new Point (x+dx) (y+dy) \n\
+    \    method move dx dy = new point (x+dx) (y+dy) \n\
     \  end ;; \n\
-    \ let p = new Point 0 0 ;; \n\
+    \ let p = new point 0 0 ;; \n\
     \ let p2 = p#move 3 4 ;; \n\
     \ let () = print_int (p2#get_x + p2#get_y)";
   [%expect {| 7 |}]
@@ -276,16 +276,16 @@ let%expect_test "class in class" =
 let%expect_test "inheritance test" =
   run_interpreter_test
     "\n\
-    \    class Animal age = object\n\
+    \    class animal age = object\n\
     \      val age = age\n\
     \      method get_age = age\n\
     \    end;;\n\
-    \    class Dog age name = object\n\
-    \      inherit Animal age\n\
+    \    class dog age name = object\n\
+    \      inherit animal age\n\
     \      val name = name\n\
     \      method get_name = name\n\
     \    end;;\n\
-    \    let d = new Dog 5 2;;\n\
+    \    let d = new dog 5 2;;\n\
     \    let age = d#get_age;;\n\
     \    let name = d#get_name;;\n\
     \    let () = print_int (age + name)\n\
@@ -301,14 +301,14 @@ let%expect_test "tuple pattern in let binding" =
 let%expect_test "class test" =
   run_interpreter_test
     "\n\
-    \    class Parent = object method p = 1 end;;\n\
-    \    class Child = object inherit Parent method c = 2 end;;\n\
+    \    class parent = object method p = 1 end;;\n\
+    \    class child = object inherit parent method c = 2 end;;\n\
     \    \n\
     \    let force_parent x = \n\
-    \       let p = new Parent in \n\
+    \       let p = new parent in \n\
     \       if true then x else p;;\n\
     \    \n\
-    \    let c = new Child;;\n\
+    \    let c = new child;;\n\
     \    \n\
     \    let res = print_int ((force_parent c)#c);;\n\
     \  ";
@@ -318,10 +318,10 @@ let%expect_test "class test" =
 let%expect_test "class test 2" =
   run_interpreter_test
     "\n\
-    \    class Parent x y = object val x = x  val y = y  method get_x = x end;;\n\
-    \    class Child (x, y) = object inherit Parent x y method get_y = y end;;\n\
+    \    class parent x y = object val x = x  val y = y  method get_x = x end;;\n\
+    \    class child (x, y) = object inherit parent x y method get_y = y end;;\n\
     \    \n\
-    \    let c = new Child (10, 20);;\n\
+    \    let c = new child (10, 20);;\n\
     \    let x_val = c#get_x;;\n\
     \    let y_val = c#get_y;;\n\
     \    let () = print_int (x_val + y_val);;\n\
@@ -332,16 +332,16 @@ let%expect_test "class test 2" =
 let%expect_test "field overriding test" =
   run_interpreter_test
     "\n\
-    \    class Parent = object\n\
+    \    class parent = object\n\
     \      val x = 10\n\
     \    method get_x = x\n\
     \    end;;\n\
-    \    class Child = object\n\
-    \      inherit Parent\n\
+    \    class child = object\n\
+    \      inherit parent\n\
     \      val x = true\n\
     \    end;;\n\
-    \    let p = new Parent;;\n\
-    \    let c = new Child;;\n\
+    \    let p = new parent;;\n\
+    \    let c = new child;;\n\
     \    let x_p = p#get_x;;\n\
     \    let x_c = c#get_x;;\n\
     \       let () = print_int (x_p + x_c);;\n\
@@ -352,12 +352,12 @@ let%expect_test "field overriding test" =
 let%expect_test "self return" =
   run_interpreter_test
     "\n\
-    \    class Chain = \n\
+    \    class chain = \n\
     \      object(self)\n\
     \        method get_self = self\n\
     \        method get_value = 42\n\
     \      end;;\n\
-    \    let c = new Chain;;\n\
+    \    let c = new chain;;\n\
     \    let c2 = c#get_self#get_self#get_self ;;\n\
     \    let v = c2#get_value ;;\n\
     \    let () = print_int v;;\n\
@@ -368,22 +368,22 @@ let%expect_test "self return" =
 let%expect_test "field overriding test 2" =
   run_interpreter_test
     "\n\
-    \    class Parent = object\n\
+    \    class parent = object\n\
     \      val x = 10\n\
     \    method get_x = x\n\
     \    end;;\n\
-    \    class Child = object\n\
-    \      inherit Parent\n\
+    \    class child = object\n\
+    \      inherit parent\n\
     \      val x = 5\n\
     \      method get_x1 = x\n\
     \    end;;\n\
-    \     class GrandChild = object\n\
-    \      inherit Child\n\
+    \     class grandChild = object\n\
+    \      inherit child\n\
     \      val x = 15\n\
     \    end;;\n\n\
-    \        let p = new Parent;;\n\
-    \    let c = new Child;;\n\
-    \    let gc = new GrandChild;;\n\
+    \        let p = new parent;;\n\
+    \    let c = new child;;\n\
+    \    let gc = new grandChild;;\n\
     \    let x_p = p#get_x;;\n\
     \    let x_c = c#get_x;;\n\
     \    let x_gc = gc#get_x1;;\n\
@@ -395,10 +395,10 @@ let%expect_test "field overriding test 2" =
 let%expect_test "function in method" =
   run_interpreter_test
     "\n\
-    \    class FuncHolder = object\n\
+    \    class funcHolder = object\n\
     \      method get_func = fun x -> x + 1\n\
     \    end;;\n\
-    \    let fh = new FuncHolder;;\n\
+    \    let fh = new funcHolder;;\n\
     \    let f = fh#get_func;;\n\
     \    let () = print_int (f 10);;\n\
     \  ";
@@ -408,10 +408,10 @@ let%expect_test "function in method" =
 let%expect_test "function in argument" =
   run_interpreter_test
     "\n\
-    \    class FuncUser = object\n\
+    \    class funcUser = object\n\
     \      method apply_func f x = f x\n\
     \    end;;\n\
-    \    let fu = new FuncUser;;\n\
+    \    let fu = new funcUser;;\n\
     \    let () = print_int (fu#apply_func (fun y -> y * 2) 21);;\n\
     \  ";
   [%expect {| 42 |}]
@@ -420,11 +420,11 @@ let%expect_test "function in argument" =
 let%expect_test "function in arg of class" =
   run_interpreter_test
     "\n\
-    \    class FuncHolder f = object\n\
+    \    class funcHolder f = object\n\
     \       val f = f\n\
     \      method call_func x = f x\n\
     \    end;;\n\
-    \    let fh = new FuncHolder (fun z -> z + 3);;\n\
+    \    let fh = new funcHolder (fun z -> z + 3);;\n\
     \    let () = print_int (fh#call_func 39);;\n\
     \  ";
   [%expect {| 42 |}]

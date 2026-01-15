@@ -43,7 +43,7 @@ let gen_name =
 
 let gen_class_name =
   let open Gen in
-  let* first = char_range 'A' 'Z' in
+  let* first = char_range 'a' 'z' in
   let* rest = string_size ~gen:(char_range 'a' 'z') (int_range 0 5) in
   return (String.make 1 first ^ rest)
 ;;

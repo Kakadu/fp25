@@ -1,12 +1,12 @@
-class Point x y =
+class point x y =
 object
 
 val x = x
 val y = y 
 method p = x*x + y*y
-method move (x1,x2) = new Point (x + x1) (y + x2)
+method move (x1,x2) = new point (x + x1) (y + x2)
 end;;
 
-let a = new Point 5 5 ;;
+let a = new point 5 5 ;;
 let b = a#move (4,3) ;;
 let () = print_int b#p ;;

@@ -1,16 +1,16 @@
-class A x y = 
+class a x y = 
 object 
 val x = x
 val y = y
 method foo = x + y
 end;;
 
-class B x y z w = 
-object inherit A x y 
+class b x y z w = 
+object inherit a x y 
 val x = z
 val y = w
 method boo = z && v
 end ;;
 
-let a = new A 5 6 ;;
-let b = new B 8 7 true false
+let a = new a 5 6 ;;
+let b = new b 8 7 true false

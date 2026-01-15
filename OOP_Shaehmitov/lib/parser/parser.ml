@@ -83,7 +83,7 @@ let parse_name = parse_ident >>| fun name -> Var name
 let parse_class_name =
   let* first =
     satisfy (function
-      | 'A' .. 'Z' -> true
+      | 'a' .. 'z' -> true
       | _ -> false)
   in
   let* rest = take_while is_name_char in
