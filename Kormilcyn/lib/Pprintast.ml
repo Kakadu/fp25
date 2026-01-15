@@ -44,5 +44,3 @@ let rec pp fmt = function
   | If (c, t, e) -> Format.fprintf fmt "(if %a then %a else %a)" pp c pp t pp e
   | LetRec (f, e1, e2) -> Format.fprintf fmt "(let rec %s = %a in %a)" f pp e1 pp e2
 ;;
-
-let pp_hum = pp
