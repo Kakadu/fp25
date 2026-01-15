@@ -8,8 +8,6 @@ open Parser
 open Printer
 open QCheck
 
-let ( let* ) m f = Gen.(m >>= f)
-
 let gen_name =
   let names = [ "x"; "y"; "z"; "n"; "m"; "f"; "g"; "h"; "a"; "b"; "c" ] in
   Gen.oneofl names
@@ -32,14 +30,16 @@ let rec gen_expr depth =
     let simpler = gen_expr (depth - 1) in
     let let_gen =
       let open Gen in
-      let* kind = oneofl [ NonRec; Rec ] in
-      let* name = gen_name in
-      let* rhs =
-        match kind with
-        | Rec -> map2 (fun arg body -> Ast.Fun (arg, body)) gen_name simpler
-        | NonRec -> simpler
-      in
-      let* body_opt = option sub in
+      oneofl [ NonRec; Rec ]
+      >>= fun kind ->
+      gen_name
+      >>= fun name ->
+      (match kind with
+       | Rec -> map2 (fun arg body -> Ast.Fun (arg, body)) gen_name simpler
+       | NonRec -> simpler)
+      >>= fun rhs ->
+      option sub
+      >>= fun body_opt ->
       let scope =
         match body_opt with
         | None -> GlobalVar

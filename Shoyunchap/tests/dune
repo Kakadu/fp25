@@ -1,13 +1,16 @@
 (test
  (name parser_tests)
+ (modules parser_tests)
  (libraries lambda_lib))
 
 (test
  (name printer_tests)
+ (modules printer_tests)
  (libraries lambda_lib))
 
 (test
  (name parser_prop_tests)
+ (modules parser_prop_tests)
  (libraries lambda_lib qcheck))
 
 (executable
