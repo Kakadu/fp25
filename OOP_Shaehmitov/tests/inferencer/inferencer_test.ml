@@ -46,7 +46,7 @@ let%expect_test "infer_arithmetic" =
 
 let%expect_test "infer_function_identity" =
   print_endline (infer_expr_str "fun x -> x");
-  [%expect {| ('_a1 -> '_a1) |}]
+  [%expect {| '_a1 -> '_a1 |}]
 ;;
 
 let%expect_test "infer_function_application" =
@@ -63,18 +63,18 @@ let%expect_test "infer_program_let" =
 let%expect_test "infer_program_functions" =
   print_endline (check_prog_str "let id = fun x -> x;;");
   [%expect {|
-    val id : forall ... ('_a1 -> '_a1) |}]
+    val id : forall ... '_a1 -> '_a1 |}]
 ;;
 
 let%expect_test "infer_program_let_rec" =
   print_endline (check_prog_str "let rec f = fun x -> if x then 1 else f x;;");
   [%expect {|
-    val f : (bool -> int) |}]
+    val f : bool -> int |}]
 ;;
 
 let%expect_test "infer_duck_typing" =
   print_endline (infer_expr_str "fun x -> x#foo()");
-  [%expect {| ('_a1 -> '_a2) |}]
+  [%expect {| '_a1 -> '_a2 |}]
 ;;
 
 let%expect_test "check_program_class" =
@@ -116,7 +116,7 @@ let%expect_test "infer_duck_typing_usage" =
     end
     val a : int
     val b : int
-    val f : forall ... ('_a3 -> '_a4) where '_a3 has foo : '_a4 |}]
+    val f : forall ... '_a3 -> '_a4 where '_a3 has foo : '_a4 |}]
 ;;
 
 let%expect_test "infer_duck_typing_fail_missing_method" =
@@ -317,7 +317,7 @@ let%expect_test "child and parent_in_list" =
     end
     class Parent = object
     end
-    val f : (int -> Parent) |}]
+    val f : int -> Parent |}]
 ;;
 
 let%expect_test "inheritance_with_params" =
@@ -373,7 +373,7 @@ let%expect_test "subclass_test" =
         method bar : int
     end
     val b : B
-    val f : forall ... ('_a3 -> int) where '_a3 has bar : int, foo : int
+    val f : forall ... '_a3 -> int where '_a3 has bar : int, foo : int
     val result : int |}]
 ;;
 
@@ -497,7 +497,7 @@ let%expect_test "is_subclass_logic_check" =
     end
     val cat : Cat
     val dog : Dog
-    val get_sound : forall ... ('_a4 -> '_a5) where '_a4 has make_sound : '_a5
+    val get_sound : forall ... '_a4 -> '_a5 where '_a4 has make_sound : '_a5
     val s1 : int
     val s2 : int |}]
 ;;
@@ -533,8 +533,8 @@ let%expect_test "is_subclass_deep_hierarchy" =
     class D = object
         method d : int
     end
-    val accept_a : forall ... ('_a5 -> '_a6) where '_a5 has a : '_a6
-    val accept_b : forall ... ('_a7 -> '_a8) where '_a7 has b : '_a8
+    val accept_a : forall ... '_a5 -> '_a6 where '_a5 has a : '_a6
+    val accept_b : forall ... '_a7 -> '_a8 where '_a7 has b : '_a8
     val d : D
     val res1 : int
     val res2 : int |}]
@@ -564,7 +564,7 @@ let%expect_test "unify_subclass_success" =
         method p : int
     end
     val c : Child
-    val force_parent : (Parent -> Parent)
+    val force_parent : Parent -> Parent
     val res : Parent |}]
 ;;
 
@@ -789,14 +789,146 @@ let%expect_test "duck typing with arguments" =
   [%expect
     {|
     class CalcA = object
-        method compute : ((int * int) -> int)
+        method compute : (int * int) -> int
     end
     class CalcB = object
-        method compute : ((int * int) -> int)
+        method compute : (int * int) -> int
     end
     val a : CalcA
     val b : CalcB
-    val f : forall ... ('_a3 -> '_a4) where '_a3 has compute (int * int): '_a4
+    val f : forall ... '_a3 -> '_a4 where '_a3 has compute (int * int): '_a4
     val res1 : int
     val res2 : int |}]
+;;
+
+let%expect_test "field monomorphism" =
+  print_endline
+    (check_prog_str
+       "\n\
+       \    class Box x = object\n\
+       \      val content = x\n\
+       \      method get_content = content\n\
+       \    end;;\n\
+       \    let box1 = new Box 10;;\n\
+       \    let box2 = new Box true;;\n\
+       \    let val1 = box1#get_content;;\n\
+       \    let val2 = box2#get_content;;\n\
+       \  ");
+  [%expect {| Unify: bool vs int |}]
+;;
+
+let%expect_test "val get method" =
+  print_endline
+    (check_prog_str
+       "\n\
+       \    class A = object(self)\n\
+       \      val x = self#get \n\
+       \      method get = x\n\
+       \    end;;\n\
+       \    let a = new A;;\n\
+       \    let v = a#get;;\n\
+       \  ");
+  [%expect {| Unbound: self |}]
+;;
+
+let%expect_test "functional type in method" =
+  print_endline
+    (check_prog_str
+       "\n\
+       \    class FuncHolder = object\n\
+       \      method get_func = fun x -> x + 1\n\
+       \    end;;\n\
+       \    let fh = new FuncHolder;;\n\
+       \    let f = fh#get_func;;\n\
+       \    let res = f 10;;\n\
+       \  ");
+  [%expect
+    {|
+    class FuncHolder = object
+        method get_func : int -> int
+    end
+    val f : int -> int
+    val fh : FuncHolder
+    val res : int |}]
+;;
+
+let%expect_test "function in arg" =
+  print_endline
+    (check_prog_str
+       "\n\
+       \    class FuncHolder f = object\n\
+       \       val f = f\n\
+       \      method call_func x = f x\n\
+       \    end;;\n\
+       \    let fh = new FuncHolder (fun z -> z + 3);;\n\
+       \    let () = print_int (fh#call_func 39);;\n\
+       \  ");
+  [%expect
+    {|
+    class FuncHolder(int -> int) = object
+        val f : int -> int
+        method call_func : int -> int
+    end
+    val fh : FuncHolder |}]
+;;
+
+let%expect_test "method returning function" =
+  print_endline
+    (check_prog_str
+       "\n\
+       \    class FuncProvider = object\n\
+       \      method get_adder n = fun x -> x + n\n\
+       \    end;;\n\
+       \    let fp = new FuncProvider;;\n\
+       \    let add_five = fp#get_adder 5;;\n\
+       \    let result = add_five 10;;\n\
+       \  ");
+  [%expect
+    {|
+    class FuncProvider = object
+        method get_adder : int -> int -> int
+    end
+    val add_five : int -> int
+    val fp : FuncProvider
+    val result : int |}]
+;;
+
+let%expect_test "function in arg of method" =
+  print_endline
+    (check_prog_str
+       "\n\
+       \    class FuncUser = object\n\
+       \      method apply_func f x = f x\n\
+       \    end;;\n\
+       \    let fu = new FuncUser;;\n\
+       \    let  x = fu#apply_func (fun y -> y * 2) 21;;\n\
+       \  ");
+  [%expect
+    {|  
+    class FuncUser = object
+        method apply_func : (int -> int) -> int -> int
+    end
+    val fu : FuncUser
+    val x : int |}]
+;;
+
+let%expect_test "functional type in functional type" =
+  print_endline (check_prog_str "\n    let f g m x = (g m) x ;;\n  ");
+  [%expect {|
+    val f : forall ... ('_a2 -> '_a3 -> '_a5) -> '_a2 -> '_a3 -> '_a5 |}]
+;;
+
+let%expect_test "fix point" =
+  print_endline
+    (check_prog_str
+       "\n\
+       \    let rec fix f x = f (fix f) x;;\n\
+       \    let fact = fix (fun f n -> if n = 0 then 1 else n * f (n - 1));;\n\
+       \    let result = fact 5;;\n\
+       \  ");
+  [%expect
+    {|
+    val fact : int -> int
+    val fix : forall ... (('_a3 -> '_a6) -> '_a3 -> '_a6) -> '_a3 -> '_a6
+    val result : int |}]
 ;;

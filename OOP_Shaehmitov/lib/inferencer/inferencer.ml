@@ -63,10 +63,21 @@ module TypeChecker = struct
     | TInt -> Format.fprintf fmt "int"
     | TBool -> Format.fprintf fmt "bool"
     | TUnit -> Format.fprintf fmt "unit"
-    | TFun (t1, t2) -> Format.fprintf fmt "(%a -> %a)" pp_type t1 pp_type t2
+    | TFun (t1, t2) ->
+      let pp_lhs fmt t =
+        match t with
+        | TFun _ -> Format.fprintf fmt "(%a)" pp_type t
+        | _ -> pp_type fmt t
+      in
+      Format.fprintf fmt "%a -> %a" pp_lhs t1 pp_type t2
     | TTuple ts ->
+      let pp_elem fmt t =
+        match t with
+        | TFun _ -> Format.fprintf fmt "(%a)" pp_type t
+        | _ -> pp_type fmt t
+      in
       Format.fprintf fmt "(";
-      Format.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " * ") pp_type fmt ts;
+      Format.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt " * ") pp_elem fmt ts;
       Format.fprintf fmt ")"
     | TClass n -> Format.fprintf fmt "%s" n
   ;;

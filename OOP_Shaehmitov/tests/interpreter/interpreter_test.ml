@@ -391,3 +391,41 @@ let%expect_test "field overriding test 2" =
     \  ";
   [%expect {| 25 |}]
 ;;
+
+let%expect_test "function in method" =
+  run_interpreter_test
+    "\n\
+    \    class FuncHolder = object\n\
+    \      method get_func = fun x -> x + 1\n\
+    \    end;;\n\
+    \    let fh = new FuncHolder;;\n\
+    \    let f = fh#get_func;;\n\
+    \    let () = print_int (f 10);;\n\
+    \  ";
+  [%expect {| 11 |}]
+;;
+
+let%expect_test "function in argument" =
+  run_interpreter_test
+    "\n\
+    \    class FuncUser = object\n\
+    \      method apply_func f x = f x\n\
+    \    end;;\n\
+    \    let fu = new FuncUser;;\n\
+    \    let () = print_int (fu#apply_func (fun y -> y * 2) 21);;\n\
+    \  ";
+  [%expect {| 42 |}]
+;;
+
+let%expect_test "function in arg of class" =
+  run_interpreter_test
+    "\n\
+    \    class FuncHolder f = object\n\
+    \       val f = f\n\
+    \      method call_func x = f x\n\
+    \    end;;\n\
+    \    let fh = new FuncHolder (fun z -> z + 3);;\n\
+    \    let () = print_int (fh#call_func 39);;\n\
+    \  ";
+  [%expect {| 42 |}]
+;;
