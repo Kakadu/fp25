@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>Pprintast.ml &mdash; Coverage report</title>
-    <meta name="description" content="94.12% coverage in lib/Pprintast.ml">
+    <meta name="description" content="92.00% coverage in lib/Pprintast.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,10 +15,11 @@
           <span class="dirname">lib/</span>Pprintast.ml
         </a>
       </h1>
-      <h2>94.12%</h2>
+      <h2>92.00%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="bottom:26.47%"></span>
+      <span class="unvisited" style="bottom:41.30%"></span>
+      <span class="unvisited" style="bottom:19.57%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -46,17 +47,29 @@
 <a id="L21"></a><span > </span>
 <a id="L22"></a><span class="visited"> </span>
 <a id="L23"></a><span class="visited"> </span>
-<a id="L24"></a><span class="visited"> </span>
-<a id="L25"></a><span class="unvisited"> </span>
-<a id="L26"></a><span class="visited"> </span>
-<a id="L27"></a><span class="visited"> </span>
+<a id="L24"></a><span > </span>
+<a id="L25"></a><span > </span>
+<a id="L26"></a><span > </span>
+<a id="L27"></a><span class="unvisited"> </span>
 <a id="L28"></a><span class="visited"> </span>
-<a id="L29"></a><span class="visited"> </span>
+<a id="L29"></a><span > </span>
 <a id="L30"></a><span class="visited"> </span>
-<a id="L31"></a><span class="visited"> </span>
+<a id="L31"></a><span > </span>
 <a id="L32"></a><span > </span>
 <a id="L33"></a><span > </span>
-<a id="L34"></a><span > </span>
+<a id="L34"></a><span class="visited"> </span>
+<a id="L35"></a><span class="visited"> </span>
+<a id="L36"></a><span class="visited"> </span>
+<a id="L37"></a><span class="unvisited"> </span>
+<a id="L38"></a><span class="visited"> </span>
+<a id="L39"></a><span class="visited"> </span>
+<a id="L40"></a><span class="visited"> </span>
+<a id="L41"></a><span > </span>
+<a id="L42"></a><span class="visited"> </span>
+<a id="L43"></a><span class="visited"> </span>
+<a id="L44"></a><span class="visited"> </span>
+<a id="L45"></a><span class="visited"> </span>
+<a id="L46"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -95,6 +108,18 @@
 <a href="#L32">32</a>
 <a href="#L33">33</a>
 <a href="#L34">34</a>
+<a href="#L35">35</a>
+<a href="#L36">36</a>
+<a href="#L37">37</a>
+<a href="#L38">38</a>
+<a href="#L39">39</a>
+<a href="#L40">40</a>
+<a href="#L41">41</a>
+<a href="#L42">42</a>
+<a href="#L43">43</a>
+<a href="#L44">44</a>
+<a href="#L45">45</a>
+<a href="#L46">46</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -116,6 +141,18 @@ let pp_binop fmt = function
   | <span data-count="16">G</span>eq -&gt; Format.fprintf fmt "&gt;="
 ;;
 
+let rec collect_fun_args acc = function
+  | <span data-count="20">F</span>un (x, body) -&gt; collect_fun_args (x :: acc) body
+  | <span data-count="241">b</span>ody -&gt; List.re<span data-count="241">v</span> acc, body
+;;
+
+let pp_fun_args fmt = function
+  | <span data-count="0">[</span>] -&gt; ()
+  | <span data-count="241">x</span> :: xs -&gt;
+    Format.pp_print_string fmt x;
+    <span data-count="241">L</span>ist.iter (fun arg -&gt; <span data-count="20">F</span>ormat.fprintf fmt " %s" arg) xs
+;;
+
 let rec pp fmt = function
   | <span data-count="399">V</span>ar v -&gt; Format.pp_print_string fmt v
   | <span data-count="406">I</span>nt i -&gt; Format.pp_print_int fmt i
@@ -123,13 +160,13 @@ let rec pp fmt = function
   | <span data-count="0">N</span>eg e -&gt; Format.fprintf fmt "(-%a)" pp e
   | <span data-count="122">B</span>in (op, l, r) -&gt; Format.fprintf fmt "(%a %a %a)" pp l pp_binop op pp r
   | <span data-count="128">A</span>pp (f, a) -&gt; Format.fprintf fmt "(%a %a)" pp f pp a
-  | <span data-count="261">F</span>un (x, body) -&gt; Format.fprintf fmt "(fun %s -&gt; %a)" x pp body
+  | <span data-count="241">F</span>un (x, body) -&gt;
+    let args, body = collect_fun_args [ x ] body in
+    <span data-count="241">F</span>ormat.fprintf fmt "(fun %a -&gt; %a)" pp_fun_args args pp body
   | <span data-count="132">L</span>et (x, e1, e2) -&gt; Format.fprintf fmt "(let %s = %a in %a)" x pp e1 pp e2
   | <span data-count="122">I</span>f (c, t, e) -&gt; Format.fprintf fmt "(if %a then %a else %a)" pp c pp t pp e
   | <span data-count="117">L</span>etRec (f, e1, e2) -&gt; Format.fprintf fmt "(let rec %s = %a in %a)" f pp e1 pp e2
 ;;
-
-let pp_hum = pp
 </code></pre>
       </div>
     </div>

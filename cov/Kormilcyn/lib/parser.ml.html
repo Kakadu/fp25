@@ -391,24 +391,24 @@
 open Angstrom
 
 let is_space = function
-  | <span data-count="6640">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\n' | <span data-count="0">'</span>\r' -&gt; true
-  | <span data-count="119418">_</span> -&gt; false
+  | <span data-count="6600">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\n' | <span data-count="0">'</span>\r' -&gt; true
+  | <span data-count="118438">_</span> -&gt; false
 ;;
 
 let spaces = skip_whil<span data-count="23">e</span> is_space
 
 let no_ws p =
-  <span data-count="310498">l</span>et* _ = spaces
+  <span data-count="307498">l</span>et* _ = spaces
   and+ payload = p
   and+ _ = spaces in
-  <span data-count="15400">r</span>eturn payload
+  <span data-count="15300">r</span>eturn payload
 ;;
 
 let varname =
   let* var =
     take_while<span data-count="23">1</span> (function
       | <span data-count="5137">'</span>a' .. 'z' | <span data-count="0">'</span>_' | <span data-count="855">'</span>0' .. '9' | <span data-count="0">'</span>\'' -&gt; true
-      | <span data-count="7462">_</span> -&gt; false)
+      | <span data-count="7402">_</span> -&gt; false)
   in
   <span data-count="3725">m</span>atch var with
   | <span data-count="3725">s</span> when s.[0] &gt;= '0' &amp;&amp; <span data-count="3725">s</span>.[0] &lt;= '9' -&gt; <span data-count="854">f</span>ail ""
@@ -421,7 +421,7 @@ let integer =
   let* i =
     take_while<span data-count="23">1</span> (function
       | <span data-count="855">'</span>0' .. '9' -&gt; true
-      | <span data-count="4881">_</span> -&gt; false)
+      | <span data-count="4841">_</span> -&gt; false)
   in
   <span data-count="854">i</span>f String.lengt<span data-count="854">h</span> i &gt; 1 &amp;&amp; <span data-count="1">i</span>.[0] = '0' then <span data-count="0">f</span>ail "" else <span data-count="854">r</span>eturn i
 ;;
@@ -436,115 +436,115 @@ type dispatch =
   }
 
 let chainl1 p op =
-  <span data-count="93738">l</span>et rec iter acc =
-    <span data-count="13293">(</span>let* f = op
+  <span data-count="92838">l</span>et rec iter acc =
+    <span data-count="13173">(</span>let* f = op
      and+ y = p in
      <span data-count="263">i</span>ter (<span data-count="263">f</span> acc y))
-    &lt;|&gt; retur<span data-count="13293">n</span> acc
+    &lt;|&gt; retur<span data-count="13173">n</span> acc
   in
   let* x = p in
-  <span data-count="13030">i</span>ter x
+  <span data-count="12910">i</span>ter x
 ;;
 
 type error = [ `Parsing_error ]
 
 let parse_miniml =
   let atom pack =
-    <span data-count="8421">f</span>ix (fun _ -&gt;
-      <span data-count="4327">c</span>hoice
+    <span data-count="8341">f</span>ix (fun _ -&gt;
+      <span data-count="4287">c</span>hoice
         [ (* выражение в скобках *)
-          (let* _ = no_w<span data-count="4327">s</span> (cha<span data-count="4327">r</span> '(')
-           and+ e = pack.com<span data-count="4327">p</span> pack
-           and+ _ = no_w<span data-count="4327">s</span> (cha<span data-count="4327">r</span> ')') in
-           <span data-count="1774">r</span>eturn e)
+          (let* _ = no_w<span data-count="4287">s</span> (cha<span data-count="4287">r</span> '(')
+           and+ e = pack.com<span data-count="4287">p</span> pack
+           and+ _ = no_w<span data-count="4287">s</span> (cha<span data-count="4287">r</span> ')') in
+           <span data-count="1754">r</span>eturn e)
           (* функция *)
-        ; (let* _ = no_w<span data-count="4327">s</span> (strin<span data-count="4327">g</span> "fun") in
-           <span data-count="536">f</span>ix (fun body -&gt;
-             <span data-count="536">l</span>et* var = no_w<span data-count="536">s</span> varname
-             and+ b = no_w<span data-count="536">s</span> body &lt;|<span data-count="536">&gt;</span> no_w<span data-count="536">s</span> (strin<span data-count="536">g</span> "-&gt;") *<span data-count="536">&gt;</span> pack.com<span data-count="536">p</span> pack in
+        ; (let* _ = no_w<span data-count="4287">s</span> (strin<span data-count="4287">g</span> "fun") in
+           <span data-count="516">f</span>ix (fun body -&gt;
+             <span data-count="516">l</span>et* var = no_w<span data-count="516">s</span> varname
+             and+ b = no_w<span data-count="516">s</span> body &lt;|<span data-count="516">&gt;</span> no_w<span data-count="516">s</span> (strin<span data-count="516">g</span> "-&gt;") *<span data-count="516">&gt;</span> pack.com<span data-count="516">p</span> pack in
              <span data-count="536">r</span>eturn (Ast.Fun (var, b))))
           (* if *)
-        ; (let* _ = no_w<span data-count="4327">s</span> (strin<span data-count="4327">g</span> "if")
-           and+ cond = pack.com<span data-count="4327">p</span> pack
-           and+ _ = no_w<span data-count="4327">s</span> (strin<span data-count="4327">g</span> "then")
-           and+ e1 = pack.com<span data-count="4327">p</span> pack
-           and+ _ = no_w<span data-count="4327">s</span> (strin<span data-count="4327">g</span> "else")
-           and+ e2 = pack.com<span data-count="4327">p</span> pack in
+        ; (let* _ = no_w<span data-count="4287">s</span> (strin<span data-count="4287">g</span> "if")
+           and+ cond = pack.com<span data-count="4287">p</span> pack
+           and+ _ = no_w<span data-count="4287">s</span> (strin<span data-count="4287">g</span> "then")
+           and+ e1 = pack.com<span data-count="4287">p</span> pack
+           and+ _ = no_w<span data-count="4287">s</span> (strin<span data-count="4287">g</span> "else")
+           and+ e2 = pack.com<span data-count="4287">p</span> pack in
            <span data-count="250">r</span>eturn (Ast.If (cond, e1, e2)))
           (* let *)
-        ; (let* _ = no_w<span data-count="4327">s</span> (strin<span data-count="4327">g</span> "let")
-           and+ var = no_w<span data-count="4327">s</span> varname
-           and+ _ = no_w<span data-count="4327">s</span> (cha<span data-count="4327">r</span> '=')
-           and+ e1 = pack.com<span data-count="4327">p</span> pack
-           and+ _ = no_w<span data-count="4327">s</span> (strin<span data-count="4327">g</span> "in")
-           and+ e2 = pack.com<span data-count="4327">p</span> pack in
+        ; (let* _ = no_w<span data-count="4287">s</span> (strin<span data-count="4287">g</span> "let")
+           and+ var = no_w<span data-count="4287">s</span> varname
+           and+ _ = no_w<span data-count="4287">s</span> (cha<span data-count="4287">r</span> '=')
+           and+ e1 = pack.com<span data-count="4287">p</span> pack
+           and+ _ = no_w<span data-count="4287">s</span> (strin<span data-count="4287">g</span> "in")
+           and+ e2 = pack.com<span data-count="4287">p</span> pack in
            <span data-count="267">r</span>eturn (Ast.Let (var, e1, e2)))
           (* let rec *)
-        ; (let* _ = no_w<span data-count="4327">s</span> (strin<span data-count="4327">g</span> "let")
-           and+ _ = no_w<span data-count="4327">s</span> (strin<span data-count="4327">g</span> "rec")
-           and+ fvar = no_w<span data-count="4327">s</span> varname
-           and+ _ = no_w<span data-count="4327">s</span> (cha<span data-count="4327">r</span> '=')
-           and+ f = pack.ato<span data-count="4327">m</span> pack
-           and+ _ = no_w<span data-count="4327">s</span> (strin<span data-count="4327">g</span> "in")
-           and+ e = pack.com<span data-count="4327">p</span> pack in
+        ; (let* _ = no_w<span data-count="4287">s</span> (strin<span data-count="4287">g</span> "let")
+           and+ _ = no_w<span data-count="4287">s</span> (strin<span data-count="4287">g</span> "rec")
+           and+ fvar = no_w<span data-count="4287">s</span> varname
+           and+ _ = no_w<span data-count="4287">s</span> (cha<span data-count="4287">r</span> '=')
+           and+ f = pack.ato<span data-count="4287">m</span> pack
+           and+ _ = no_w<span data-count="4287">s</span> (strin<span data-count="4287">g</span> "in")
+           and+ e = pack.com<span data-count="4287">p</span> pack in
            <span data-count="236">r</span>eturn (Ast.LetRec (fvar, f, e)))
           (* fix *)
-        ; (let* _ = no_w<span data-count="4327">s</span> (strin<span data-count="4327">g</span> "fix") in
+        ; (let* _ = no_w<span data-count="4287">s</span> (strin<span data-count="4287">g</span> "fix") in
            <span data-count="281">r</span>eturn Ast.Fix)
           (* переменная *)
-        ; (let* s = no_w<span data-count="4327">s</span> varname in
+        ; (let* s = no_w<span data-count="4287">s</span> varname in
            <span data-count="823">r</span>eturn (Ast.Var s))
           (* целое число *)
-        ; (let* i = no_w<span data-count="4327">s</span> integer in
+        ; (let* i = no_w<span data-count="4287">s</span> integer in
            <span data-count="854">r</span>eturn (Ast.Int (int_of_strin<span data-count="854">g</span> i)))
         ])
   and apps pack =
-    <span data-count="4094">l</span>et* app =
-      many<span data-count="4094">1</span>
-        (let* e = no_w<span data-count="4094">s</span> (pack.ato<span data-count="4094">m</span> pack) in
-         <span data-count="4785">r</span>eturn e)
+    <span data-count="4054">l</span>et* app =
+      many<span data-count="4054">1</span>
+        (let* e = no_w<span data-count="4054">s</span> (pack.ato<span data-count="4054">m</span> pack) in
+         <span data-count="4745">r</span>eturn e)
     in
-    <span data-count="4513">m</span>atch app with
+    <span data-count="4473">m</span>atch app with
     | <span data-count="0">[</span>] -&gt; fail ""
-    | <span data-count="4513">x</span> :: xs -&gt; return @@ List.fold_lef<span data-count="4513">t</span> (fun l r -&gt; <span data-count="272">A</span>st.App (l, r)) x xs
+    | <span data-count="4473">x</span> :: xs -&gt; return @@ List.fold_lef<span data-count="4473">t</span> (fun l r -&gt; <span data-count="272">A</span>st.App (l, r)) x xs
   and unary pack =
-    <span data-count="39434">f</span>ix (fun _ -&gt;
+    <span data-count="39054">f</span>ix (fun _ -&gt;
       (* унарный плюс *)
-      <span data-count="4094">(</span>let* _ = no_w<span data-count="4094">s</span> (cha<span data-count="4094">r</span> '+')
-       and+ e = pack.unar<span data-count="4094">y</span> pack in
+      <span data-count="4054">(</span>let* _ = no_w<span data-count="4054">s</span> (cha<span data-count="4054">r</span> '+')
+       and+ e = pack.unar<span data-count="4054">y</span> pack in
        <span data-count="0">r</span>eturn e)
-      &lt;|<span data-count="4094">&gt;</span> (* унарный минус *)
-      (let* _ = no_w<span data-count="4094">s</span> (cha<span data-count="4094">r</span> '-')
-       and+ e = pack.unar<span data-count="4094">y</span> pack in
+      &lt;|<span data-count="4054">&gt;</span> (* унарный минус *)
+      (let* _ = no_w<span data-count="4054">s</span> (cha<span data-count="4054">r</span> '-')
+       and+ e = pack.unar<span data-count="4054">y</span> pack in
        <span data-count="2">r</span>eturn (Ast.Neg e))
       &lt;|&gt;
-      let* e = pack.app<span data-count="4094">s</span> pack in
-      <span data-count="4513">r</span>eturn e)
+      let* e = pack.app<span data-count="4054">s</span> pack in
+      <span data-count="4473">r</span>eturn e)
   and mul_div pack =
-    <span data-count="31246">l</span>et op =
+    <span data-count="30946">l</span>et op =
       choice
-        [ no_w<span data-count="31246">s</span> (cha<span data-count="31246">r</span> '*') *<span data-count="31246">&gt;</span> retur<span data-count="31246">n</span> (fun l r -&gt; <span data-count="36">A</span>st.Bin (Ast.Mul, l, r))
-        ; no_w<span data-count="31246">s</span> (cha<span data-count="31246">r</span> '/') *<span data-count="31246">&gt;</span> retur<span data-count="31246">n</span> (fun l r -&gt; <span data-count="54">A</span>st.Bin (Ast.Div, l, r))
+        [ no_w<span data-count="30946">s</span> (cha<span data-count="30946">r</span> '*') *<span data-count="30946">&gt;</span> retur<span data-count="30946">n</span> (fun l r -&gt; <span data-count="36">A</span>st.Bin (Ast.Mul, l, r))
+        ; no_w<span data-count="30946">s</span> (cha<span data-count="30946">r</span> '/') *<span data-count="30946">&gt;</span> retur<span data-count="30946">n</span> (fun l r -&gt; <span data-count="54">A</span>st.Bin (Ast.Div, l, r))
         ]
     in
-    <span data-count="31246">c</span>hainl1 (pack.unar<span data-count="31246">y</span> pack) op
+    <span data-count="30946">c</span>hainl1 (pack.unar<span data-count="30946">y</span> pack) op
   and add_sub pack =
-    <span data-count="31246">l</span>et op =
+    <span data-count="30946">l</span>et op =
       choice
-        [ no_w<span data-count="31246">s</span> (cha<span data-count="31246">r</span> '+') *<span data-count="31246">&gt;</span> retur<span data-count="31246">n</span> (fun l r -&gt; <span data-count="46">A</span>st.Bin (Ast.Add, l, r))
-        ; no_w<span data-count="31246">s</span> (cha<span data-count="31246">r</span> '-') *<span data-count="31246">&gt;</span> retur<span data-count="31246">n</span> (fun l r -&gt; <span data-count="20">A</span>st.Bin (Ast.Sub, l, r))
+        [ no_w<span data-count="30946">s</span> (cha<span data-count="30946">r</span> '+') *<span data-count="30946">&gt;</span> retur<span data-count="30946">n</span> (fun l r -&gt; <span data-count="46">A</span>st.Bin (Ast.Add, l, r))
+        ; no_w<span data-count="30946">s</span> (cha<span data-count="30946">r</span> '-') *<span data-count="30946">&gt;</span> retur<span data-count="30946">n</span> (fun l r -&gt; <span data-count="20">A</span>st.Bin (Ast.Sub, l, r))
         ]
     in
-    <span data-count="31246">c</span>hainl1 (pack.mul_di<span data-count="31246">v</span> pack) op
+    <span data-count="30946">c</span>hainl1 (pack.mul_di<span data-count="30946">v</span> pack) op
   and comp pack =
-    <span data-count="31246">l</span>et op =
+    <span data-count="30946">l</span>et op =
       choice
-        [ no_w<span data-count="31246">s</span> (strin<span data-count="31246">g</span> "&lt;=") *<span data-count="31246">&gt;</span> retur<span data-count="31246">n</span> (fun l r -&gt; <span data-count="23">A</span>st.Bin (Ast.Leq, l, r))
-        ; no_w<span data-count="31246">s</span> (cha<span data-count="31246">r</span> '=') *<span data-count="31246">&gt;</span> retur<span data-count="31246">n</span> (fun l r -&gt; <span data-count="51">A</span>st.Bin (Ast.Eq, l, r))
-        ; no_w<span data-count="31246">s</span> (strin<span data-count="31246">g</span> "&gt;=") *<span data-count="31246">&gt;</span> retur<span data-count="31246">n</span> (fun l r -&gt; <span data-count="33">A</span>st.Bin (Ast.Geq, l, r))
+        [ no_w<span data-count="30946">s</span> (strin<span data-count="30946">g</span> "&lt;=") *<span data-count="30946">&gt;</span> retur<span data-count="30946">n</span> (fun l r -&gt; <span data-count="23">A</span>st.Bin (Ast.Leq, l, r))
+        ; no_w<span data-count="30946">s</span> (cha<span data-count="30946">r</span> '=') *<span data-count="30946">&gt;</span> retur<span data-count="30946">n</span> (fun l r -&gt; <span data-count="51">A</span>st.Bin (Ast.Eq, l, r))
+        ; no_w<span data-count="30946">s</span> (strin<span data-count="30946">g</span> "&gt;=") *<span data-count="30946">&gt;</span> retur<span data-count="30946">n</span> (fun l r -&gt; <span data-count="33">A</span>st.Bin (Ast.Geq, l, r))
         ]
     in
-    <span data-count="31246">c</span>hainl1 (pack.add_su<span data-count="31246">b</span> pack) op
+    <span data-count="30946">c</span>hainl1 (pack.add_su<span data-count="30946">b</span> pack) op
   in
   { atom; apps; unary; mul_div; add_sub; comp }
 ;;

@@ -403,7 +403,7 @@ let gen_ast_sized =
 let prop_parse_print_roundtrip =
   QCheck2.Test.mak<span data-count="2">e</span>
     ~count:200
-    ~name:"parser/pretty-printer roundtrip"
+    ~name:"parser/to_src roundtrip"
     ~print:to_src
     gen_ast_sized
     (fun ast -&gt;
@@ -424,7 +424,7 @@ let prop_parse_pprint_roundtrip =
        | <span data-count="0">R</span>esult.Error _ -&gt; false)
 ;;
 
-let%test_unit "parser/pretty-printer roundtrip" =
+let%test_unit "parser/to_src roundtrip" =
   QCheck2.Test.check_exn prop_parse_print_roundtrip
 ;;
 
