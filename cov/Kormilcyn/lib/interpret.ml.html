@@ -416,14 +416,14 @@ end = struct
   ;;
 end
 
-let parse_and_run ?(max_steps = <span data-count="22">1</span>0000) str =
-  <span data-count="22">l</span>et module I = Interpret (Base.Result) in
-  let rez = Base.Result.(Parser.pars<span data-count="22">e</span> str &gt;&gt;<span data-count="22">=</span> I.ru<span data-count="22">n</span> max_steps) in
+let parse_and_run ?(max_steps = <span data-count="24">1</span>0000) str =
+  <span data-count="24">l</span>et module I = Interpret (Base.Result) in
+  let rez = Base.Result.(Parser.pars<span data-count="24">e</span> str &gt;&gt;<span data-count="24">=</span> I.ru<span data-count="24">n</span> max_steps) in
   match rez with
   | <span data-count="10">R</span>esult.Ok n -&gt; Printf.printf "Success: %d\n" n
-  | <span data-count="12">R</span>esult.Error err -&gt;
+  | <span data-count="14">R</span>esult.Error err -&gt;
     (match err with
-     | <span data-count="1">#</span>Parser.error -&gt; Format.eprintf "Parsing error\n%!"
+     | <span data-count="3">#</span>Parser.error -&gt; Format.eprintf "Parsing error\n%!"
      | <span data-count="11">#</span>error as e -&gt; Format.eprintf "Interpreter error: %a\n%!" pp_error e)
 ;;
 </code></pre>
