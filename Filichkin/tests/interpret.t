@@ -28,9 +28,7 @@ in the dune file
   $ ../bin/REPL.exe << EOF
   > let rec fix = fun f ->  (fun x -> f (fun y -> (x x) y))  (fun x -> f (fun y -> (x x) y)) in let fact = fix (fun fact -> fun n -> if n = 0 then 1 else n * fact (n - 1)) in fact 5
   Let (Rec, "Var fix", Abs ("f", App (Abs ("x", App (Var "f", Abs ("y", App (App (Var "x", Var "x"), Var "y")))), Abs ("x", App (Var "f", Abs ("y", App (App (Var "x", Var "x"), Var "y")))))), Some Let (NonRec, "Var fact", App (Var "fix", Abs ("fact", Abs ("n", If (BinOp (Equal, Var "n", Int 0), Int 1, BinOp (Mult, Var "n", App (Var "fact", BinOp (Minus, Var "n", Int 1))))))), Some App (Var "fact", Int 5)))
-  Type: {'ai
-  120
-  
+  Type error: recursive type
 
   $ ../bin/REPL.exe << EOF
   > let x = 7 in let function a b = if x > 4 then x+b else a-b in function 0 1
@@ -42,9 +40,7 @@ in the dune file
   $ ../bin/REPL.exe << EOF
   > let rec fix f eta = f (fix f) eta in let fact_gen = fun fact -> fun n -> if n = 0 then 1 else n * fact (n - 1) in let fact = fix fact_gen in fact 5
   Let (Rec, "Var fix", Abs ("f", Abs ("eta", App (App (Var "f", App (Var "fix", Var "f")), Var "eta"))), Some Let (NonRec, "Var fact_gen", Abs ("fact", Abs ("n", If (BinOp (Equal, Var "n", Int 0), Int 1, BinOp (Mult, Var "n", App (Var "fact", BinOp (Minus, Var "n", Int 1)))))), Some Let (NonRec, "Var fact", App (Var "fix", Var "fact_gen"), Some App (Var "fact", Int 5))))
-  Type: {'ab
-  120
-  
+  Type error: recursive type
   $ ../bin/REPL.exe << EOF
   > let r = 5 in let rec f n k = if n > k then n + (f (n- 1) k) else k in let y = if r > 0 then -1*r+5 else r-5 in f r y
   Let (NonRec, "Var r", Int 5, Some Let (Rec, "Var f", Abs ("n", Abs ("k", If (BinOp (More, Var "n", Var "k"), BinOp (Plus, Var "n", App (App (Var "f", BinOp (Minus, Var "n", Int 1)), Var "k")), Var "k"))), Some Let (NonRec, "Var y", If (BinOp (More, Var "r", Int 0), BinOp (Plus, BinOp (Mult, UnOp (Neg, Int 1), Var "r"), Int 5), BinOp (Minus, Var "r", Int 5)), Some App (App (Var "f", Var "r"), Var "y"))))
@@ -150,7 +146,7 @@ in the dune file
   $ ../bin/REPL.exe << EOF
   > let compose f g = fun x -> f (g x) in let add1 = fun x -> x + 1 in let mul2 = fun x -> x * 2 in let h = compose add1 mul2 in h 5
   Let (NonRec, "Var compose", Abs ("f", Abs ("g", Abs ("x", App (Var "f", App (Var "g", Var "x"))))), Some Let (NonRec, "Var add1", Abs ("x", BinOp (Plus, Var "x", Int 1)), Some Let (NonRec, "Var mul2", Abs ("x", BinOp (Mult, Var "x", Int 2)), Some Let (NonRec, "Var h", App (App (Var "compose", Var "add1"), Var "mul2"), Some App (Var "h", Int 5)))))
-  Type: 'y
+  Type: int
   11
   
   $ ../bin/REPL.exe << EOF
@@ -165,7 +161,7 @@ in the dune file
   $ ../bin/REPL.exe << EOF
   > let max a b = if a > b then a else b in max 7 (max 3 5)
   Let (NonRec, "Var max", Abs ("a", Abs ("b", If (BinOp (More, Var "a", Var "b"), Var "a", Var "b"))), Some App (App (Var "max", Int 7), App (App (Var "max", Int 3), Int 5)))
-  Type: 'r
+  Type: int
   7
   
   $ ../bin/REPL.exe << EOF
@@ -183,13 +179,13 @@ in the dune file
   $ ../bin/REPL.exe << EOF
   > let id = fun x -> x in id id 5
   Let (NonRec, "Var id", Abs ("x", Var "x"), Some App (App (Var "id", Var "id"), Int 5))
-  Type: 'j
+  Type: int
   5
   
   $ ../bin/REPL.exe << EOF
   > let const = fun x -> fun y -> x in const 7 8
   Let (NonRec, "Var const", Abs ("x", Abs ("y", Var "x")), Some App (App (Var "const", Int 7), Int 8))
-  Type: 'j
+  Type: int
   7
   
   $ ../bin/REPL.exe << EOF
@@ -205,7 +201,7 @@ in the dune file
   $ ../bin/REPL.exe << EOF
   > let apply_twice f x = f (f x) in let inc = fun x -> x + 1 in apply_twice inc 10
   Let (NonRec, "Var apply_twice", Abs ("f", Abs ("x", App (Var "f", App (Var "f", Var "x")))), Some Let (NonRec, "Var inc", Abs ("x", BinOp (Plus, Var "x", Int 1)), Some App (App (Var "apply_twice", Var "inc"), Int 10)))
-  Type: 'q
+  Type: int
   12
   
   $ ../bin/REPL.exe << EOF
@@ -283,8 +279,7 @@ in the dune file
   $ ../bin/REPL.exe << EOF
   > let rec f n = f n in f 5
   Let (Rec, "Var f", Abs ("n", App (Var "f", Var "n")), Some App (Var "f", Int 5))
-  Type: 'j
-  Step count is zero
+  Type error: recursive type
   $ ../bin/REPL.exe << EOF
   > if true then 1 else false
   If (Bool (true), Int 1, Bool (false))

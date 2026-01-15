@@ -5,7 +5,9 @@
  (preprocess
   (pps ppx_expect ppx_deriving.show))
  (inline_tests
-  (backend ppx_expect)))
+  (backend ppx_expect))
+ (instrumentation
+  (backend bisect_ppx)))
 
 (test
  (name qcheck_test)

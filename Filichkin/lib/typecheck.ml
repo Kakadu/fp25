@@ -91,12 +91,15 @@ let rec free_tyvars = function
   | TVar { contents = Unbound id } -> IntSet.singleton id
 ;;
 
-let generalize env t =
+let free_scheme (Forall (vars, t)) = IntSet.diff (free_tyvars t) (IntSet.of_list vars)
+
+let generalize env_vars t =
+  let t = prune t in
   let env_fv =
     List.fold_left
-      (fun acc (_, Forall (_, t)) -> IntSet.union acc (free_tyvars t))
+      (fun acc (_, sch) -> IntSet.union acc (free_scheme sch))
       IntSet.empty
-      env
+      env_vars
   in
   let t_fv = free_tyvars t in
   let vars = IntSet.elements (IntSet.diff t_fv env_fv) in
@@ -105,16 +108,17 @@ let generalize env t =
 
 let instantiate (Forall (vars, t)) =
   let subst = List.map (fun id -> id, fresh_tyvar ()) vars in
-  let rec go = function
-    | (TInt | TBool | TUnit) as t -> t
+  let rec go t =
+    match t with
+    | TInt | TBool | TUnit -> t
     | TFun (t1, t2) -> TFun (go t1, go t2)
     | TTuple ts -> TTuple (List.map go ts)
     | TCon (name, ts) -> TCon (name, List.map go ts)
-    | TVar { contents = Link t } -> go t
+    | TVar { contents = Link inner } -> go inner
     | TVar { contents = Unbound id } ->
       (match List.assoc_opt id subst with
-       | Some t -> t
-       | None -> fresh_tyvar ())
+       | Some new_t -> new_t
+       | None -> t)
   in
   go t
 ;;
@@ -219,7 +223,7 @@ let rec infer env = function
     let env_pre = extend_vars env [ x, Forall ([], tv) ] in
     let t1 = infer env_pre e1 in
     unify tv t1;
-    let env' = extend_vars env [ x, generalize env_pre.vars t1 ] in
+    let env' = extend_vars env [ x, generalize env.vars t1 ] in
     (match body_opt with
      | Some e2 -> infer env' e2
      | None -> TUnit)
@@ -321,7 +325,8 @@ let check_toplevel state tl =
       let ty = infer state.tenv expr in
       let bindings = bind_pattern state.tenv pat ty in
       let new_vars = List.map (fun (n, t) -> n, generalize state.tenv.vars t) bindings in
-      Ok { tenv = extend_vars state.tenv new_vars; last_type = Some ty }
+      let scheme = generalize state.tenv.vars ty in
+      Ok { tenv = extend_vars state.tenv new_vars; last_type = Some (instantiate scheme) }
     | TLExpr (Let (Rec, PVar name, expr, None)) ->
       let tv = fresh_tyvar () in
       let env_pre = extend_vars state.tenv [ name, Forall ([], tv) ] in
