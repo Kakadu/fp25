@@ -77,6 +77,8 @@ let integer : int Angstrom.t =
 let const_int =
   let+ n = integer in
   Const (Int n)
+;;
+
 let const_unit = lexeme (string "()") *> return (Const Unit)
 
 let const_bool =
@@ -87,6 +89,8 @@ let const_bool =
 let var_expr : expression Angstrom.t =
   let+ x = identifier in
   Var x
+;;
+
 let parens p = sym '(' *> p <* sym ')'
 
 (* operations *)
@@ -189,7 +193,12 @@ let expr : expression Angstrom.t =
       let open Angstrom in
       let* cond = kwd "if" *> cmp_level in
       let* thn = kwd "then" *> expr in
-      let* els = option None (let+ e = kwd "else" *> expr in Some e) in
+      let* els =
+        option
+          None
+          (let+ e = kwd "else" *> expr in
+           Some e)
+      in
       return (If (cond, thn, els))
     in
     (* let / let rec *)
@@ -201,7 +210,12 @@ let expr : expression Angstrom.t =
       let* args = many identifier in
       let* bound = sym '=' *> expr in
       let value = curry_fun args bound in
-      let* body_opt = option None (let+ body = kwd "in" *> expr in Some body) in
+      let* body_opt =
+        option
+          None
+          (let+ body = kwd "in" *> expr in
+           Some body)
+      in
       let scope =
         match body_opt with
         | None -> GlobalVar
