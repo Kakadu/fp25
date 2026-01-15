@@ -324,7 +324,7 @@ let pp_error ppf = function
 module Interpret (M : MONAD_FAIL) : sig
   val run : int -&gt; 'name Ast.t -&gt; (int, [&gt; error ]) M.t
 end = struct
-  let ( let* ) m f = <span data-count="20357">M</span>.bind m ~f
+  let ( let* ) m f = <span data-count="20367">M</span>.bind m ~f
   let return = M.return
   let fail = M.fail
 
@@ -336,38 +336,38 @@ end = struct
   and 'name env = ('name * 'name value) list
 
   let run max_steps (e : 'name Ast.t) : (int, [&gt; error ]) M.t =
-    <span data-count="20">l</span>et rec eval (env : 'name env) (e : 'name Ast.t) (steps : int)
+    <span data-count="21">l</span>et rec eval (env : 'name env) (e : 'name Ast.t) (steps : int)
       : ('name value, [&gt; error ]) M.t
       =
-      <span data-count="30444">i</span>f steps &gt; max_steps
+      <span data-count="30459">i</span>f steps &gt; max_steps
       then <span data-count="1">f</span>ail (`NotAValue "Steps limit exceeded")
-      else <span data-count="30443">(</span>
+      else <span data-count="30458">(</span>
         match e with
-        | <span data-count="116">I</span>nt i -&gt; return (VInt i)
-        | <span data-count="20112">V</span>ar x -&gt; eval_var env x
+        | <span data-count="118">I</span>nt i -&gt; return (VInt i)
+        | <span data-count="20117">V</span>ar x -&gt; eval_var env x
         | <span data-count="2">N</span>eg e -&gt; eval_neg env e steps
-        | <span data-count="102">B</span>in (bop, e1, e2) -&gt; eval_bin env bop e1 e2 steps
-        | <span data-count="3">L</span>et (x, e1, e2) -&gt; eval_let env x e1 e2 steps
+        | <span data-count="103">B</span>in (bop, e1, e2) -&gt; eval_bin env bop e1 e2 steps
+        | <span data-count="6">L</span>et (x, e1, e2) -&gt; eval_let env x e1 e2 steps
         | <span data-count="52">I</span>f (e1, e2, e3) -&gt; eval_if env e1 e2 e3 steps
-        | <span data-count="10">F</span>un (x, e) -&gt; return (VClosure (x, e, env))
-        | <span data-count="10039">A</span>pp (e1, e2) -&gt; eval_app env e1 e2 steps
+        | <span data-count="12">F</span>un (x, e) -&gt; return (VClosure (x, e, env))
+        | <span data-count="10041">A</span>pp (e1, e2) -&gt; eval_app env e1 e2 steps
         | <span data-count="5">F</span>ix -&gt; return VFix
         | <span data-count="1">L</span>etRec (f, Fun (x, b), e2) -&gt; eval_letrec env f x b e2 steps
         | <span data-count="1">L</span>etRec _ -&gt; fail (`Type_error "let rec expects a function on the right"))
     and eval_var env x =
-      <span data-count="30140">m</span>atch env with
+      <span data-count="30149">m</span>atch env with
       | <span data-count="1">[</span>] -&gt; fail `Unbound
-      | <span data-count="30139">(</span>y, v) :: rest -&gt; if y = x then <span data-count="20111">r</span>eturn v else <span data-count="10028">e</span>val_var rest x
+      | <span data-count="30148">(</span>y, v) :: rest -&gt; if y = x then <span data-count="20116">r</span>eturn v else <span data-count="10032">e</span>val_var rest x
     and eval_neg env e steps : ('name value, [&gt; error ]) M.t =
       <span data-count="2">l</span>et* v = eva<span data-count="2">l</span> env e (steps + 1) in
       <span data-count="2">m</span>atch v with
       | <span data-count="1">V</span>Int x -&gt; return (VInt (<span data-count="1">-</span>x))
       | <span data-count="1">_</span> -&gt; fail (`Type_error "unary - expects an integer")
     and eval_bin env bop e1 e2 steps : ('name value, [&gt; error ]) M.t =
-      <span data-count="102">l</span>et* v1 = eva<span data-count="102">l</span> env e1 (steps + 1) in
-      <span data-count="102">l</span>et* v2 = eva<span data-count="102">l</span> env e2 (steps + 1) in
-      <span data-count="102">m</span>atch bop, v1, v2 with
-      | <span data-count="16">A</span>dd, VInt a, VInt b -&gt; return (VInt (a + b))
+      <span data-count="103">l</span>et* v1 = eva<span data-count="103">l</span> env e1 (steps + 1) in
+      <span data-count="103">l</span>et* v2 = eva<span data-count="103">l</span> env e2 (steps + 1) in
+      <span data-count="103">m</span>atch bop, v1, v2 with
+      | <span data-count="17">A</span>dd, VInt a, VInt b -&gt; return (VInt (a + b))
       | <span data-count="28">S</span>ub, VInt a, VInt b -&gt; return (VInt (a - b))
       | <span data-count="4">M</span>ul, VInt a, VInt b -&gt; return (VInt (a * b))
       | <span data-count="1">D</span>iv, VInt _, VInt 0 -&gt; fail `Division_by_zero
@@ -377,8 +377,8 @@ end = struct
       | <span data-count="1">G</span>eq, VInt a, VInt b -&gt; return (VInt (if a &gt;= b then <span data-count="0">1</span> else <span data-count="1">0</span>))
       | <span data-count="1">_</span> -&gt; fail (`Type_error "binary operation expects integers")
     and eval_let env x e1 e2 steps : ('name value, [&gt; error ]) M.t =
-      <span data-count="3">l</span>et* v1 = eva<span data-count="3">l</span> env e1 (steps + 1) in
-      <span data-count="3">e</span>val ((x, v1) :: env) e2 (steps + 1)
+      <span data-count="6">l</span>et* v1 = eva<span data-count="6">l</span> env e1 (steps + 1) in
+      <span data-count="6">e</span>val ((x, v1) :: env) e2 (steps + 1)
     and eval_if env e1 e2 e3 steps : ('name value, [&gt; error ]) M.t =
       <span data-count="52">l</span>et* vcond = eva<span data-count="52">l</span> env e1 (steps + 1) in
       <span data-count="52">m</span>atch vcond with
@@ -386,11 +386,11 @@ end = struct
       | <span data-count="36">V</span>Int 0 -&gt; eval env e3 (steps + 1)
       | <span data-count="1">_</span> -&gt; fail (`Type_error "if expects a binary integer condition")
     and eval_app env e1 e2 steps : ('name value, [&gt; error ]) M.t =
-      <span data-count="10039">l</span>et* vf = eva<span data-count="10039">l</span> env e1 (steps + 1) in
-      <span data-count="10038">m</span>atch vf with
-      | <span data-count="10032">V</span>Closure (x, body, defenv) -&gt;
-        let* varg = eva<span data-count="10032">l</span> env e2 (steps + 1) in
-        <span data-count="10032">e</span>val ((x, varg) :: defenv) body (steps + 1)
+      <span data-count="10041">l</span>et* vf = eva<span data-count="10041">l</span> env e1 (steps + 1) in
+      <span data-count="10040">m</span>atch vf with
+      | <span data-count="10034">V</span>Closure (x, body, defenv) -&gt;
+        let* varg = eva<span data-count="10034">l</span> env e2 (steps + 1) in
+        <span data-count="10034">e</span>val ((x, varg) :: defenv) body (steps + 1)
       | <span data-count="5">V</span>Fix -&gt; eval_fix env e2 steps
       | <span data-count="1">_</span> -&gt; fail (`Type_error "application of a non-function")
     and eval_fix env f steps =
@@ -407,20 +407,20 @@ end = struct
       <span data-count="1">l</span>et rec env' = (f, VClosure (x, b, env')) :: env in
       eval env' e2 (steps + 1)
     and int_of_value = function
-      | <span data-count="9">V</span>Int i -&gt; return i
+      | <span data-count="10">V</span>Int i -&gt; return i
       | <span data-count="1">V</span>Closure _ -&gt; fail (`NotAValue "cannot represent function as integer")
       | <span data-count="0">V</span>Fix -&gt; fail (`NotAValue "cannot represent fix as a value")
     in
-    let* v = eva<span data-count="20">l</span> [] e 0 in
-    <span data-count="10">i</span>nt_of_value v
+    let* v = eva<span data-count="21">l</span> [] e 0 in
+    <span data-count="11">i</span>nt_of_value v
   ;;
 end
 
-let parse_and_run ?(max_steps = <span data-count="21">1</span>0000) str =
-  <span data-count="21">l</span>et module I = Interpret (Base.Result) in
-  let rez = Base.Result.(Parser.pars<span data-count="21">e</span> str &gt;&gt;<span data-count="21">=</span> I.ru<span data-count="21">n</span> max_steps) in
+let parse_and_run ?(max_steps = <span data-count="22">1</span>0000) str =
+  <span data-count="22">l</span>et module I = Interpret (Base.Result) in
+  let rez = Base.Result.(Parser.pars<span data-count="22">e</span> str &gt;&gt;<span data-count="22">=</span> I.ru<span data-count="22">n</span> max_steps) in
   match rez with
-  | <span data-count="9">R</span>esult.Ok n -&gt; Printf.printf "Success: %d\n" n
+  | <span data-count="10">R</span>esult.Ok n -&gt; Printf.printf "Success: %d\n" n
   | <span data-count="12">R</span>esult.Error err -&gt;
     (match err with
      | <span data-count="1">#</span>Parser.error -&gt; Format.eprintf "Parsing error\n%!"
