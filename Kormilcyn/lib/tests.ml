@@ -124,7 +124,7 @@ let prop_parse_pprint_roundtrip =
        | Result.Error _ -> false)
 ;;
 
-let%test_unit "parser/pretty-printer roundtrip" =
+let%test_unit "parser/to_src roundtrip" =
   QCheck2.Test.check_exn prop_parse_print_roundtrip
 ;;
 
