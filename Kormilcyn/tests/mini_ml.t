@@ -110,3 +110,16 @@
   > ifx theny elsez
   > EOF
   Success: 3
+
+  $ ./mini_cli.exe << 'EOF'
+  > let x a b = a+b in
+  > let theny = 0 in
+  > let elsez = 1 in
+  > ifx theny elsez then 1 else 2
+  > EOF
+  Parsing error
+
+  $ ./mini_cli.exe << 'EOF'
+  > let x = 1 inx
+  > EOF
+  Parsing error

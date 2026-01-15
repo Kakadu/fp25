@@ -10,11 +10,17 @@ let is_space = function
 ;;
 
 let spaces = skip_while is_space
+let spaces1 = take_while1 is_space *> return ()
 
 let no_ws p =
   let* _ = spaces
-  and+ payload = p
-  and+ _ = spaces in
+  and+ payload = p in
+  return payload
+;;
+
+let no_ws_strict p =
+  let* _ = spaces1
+  and+ payload = p in
   return payload
 ;;
 
@@ -83,26 +89,26 @@ let parse_miniml =
              return (Ast.Fun (var, b))))
           (* if *)
         ; (let* _ = no_ws (string "if")
-           and+ cond = pack.comp pack
+           and+ cond = no_ws_strict (pack.comp pack)
            and+ _ = no_ws (string "then")
-           and+ e1 = pack.comp pack
+           and+ e1 = no_ws_strict (pack.comp pack)
            and+ _ = no_ws (string "else")
-           and+ e2 = pack.comp pack in
+           and+ e2 = no_ws_strict (pack.comp pack) in
            return (Ast.If (cond, e1, e2)))
           (* let *)
         ; (let* _ = no_ws (string "let")
-           and+ var = no_ws varname
+           and+ var = no_ws_strict varname
            and+ args = many (no_ws varname)
            and+ _ = no_ws (char '=')
            and+ e1 = pack.comp pack
            and+ _ = no_ws (string "in")
-           and+ e2 = pack.comp pack in
+           and+ e2 = no_ws_strict (pack.comp pack) in
            let e1' = construct_args args e1 in
            return (Ast.Let (var, e1', e2)))
           (* let rec *)
         ; (let* _ = no_ws (string "let")
-           and+ _ = no_ws (string "rec")
-           and+ fvar = no_ws varname
+           and+ _ = no_ws_strict (string "rec")
+           and+ fvar = no_ws_strict varname
            and+ args = many (no_ws varname)
            and+ _ = no_ws (char '=')
            and+ f = pack.comp pack
