@@ -1,0 +1,6 @@
+(library
+ (name inferencer)
+ (package OOP_Shaehmitov)
+ (libraries ast base)
+ (instrumentation
+  (backend bisect_ppx)))

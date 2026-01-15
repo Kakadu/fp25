@@ -1,0 +1,2 @@
+let f x y = x + y ;;
+let () = print_int(f 1 true);;

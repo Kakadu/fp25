@@ -1,0 +1,7 @@
+class fact = 
+object(self)
+method factorial n = if n > 0 then n * self#factorial (n-1) else 1
+end ;;
+
+let a = new fact ;;
+let () = print_int (a#factorial 10) ;;

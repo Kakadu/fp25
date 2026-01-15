@@ -1,0 +1,10 @@
+(library
+ (name parser_test)
+ (package OOP_Shaehmitov)
+ (modules parser_test)
+ (libraries parser ast)
+ (instrumentation
+  (backend bisect_ppx))
+ (preprocess
+  (pps ppx_expect ppx_inline_test))
+ (inline_tests))
