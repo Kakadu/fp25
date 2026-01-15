@@ -3,4 +3,5 @@
  (modules Ast Parser Printer Interpret)
  (libraries angstrom)
  (preprocess
-  (pps ppx_deriving.show)))
+  (pps ppx_deriving.show))
+ (instrumentation (backend bisect_ppx)))
