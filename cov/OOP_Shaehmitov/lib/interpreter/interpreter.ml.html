@@ -932,33 +932,33 @@ module Interpreter : Eval = struct
   and env = value Env.t
 
   let ( let* ) res f =
-    <span data-count="27504">m</span>atch res with
-    | <span data-count="27436">O</span>k v -&gt; f v
+    <span data-count="27567">m</span>atch res with
+    | <span data-count="27499">O</span>k v -&gt; f v
     | <span data-count="68">E</span>rror e -&gt; Error e
   ;;
 
-  let return v = <span data-count="27475">O</span>k v
+  let return v = <span data-count="27539">O</span>k v
 
   let lookup_env (env : env) (x : name) : value eval_result =
-    <span data-count="7447">m</span>atch Env.find_opt x env with
-    | <span data-count="7446">S</span>ome v -&gt; return v
+    <span data-count="7454">m</span>atch Env.find_opt x env with
+    | <span data-count="7453">S</span>ome v -&gt; return v
     | <span data-count="1">N</span>one -&gt; Error (UnboundVariable x)
   ;;
 
-  let extend env key value = <span data-count="4312">E</span>nv.add key value env
+  let extend env key value = <span data-count="4319">E</span>nv.add key value env
 
   let lookup_class (env : env) (name : name) : class_def eval_result =
-    <span data-count="81">m</span>atch Env.find_opt name env with
-    | <span data-count="81">S</span>ome (VClass c) -&gt; return c
+    <span data-count="85">m</span>atch Env.find_opt name env with
+    | <span data-count="85">S</span>ome (VClass c) -&gt; return c
     | <span data-count="0">S</span>ome _ -&gt; Error (TypeError ("Expected a class for " ^ name))
     | <span data-count="0">N</span>one -&gt; Error (UnboundClass name)
   ;;
 
   let rec bind_pattern (p : pattern) (v : value) (env : env) : env eval_result =
-    <span data-count="2281">m</span>atch p, v with
-    | <span data-count="2">P</span>Any, _ -&gt; return env
-    | <span data-count="2234">P</span>Var name, _ -&gt; return (exten<span data-count="2234">d</span> env name v)
-    | <span data-count="40">P</span>Unit, VUnit -&gt; return env
+    <span data-count="2288">m</span>atch p, v with
+    | <span data-count="3">P</span>Any, _ -&gt; return env
+    | <span data-count="2239">P</span>Var name, _ -&gt; return (exten<span data-count="2239">d</span> env name v)
+    | <span data-count="41">P</span>Unit, VUnit -&gt; return env
     | <span data-count="3">P</span>Tuple ps, VTuple vs -&gt;
       if Stdlib.List.lengt<span data-count="3">h</span> ps &lt;&gt; Stdlib.List.lengt<span data-count="3">h</span> vs
       then <span data-count="0">E</span>rror (TypeError "Tuple length mismatch in binding")
@@ -981,9 +981,9 @@ module Interpreter : Eval = struct
     (steps : int)
     : (env * int) eval_result
     =
-    <span data-count="27">l</span>et* parent_fields_env, steps =
+    <span data-count="29">l</span>et* parent_fields_env, steps =
       match cls.parent_class with
-      | <span data-count="20">N</span>one -&gt; retur<span data-count="20">n</span> (Env.empty, steps)
+      | <span data-count="22">N</span>one -&gt; retur<span data-count="22">n</span> (Env.empty, steps)
       | <span data-count="7">S</span>ome (parent_name, args) -&gt;
         let* parent_cls = lookup_clas<span data-count="7">s</span> global_env parent_name in
         <span data-count="7">l</span>et* arg_vals, steps =
@@ -1009,23 +1009,23 @@ module Interpreter : Eval = struct
           in
           <span data-count="7">c</span>ollect_fields eval global_env parent_cls parent_param_env steps
     in
-    <span data-count="27">S</span>tdlib.List.fold_left
+    <span data-count="29">S</span>tdlib.List.fold_left
       (fun acc (name, expr) -&gt;
         <span data-count="23">l</span>et* env_acc, s = acc in
         <span data-count="23">l</span>et* v, s' = eva<span data-count="23">l</span> param_env expr s in
         <span data-count="23">l</span>et unique_name = cls.class_name ^ "#" ^ name in
         return (Env.ad<span data-count="23">d</span> unique_name v env_acc, s'))
-      (retur<span data-count="27">n</span> (parent_fields_env, steps))
+      (retur<span data-count="29">n</span> (parent_fields_env, steps))
       cls.fields
   ;;
 
   let rec lookup_method (env : env) (cls : class_def) (method_name : name)
     : (method_def * name) eval_result
     =
-    <span data-count="50">m</span>atch
-      Stdlib.List.find_opt (fun m -&gt; <span data-count="53">S</span>tring.equal m.method_name method_name) cls.methods
+    <span data-count="52">m</span>atch
+      Stdlib.List.find_opt (fun m -&gt; <span data-count="55">S</span>tring.equal m.method_name method_name) cls.methods
     with
-    | <span data-count="45">S</span>ome m -&gt; return (m, cls.class_name)
+    | <span data-count="47">S</span>ome m -&gt; return (m, cls.class_name)
     | <span data-count="5">N</span>one -&gt;
       (match cls.parent_class with
        | <span data-count="5">S</span>ome (parent_name, _) -&gt;
@@ -1035,27 +1035,27 @@ module Interpreter : Eval = struct
   ;;
 
   let get_ancestry_chain (env : env) (start_cls_name : name) : class_def list eval_result =
-    <span data-count="45">l</span>et rec loop curr_name acc =
-      <span data-count="49">l</span>et* cls = lookup_clas<span data-count="49">s</span> env curr_name in
-      <span data-count="49">m</span>atch cls.parent_class with
-      | <span data-count="45">N</span>one -&gt; return (cls :: acc)
+    <span data-count="47">l</span>et rec loop curr_name acc =
+      <span data-count="51">l</span>et* cls = lookup_clas<span data-count="51">s</span> env curr_name in
+      <span data-count="51">m</span>atch cls.parent_class with
+      | <span data-count="47">N</span>one -&gt; return (cls :: acc)
       | <span data-count="4">S</span>ome (p_name, _) -&gt; loop p_name (cls :: acc)
     in
     loop start_cls_name []
   ;;
 
   let rec eval_expr (env : env) (e : expr) (steps : int) : (value * int) eval_result =
-    <span data-count="21126">i</span>f steps &lt;= 0
+    <span data-count="21143">i</span>f steps &lt;= 0
     then <span data-count="1">E</span>rror OutOfMaxSteps
-    else <span data-count="21125">(</span>
+    else <span data-count="21142">(</span>
       let steps = steps - 1 in
       match e with
-      | <span data-count="4178">C</span>onst (CInt i) -&gt; return (VInt i, steps)
-      | <span data-count="2">C</span>onst (CBool b) -&gt; return (VBool b, steps)
+      | <span data-count="4179">C</span>onst (CInt i) -&gt; return (VInt i, steps)
+      | <span data-count="3">C</span>onst (CBool b) -&gt; return (VBool b, steps)
       | <span data-count="5">C</span>onst CUnit -&gt; return (VUnit, steps)
-      | <span data-count="7447">V</span>ar name -&gt;
-        let* v = lookup_en<span data-count="7447">v</span> env name in
-        <span data-count="7446">r</span>eturn (v, steps)
+      | <span data-count="7454">V</span>ar name -&gt;
+        let* v = lookup_en<span data-count="7454">v</span> env name in
+        <span data-count="7453">r</span>eturn (v, steps)
       | <span data-count="2">U</span>nOp (Neg, e) -&gt;
         let* v, steps = eval_exp<span data-count="2">r</span> env e steps in
         <span data-count="2">(</span>match v with
@@ -1096,7 +1096,7 @@ module Interpreter : Eval = struct
          | <span data-count="1036">V</span>Bool true -&gt; eval_expr env t steps
          | <span data-count="1010">V</span>Bool false -&gt; eval_expr env f steps
          | <span data-count="3">_</span> -&gt; Error (TypeError "if"))
-      | <span data-count="20">F</span>unExpr (params, body) -&gt; return (VClosure (false, "", env, params, body), steps)
+      | <span data-count="21">F</span>unExpr (params, body) -&gt; return (VClosure (false, "", env, params, body), steps)
       | <span data-count="6">L</span>et (NonRec, p, e1, e2) -&gt;
         let* v1, steps = eval_exp<span data-count="6">r</span> env e1 steps in
         <span data-count="6">l</span>et* new_env = bind_patter<span data-count="6">n</span> p v1 env in
@@ -1108,24 +1108,24 @@ module Interpreter : Eval = struct
            let new_env = extend env name rec_closure in
            <span data-count="2">e</span>val_expr new_env e2 steps
          | <span data-count="0">_</span> -&gt; Error (TypeError "rec binding"))
-      | <span data-count="2191">A</span>pp (f, arg) -&gt;
-        let* func, steps = eval_exp<span data-count="2191">r</span> env f steps in
-        <span data-count="2191">l</span>et* arg_val, steps = eval_exp<span data-count="2191">r</span> env arg steps in
-        <span data-count="2181">(</span>match func with
-         | <span data-count="2136">V</span>Closure (rec_flag, name, closure_env, params, body) -&gt;
+      | <span data-count="2194">A</span>pp (f, arg) -&gt;
+        let* func, steps = eval_exp<span data-count="2194">r</span> env f steps in
+        <span data-count="2194">l</span>et* arg_val, steps = eval_exp<span data-count="2194">r</span> env arg steps in
+        <span data-count="2184">(</span>match func with
+         | <span data-count="2138">V</span>Closure (rec_flag, name, closure_env, params, body) -&gt;
            let closure_env =
-             if rec_flag then <span data-count="2023">e</span>xten<span data-count="2023">d</span> closure_env name func else <span data-count="113">c</span>losure_env
+             if rec_flag then <span data-count="2023">e</span>xten<span data-count="2023">d</span> closure_env name func else <span data-count="115">c</span>losure_env
            in
            (match params with
             | <span data-count="0">[</span>] -&gt; Error (TypeError "app empty params")
-            | <span data-count="2136">p</span> :: rest -&gt;
-              let* new_env = bind_patter<span data-count="2136">n</span> p arg_val closure_env in
-              <span data-count="2135">i</span>f List.is_empty rest
-              then <span data-count="2058">e</span>val_expr new_env body steps
+            | <span data-count="2138">p</span> :: rest -&gt;
+              let* new_env = bind_patter<span data-count="2138">n</span> p arg_val closure_env in
+              <span data-count="2137">i</span>f List.is_empty rest
+              then <span data-count="2060">e</span>val_expr new_env body steps
               else <span data-count="77">r</span>eturn (VClosure (false, name, new_env, rest, body), steps))
-         | <span data-count="43">V</span>Builtin builtin_fn -&gt;
-           let* res = builtin_f<span data-count="43">n</span> arg_val in
-           <span data-count="41">r</span>eturn (res, steps)
+         | <span data-count="44">V</span>Builtin builtin_fn -&gt;
+           let* res = builtin_f<span data-count="44">n</span> arg_val in
+           <span data-count="42">r</span>eturn (res, steps)
          | <span data-count="2">_</span> -&gt; Error (TypeError "app non-func"))
       | <span data-count="3">T</span>uple es -&gt;
         let* vals, steps =
@@ -1138,60 +1138,60 @@ module Interpreter : Eval = struct
             es
         in
         <span data-count="3">r</span>eturn (VTuple vals, steps)
-      | <span data-count="20">N</span>ew (class_name, args) -&gt;
-        let* cls = lookup_clas<span data-count="20">s</span> env class_name in
-        <span data-count="20">l</span>et* arg_vals, steps =
-          Stdlib.List.fold_lef<span data-count="20">t</span>
+      | <span data-count="22">N</span>ew (class_name, args) -&gt;
+        let* cls = lookup_clas<span data-count="22">s</span> env class_name in
+        <span data-count="22">l</span>et* arg_vals, steps =
+          Stdlib.List.fold_lef<span data-count="22">t</span>
             (fun acc arg -&gt;
               <span data-count="12">l</span>et* vals, s = acc in
               <span data-count="12">l</span>et* v, s' = eval_exp<span data-count="12">r</span> env arg s in
               <span data-count="12">r</span>eturn (vals @ [ v ], s'))
-            (retur<span data-count="20">n</span> ([], steps))
+            (retur<span data-count="22">n</span> ([], steps))
             args
         in
-        <span data-count="20">i</span>f Stdlib.List.lengt<span data-count="20">h</span> cls.class_params &lt;&gt; Stdlib.List.lengt<span data-count="20">h</span> arg_vals
+        <span data-count="22">i</span>f Stdlib.List.lengt<span data-count="22">h</span> cls.class_params &lt;&gt; Stdlib.List.lengt<span data-count="22">h</span> arg_vals
         then <span data-count="0">E</span>rror (TypeError "new args mismatch")
         else
-          <span data-count="20">l</span>et* class_env =
-            Stdlib.List.fold_left<span data-count="20">2</span>
+          <span data-count="22">l</span>et* class_env =
+            Stdlib.List.fold_left<span data-count="22">2</span>
               (fun acc_env param arg -&gt;
                 <span data-count="12">l</span>et* e = acc_env in
                 <span data-count="12">b</span>ind_pattern param arg e)
-              (retur<span data-count="20">n</span> env)
+              (retur<span data-count="22">n</span> env)
               cls.class_params
               arg_vals
           in
-          <span data-count="20">l</span>et* fields_env, steps = collect_field<span data-count="20">s</span> eval_expr env cls class_env steps in
-          <span data-count="20">r</span>eturn (Vobject { cls_def = cls; fields = fields_env }, steps)
-      | <span data-count="45">M</span>ethodCall (obj_expr, method_name, args) -&gt;
-        let* obj_val, steps = eval_exp<span data-count="45">r</span> env obj_expr steps in
-        <span data-count="45">(</span>match obj_val with
-         | <span data-count="45">V</span>object { cls_def = obj_cls_def; fields } -&gt;
+          <span data-count="22">l</span>et* fields_env, steps = collect_field<span data-count="22">s</span> eval_expr env cls class_env steps in
+          <span data-count="22">r</span>eturn (Vobject { cls_def = cls; fields = fields_env }, steps)
+      | <span data-count="47">M</span>ethodCall (obj_expr, method_name, args) -&gt;
+        let* obj_val, steps = eval_exp<span data-count="47">r</span> env obj_expr steps in
+        <span data-count="47">(</span>match obj_val with
+         | <span data-count="47">V</span>object { cls_def = obj_cls_def; fields } -&gt;
            let* method_def, defining_cls_name =
-             lookup_metho<span data-count="45">d</span> env obj_cls_def method_name
+             lookup_metho<span data-count="47">d</span> env obj_cls_def method_name
            in
-           <span data-count="45">l</span>et* arg_vals, steps =
-             Stdlib.List.fold_lef<span data-count="45">t</span>
+           <span data-count="47">l</span>et* arg_vals, steps =
+             Stdlib.List.fold_lef<span data-count="47">t</span>
                (fun acc arg -&gt;
                  <span data-count="29">l</span>et* vals, s = acc in
                  <span data-count="29">l</span>et* v, s' = eval_exp<span data-count="29">r</span> env arg s in
                  <span data-count="29">r</span>eturn (vals @ [ v ], s'))
-               (retur<span data-count="45">n</span> ([], steps))
+               (retur<span data-count="47">n</span> ([], steps))
                args
            in
-           <span data-count="45">i</span>f Stdlib.List.lengt<span data-count="45">h</span> method_def.method_params &lt;&gt; Stdlib.List.lengt<span data-count="45">h</span> arg_vals
+           <span data-count="47">i</span>f Stdlib.List.lengt<span data-count="47">h</span> method_def.method_params &lt;&gt; Stdlib.List.lengt<span data-count="47">h</span> arg_vals
            then <span data-count="0">E</span>rror (TypeError "method args mismatch")
-           else <span data-count="45">(</span>
+           else <span data-count="47">(</span>
              let method_env =
                match obj_cls_def.self_name with
                | <span data-count="26">S</span>ome self -&gt; exten<span data-count="26">d</span> env self obj_val
-               | <span data-count="19">N</span>one -&gt; env
+               | <span data-count="21">N</span>one -&gt; env
              in
-             let* chain = get_ancestry_chai<span data-count="45">n</span> env defining_cls_name in
-             <span data-count="45">l</span>et method_env_with_fields =
+             let* chain = get_ancestry_chai<span data-count="47">n</span> env defining_cls_name in
+             <span data-count="47">l</span>et method_env_with_fields =
                Stdlib.List.fold_left
                  (fun curr_env ancestral_cls -&gt;
-                   <span data-count="49">l</span>et prefix = ancestral_cls.class_name ^ "#" in
+                   <span data-count="51">l</span>et prefix = ancestral_cls.class_name ^ "#" in
                    Env.fold
                      (fun key value acc -&gt;
                        <span data-count="36">i</span>f Stdlib.String.starts_with ~prefix key
@@ -1209,27 +1209,27 @@ module Interpreter : Eval = struct
                  method_env
                  chain
              in
-             <span data-count="45">l</span>et* final_method_env =
-               Stdlib.List.fold_left<span data-count="45">2</span>
+             <span data-count="47">l</span>et* final_method_env =
+               Stdlib.List.fold_left<span data-count="47">2</span>
                  (fun acc_env p v -&gt;
                    <span data-count="29">l</span>et* e = acc_env in
                    <span data-count="29">b</span>ind_pattern p v e)
-                 (retur<span data-count="45">n</span> method_env_with_fields)
+                 (retur<span data-count="47">n</span> method_env_with_fields)
                  method_def.method_params
                  arg_vals
              in
-             <span data-count="45">e</span>val_expr final_method_env method_def.method_body steps)
+             <span data-count="47">e</span>val_expr final_method_env method_def.method_body steps)
          | <span data-count="0">_</span> -&gt; Error (TypeError "method call on non-object")))
   ;;
 
   let eval_program_item (env : env) (item : structure_item) (steps : int)
     : (env * int) eval_result
     =
-    <span data-count="134">m</span>atch item with
-    | <span data-count="103">V</span>alue (NonRec, p, expr) -&gt;
-      let* v, steps = eval_exp<span data-count="103">r</span> env expr steps in
-      <span data-count="89">l</span>et* new_env = bind_patter<span data-count="89">n</span> p v env in
-      <span data-count="88">r</span>eturn (new_env, steps)
+    <span data-count="141">m</span>atch item with
+    | <span data-count="108">V</span>alue (NonRec, p, expr) -&gt;
+      let* v, steps = eval_exp<span data-count="108">r</span> env expr steps in
+      <span data-count="94">l</span>et* new_env = bind_patter<span data-count="94">n</span> p v env in
+      <span data-count="93">r</span>eturn (new_env, steps)
     | <span data-count="11">V</span>alue (Rec, p, expr) -&gt;
       (match p, expr with
        | <span data-count="7">P</span>Var name, FunExpr (params, body) -&gt;
@@ -1237,9 +1237,9 @@ module Interpreter : Eval = struct
          let new_env = extend env name rec_closure in
          <span data-count="7">r</span>eturn (new_env, steps)
        | <span data-count="4">_</span> -&gt; Error (TypeError "rec def"))
-    | <span data-count="20">C</span>lassDef cls_def -&gt;
+    | <span data-count="22">C</span>lassDef cls_def -&gt;
       let new_env = extend env cls_def.class_name (VClass cls_def) in
-      <span data-count="20">r</span>eturn (new_env, steps)
+      <span data-count="22">r</span>eturn (new_env, steps)
   ;;
 
   let show_error = function
@@ -1257,11 +1257,11 @@ module Interpreter : Eval = struct
          "print_int"
          (VBuiltin
             (function
-              | <span data-count="40">V</span>Int i -&gt;
+              | <span data-count="41">V</span>Int i -&gt;
                 Stdlib.print_int i;
-                <span data-count="40">r</span>eturn VUnit
+                <span data-count="41">r</span>eturn VUnit
               | <span data-count="1">_</span> -&gt; Error (TypeError "p_int")))
-    |&gt; <span data-count="14">E</span>nv.add
+    |&gt; <span data-count="16">E</span>nv.add
          "print_endl"
          (VBuiltin
             (function
@@ -1269,7 +1269,7 @@ module Interpreter : Eval = struct
                 Stdlib.print_newline ();
                 <span data-count="1">r</span>eturn VUnit
               | <span data-count="1">_</span> -&gt; Error (TypeError "p_unit")))
-    |&gt; <span data-count="14">E</span>nv.ad<span data-count="14">d</span>
+    |&gt; <span data-count="16">E</span>nv.ad<span data-count="16">d</span>
          "print_bool"
          (VBuiltin
             (function
@@ -1280,16 +1280,16 @@ module Interpreter : Eval = struct
   ;;
 
   let run_program (max_steps : int) (prog : program) =
-    <span data-count="58">l</span>et* final_env, _ =
-      Stdlib.List.fold_lef<span data-count="58">t</span>
+    <span data-count="59">l</span>et* final_env, _ =
+      Stdlib.List.fold_lef<span data-count="59">t</span>
         (fun acc item -&gt;
-          <span data-count="134">l</span>et* env, steps = acc in
-          <span data-count="134">l</span>et* new_env, steps' = eval_program_ite<span data-count="134">m</span> env item steps in
-          <span data-count="115">r</span>eturn (new_env, steps'))
-        (retur<span data-count="58">n</span> (initial_env, max_steps))
+          <span data-count="141">l</span>et* env, steps = acc in
+          <span data-count="141">l</span>et* new_env, steps' = eval_program_ite<span data-count="141">m</span> env item steps in
+          <span data-count="122">r</span>eturn (new_env, steps'))
+        (retur<span data-count="59">n</span> (initial_env, max_steps))
         prog
     in
-    <span data-count="39">r</span>eturn final_env
+    <span data-count="40">r</span>eturn final_env
   ;;
 end
 </code></pre>
