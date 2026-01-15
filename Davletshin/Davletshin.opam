@@ -2,8 +2,9 @@
 opam-version: "2.0"
 version: "0.1"
 synopsis: "An interpreter for miniML"
-description:
-  "FIXME. A longer description, for example, which are the most interesing features being supported, etc."
+description: """
+An interpreter for the miniML language.
+  Supports CBV evaluation, recursion via fix/let rec, and includes testing via QuickCheck and cram."""
 maintainer: ["Vyacheslav Davletshin <anymeshnik2.1@gmail.com>"]
 authors: ["Vyacheslav Davletshin <anymeshnik2.1@gmail.com>"]
 license: "LGPL-3.0-or-later WITH OCaml-LGPL-linking-exception"
