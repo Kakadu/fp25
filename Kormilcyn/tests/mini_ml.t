@@ -102,3 +102,11 @@
   > let fun = 1 in fun
   > EOF
   Parsing error
+
+  $ ./mini_cli.exe << 'EOF'
+  > let ifx a b = a+b in
+  > let theny = 2 in 
+  > let elsez = 1 in 
+  > ifx theny elsez
+  > EOF
+  Success: 3

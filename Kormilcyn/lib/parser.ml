@@ -62,6 +62,10 @@ let chainl1 p op =
 
 type error = [ `Parsing_error ]
 
+let construct_args args body =
+  List.fold_right (fun arg acc -> Ast.Fun (arg, acc)) args body
+;;
+
 let parse_miniml =
   let atom pack =
     fix (fun _ ->
@@ -88,20 +92,24 @@ let parse_miniml =
           (* let *)
         ; (let* _ = no_ws (string "let")
            and+ var = no_ws varname
+           and+ args = many (no_ws varname)
            and+ _ = no_ws (char '=')
            and+ e1 = pack.comp pack
            and+ _ = no_ws (string "in")
            and+ e2 = pack.comp pack in
-           return (Ast.Let (var, e1, e2)))
+           let e1' = construct_args args e1 in
+           return (Ast.Let (var, e1', e2)))
           (* let rec *)
         ; (let* _ = no_ws (string "let")
            and+ _ = no_ws (string "rec")
            and+ fvar = no_ws varname
+           and+ args = many (no_ws varname)
            and+ _ = no_ws (char '=')
-           and+ f = pack.atom pack
+           and+ f = pack.comp pack
            and+ _ = no_ws (string "in")
            and+ e = pack.comp pack in
-           return (Ast.LetRec (fvar, f, e)))
+           let f' = construct_args args f in
+           return (Ast.LetRec (fvar, f', e)))
           (* fix *)
         ; (let* _ = no_ws (string "fix") in
            return Ast.Fix)
@@ -127,7 +135,8 @@ let parse_miniml =
       (let* _ = no_ws (char '+')
        and+ e = pack.unary pack in
        return e)
-      <|> (* унарный минус *)
+      <|>
+      (* унарный минус *)
       (let* _ = no_ws (char '-')
        and+ e = pack.unary pack in
        return (Ast.Neg e))
