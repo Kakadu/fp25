@@ -1,0 +1,44 @@
+(lang dune 3.7)
+
+(generate_opam_files true)
+
+(cram enable)
+
+(license "LGPL-3.0-or-later WITH OCaml-LGPL-linking-exception")
+
+(authors
+ "Kormilcyn Roman <romkor2006@gmail.com>"
+ "Kormilcyn Roman <romkor2006@gmail.com>")
+
+(maintainers "Kormilcyn Roman <romkor2006@gmail.com>")
+
+(bug_reports "https://github.com/Kakadu/fp25")
+
+(homepage "https://github.com/Kakadu/fp25")
+
+(package
+ (name Kormilcyn) ; FIXME and regenerate .opam file using 'dune build @install'
+ (synopsis "An interpreter for MiniML")
+ (description
+  "FIXME. A longer description, for example, which are the most interesing features being supported, etc.")
+(documentation "https://kakadu.github.io/fp25/docs/Kormilcyn")
+ (version 0.1)
+ (depends
+  (dune
+   (= "3.19.1"))
+  (angstrom
+   (= "0.16.0"))
+  base
+  (qcheck :with-test)
+  (ppx_inline_test :with-test)
+  ppx_expect
+  ppx_deriving
+  bisect_ppx
+  (odoc :with-doc)
+  (ocamlformat
+   (and
+    :build
+    (= "0.26.2")))
+  ; base
+  ; After adding dependencies to 'dune' files add the same dependecies here too
+  ))
