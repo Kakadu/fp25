@@ -6,7 +6,7 @@
 
 [@@@ocaml.text "/*"]
 
-open Lambda_lib
+open Miniml_lib
 
 include struct
   open Ast
