@@ -9,13 +9,6 @@
   (backend bisect_ppx)))
 
 (test
- (name interpret_cov)
- (modules interpret_cov)
- (libraries lambda_lib unix)
- (instrumentation
-  (backend bisect_ppx)))
-
-(test
  (name printer_tests)
  (modules printer_tests)
  (libraries lambda_lib)

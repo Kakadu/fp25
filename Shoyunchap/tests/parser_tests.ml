@@ -83,6 +83,7 @@ let error_cases =
   ; "1 +"
   ; "(1 + 2"
   ; "1 + 2)"
+  ; "if false thenn elsen"
   ; "if then else"
   ; "fun -> 1"
   ; "let 5 = 3"

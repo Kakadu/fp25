@@ -24,19 +24,29 @@ let lexeme p = spaces *> p
 (* parser for one specific character c *)
 let sym c = lexeme (char c)
 
-(* parser for one specific key word s *)
-let kwd s = lexeme (string s)
-
 (* predicate function for identifiers *)
 let is_ident_start = function
-  | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
+  | 'a' .. 'z' | 'A' .. 'Z' | '_' | '&' -> true
   | _ -> false
 ;;
 
 (* predicate functions for identifiers *)
 let is_ident_char = function
-  | 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' -> true
+  | 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' | '&' -> true
   | _ -> false
+;;
+
+let kwd s =
+  let open Angstrom in
+  if String.for_all is_ident_char s
+  then
+    lexeme
+      (string s
+       <* (peek_char
+           >>= function
+           | Some c when is_ident_char c -> fail "keyword boundary"
+           | _ -> return ()))
+  else lexeme (string s)
 ;;
 
 (* list of key words *)
@@ -230,7 +240,7 @@ let expr : expression Angstrom.t =
 (* wrapper over angshtorm *)
 
 let parse (s : string) : (expression, error) result =
-  match parse_string ~consume:Consume.All expr s with
+  match parse_string ~consume:Consume.All (spaces *> expr <* spaces) s with
   | Ok e -> Ok e
   | Error msg -> Error (`Parsing_error msg)
 ;;

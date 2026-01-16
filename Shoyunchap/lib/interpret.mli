@@ -11,10 +11,8 @@ type value =
   | ClosureVal of name * expression * env
   | BuiltinVal of (value -> value eval)
 
-(** Environment entries are mutable on purpose: `let rec`/`fix` need a placeholder
-    cell that is filled after evaluating the RHS, so a `(name * value ref)` list
-    models that operationally. *)
-and env = (name * value ref) list
+(** Recursive bindings are represented by cyclic closures in the environment. *)
+and env = (name * value) list
 
 and eval_error =
   | Unbound_variable of name
@@ -22,6 +20,7 @@ and eval_error =
   | Not_an_int of value
   | Division_by_zero
   | Step_limit_exceeded
+  | Letrec_requires_function
   | Fix_argument_shape
 
 and 'a eval = int -> ('a * int, eval_error) result

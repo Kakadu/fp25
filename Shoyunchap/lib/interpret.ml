@@ -10,10 +10,8 @@ type value =
   | ClosureVal of name * expression * env
   | BuiltinVal of (value -> value eval)
 
-and env = (name * value ref) list
-(* Mutable cells intentionally mirror the operational semantics of `let rec` and
-   `fix`: we allocate a placeholder first, allow the RHS to refer to it while
-   evaluating, then mutate the cell with the real value once known. *)
+and env = (name * value) list
+(* Recursive bindings are represented by cyclic closures in the environment. *)
 
 and eval_error =
   | Unbound_variable of name
@@ -21,6 +19,7 @@ and eval_error =
   | Not_an_int of value
   | Division_by_zero
   | Step_limit_exceeded
+  | Letrec_requires_function
   | Fix_argument_shape
 
 (* monad result with fuel counter *)
@@ -68,20 +67,15 @@ let step : unit eval =
 
 (* environment helpers *)
 
-(* We dereference the stored cell because recursive bindings keep a placeholder
-   `ref` that gets updated after evaluation; lookup must always read the latest
-   contents. *)
 let lookup (env : env) (x : name) : value eval =
   fun fuel ->
   match List.assoc_opt x env with
   | None -> Error (Unbound_variable x)
-  | Some cell ->
-    (* Dereference the placeholder produced by let rec / fix. *)
-    Ok (!cell, fuel)
+  | Some v -> Ok (v, fuel)
 ;;
 
 (* extend adds a new binding to the environment *)
-let extend (env : env) (x : name) (v : value) : env = (x, ref v) :: env
+let extend (env : env) (x : name) (v : value) : env = (x, v) :: env
 
 (* arithmetic *)
 let int_binop (op : operation_id) (n1 : int) (n2 : int) : int eval =
@@ -160,26 +154,25 @@ and eval (env : env) (e : expression) : value eval =
           (* top level value *)
           return v_rhs)
      | Rec ->
-       (* recursive binding *)
-       let cell = ref UnitVal in
-       let env' = (name, cell) :: env in
-       (* Dummy cell lets the RHS call itself (or be captured) during evaluation. *)
-       let* v_rhs = eval env' rhs in
-       (* Update the placeholder with the computed value, keeping sharing intact. *)
-       cell := v_rhs;
-       (match body_opt with
-        | Some body -> eval env' body
-        | None -> return v_rhs))
+       (match rhs with
+        | Fun (param, body) ->
+          (* Recursive binding for functions via a cyclic closure. *)
+          let rec v_self = ClosureVal (param, body, (name, v_self) :: env) in
+          let env' = (name, v_self) :: env in
+          (match body_opt with
+           | Some body -> eval env' body
+           | None -> return v_self)
+        | _ -> error Letrec_requires_function))
 ;;
 
 (* builtin fix *)
 let builtin_fix : value =
   BuiltinVal
     (function
-      | ClosureVal (self_name, Fun (arg_name, body), env_f) ->
-        let rec v_self = ClosureVal (arg_name, body, (self_name, ref v_self) :: env_f) in
-        return v_self
-      | _ -> error Fix_argument_shape)
+     | ClosureVal (self_name, Fun (arg_name, body), env_f) ->
+       let rec v_self = ClosureVal (arg_name, body, (self_name, v_self) :: env_f) in
+       return v_self
+     | _ -> error Fix_argument_shape)
 ;;
 
 (* builtin printing *)
@@ -204,9 +197,9 @@ let builtin_print_newline : value =
 
 (* initial environment *)
 let initial_env : env =
-  [ "fix", ref builtin_fix
-  ; "print_int", ref builtin_print_int
-  ; "print_newline", ref builtin_print_newline
+  [ "fix", builtin_fix
+  ; "print_int", builtin_print_int
+  ; "print_newline", builtin_print_newline
   ]
 ;;
 
@@ -230,6 +223,7 @@ let string_of_error = function
   | Not_an_int v -> Printf.sprintf "Not an int: %s" (string_of_value v)
   | Division_by_zero -> "Division by zero"
   | Step_limit_exceeded -> "Step limit exceeded"
+  | Letrec_requires_function -> "Type error: let rec must bind to function"
   | Fix_argument_shape -> "fix expects fun self -> fun x -> ..."
 ;;
 
