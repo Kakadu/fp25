@@ -13,7 +13,6 @@ type value =
   | VBool of bool
   | VUnit
   | VClosure of ident * expr * env
-  | VRecClosure of ident * ident * expr * env
   | VBuiltin of (value -> value eval)
 
 and env = (ident * value) list
@@ -51,7 +50,7 @@ let string_of_value = function
   | VBool true -> "true"
   | VBool false -> "false"
   | VUnit -> "()"
-  | VClosure _ | VRecClosure _ | VBuiltin _ -> "<fun>"
+  | VClosure _ | VBuiltin _ -> "<fun>"
 ;;
 
 let string_of_error = function
@@ -113,9 +112,15 @@ let rec eval (env : env) (expr : expr) : value eval =
   | Let (Rec, name, rhs, body) ->
     (match rhs with
      | Lam (param, lam_body) ->
-       let self = VRecClosure (name, param, lam_body, env) in
+       let rec self = VClosure (param, lam_body, (name, self) :: env) in
        eval ((name, self) :: env) body
-     | _ -> fail (Invalid_recursion name))
+     | _ ->
+       fun fuel ->
+         (match eval env rhs fuel with
+          | Ok (v, fuel') -> eval ((name, v) :: env) body fuel'
+          | Error (Unbound_variable missing) when String.equal missing name ->
+            Error (Invalid_recursion name)
+          | Error err -> Error err))
   | If (cond, then_e, else_e) ->
     let* cond_val = eval env cond in
     let* cond_bool = expect_bool cond_val in
@@ -143,7 +148,9 @@ let rec eval (env : env) (expr : expr) : value eval =
      | VClosure (fname, body, closure_env) ->
        (match body with
         | Lam (param, lam_body) ->
-          let self = VRecClosure (fname, param, lam_body, closure_env) in
+          let rec self =
+            VClosure (param, lam_body, (fname, self) :: closure_env)
+          in
           return self
         | _ -> fail (Invalid_fix v))
      | _ -> fail (Invalid_fix v))
@@ -151,8 +158,6 @@ let rec eval (env : env) (expr : expr) : value eval =
 and apply (fn_val : value) (arg_val : value) : value eval =
   match fn_val with
   | VClosure (param, body, closure_env) -> eval ((param, arg_val) :: closure_env) body
-  | VRecClosure (fname, param, body, closure_env) ->
-    eval ((param, arg_val) :: (fname, fn_val) :: closure_env) body
   | VBuiltin fn -> fn arg_val
   | _ -> fail (Expected_function fn_val)
 
@@ -247,9 +252,15 @@ let eval_toplevel (env : env) = function
   | TLet (Rec, name, rhs) ->
     (match rhs with
      | Lam (param, lam_body) ->
-       let self = VRecClosure (name, param, lam_body, env) in
+       let rec self = VClosure (param, lam_body, (name, self) :: env) in
        return ((name, self) :: env, None)
-     | _ -> fail (Invalid_recursion name))
+     | _ ->
+       fun fuel ->
+         (match eval env rhs fuel with
+          | Ok (v, fuel') -> Ok (((name, v) :: env, None), fuel')
+          | Error (Unbound_variable missing) when String.equal missing name ->
+            Error (Invalid_recursion name)
+          | Error err -> Error err))
 ;;
 
 let eval_program ?(fuel = 10_000) (program : program) =
