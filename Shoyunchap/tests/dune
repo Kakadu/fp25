@@ -1,7 +1,17 @@
+(dirs
+ (:standard \ tests_that_you_need_to_implement))
+
 (test
  (name parser_tests)
  (modules parser_tests)
  (libraries lambda_lib)
+ (instrumentation
+  (backend bisect_ppx)))
+
+(test
+ (name interpret_cov)
+ (modules interpret_cov)
+ (libraries lambda_lib unix)
  (instrumentation
   (backend bisect_ppx)))
 
@@ -19,12 +29,5 @@
  (instrumentation
   (backend bisect_ppx)))
 
-(executable
- (name interpret_cli)
- (modules interpret_cli)
- (libraries lambda_lib)
- (instrumentation
-  (backend bisect_ppx)))
-
 (cram
- (deps interpret_cli.exe))
+ (deps ../REPL.exe))

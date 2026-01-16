@@ -44,6 +44,6 @@ let () =
   | Error e -> Format.printf "%a@." Parser.pp_error e
   | Ok ast ->
     (match Interpret.run ~max_steps ast with
-     | Ok v -> Printf.printf "%s\n%!" (Interpret.string_of_value v)
+     | Ok v -> Printf.printf "Result: %s\n%!" (Interpret.string_of_value v)
      | Error err -> Printf.printf "Error: %s\n%!" (Interpret.string_of_error err))
 ;;
