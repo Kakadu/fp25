@@ -278,45 +278,45 @@ let gen_name =
 ;;
 
 let gen_const =
-  Gen.frequenc<span data-count="1">y</span> [ 4, Gen.ma<span data-count="1">p</span> (fun n -&gt; <span data-count="1526">I</span>nt n) Gen.small_int; 1, Gen.retur<span data-count="1">n</span> Unit ]
+  Gen.frequenc<span data-count="1">y</span> [ 4, Gen.ma<span data-count="1">p</span> (fun n -&gt; <span data-count="1670">I</span>nt n) Gen.small_int; 1, Gen.retur<span data-count="1">n</span> Unit ]
 ;;
 
 let gen_op = Gen.oneof<span data-count="1">l</span> [ OpAdd; OpSub; OpMul; OpDiv; OpEq; OpGt; OpLt; OpGte; OpLte ]
 
 let rec gen_expr depth =
-  <span data-count="15472">l</span>et leaf =
-    [ Gen.ma<span data-count="15472">p</span> (fun c -&gt; <span data-count="1926">A</span>st.Const c) gen_const; Gen.ma<span data-count="15472">p</span> (fun n -&gt; <span data-count="1930">A</span>st.Var n) gen_name ]
+  <span data-count="15872">l</span>et leaf =
+    [ Gen.ma<span data-count="15872">p</span> (fun c -&gt; <span data-count="2168">A</span>st.Const c) gen_const; Gen.ma<span data-count="15872">p</span> (fun n -&gt; <span data-count="2024">A</span>st.Var n) gen_name ]
   in
   if depth &lt;= 0
-  then <span data-count="8236">G</span>en.oneof leaf
-  else <span data-count="7236">(</span>
+  then <span data-count="8436">G</span>en.oneof leaf
+  else <span data-count="7436">(</span>
     let sub = gen_expr (depth / 2) in
-    <span data-count="7236">l</span>et simpler = gen_expr (depth - 1) in
-    <span data-count="7236">l</span>et let_gen =
+    <span data-count="7436">l</span>et simpler = gen_expr (depth - 1) in
+    <span data-count="7436">l</span>et let_gen =
       let open Gen in
-      oneof<span data-count="7236">l</span> [ NonRec; Rec ]
-      &gt;&gt;<span data-count="7236">=</span> fun kind -&gt;
-      <span data-count="652">g</span>en_name
+      oneof<span data-count="7436">l</span> [ NonRec; Rec ]
+      &gt;&gt;<span data-count="7436">=</span> fun kind -&gt;
+      <span data-count="648">g</span>en_name
       &gt;&gt;= fun name -&gt;
-      <span data-count="652">(</span>match kind with
-       | <span data-count="322">R</span>ec -&gt; map<span data-count="322">2</span> (fun arg body -&gt; <span data-count="322">A</span>st.Fun (arg, body)) gen_name simpler
-       | <span data-count="330">N</span>onRec -&gt; simpler)
+      <span data-count="648">(</span>match kind with
+       | <span data-count="346">R</span>ec -&gt; map<span data-count="346">2</span> (fun arg body -&gt; <span data-count="346">A</span>st.Fun (arg, body)) gen_name simpler
+       | <span data-count="302">N</span>onRec -&gt; simpler)
       &gt;&gt;= fun rhs -&gt;
-      <span data-count="652">o</span>ptio<span data-count="652">n</span> sub
+      <span data-count="648">o</span>ptio<span data-count="648">n</span> sub
       &gt;&gt;= fun body_opt -&gt;
-      <span data-count="652">l</span>et scope =
+      <span data-count="648">l</span>et scope =
         match body_opt with
-        | <span data-count="112">N</span>one -&gt; GlobalVar
-        | <span data-count="540">S</span>ome _ -&gt; LocalVar
+        | <span data-count="100">N</span>one -&gt; GlobalVar
+        | <span data-count="548">S</span>ome _ -&gt; LocalVar
       in
       return (Ast.Let (scope, kind, name, rhs, body_opt))
     in
     Gen.oneof
       (leaf
-       @ [ Gen.map<span data-count="7236">2</span> (fun n body -&gt; <span data-count="592">A</span>st.Fun (n, body)) gen_name simpler
-         ; Gen.map<span data-count="7236">2</span> (fun fn arg -&gt; <span data-count="608">A</span>st.App (fn, arg)) simpler simpler
-         ; Gen.map<span data-count="7236">3</span> (fun l op r -&gt; <span data-count="590">A</span>st.BinOp (op, l, r)) simpler gen_op simpler
-         ; Gen.map<span data-count="7236">3</span> (fun c t e_opt -&gt; <span data-count="610">A</span>st.If (c, t, e_opt)) sub simpler (Gen.optio<span data-count="7236">n</span> sub)
+       @ [ Gen.map<span data-count="7436">2</span> (fun n body -&gt; <span data-count="700">A</span>st.Fun (n, body)) gen_name simpler
+         ; Gen.map<span data-count="7436">2</span> (fun fn arg -&gt; <span data-count="634">A</span>st.App (fn, arg)) simpler simpler
+         ; Gen.map<span data-count="7436">3</span> (fun l op r -&gt; <span data-count="746">A</span>st.BinOp (op, l, r)) simpler gen_op simpler
+         ; Gen.map<span data-count="7436">3</span> (fun c t e_opt -&gt; <span data-count="676">A</span>st.If (c, t, e_opt)) sub simpler (Gen.optio<span data-count="7436">n</span> sub)
          ; let_gen
          ]))
 ;;
