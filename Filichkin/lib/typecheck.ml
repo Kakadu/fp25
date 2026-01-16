@@ -8,6 +8,8 @@
 
 open Ast
 
+type tyvar = int
+
 type typ =
   | TInt
   | TBool
@@ -15,13 +17,15 @@ type typ =
   | TFun of typ * typ
   | TTuple of typ list
   | TCon of string * typ list
-  | TVar of tvar ref
-
-and tvar =
-  | Unbound of int
-  | Link of typ
+  | TVar of tyvar
 
 type scheme = Forall of int list * typ
+
+module TyVarMap = Map.Make (Int)
+
+type subst = typ TyVarMap.t
+
+let subst_ref : subst ref = ref TyVarMap.empty
 
 type type_env =
   { vars : (string * scheme) list
@@ -32,11 +36,17 @@ type type_env =
 
 exception TypeError of string
 
+type infer_state =
+  { subst : subst
+  ; next_id : int
+  }
+
 let fresh_tyvar =
   let counter = ref 0 in
   fun () ->
+    let v = !counter in
     incr counter;
-    TVar (ref (Unbound !counter))
+    TVar v
 ;;
 
 let lookup_var x env = List.assoc_opt x env.vars
@@ -45,27 +55,34 @@ let lookup_type name env = List.assoc_opt name env.types
 let extend_vars env xs = { env with vars = xs @ env.vars }
 let extend_ctors env cs = { env with ctors = cs @ env.ctors }
 
-let rec prune = function
-  | TVar ({ contents = Link t } as r) ->
-    let t' = prune t in
-    r := Link t';
-    t'
-  | t -> t
+let rec apply_subst subst = function
+  | (TInt | TBool | TUnit) as t -> t
+  | TFun (t1, t2) -> TFun (apply_subst subst t1, apply_subst subst t2)
+  | TTuple ts -> TTuple (List.map (apply_subst subst) ts)
+  | TCon (n, ts) -> TCon (n, List.map (apply_subst subst) ts)
+  | TVar v ->
+    (match TyVarMap.find_opt v subst with
+     | None -> TVar v
+     | Some t -> apply_subst subst t)
 ;;
 
-let rec occurs id = function
-  | TInt | TBool | TUnit -> false
-  | TFun (t1, t2) -> occurs id t1 || occurs id t2
-  | TTuple ts -> List.exists (occurs id) ts
-  | TCon (_, ts) -> List.exists (occurs id) ts
-  | TVar { contents = Link t } -> occurs id t
-  | TVar { contents = Unbound v_id } -> id = v_id
+let rec occurs v = function
+  | TVar x -> x = v
+  | TFun (t1, t2) -> occurs v t1 || occurs v t2
+  | TTuple ts | TCon (_, ts) -> List.exists (occurs v) ts
+  | _ -> false
 ;;
 
 let rec unify t1 t2 =
-  let t1, t2 = prune t1, prune t2 in
+  let subst = !subst_ref in
+  let t1 = apply_subst subst t1 in
+  let t2 = apply_subst subst t2 in
   match t1, t2 with
   | TInt, TInt | TBool, TBool | TUnit, TUnit -> ()
+  | TVar v, t | t, TVar v ->
+    if occurs v t
+    then raise (TypeError "recursive type")
+    else subst_ref := TyVarMap.add v t subst
   | TFun (a1, r1), TFun (a2, r2) ->
     unify a1 a2;
     unify r1 r2
@@ -76,8 +93,6 @@ let rec unify t1 t2 =
     if List.length ts1 <> List.length ts2
     then raise (TypeError "type constructor arity mismatch");
     List.iter2 unify ts1 ts2
-  | TVar ({ contents = Unbound id } as r), t | t, TVar ({ contents = Unbound id } as r) ->
-    if occurs id t then raise (TypeError "recursive type") else r := Link t
   | _ -> raise (TypeError "type mismatch")
 ;;
 
@@ -88,14 +103,13 @@ let rec free_tyvars = function
   | TFun (t1, t2) -> IntSet.union (free_tyvars t1) (free_tyvars t2)
   | TTuple ts | TCon (_, ts) ->
     List.fold_left (fun acc t -> IntSet.union acc (free_tyvars t)) IntSet.empty ts
-  | TVar { contents = Link t } -> free_tyvars t
-  | TVar { contents = Unbound id } -> IntSet.singleton id
+  | TVar id -> IntSet.singleton id
 ;;
 
 let free_scheme (Forall (vars, t)) = IntSet.diff (free_tyvars t) (IntSet.of_list vars)
 
 let generalize env_vars t =
-  let t = prune t in
+  let t = apply_subst !subst_ref t in
   let env_fv =
     List.fold_left
       (fun acc (_, sch) -> IntSet.union acc (free_scheme sch))
@@ -109,32 +123,30 @@ let generalize env_vars t =
 
 let instantiate (Forall (vars, t)) =
   let subst = List.map (fun id -> id, fresh_tyvar ()) vars in
-  let rec go t =
-    match t with
-    | TInt | TBool | TUnit -> t
+  let rec go = function
+    | (TInt | TBool | TUnit) as t -> t
     | TFun (t1, t2) -> TFun (go t1, go t2)
     | TTuple ts -> TTuple (List.map go ts)
     | TCon (name, ts) -> TCon (name, List.map go ts)
-    | TVar { contents = Link inner } -> go inner
-    | TVar { contents = Unbound id } ->
+    | TVar id ->
       (match List.assoc_opt id subst with
-       | Some new_t -> new_t
-       | None -> t)
+       | Some t -> t
+       | None -> TVar id)
   in
   go t
 ;;
 
 let rec bind_pattern env p t =
-  match p, prune t with
+  match p, apply_subst !subst_ref t with
   | PVar x, t -> [ x, t ]
   | PWildcard, _ -> []
   | PTuple ps, TTuple ts ->
     if List.length ps <> List.length ts
     then raise (TypeError "tuple pattern length mismatch");
     List.concat (List.map2 (bind_pattern env) ps ts)
-  | PTuple ps, TVar ({ contents = Unbound _ } as r) ->
+  | PTuple ps, TVar _ ->
     let element_tys = List.map (fun _ -> fresh_tyvar ()) ps in
-    r := Link (TTuple element_tys);
+    unify t (TTuple element_tys);
     List.concat (List.map2 (bind_pattern env) ps element_tys)
   | PConstr (name, ps), t ->
     (match lookup_ctor name env with
@@ -142,7 +154,7 @@ let rec bind_pattern env p t =
      | Some scheme ->
        let ctor_ty = instantiate scheme in
        let rec match_args pats ty =
-         match pats, prune ty with
+         match pats, apply_subst !subst_ref ty with
          | [], res_ty ->
            unify t res_ty;
            []
@@ -161,7 +173,7 @@ type coverage =
   | Other
 
 let check_exhaustive_match env scrutinee_ty cases =
-  match prune scrutinee_ty with
+  match apply_subst !subst_ref scrutinee_ty with
   | TCon (type_name, _) ->
     (match List.assoc_opt type_name env.type_def_ctors with
      | None -> ()
@@ -297,24 +309,20 @@ type tc_state =
   }
 
 let process_type_decl env td =
-  let env_with_type =
-    { env with types = (td.type_name, td.type_params) :: env.types }
-  in
+  let env_with_type = { env with types = (td.type_name, td.type_params) :: env.types } in
   let distinct_vars = List.map (fun name -> name, fresh_tyvar ()) td.type_params in
   let forall_vars =
     List.map
       (function
-        | _, TVar { contents = Unbound id } -> id
-        | _ -> failwith "impossible")
+        | _, TVar id -> id
+        | _ -> raise (TypeError "internal error: expected type variable"))
       distinct_vars
   in
   let result_type = TCon (td.type_name, List.map snd distinct_vars) in
   let new_ctors =
     List.map
       (fun c ->
-        let arg_types =
-          List.map (ast_to_typ env_with_type distinct_vars) c.ctor_args
-        in
+        let arg_types = List.map (ast_to_typ env_with_type distinct_vars) c.ctor_args in
         let ctor_ty =
           List.fold_right (fun arg acc -> TFun (arg, acc)) arg_types result_type
         in
@@ -335,6 +343,7 @@ let check_toplevel state tl =
     | TLType td -> Ok { tenv = process_type_decl state.tenv td; last_type = None }
     | TLExpr (Let (NonRec, pat, expr, None)) ->
       let ty = infer state.tenv expr in
+      let ty = apply_subst !subst_ref ty in
       let bindings = bind_pattern state.tenv pat ty in
       let new_vars = List.map (fun (n, t) -> n, generalize state.tenv.vars t) bindings in
       let scheme = generalize state.tenv.vars ty in
@@ -344,11 +353,15 @@ let check_toplevel state tl =
       let env_pre = extend_vars state.tenv [ name, Forall ([], tv) ] in
       let t_expr = infer env_pre expr in
       unify tv t_expr;
+      let t_expr = apply_subst !subst_ref t_expr in
       let scheme = generalize state.tenv.vars t_expr in
       Ok { tenv = extend_vars state.tenv [ name, scheme ]; last_type = Some t_expr }
     | TLExpr (Let (Rec, _, _, None)) ->
       Error "Recursive let only supports simple variables"
-    | TLExpr e -> Ok { state with last_type = Some (infer state.tenv e) }
+    | TLExpr e ->
+      let t = infer state.tenv e in
+      let t = apply_subst !subst_ref t in
+      Ok { state with last_type = Some t }
   with
   | TypeError msg -> Error msg
 ;;
@@ -357,8 +370,8 @@ let initial_env =
   let a = fresh_tyvar () in
   let option_var =
     match a with
-    | TVar { contents = Unbound id } -> id
-    | _ -> failwith "impossible"
+    | TVar id -> id
+    | _ -> raise (TypeError "internal error: expected type variable for option")
   in
   let option_a = TCon ("option", [ a ]) in
   let option_ctors =
@@ -383,6 +396,7 @@ let tc_state = ref initial_tc_state
 let reset () = tc_state := initial_tc_state
 
 let typecheck_toplevel tl =
+  subst_ref := TyVarMap.empty;
   try
     match check_toplevel !tc_state tl with
     | Ok new_state ->
@@ -417,8 +431,7 @@ let rec string_of_type = function
   | TCon (name, []) -> name
   | TCon (name, ts) ->
     Printf.sprintf "%s(%s)" name (String.concat ", " (List.map string_of_type ts))
-  | TVar { contents = Link t } -> string_of_type t
-  | TVar { contents = Unbound id } ->
+  | TVar id ->
     let rec id_to_str n =
       let letter = String.make 1 (Char.chr (97 + (n mod 26))) in
       if n < 26 then "'" ^ letter else "{" ^ id_to_str ((n / 26) - 1) ^ letter

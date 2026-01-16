@@ -8,6 +8,8 @@
 
 open Ast
 
+type tyvar = int
+
 type typ =
   | TInt
   | TBool
@@ -15,11 +17,7 @@ type typ =
   | TFun of typ * typ
   | TTuple of typ list
   | TCon of string * typ list
-  | TVar of tvar ref
-
-and tvar =
-  | Unbound of int
-  | Link of typ
+  | TVar of tyvar
 
 (* Полиморфная схема типов (нужна для сигнатуры infer) *)
 type scheme = Forall of int list * typ
