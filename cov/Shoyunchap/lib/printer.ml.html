@@ -208,76 +208,76 @@ open Ast
 
 (** constants **)
 let string_of_const = function
-  | <span data-count="3122">I</span>nt n -&gt; string_of_int n
-  | <span data-count="904">U</span>nit -&gt; "()"
+  | <span data-count="3310">I</span>nt n -&gt; string_of_int n
+  | <span data-count="892">U</span>nit -&gt; "()"
 ;;
 
 (** binary operations **)
 let string_of_op = function
-  | <span data-count="151">O</span>pAdd -&gt; "+"
-  | <span data-count="140">O</span>pSub -&gt; "-"
-  | <span data-count="159">O</span>pMul -&gt; "*"
-  | <span data-count="152">O</span>pDiv -&gt; "/"
-  | <span data-count="132">O</span>pEq -&gt; "="
-  | <span data-count="144">O</span>pGt -&gt; "&gt;"
-  | <span data-count="164">O</span>pLt -&gt; "&lt;"
-  | <span data-count="164">O</span>pGte -&gt; "&gt;="
-  | <span data-count="136">O</span>pLte -&gt; "&lt;="
+  | <span data-count="171">O</span>pAdd -&gt; "+"
+  | <span data-count="148">O</span>pSub -&gt; "-"
+  | <span data-count="187">O</span>pMul -&gt; "*"
+  | <span data-count="148">O</span>pDiv -&gt; "/"
+  | <span data-count="160">O</span>pEq -&gt; "="
+  | <span data-count="160">O</span>pGt -&gt; "&gt;"
+  | <span data-count="104">O</span>pLt -&gt; "&lt;"
+  | <span data-count="168">O</span>pGte -&gt; "&gt;="
+  | <span data-count="140">O</span>pLte -&gt; "&lt;="
 ;;
 
 (** Gather arguments of nested fun x -&gt; fun y -&gt; ...
     example input: ("x", Fun ("y", App (Var "f", Var "y"))))
     ([x y], App (Var "f", Var "y")) *)
 let rec collect_fun args = function
-  | <span data-count="180">F</span>un (x, body) -&gt; collect_fun (x :: args) body
-  | <span data-count="1803">e</span> -&gt; List.re<span data-count="1803">v</span> args, e
+  | <span data-count="204">F</span>un (x, body) -&gt; collect_fun (x :: args) body
+  | <span data-count="1971">e</span> -&gt; List.re<span data-count="1971">v</span> args, e
 ;;
 
 let is_atomic = function
-  | <span data-count="364">C</span>onst _ | <span data-count="355">V</span>ar _ -&gt; true
-  | <span data-count="472">_</span> -&gt; false
+  | <span data-count="360">C</span>onst _ | <span data-count="367">V</span>ar _ -&gt; true
+  | <span data-count="504">_</span> -&gt; false
 ;;
 
-let paren_if cond s = <span data-count="1191">i</span>f cond then <span data-count="472">"</span>(" ^ s ^ ")" else <span data-count="719">s</span>
+let paren_if cond s = <span data-count="1231">i</span>f cond then <span data-count="504">"</span>(" ^ s ^ ")" else <span data-count="727">s</span>
 
 let rec print_expr (e : expression) : string =
-  <span data-count="15145">m</span>atch e with
-  | <span data-count="4026">C</span>onst c -&gt; string_of_const c
-  | <span data-count="4089">V</span>ar name -&gt; name
-  | <span data-count="1342">B</span>inOp (op, l, r) -&gt;
-    Printf.sprintf "(%s %s %s)" (print_exp<span data-count="1342">r</span> l) (string_of_o<span data-count="1342">p</span> op) (print_exp<span data-count="1342">r</span> r)
-  | <span data-count="200">I</span>f (cond, thn, None) -&gt;
-    Printf.sprintf "(if %s then %s)" (print_exp<span data-count="200">r</span> cond) (print_exp<span data-count="200">r</span> thn)
-  | <span data-count="1127">I</span>f (cond, thn, Some els) -&gt;
+  <span data-count="15709">m</span>atch e with
+  | <span data-count="4202">C</span>onst c -&gt; string_of_const c
+  | <span data-count="4173">V</span>ar name -&gt; name
+  | <span data-count="1386">B</span>inOp (op, l, r) -&gt;
+    Printf.sprintf "(%s %s %s)" (print_exp<span data-count="1386">r</span> l) (string_of_o<span data-count="1386">p</span> op) (print_exp<span data-count="1386">r</span> r)
+  | <span data-count="216">I</span>f (cond, thn, None) -&gt;
+    Printf.sprintf "(if %s then %s)" (print_exp<span data-count="216">r</span> cond) (print_exp<span data-count="216">r</span> thn)
+  | <span data-count="1223">I</span>f (cond, thn, Some els) -&gt;
     Printf.sprintf
       "(if %s then %s else %s)"
-      (print_exp<span data-count="1127">r</span> cond)
-      (print_exp<span data-count="1127">r</span> thn)
-      (print_exp<span data-count="1127">r</span> els)
-  | <span data-count="260">L</span>et (_scope, kind, name, bound, None) -&gt;
+      (print_exp<span data-count="1223">r</span> cond)
+      (print_exp<span data-count="1223">r</span> thn)
+      (print_exp<span data-count="1223">r</span> els)
+  | <span data-count="232">L</span>et (_scope, kind, name, bound, None) -&gt;
     let kwd =
       match kind with
-      | <span data-count="140">N</span>onRec -&gt; "let"
-      | <span data-count="120">R</span>ec -&gt; "let rec"
+      | <span data-count="116">N</span>onRec -&gt; "let"
+      | <span data-count="116">R</span>ec -&gt; "let rec"
     in
-    Printf.sprintf "(%s %s = %s)" kwd name (print_exp<span data-count="260">r</span> bound)
-  | <span data-count="1107">L</span>et (_scope, kind, name, bound, Some body) -&gt;
+    Printf.sprintf "(%s %s = %s)" kwd name (print_exp<span data-count="232">r</span> bound)
+  | <span data-count="1075">L</span>et (_scope, kind, name, bound, Some body) -&gt;
     let kwd =
       match kind with
-      | <span data-count="563">N</span>onRec -&gt; "let"
-      | <span data-count="544">R</span>ec -&gt; "let rec"
+      | <span data-count="491">N</span>onRec -&gt; "let"
+      | <span data-count="584">R</span>ec -&gt; "let rec"
     in
-    Printf.sprintf "(%s %s = %s in %s)" kwd name (print_exp<span data-count="1107">r</span> bound) (print_exp<span data-count="1107">r</span> body)
-  | <span data-count="1803">F</span>un (x, body) -&gt;
+    Printf.sprintf "(%s %s = %s in %s)" kwd name (print_exp<span data-count="1075">r</span> bound) (print_exp<span data-count="1075">r</span> body)
+  | <span data-count="1971">F</span>un (x, body) -&gt;
     let args, core = collect_fun [ x ] body in
-    <span data-count="1803">l</span>et args_s = String.concat " " args in
-    <span data-count="1803">P</span>rintf.sprintf "(fun %s -&gt; %s)" args_s (print_exp<span data-count="1803">r</span> core)
-  | <span data-count="1191">A</span>pp (f, arg) -&gt;
-    let head = paren_if (not (is_atomi<span data-count="1191">c</span> f)) (print_exp<span data-count="1191">r</span> f) in
-    <span data-count="1191">l</span>et arg_s =
+    <span data-count="1971">l</span>et args_s = String.concat " " args in
+    <span data-count="1971">P</span>rintf.sprintf "(fun %s -&gt; %s)" args_s (print_exp<span data-count="1971">r</span> core)
+  | <span data-count="1231">A</span>pp (f, arg) -&gt;
+    let head = paren_if (not (is_atomi<span data-count="1231">c</span> f)) (print_exp<span data-count="1231">r</span> f) in
+    <span data-count="1231">l</span>et arg_s =
       match arg with
-      | <span data-count="339">C</span>onst _ | <span data-count="356">V</span>ar _ -&gt; print_exp<span data-count="695">r</span> arg
-      | <span data-count="496">_</span> -&gt; "(" ^ print_exp<span data-count="496">r</span> arg ^ ")"
+      | <span data-count="387">C</span>onst _ | <span data-count="352">V</span>ar _ -&gt; print_exp<span data-count="739">r</span> arg
+      | <span data-count="492">_</span> -&gt; "(" ^ print_exp<span data-count="492">r</span> arg ^ ")"
     in
     head ^ " " ^ arg_s
 ;;
