@@ -15,7 +15,8 @@ in the dune file
   Evaluated result: (λ _ . x)
   $ ../bin/REPL.exe -dparsetree <<EOF
   > garbage242
-  Error: : end_of_input
+  Parsed result: (Var garbage242)
+  Evaluated result: garbage242
 
 
 

@@ -12,10 +12,28 @@ let is_space = function
 
 let spaces = skip_while is_space
 
+let is_keyword = function
+  | "let" | "rec" | "in" | "fun" | "if" | "then" | "else" -> true
+  | _ -> false
+;;
+
+let first_letter = function
+  | 'a' .. 'z' | 'A' .. 'Z' -> true
+  | _ -> false
+;;
+
+let not_first_letter = function
+  | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' -> true
+  | _ -> false
+;;
+
 let varname =
-  satisfy (function
-    | 'a' .. 'z' -> true
-    | _ -> false)
+  satisfy first_letter
+  >>= fun first_c ->
+  take_while not_first_letter
+  >>= fun rest ->
+  let name = String.make 1 first_c ^ rest in
+  if is_keyword name then fail "keyword used as an identifier" else return name
 ;;
 
 let is_digit = function
@@ -52,9 +70,8 @@ let parse_lam =
         ; ((string "λ" <|> string "\\") *> spaces *> varname
            <* spaces
            <* (return () <* char '.' <|> string "->" *> return ())
-           >>= fun var ->
-           pack.apps pack >>= fun b -> return (Ast.Abs (String.make 1 var, b)))
-        ; (varname <* spaces >>= fun c -> return (Ast.Var (String.make 1 c)))
+           >>= fun var -> pack.apps pack >>= fun b -> return (Ast.Abs (var, b)))
+        ; (varname <* spaces >>= fun var -> return (Ast.Var var))
         ; (number <* spaces >>= fun n -> return (Ast.Int n))
         ])
   in
