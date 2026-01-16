@@ -2,25 +2,29 @@
  (name parser_tests)
  (modules parser_tests)
  (libraries lambda_lib)
- (instrumentation (backend bisect_ppx)))
+ (instrumentation
+  (backend bisect_ppx)))
 
 (test
  (name printer_tests)
  (modules printer_tests)
  (libraries lambda_lib)
- (instrumentation (backend bisect_ppx)))
+ (instrumentation
+  (backend bisect_ppx)))
 
 (test
  (name parser_prop_tests)
  (modules parser_prop_tests)
  (libraries lambda_lib qcheck)
- (instrumentation (backend bisect_ppx)))
+ (instrumentation
+  (backend bisect_ppx)))
 
 (executable
  (name interpret_cli)
  (modules interpret_cli)
  (libraries lambda_lib)
- (instrumentation (backend bisect_ppx)))
+ (instrumentation
+  (backend bisect_ppx)))
 
 (cram
  (deps interpret_cli.exe))
