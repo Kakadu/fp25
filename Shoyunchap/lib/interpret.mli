@@ -11,6 +11,8 @@ type value =
   | ClosureVal of name * expression * env
   | BuiltinVal of (value -> value eval)
 
+(** Mutable cells are kept so `let rec` and `fix` can allocate a placeholder
+    before evaluating the RHS and later update it. *)
 and env = (name * value ref) list
 
 and eval_error =

@@ -1,8 +1,8 @@
-[@@@ocaml.text "/*"]
-
 (** Copyright 2021-2025, Kakadu and contributors **)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later **)
+
+[@@@ocaml.text "/*"]
 
 (** Core AST for the miniML language.
 
@@ -15,15 +15,15 @@
 (** Binding scope: whether a `let` lives at the top level (no body) or inside an
     expression (has body). **)
 type var_scope =
-  | LocalVar
-  | GlobalVar
+  | LocalVar (** Bound inside an expression (has a body). **)
+  | GlobalVar (** Top-level binding without a body. **)
 [@@deriving show { with_path = false }]
 
 (** Primitive constants. Only ints carry payload; `Unit` is a placeholder for
     statements and unused branches. **)
 type const =
-  | Int of int
-  | Unit
+  | Int of int (** Integer literal. **)
+  | Unit (** Placeholder for statements/empty value. **)
 [@@deriving show { with_path = false }]
 
 (** Variable name. Patterns are not supported beyond bare identifiers. **)

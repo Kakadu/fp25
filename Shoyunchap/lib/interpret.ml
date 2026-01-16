@@ -11,6 +11,9 @@ type value =
   | BuiltinVal of (value -> value eval)
 
 and env = (name * value ref) list
+(* Mutable cells let us model recursive bindings by creating a placeholder
+   before evaluating the body and then updating it, mirroring the operational
+   semantics of `let rec`. *)
 
 and eval_error =
   | Unbound_variable of name
@@ -160,6 +163,7 @@ and eval (env : env) (e : expression) : value eval =
        (* recursive binding *)
        let cell = ref UnitVal in
        let env' = (name, cell) :: env in
+       (* Start with a dummy cell so the body of rhs can refer to itself. *)
        let* v_rhs = eval env' rhs in
        cell := v_rhs;
        (match body_opt with
@@ -170,8 +174,7 @@ and eval (env : env) (e : expression) : value eval =
 (* builtin fix *)
 let builtin_fix : value =
   BuiltinVal
-    (fun f ->
-      match f with
+    (function
       | ClosureVal (self_name, Fun (arg_name, body), env_f) ->
         let rec v_self = ClosureVal (arg_name, body, (self_name, ref v_self) :: env_f) in
         return v_self
