@@ -11,6 +11,7 @@ val is_free_in : string -> string Ast.t -> bool
 
 (** Smart constructors *)
 
+val int_cons : int -> 'a Ast.t
 val var : 'a -> 'a Ast.t
 val abs : 'a -> 'a Ast.t -> 'a Ast.t
 val app : 'a Ast.t -> 'a Ast.t -> 'a Ast.t

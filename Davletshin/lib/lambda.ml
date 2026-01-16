@@ -7,12 +7,14 @@ open Base
 open Utils
 
 (* Smart constructors *)
+let int_cons n = Int n
 let var x = Var x
 let abs x y = Abs (x, y)
 let app x y = App (x, y)
 
 let replace_name x ~by =
   let rec helper = function
+    | Int n -> Int n
     | Var y when String.equal x y -> Var by
     | Var t -> Var t
     | App (l, r) -> App (helper l, helper r)
@@ -29,6 +31,7 @@ let rec next_name s old =
 (*  The call [subst x ~by:v e] means `[x/v]e` or `e[v -> x]` *)
 let subst x ~by:v =
   let rec helper = function
+    | Int n -> Int n
     | Var y when String.equal y x -> v
     | Var y -> Var y
     | App (l, r) -> app (helper l) (helper r)
@@ -43,22 +46,25 @@ let subst x ~by:v =
 ;;
 
 type strat =
-  { on_var : strat -> name -> string Ast.t
+  { on_int : strat -> int -> string Ast.t
+  ; on_var : strat -> name -> string Ast.t
   ; on_abs : strat -> name -> string Ast.t -> string Ast.t
   ; on_app : strat -> string Ast.t -> string Ast.t -> string Ast.t
   }
 
 let apply_strat st = function
+  | Int n -> st.on_int st n
   | Var name -> st.on_var st name
   | Abs (x, b) -> st.on_abs st x b
   | App (l, r) -> st.on_app st l r
 ;;
 
 let without_strat =
+  let on_int _ = int_cons in
   let on_var _ = var in
   let on_abs _ = abs in
   let on_app _ = app in
-  { on_var; on_abs; on_app }
+  { on_int; on_var; on_abs; on_app }
 ;;
 
 let cbn_strat =

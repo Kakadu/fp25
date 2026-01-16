@@ -17,6 +17,7 @@ let pp ?(compact = true) =
     if is_free_in x t || not compact then fprintf fmt "%s" x else fprintf fmt "_"
   in
   let rec pp fmt = function
+    | Int n -> Format.fprintf fmt "%d" n
     | Var s -> Format.fprintf fmt "%s" s
     | App (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | Abs (x, Abs (y, Var z)) when x = z && y <> z && compact ->

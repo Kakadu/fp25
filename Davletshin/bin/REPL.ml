@@ -21,6 +21,7 @@ include struct
 
   let ao_small_step_strat =
     let rec helper = function
+      | Int _ as l -> fin l
       | Var _ as l -> fin l
       | Abs (x, b) ->
         (match helper b with
@@ -45,7 +46,8 @@ include struct
     let on_app _ f arg = loop (app f arg) in
     let on_abs _ f x = loop (abs f x) in
     let on_var _ x = loop (var x) in
-    { Lambda.on_var; on_abs; on_app }
+    let on_int _ n = loop (int_cons n) in
+    { Lambda.on_int; Lambda.on_var; on_abs; on_app }
   ;;
 end
 

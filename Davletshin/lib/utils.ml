@@ -14,6 +14,7 @@ let list_remove x = List.filter ~f:(fun a -> not (String.equal a x))
 
 let free_vars =
   let rec helper acc = function
+    | Int _ -> acc
     | Var s -> s :: acc
     | Abs (s, l) -> acc @ list_remove s (helper [] l)
     | App (l, r) -> helper (helper acc r) l
@@ -22,6 +23,7 @@ let free_vars =
 ;;
 
 let is_free_in x term = List.mem (free_vars term) x ~equal:String.equal
+let int_cons n = Int n
 let var x = Var x
 let abs x l = Abs (x, l)
 let app l r = App (l, r)

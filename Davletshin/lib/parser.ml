@@ -18,6 +18,16 @@ let varname =
     | _ -> false)
 ;;
 
+let is_digit = function
+  | '0' .. '9' -> true
+  | _ -> false
+;;
+
+let number =
+  let integer = take_while1 is_digit >>| int_of_string in
+  char '-' >>= (fun _ -> integer >>= fun n -> return (-n)) <|> integer
+;;
+
 let conde = function
   | [] -> fail "empty conde"
   | h :: tl -> List.fold_left ( <|> ) h tl
@@ -45,6 +55,7 @@ let parse_lam =
            >>= fun var ->
            pack.apps pack >>= fun b -> return (Ast.Abs (String.make 1 var, b)))
         ; (varname <* spaces >>= fun c -> return (Ast.Var (String.make 1 c)))
+        ; (number <* spaces >>= fun n -> return (Ast.Int n))
         ])
   in
   let apps pack =
