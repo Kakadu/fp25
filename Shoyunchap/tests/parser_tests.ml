@@ -40,37 +40,40 @@ let base_success =
 let generated_success =
   let open Printf in
   List.init 120 (fun i ->
-      let n = i + 1 in
-      [ sprintf "%d + %d" n (n + 1)
-      ; sprintf "%d - %d" (n * 2) n
-      ; sprintf "%d * %d" n (n + 2)
-      ; sprintf "%d / %d" (n * (n + 1)) (n + 1)
-      ])
+    let n = i + 1 in
+    [ sprintf "%d + %d" n (n + 1)
+    ; sprintf "%d - %d" (n * 2) n
+    ; sprintf "%d * %d" n (n + 2)
+    ; sprintf "%d / %d" (n * (n + 1)) (n + 1)
+    ])
   |> List.flatten
 ;;
 
 let function_success =
   let open Printf in
   List.init 30 (fun i ->
-      let n = i + 1 in
-      [ sprintf "fun x -> x + %d" n
-      ; sprintf "fun a b -> a * %d + b" n
-      ; sprintf "let f x = x + %d in f %d" n (n * 2)
-      ; sprintf "let rec f n = if n = 0 then %d else f (n - 1) in f %d" n n
-      ; sprintf "let rec g x y = if x = 0 then y else g (x - 1) (y + %d) in g %d %d" n n
-          (n * 2)
-      ])
+    let n = i + 1 in
+    [ sprintf "fun x -> x + %d" n
+    ; sprintf "fun a b -> a * %d + b" n
+    ; sprintf "let f x = x + %d in f %d" n (n * 2)
+    ; sprintf "let rec f n = if n = 0 then %d else f (n - 1) in f %d" n n
+    ; sprintf
+        "let rec g x y = if x = 0 then y else g (x - 1) (y + %d) in g %d %d"
+        n
+        n
+        (n * 2)
+    ])
   |> List.flatten
 ;;
 
 let let_chains =
   let open Printf in
   List.init 40 (fun i ->
-      let n = i + 1 in
-      [ sprintf "let x = %d in x + %d" n n
-      ; sprintf "let x = %d in let y = %d in x * y" n (n + 1)
-      ; sprintf "let x = %d in let y = x + %d in y * x" n (n + 2)
-      ])
+    let n = i + 1 in
+    [ sprintf "let x = %d in x + %d" n n
+    ; sprintf "let x = %d in let y = %d in x * y" n (n + 1)
+    ; sprintf "let x = %d in let y = x + %d in y * x" n (n + 2)
+    ])
   |> List.flatten
 ;;
 
