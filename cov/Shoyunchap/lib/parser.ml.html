@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>parser.ml &mdash; Coverage report</title>
-    <meta name="description" content="94.55% coverage in lib/parser.ml">
+    <meta name="description" content="95.76% coverage in lib/parser.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,13 +15,12 @@
           <span class="dirname">lib/</span>parser.ml
         </a>
       </h1>
-      <h2>94.55%</h2>
+      <h2>95.76%</h2>
     </div>
     <div id="navbar">
       <span class="some-visited" style="top:6.72%"></span>
       <span class="some-visited" style="top:13.45%"></span>
       <span class="some-visited" style="top:15.97%"></span>
-      <span class="unvisited" style="bottom:0.00%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -263,7 +262,7 @@
 <a id="L235"></a><span class="visited"> </span>
 <a id="L236"></a><span > </span>
 <a id="L237"></a><span > </span>
-<a id="L238"></a><span class="unvisited"> </span>
+<a id="L238"></a><span class="visited"> </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -522,35 +521,35 @@ type error = [ `Parsing_error of string ]
 
 (* spaces and lexis *)
 let is_space = function
-  | <span data-count="3190357">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\n' | <span data-count="0">'</span>\r' -&gt; true
-  | <span data-count="5795666">_</span> -&gt; false
+  | <span data-count="2250846">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\n' | <span data-count="0">'</span>\r' -&gt; true
+  | <span data-count="4324539">_</span> -&gt; false
 ;;
 
-let spaces = skip_whil<span data-count="3">e</span> is_space
-let spaces1 = satisf<span data-count="3">y</span> is_space *<span data-count="3">&gt;</span> spaces
-let lexeme p = <span data-count="92745">s</span>paces *&gt; p
+let spaces = skip_whil<span data-count="4">e</span> is_space
+let spaces1 = satisf<span data-count="4">y</span> is_space *<span data-count="4">&gt;</span> spaces
+let lexeme p = <span data-count="61210">s</span>paces *&gt; p
 
 (* parser for one specific character c *)
-let sym c = <span data-count="21410">l</span>exeme (cha<span data-count="21410">r</span> c)
+let sym c = <span data-count="18254">l</span>exeme (cha<span data-count="18254">r</span> c)
 
 (* parser for one specific key word s *)
-let kwd s = <span data-count="71329">l</span>exeme (strin<span data-count="71329">g</span> s)
+let kwd s = <span data-count="42948">l</span>exeme (strin<span data-count="42948">g</span> s)
 
 (* predicate function for identifiers *)
 let is_ident_start = function
-  | <span data-count="349821">'</span>a' .. 'z' | <span data-count="0">'</span>A' .. 'Z' | <span data-count="0">'</span>_' -&gt; true
-  | <span data-count="205593">_</span> -&gt; false
+  | <span data-count="240671">'</span>a' .. 'z' | <span data-count="0">'</span>A' .. 'Z' | <span data-count="0">'</span>_' -&gt; true
+  | <span data-count="166604">_</span> -&gt; false
 ;;
 
 (* predicate functions for identifiers *)
 let is_ident_char = function
-  | <span data-count="158668">'</span>a' .. 'z' | <span data-count="0">'</span>A' .. 'Z' | <span data-count="0">'</span>_' | <span data-count="0">'</span>0' .. '9' -&gt; true
-  | <span data-count="349329">_</span> -&gt; false
+  | <span data-count="84264">'</span>a' .. 'z' | <span data-count="0">'</span>A' .. 'Z' | <span data-count="3">'</span>_' | <span data-count="0">'</span>0' .. '9' -&gt; true
+  | <span data-count="239874">_</span> -&gt; false
 ;;
 
 (* list of key words *)
 let keywords = [ "let"; "in"; "fun"; "rec"; "if"; "then"; "else"; "true"; "false" ]
-let is_keyword s = <span data-count="349821">L</span>ist.mem s keywords
+let is_keyword s = <span data-count="240671">L</span>ist.mem s keywords
 
 (*
    in parse case: "foo123"
@@ -560,64 +559,64 @@ let is_keyword s = <span data-count="349821">L</span>ist.mem s keywords
 let identifier : name Angstrom.t =
   let open Angstrom in
   let raw_ident =
-    let* first = satisf<span data-count="3">y</span> is_ident_start in
-    <span data-count="349821">l</span>et* rest = take_whil<span data-count="349821">e</span> is_ident_char in
-    <span data-count="349821">r</span>eturn (String.mak<span data-count="349821">e</span> 1 first ^ rest)
+    let* first = satisf<span data-count="4">y</span> is_ident_start in
+    <span data-count="240671">l</span>et* rest = take_whil<span data-count="240671">e</span> is_ident_char in
+    <span data-count="240671">r</span>eturn (String.mak<span data-count="240671">e</span> 1 first ^ rest)
   in
-  let* name = lexem<span data-count="3">e</span> raw_ident in
-  <span data-count="349821">i</span>f is_keyword name then <span data-count="63740">f</span>ail "keyword cannot be used as an identifier" else <span data-count="286081">r</span>eturn name
+  let* name = lexem<span data-count="4">e</span> raw_ident in
+  <span data-count="240671">i</span>f is_keyword name then <span data-count="38454">f</span>ail "keyword cannot be used as an identifier" else <span data-count="202217">r</span>eturn name
 ;;
 
 (* consts *)
 let is_digit = function
-  | <span data-count="130839">'</span>0' .. '9' -&gt; true
-  | <span data-count="552173">_</span> -&gt; false
+  | <span data-count="122165">'</span>0' .. '9' -&gt; true
+  | <span data-count="408823">_</span> -&gt; false
 ;;
 
 let integer : int Angstrom.t =
   let open Angstrom in
   spaces
-  *<span data-count="3">&gt;</span>
-  let* sign = optio<span data-count="3">n</span> 1 (cha<span data-count="3">r</span> '-' *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> (-1)) in
-  <span data-count="552733">l</span>et* digits = take_while<span data-count="552733">1</span> is_digit in
-  <span data-count="106229">r</span>eturn (sign * int_of_strin<span data-count="106229">g</span> digits)
+  *<span data-count="4">&gt;</span>
+  let* sign = optio<span data-count="4">n</span> 1 (cha<span data-count="4">r</span> '-' *<span data-count="4">&gt;</span> retur<span data-count="4">n</span> (-1)) in
+  <span data-count="410613">l</span>et* digits = take_while<span data-count="410613">1</span> is_digit in
+  <span data-count="100794">r</span>eturn (sign * int_of_strin<span data-count="100794">g</span> digits)
 ;;
 
 let const_int =
   let+ n = integer in
-  <span data-count="106229">C</span>onst (Int n)
+  <span data-count="100794">C</span>onst (Int n)
 ;;
 
-let const_unit = lexem<span data-count="3">e</span> (strin<span data-count="3">g</span> "()") *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> (Const Unit)
+let const_unit = lexem<span data-count="4">e</span> (strin<span data-count="4">g</span> "()") *<span data-count="4">&gt;</span> retur<span data-count="4">n</span> (Const Unit)
 
 let const_bool =
-  kw<span data-count="3">d</span> "true" *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> (Const (Int 1)) &lt;|<span data-count="3">&gt;</span> kw<span data-count="3">d</span> "false" *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> (Const (Int 0))
+  kw<span data-count="4">d</span> "true" *<span data-count="4">&gt;</span> retur<span data-count="4">n</span> (Const (Int 1)) &lt;|<span data-count="4">&gt;</span> kw<span data-count="4">d</span> "false" *<span data-count="4">&gt;</span> retur<span data-count="4">n</span> (Const (Int 0))
 ;;
 
 (* variables *)
 let var_expr : expression Angstrom.t =
   let+ x = identifier in
-  <span data-count="198609">V</span>ar x
+  <span data-count="123080">V</span>ar x
 ;;
 
-let parens p = <span data-count="3">s</span>y<span data-count="3">m</span> '(' *<span data-count="3">&gt;</span> p &lt;* sy<span data-count="3">m</span> ')'
+let parens p = <span data-count="4">s</span>y<span data-count="4">m</span> '(' *<span data-count="4">&gt;</span> p &lt;* sy<span data-count="4">m</span> ')'
 
 (* operations *)
 
-let parse_op_add = sy<span data-count="3">m</span> '+' *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> OpAdd
-let parse_op_sub = sy<span data-count="3">m</span> '-' *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> OpSub
-let parse_op_mul = sy<span data-count="3">m</span> '*' *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> OpMul
-let parse_op_div = sy<span data-count="3">m</span> '/' *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> OpDiv
+let parse_op_add = sy<span data-count="4">m</span> '+' *<span data-count="4">&gt;</span> retur<span data-count="4">n</span> OpAdd
+let parse_op_sub = sy<span data-count="4">m</span> '-' *<span data-count="4">&gt;</span> retur<span data-count="4">n</span> OpSub
+let parse_op_mul = sy<span data-count="4">m</span> '*' *<span data-count="4">&gt;</span> retur<span data-count="4">n</span> OpMul
+let parse_op_div = sy<span data-count="4">m</span> '/' *<span data-count="4">&gt;</span> retur<span data-count="4">n</span> OpDiv
 
 let parse_cmp_op : operation_id Angstrom.t =
   let open Angstrom in
   spaces
-  *<span data-count="3">&gt;</span> choic<span data-count="3">e</span>
-       [ strin<span data-count="3">g</span> "&lt;=" *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> OpLte
-       ; strin<span data-count="3">g</span> "&gt;=" *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> OpGte
-       ; strin<span data-count="3">g</span> "&gt;" *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> OpGt
-       ; strin<span data-count="3">g</span> "&lt;" *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> OpLt
-       ; strin<span data-count="3">g</span> "=" *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> OpEq
+  *<span data-count="4">&gt;</span> choic<span data-count="4">e</span>
+       [ strin<span data-count="4">g</span> "&lt;=" *<span data-count="4">&gt;</span> retur<span data-count="4">n</span> OpLte
+       ; strin<span data-count="4">g</span> "&gt;=" *<span data-count="4">&gt;</span> retur<span data-count="4">n</span> OpGte
+       ; strin<span data-count="4">g</span> "&gt;" *<span data-count="4">&gt;</span> retur<span data-count="4">n</span> OpGt
+       ; strin<span data-count="4">g</span> "&lt;" *<span data-count="4">&gt;</span> retur<span data-count="4">n</span> OpLt
+       ; strin<span data-count="4">g</span> "=" *<span data-count="4">&gt;</span> retur<span data-count="4">n</span> OpEq
        ]
 ;;
 
@@ -626,7 +625,7 @@ let parse_cmp_op : operation_id Angstrom.t =
    with args : [x, y, z]
 *)
 let curry_fun (args : name list) (body : expression) : expression =
-  <span data-count="86287">L</span>ist.fold_right (fun x e -&gt; <span data-count="65960">F</span>un (x, e)) args body
+  <span data-count="76780">L</span>ist.fold_right (fun x e -&gt; <span data-count="60787">F</span>un (x, e)) args body
 ;;
 
 (* left-associative chain combinator
@@ -634,56 +633,56 @@ let curry_fun (args : name list) (body : expression) : expression =
    with "1+2+3"
 *)
 let chainl1 p op =
-  <span data-count="6">l</span>et open Angstrom in
+  <span data-count="8">l</span>et open Angstrom in
   let rec loop acc =
-    <span data-count="492576">(</span>let* apply = op in
-     <span data-count="7144">l</span>et* operand = p in
-     <span data-count="7123">l</span>oop (appl<span data-count="7123">y</span> acc operand))
-    &lt;|&gt; retur<span data-count="492576">n</span> acc
+    <span data-count="373739">(</span>let* apply = op in
+     <span data-count="6152">l</span>et* operand = p in
+     <span data-count="6130">l</span>oop (appl<span data-count="6130">y</span> acc operand))
+    &lt;|&gt; retur<span data-count="373739">n</span> acc
   in
   let* first = p in
-  <span data-count="485453">l</span>oop first
+  <span data-count="367609">l</span>oop first
 ;;
 
 (* basic grammar levels *)
 let expr : expression Angstrom.t =
-  fi<span data-count="3">x</span> (fun expr -&gt;
+  fi<span data-count="4">x</span> (fun expr -&gt;
     (* fun x y -&gt; e *)
-    <span data-count="3">l</span>et lambda =
-      let args = kw<span data-count="3">d</span> "fun" *<span data-count="3">&gt;</span> spaces *<span data-count="3">&gt;</span> many<span data-count="3">1</span> identifier &lt;<span data-count="3">*</span> spaces &lt;* kw<span data-count="3">d</span> "-&gt;" in
-      <span data-count="3">l</span>et* xs = args in
-      <span data-count="64976">l</span>et+ body = expr in
-      <span data-count="64916">c</span>urry_fun xs body
+    <span data-count="4">l</span>et lambda =
+      let args = kw<span data-count="4">d</span> "fun" *<span data-count="4">&gt;</span> spaces *<span data-count="4">&gt;</span> many<span data-count="4">1</span> identifier &lt;<span data-count="4">*</span> spaces &lt;* kw<span data-count="4">d</span> "-&gt;" in
+      <span data-count="4">l</span>et* xs = args in
+      <span data-count="58628">l</span>et+ body = expr in
+      <span data-count="58570">c</span>urry_fun xs body
     in
     (* basic atom without application *)
     let atom0 =
-      choice [ const_unit; const_bool; const_int; lambda; var_expr; paren<span data-count="3">s</span> expr ]
+      choice [ const_unit; const_bool; const_int; lambda; var_expr; paren<span data-count="4">s</span> expr ]
     in
     (* application: f a b c
        example input: f x y
        output: App (App (Var "f", Var "x"), Var "y") *)
-    <span data-count="3">l</span>et application =
+    <span data-count="4">l</span>et application =
       let open Angstrom in
       let* f = atom0 in
-      <span data-count="248627">l</span>et+ args = many<span data-count="248627">1</span> (spaces1 *<span data-count="248627">&gt;</span> atom0) in
-      <span data-count="6497">L</span>ist.fold_left (fun acc a -&gt; <span data-count="6497">A</span>pp (acc, a)) f args
+      <span data-count="188273">l</span>et+ args = many<span data-count="188273">1</span> (spaces1 *<span data-count="188273">&gt;</span> atom0) in
+      <span data-count="9861">L</span>ist.fold_left (fun acc a -&gt; <span data-count="9925">A</span>pp (acc, a)) f args
     in
     let atom = application &lt;|&gt; atom0 in
     (* level * and / *)
-    <span data-count="3">l</span>et mul_div =
+    <span data-count="4">l</span>et mul_div =
       let op =
-        let+ op = parse_op_mul &lt;|<span data-count="3">&gt;</span> parse_op_div in
-        <span data-count="4678">f</span>un l r -&gt; <span data-count="4678">B</span>inOp (op, l, r)
+        let+ op = parse_op_mul &lt;|<span data-count="4">&gt;</span> parse_op_div in
+        <span data-count="2807">f</span>un l r -&gt; <span data-count="2807">B</span>inOp (op, l, r)
       in
-      chainl<span data-count="3">1</span> atom op
+      chainl<span data-count="4">1</span> atom op
     in
     (* level + and - *)
     let add_sub =
       let op =
-        let+ op = parse_op_add &lt;|<span data-count="3">&gt;</span> parse_op_sub in
-        <span data-count="2466">f</span>un l r -&gt; <span data-count="2445">B</span>inOp (op, l, r)
+        let+ op = parse_op_add &lt;|<span data-count="4">&gt;</span> parse_op_sub in
+        <span data-count="3345">f</span>un l r -&gt; <span data-count="3323">B</span>inOp (op, l, r)
       in
-      chainl<span data-count="3">1</span> mul_div op
+      chainl<span data-count="4">1</span> mul_div op
     in
     (* comparisons we allow only one comparison in the chain:
        a + b &lt; c - d
@@ -691,44 +690,44 @@ let expr : expression Angstrom.t =
     let cmp_level =
       let open Angstrom in
       let* left = add_sub in
-      <span data-count="230698">o</span>ption
+      <span data-count="174587">o</span>ption
         left
         (let* op = parse_cmp_op in
-         <span data-count="10866">l</span>et+ right = add_sub in
-         <span data-count="10806">B</span>inOp (op, left, right))
+         <span data-count="7610">l</span>et+ right = add_sub in
+         <span data-count="7556">B</span>inOp (op, left, right))
     in
     (* if ... then ... else ... *)
     let if_expr =
       let open Angstrom in
-      let* cond = kw<span data-count="3">d</span> "if" *<span data-count="3">&gt;</span> cmp_level in
-      <span data-count="24979">l</span>et* thn = kw<span data-count="24979">d</span> "then" *<span data-count="24979">&gt;</span> expr in
-      <span data-count="24958">l</span>et* els =
-        optio<span data-count="24958">n</span>
+      let* cond = kw<span data-count="4">d</span> "if" *<span data-count="4">&gt;</span> cmp_level in
+      <span data-count="12364">l</span>et* thn = kw<span data-count="12364">d</span> "then" *<span data-count="12364">&gt;</span> expr in
+      <span data-count="12346">l</span>et* els =
+        optio<span data-count="12346">n</span>
           None
-          (let+ e = kw<span data-count="24958">d</span> "else" *<span data-count="24958">&gt;</span> expr in
-           <span data-count="22378">S</span>ome e)
+          (let+ e = kw<span data-count="12346">d</span> "else" *<span data-count="12346">&gt;</span> expr in
+           <span data-count="10359">S</span>ome e)
       in
-      <span data-count="24958">r</span>eturn (If (cond, thn, els))
+      <span data-count="12346">r</span>eturn (If (cond, thn, els))
     in
     (* let / let rec *)
     let let_expr =
       let open Angstrom in
-      let* kind = kw<span data-count="3">d</span> "let" *<span data-count="3">&gt;</span> spaces *<span data-count="3">&gt;</span> optio<span data-count="3">n</span> NonRec (kw<span data-count="3">d</span> "rec" *<span data-count="3">&gt;</span> retur<span data-count="3">n</span> Rec) in
-      <span data-count="21434">l</span>et* name = identifier in
+      let* kind = kw<span data-count="4">d</span> "let" *<span data-count="4">&gt;</span> spaces *<span data-count="4">&gt;</span> optio<span data-count="4">n</span> NonRec (kw<span data-count="4">d</span> "rec" *<span data-count="4">&gt;</span> retur<span data-count="4">n</span> Rec) in
+      <span data-count="18278">l</span>et* name = identifier in
       (* function parameters: let f x y = e *)
-      <span data-count="21392">l</span>et* args = man<span data-count="21392">y</span> identifier in
-      <span data-count="21392">l</span>et* bound = sy<span data-count="21392">m</span> '=' *<span data-count="21392">&gt;</span> expr in
-      <span data-count="21371">l</span>et value = curry_fun args bound in
-      <span data-count="21371">l</span>et* body_opt =
-        optio<span data-count="21371">n</span>
+      <span data-count="18230">l</span>et* args = man<span data-count="18230">y</span> identifier in
+      <span data-count="18230">l</span>et* bound = sy<span data-count="18230">m</span> '=' *<span data-count="18230">&gt;</span> expr in
+      <span data-count="18210">l</span>et value = curry_fun args bound in
+      <span data-count="18210">l</span>et* body_opt =
+        optio<span data-count="18210">n</span>
           None
-          (let+ body = kw<span data-count="21371">d</span> "in" *<span data-count="21371">&gt;</span> expr in
-           <span data-count="16067">S</span>ome body)
+          (let+ body = kw<span data-count="18210">d</span> "in" *<span data-count="18210">&gt;</span> expr in
+           <span data-count="15368">S</span>ome body)
       in
-      <span data-count="21371">l</span>et scope =
+      <span data-count="18210">l</span>et scope =
         match body_opt with
-        | <span data-count="5304">N</span>one -&gt; GlobalVar
-        | <span data-count="16067">S</span>ome _ -&gt; LocalVar
+        | <span data-count="2842">N</span>one -&gt; GlobalVar
+        | <span data-count="15368">S</span>ome _ -&gt; LocalVar
       in
       return (Let (scope, kind, name, value, body_opt))
     in
@@ -739,12 +738,12 @@ let expr : expression Angstrom.t =
 (* wrapper over angshtorm *)
 
 let parse (s : string) : (expression, error) result =
-  <span data-count="1716">m</span>atch parse_string ~consume:Consume.All expr s with
-  | <span data-count="1516">O</span>k e -&gt; Ok e
-  | <span data-count="200">E</span>rror msg -&gt; Error (`Parsing_error msg)
+  <span data-count="2538">m</span>atch parse_string ~consume:Consume.All expr s with
+  | <span data-count="2322">O</span>k e -&gt; Ok e
+  | <span data-count="216">E</span>rror msg -&gt; Error (`Parsing_error msg)
 ;;
 
-let pp_error fmt (`Parsing_error msg) = <span data-count="0">F</span>ormat.fprintf fmt "Parse error: %s" msg
+let pp_error fmt (`Parsing_error msg) = <span data-count="1">F</span>ormat.fprintf fmt "Parse error: %s" msg
 </code></pre>
       </div>
     </div>
