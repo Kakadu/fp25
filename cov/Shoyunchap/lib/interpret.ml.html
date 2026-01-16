@@ -714,10 +714,10 @@ and eval (env : env) (e : expression) : value eval =
 let builtin_fix : value =
   BuiltinVal
     (function
-     | <span data-count="1">C</span>losureVal (self_name, Fun (arg_name, body), env_f) -&gt;
-       let rec v_self = ClosureVal (arg_name, body, (self_name, v_self) :: env_f) in
-       return v_self
-     | <span data-count="1">_</span> -&gt; error Fix_argument_shape)
+      | <span data-count="1">C</span>losureVal (self_name, Fun (arg_name, body), env_f) -&gt;
+        let rec v_self = ClosureVal (arg_name, body, (self_name, v_self) :: env_f) in
+        return v_self
+      | <span data-count="1">_</span> -&gt; error Fix_argument_shape)
 ;;
 
 (* builtin printing *)
