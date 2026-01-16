@@ -7,8 +7,8 @@ open Filichkin_lib.Interpret
 open Filichkin_lib.Ast
 
 let extract_expr_from_toplevels = function
-  | [ TLExpr e ] -> e
-  | _ -> failwith "Expected single expression"
+  | [ TLExpr e ] -> Ok e
+  | _ -> Error "Expected single expression"
 ;;
 
 let%expect_test "Fibonacci" =
@@ -18,14 +18,18 @@ let%expect_test "Fibonacci" =
        else 1 else 0 in fib 10"
     |> Result.get_ok
   in
-  let expr = extract_expr_from_toplevels toplevels in
-  let res = run_interpret expr in
-  match res with
-  | Ok value ->
-    print_string (string_of_value value);
-    [%expect {| 55 |}]
+  match extract_expr_from_toplevels toplevels with
+  | Ok expr ->
+    let res = run_interpret expr in
+    (match res with
+     | Ok value ->
+       print_string (string_of_value value);
+       [%expect {| 55 |}]
+     | Error e ->
+       print_string (string_of_error e);
+       [%expect.unreachable])
   | Error e ->
-    print_string (string_of_error e);
+    print_string e;
     [%expect.unreachable]
 ;;
 
@@ -34,27 +38,35 @@ let%expect_test "factorial" =
     parser "let rec fac = fun x -> if x = 1 then 1 else x * fac(x-1) in fac 5"
     |> Result.get_ok
   in
-  let expr = extract_expr_from_toplevels toplevels in
-  let res = run_interpret expr in
-  match res with
-  | Ok value ->
-    print_string (string_of_value value);
-    [%expect {|120|}]
+  match extract_expr_from_toplevels toplevels with
+  | Ok expr ->
+    let res = run_interpret expr in
+    (match res with
+     | Ok value ->
+       print_string (string_of_value value);
+       [%expect {|120|}]
+     | Error e ->
+       print_string (string_of_error e);
+       [%expect.unreachable])
   | Error e ->
-    print_string (string_of_error e);
+    print_string e;
     [%expect.unreachable]
 ;;
 
 let%expect_test "1" =
   let toplevels = parser "let r x y= y+x*8 in r 9 10" |> Result.get_ok in
-  let expr = extract_expr_from_toplevels toplevels in
-  let res = run_interpret expr in
-  match res with
-  | Ok value ->
-    print_string (string_of_value value);
-    [%expect {|82|}]
+  match extract_expr_from_toplevels toplevels with
+  | Ok expr ->
+    let res = run_interpret expr in
+    (match res with
+     | Ok value ->
+       print_string (string_of_value value);
+       [%expect {|82|}]
+     | Error e ->
+       print_string (string_of_error e);
+       [%expect.unreachable])
   | Error e ->
-    print_string (string_of_error e);
+    print_string e;
     [%expect.unreachable]
 ;;
 
@@ -65,14 +77,18 @@ let%expect_test "2" =
        + r"
     |> Result.get_ok
   in
-  let expr = extract_expr_from_toplevels toplevels in
-  let res = run_interpret expr in
-  match res with
-  | Ok value ->
-    print_string (string_of_value value);
-    [%expect {|42|}]
+  match extract_expr_from_toplevels toplevels with
+  | Ok expr ->
+    let res = run_interpret expr in
+    (match res with
+     | Ok value ->
+       print_string (string_of_value value);
+       [%expect {|42|}]
+     | Error e ->
+       print_string (string_of_error e);
+       [%expect.unreachable])
   | Error e ->
-    print_string (string_of_error e);
+    print_string e;
     [%expect.unreachable]
 ;;
 
@@ -80,13 +96,17 @@ let%expect_test "3" =
   let toplevels =
     parser "let add x y = x + y in let add5 = add 5 in add5 3 + add5 2" |> Result.get_ok
   in
-  let expr = extract_expr_from_toplevels toplevels in
-  let res = run_interpret expr in
-  match res with
-  | Ok value ->
-    print_string (string_of_value value);
-    [%expect {| 15 |}]
+  match extract_expr_from_toplevels toplevels with
+  | Ok expr ->
+    let res = run_interpret expr in
+    (match res with
+     | Ok value ->
+       print_string (string_of_value value);
+       [%expect {| 15 |}]
+     | Error e ->
+       print_string (string_of_error e);
+       [%expect.unreachable])
   | Error e ->
-    print_string (string_of_error e);
+    print_string e;
     [%expect.unreachable]
 ;;

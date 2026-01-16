@@ -6,7 +6,6 @@ open Filichkin_lib.Parser
 open Filichkin_lib.Interpret
 
 let run_program program =
-  reset ();
   let toplevels = parser program |> Result.get_ok in
   match interpret_program toplevels with
   | Ok (Some value) -> string_of_value value
@@ -88,13 +87,11 @@ let%expect_test "interpret_constructor_partial_application" =
 ;;
 
 let%expect_test "interpret_sequential_toplevels" =
-  let program =
-    {|
+  let program = {|
     let x = 1;;
     let y = 2;;
     x + y
-  |}
-  in
+  |} in
   print_string (run_program program);
   [%expect {| 3 |}]
 ;;

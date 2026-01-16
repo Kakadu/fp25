@@ -33,13 +33,11 @@ let%expect_test "typecheck_list_head" =
 ;;
 
 let%expect_test "typecheck_polymorphic_option" =
-  let program =
-    {|
+  let program = {|
     let x = Some 1 in
     let y = Some true in
     y
-  |}
-  in
+  |} in
   print_string (typecheck_program_str program);
   [%expect {| option(bool) |}]
 ;;
@@ -77,12 +75,10 @@ let%expect_test "typecheck_unknown_type_in_decl" =
 ;;
 
 let%expect_test "typecheck_type_arity_mismatch" =
-  let program =
-    {|
+  let program = {|
     type 'a box = Box of 'a;;
     type t = T of box
-  |}
-  in
+  |} in
   print_string (typecheck_program_str program);
   [%expect {| type constructor arity mismatch |}]
 ;;
@@ -93,23 +89,19 @@ let%expect_test "typecheck_match_wildcard" =
 ;;
 
 let%expect_test "typecheck_constructor_value" =
-  let program =
-    {|
+  let program = {|
     type t = A | B of int;;
     let x = B 1 in x
-  |}
-  in
+  |} in
   print_string (typecheck_program_str program);
   [%expect {| t |}]
 ;;
 
 let%expect_test "typecheck_constructor_function" =
-  let program =
-    {|
+  let program = {|
     type t = B of int;;
     let f = B in f
-  |}
-  in
+  |} in
   print_string (typecheck_program_str program);
   [%expect {| int -> t |}]
 ;;
@@ -125,24 +117,20 @@ let%expect_test "typecheck_unknown_constructor_expr" =
 ;;
 
 let%expect_test "typecheck_constructor_pattern_arity" =
-  let program =
-    {|
+  let program = {|
     type t = B of int;;
     match B 1 with
     | B x y -> x
-  |}
-  in
+  |} in
   print_string (typecheck_program_str program);
   [%expect {| constructor arity mismatch |}]
 ;;
 
 let%expect_test "typecheck_type_application_expr" =
-  let program =
-    {|
+  let program = {|
     type 'a box = Box of 'a;;
     let x = Box 1 in x
-  |}
-  in
+  |} in
   print_string (typecheck_program_str program);
   [%expect {| box(int) |}]
 ;;
