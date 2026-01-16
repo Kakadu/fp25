@@ -169,10 +169,10 @@ and eval (env : env) (e : expression) : value eval =
 let builtin_fix : value =
   BuiltinVal
     (function
-     | ClosureVal (self_name, Fun (arg_name, body), env_f) ->
-       let rec v_self = ClosureVal (arg_name, body, (self_name, v_self) :: env_f) in
-       return v_self
-     | _ -> error Fix_argument_shape)
+      | ClosureVal (self_name, Fun (arg_name, body), env_f) ->
+        let rec v_self = ClosureVal (arg_name, body, (self_name, v_self) :: env_f) in
+        return v_self
+      | _ -> error Fix_argument_shape)
 ;;
 
 (* builtin printing *)
