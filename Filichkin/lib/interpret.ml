@@ -76,16 +76,19 @@ let rec match_pattern (pat : pattern) (v : value) : (string * value) list option
     if List.length ps <> List.length vs
     then None
     else (
-      try
-        let bindings =
-          List.map2_exn ps vs ~f:(fun p v ->
-            match match_pattern p v with
-            | Some b -> b
-            | None -> failwith "match_fail")
-        in
-        Some (List.concat bindings)
-      with
-      | _ -> None)
+      let rec match_list ps vs =
+        match ps, vs with
+        | [], [] -> Some []
+        | p :: ps', v :: vs' ->
+          (match match_pattern p v with
+           | Some b ->
+             (match match_list ps' vs' with
+              | Some rest -> Some (b @ rest)
+              | None -> None)
+           | None -> None)
+        | _ -> None
+      in
+      match_list ps vs)
   | PConstr (name, ps), VConstr (vname, vs) ->
     if String.equal name vname && List.length ps = List.length vs
     then (
@@ -264,34 +267,24 @@ let init_env =
   ]
 ;;
 
-let initial_state = { env = init_env }
 let run_interpret expr = eval init_env expr 1000
-let state = ref initial_state
-let reset () = state := initial_state
-
-let interpret_toplevel tl =
-  match interpret_toplevel !state tl with
-  | Ok (new_state, result) ->
-    state := new_state;
-    Ok result
-  | Error err -> Error err
-;;
 
 let interpret_program toplevels =
-  let rec loop last_result = function
+  let initial_state = { env = init_env } in
+  let rec loop st last_result = function
     | [] -> Ok last_result
     | tl :: tls ->
-      (match interpret_toplevel tl with
+      (match interpret_toplevel st tl with
        | Error err -> Error err
-       | Ok result_opt ->
+       | Ok (st', result_opt) ->
          let last_result =
            match result_opt with
            | Some v -> Some v
            | None -> last_result
          in
-         loop last_result tls)
+         loop st' last_result tls)
   in
-  loop None toplevels
+  loop initial_state None toplevels
 ;;
 
 let rec string_of_value = function

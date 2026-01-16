@@ -34,13 +34,13 @@ type unop =
 type ident = string [@@deriving show { with_path = false }]
 
 type type_expr =
-  | TEInt
-  | TEBool
-  | TEUnit
-  | TEVar of ident
-  | TEArrow of type_expr * type_expr
-  | TETuple of type_expr list
-  | TEConstr of ident * type_expr list
+  | TEInt (** Integer type *)
+  | TEBool (** Boolean type *)
+  | TEUnit (** Unit type *)
+  | TEVar of ident (** Type variable *)
+  | TEArrow of type_expr * type_expr (** Function type *)
+  | TETuple of type_expr list (** Tuple type *)
+  | TEConstr of ident * type_expr list (** Type constructor application *)
 [@@deriving show { with_path = false }]
 
 type constr_decl =
@@ -55,10 +55,10 @@ type type_decl =
   }
 
 type pattern =
-  | PVar of ident
-  | PTuple of pattern list
-  | PConstr of ident * pattern list
-  | PWildcard
+  | PVar of ident (** Variable pattern *)
+  | PTuple of pattern list (** Tuple pattern *)
+  | PConstr of ident * pattern list (** Constructor pattern *)
+  | PWildcard (** Wildcard pattern *)
 [@@deriving show { with_path = false }]
 
 type expr =
@@ -78,11 +78,11 @@ type expr =
   (** Abstraction (lambda function): parameter,
       Syntactic sugar for functions with multiple arguments *)
   | App of expr * expr (** Application (function call): function, argument *)
-  | Tuple of expr list
-  | Match of expr * (pattern * expr) list
+  | Tuple of expr list (** Tuple expression *)
+  | Match of expr * (pattern * expr) list (** Pattern matching *)
 [@@deriving show { with_path = false }]
 
 type toplevel =
-  | TLExpr of expr
-  | TLType of type_decl
+  | TLExpr of expr (** Top-level expression *)
+  | TLType of type_decl (** Top-level type declaration *)
 [@@deriving show { with_path = false }]

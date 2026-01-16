@@ -31,10 +31,8 @@ and value =
 
 type state
 
-val initial_state : state
 val string_of_value : value -> string
 val string_of_error : error -> string
-val interpret_toplevel : toplevel -> (value option, error) result
+val interpret_toplevel : state -> toplevel -> (state * value option, error) result
 val interpret_program : toplevel list -> (value option, error) result
 val run_interpret : expr -> value eval_result
-val reset : unit -> unit
