@@ -1,0 +1,13 @@
+(library
+ (name parser_tests)
+ (modules parser_tests interpret_tests)
+ (libraries lambda_lib)
+ (preprocess
+  (pps ppx_expect))
+ (inline_tests)
+ (instrumentation
+  (backend bisect_ppx)))
+
+(cram
+ (applies_to interpret_tests)
+ (deps ../bin/REPL.exe))
