@@ -75,6 +75,11 @@ let identifier =
   >>= fun s -> if is_keyword s then fail ("keyword: " ^ s) else return s
 ;;
 
+let identifier_raw =
+  lift2 (fun h t -> String.make 1 h ^ t) (satisfy is_first) (take_while is_other)
+  >>= fun s -> if is_keyword s then fail ("keyword: " ^ s) else return s
+;;
+
 (* let type_params = many (spaces *> char '\'' *> identifier) пока без реализации *)
 
 let simple_keyword s =
@@ -82,6 +87,17 @@ let simple_keyword s =
   <* (spaces1
       <|> (peek_char
            >>= function
+           | Some '(' -> return ()
+           | Some c when not (is_other c) -> return ()
+           | _ -> fail "Invalid entry"))
+;;
+
+let type_keyword s =
+  spaces *> string s
+  <* (spaces1
+      <|> (peek_char
+           >>= function
+           | None -> return ()
            | Some '(' -> return ()
            | Some c when not (is_other c) -> return ()
            | _ -> fail "Invalid entry"))
@@ -244,24 +260,41 @@ let expr =
 
 let type_expr =
   fix (fun type_expr ->
-    let atom =
+    let type_arrow = spaces *> string "->" <* spaces in
+    let type_atom =
       spaces
       *> choice
-           [ string "int" *> return TEInt
-           ; string "bool" *> return TEBool
-           ; string "unit" *> return TEUnit
+           [ type_keyword "int" *> return TEInt
+           ; type_keyword "bool" *> return TEBool
+           ; type_keyword "unit" *> return TEUnit
            ; (char '\'' *> identifier >>| fun v -> TEVar v)
-           ; (identifier
-              >>= fun name -> many type_expr >>| fun args -> TEConstr (name, args))
+           ; (identifier >>| fun name -> TEConstr (name, []))
            ; parens type_expr
            ]
       <* spaces
     in
-    let arrow =
-      let* t1 = atom in
-      option t1 (kw_arrow *> type_expr >>| fun t2 -> TEArrow (t1, t2))
+    let paren_args =
+      spaces
+      *> char '('
+      *> spaces
+      *> sep_by1 comma type_expr
+      <* spaces
+      <* char ')'
+      <* spaces
     in
-    arrow)
+    let type_args = paren_args <|> (type_atom >>| fun t -> [ t ]) in
+    let type_app =
+      let* args = type_args in
+      let* ctors = many (identifier_raw <* spaces) in
+      match args, ctors with
+      | [ single ], [] -> return single
+      | _, [] -> fail "type constructor expected"
+      | args, ctor :: rest ->
+        let applied = TEConstr (ctor, args) in
+        return (List.fold_left (fun acc name -> TEConstr (name, [ acc ])) applied rest)
+    in
+    let* t1 = type_app in
+    option t1 (type_arrow *> type_expr >>| fun t2 -> TEArrow (t1, t2)))
 ;;
 
 let constr_decl =

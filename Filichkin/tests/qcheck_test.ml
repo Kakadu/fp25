@@ -193,12 +193,51 @@ let rec shrink_expr = function
 
 let arb_expr = QCheck.make ~print:print_expr ~shrink:shrink_expr (gen_expr 20)
 
+let gen_small_int = int_range 0 1000
+let arb_small_int = QCheck.make ~print:string_of_int gen_small_int
+let arb_bool = QCheck.make ~print:Bool.to_string bool
+let arb_two_ints =
+  QCheck.make
+    ~print:(fun (a, b) -> Printf.sprintf "%d,%d" a b)
+    (pair gen_small_int gen_small_int)
+;;
+
+let arb_three_ints =
+  QCheck.make
+    ~print:(fun (a, b, c) -> Printf.sprintf "%d,%d,%d" a b c)
+    (triple gen_small_int gen_small_int gen_small_int)
+;;
+
+let arb_var_name = QCheck.make gen_var_name
+let arb_constr_name = QCheck.make gen_constr_name
+
+let arb_three_var_names =
+  QCheck.make
+    ~print:(fun (f, x, y) -> Printf.sprintf "%s %s %s" f x y)
+    (triple gen_var_name gen_var_name gen_var_name)
+;;
+
 let parse_after_print expr =
   let s = print_expr expr ^ " ;;" in
   match parser s with
   | Ok [ TLExpr expr' ] -> Ok expr'
   | Ok _ -> Error "expected expression"
   | Error (`parse_error msg) -> Error (Printf.sprintf "parse error on `%s`: %s" s msg)
+;;
+
+let parse_single_expr s =
+  match parser s with
+  | Ok [ TLExpr expr ] -> Ok expr
+  | Ok _ -> Error "expected single expression"
+  | Error (`parse_error msg) -> Error msg
+;;
+
+let same_expr a b = String.equal (show_expr a) (show_expr b)
+
+let expr_matches s expected =
+  match parse_single_expr s with
+  | Ok expr -> same_expr expr expected
+  | Error _ -> false
 ;;
 
 let print_parse_roundtrip =
@@ -225,4 +264,116 @@ let print_parse_roundtrip =
          false)
 ;;
 
-let () = QCheck_runner.run_tests_main [ print_parse_roundtrip ]
+let parse_int_literal =
+  QCheck.Test.make ~count:300 ~name:"parse int literal" arb_small_int (fun n ->
+    expr_matches (string_of_int n) (Int n))
+;;
+
+let parse_negative_int =
+  QCheck.Test.make ~count:300 ~name:"parse negative int" arb_small_int (fun n ->
+    expr_matches ("-" ^ string_of_int n) (UnOp (Neg, Int n)))
+;;
+
+let parse_bool_literal =
+  QCheck.Test.make ~count:300 ~name:"parse bool literal" arb_bool (fun b ->
+    let s = if b then "true" else "false" in
+    expr_matches s (Bool b))
+;;
+
+let parse_var_identifier =
+  QCheck.Test.make ~count:300 ~name:"parse var identifier" arb_var_name (fun name ->
+    expr_matches name (Var name))
+;;
+
+let parse_constr_identifier =
+  QCheck.Test.make
+    ~count:300
+    ~name:"parse constructor identifier"
+    arb_constr_name
+    (fun name -> expr_matches name (Constr name))
+;;
+
+let parse_app_associativity =
+  QCheck.Test.make
+    ~count:300
+    ~name:"parse application associativity"
+    arb_three_var_names
+    (fun (f, x, y) ->
+       let s = Printf.sprintf "%s %s %s" f x y in
+       expr_matches s (App (App (Var f, Var x), Var y)))
+;;
+
+let parse_tuple_two =
+  QCheck.Test.make ~count:300 ~name:"parse 2-tuple" arb_two_ints (fun (a, b) ->
+    expr_matches (Printf.sprintf "(%d, %d)" a b) (Tuple [ Int a; Int b ]))
+;;
+
+let parse_tuple_three =
+  QCheck.Test.make
+    ~count:300
+    ~name:"parse 3-tuple"
+    arb_three_ints
+    (fun (a, b, c) ->
+       expr_matches
+         (Printf.sprintf "(%d, %d, %d)" a b c)
+         (Tuple [ Int a; Int b; Int c ]))
+;;
+
+let parse_binop_precedence_add_mult =
+  QCheck.Test.make
+    ~count:300
+    ~name:"parse precedence + vs *"
+    arb_three_ints
+    (fun (a, b, c) ->
+       expr_matches
+         (Printf.sprintf "%d + %d * %d" a b c)
+         (BinOp (Plus, Int a, BinOp (Mult, Int b, Int c))))
+;;
+
+let parse_binop_precedence_mult_add =
+  QCheck.Test.make
+    ~count:300
+    ~name:"parse precedence * vs +"
+    arb_three_ints
+    (fun (a, b, c) ->
+       expr_matches
+         (Printf.sprintf "%d * %d + %d" a b c)
+         (BinOp (Plus, BinOp (Mult, Int a, Int b), Int c)))
+;;
+
+let parse_if_then_else =
+  QCheck.Test.make ~count:300 ~name:"parse if-then-else" arb_two_ints (fun (a, b) ->
+    expr_matches (Printf.sprintf "if true then %d else %d" a b) (If (Bool true, Int a, Int b)))
+;;
+
+let parse_let_in =
+  QCheck.Test.make ~count:300 ~name:"parse let-in" arb_two_ints (fun (a, b) ->
+    expr_matches
+      (Printf.sprintf "let x = %d in x + %d" a b)
+      (Let (NonRec, PVar "x", Int a, Some (BinOp (Plus, Var "x", Int b)))))
+;;
+
+let parse_match_wildcard =
+  QCheck.Test.make ~count:300 ~name:"parse match wildcard" arb_two_ints (fun (a, b) ->
+    expr_matches
+      (Printf.sprintf "match %d with | _ -> %d" a b)
+      (Match (Int a, [ PWildcard, Int b ])))
+;;
+
+let () =
+  QCheck_runner.run_tests_main
+    [ print_parse_roundtrip
+    ; parse_int_literal
+    ; parse_negative_int
+    ; parse_bool_literal
+    ; parse_var_identifier
+    ; parse_constr_identifier
+    ; parse_app_associativity
+    ; parse_tuple_two
+    ; parse_tuple_three
+    ; parse_binop_precedence_add_mult
+    ; parse_binop_precedence_mult_add
+    ; parse_if_then_else
+    ; parse_let_in
+    ; parse_match_wildcard
+    ]

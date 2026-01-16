@@ -71,6 +71,7 @@ let eval_binop op v1 v2 =
 let rec match_pattern (pat : pattern) (v : value) : (string * value) list option =
   match pat, v with
   | PVar x, _ -> Some [ x, v ]
+  | PWildcard, _ -> Some []
   | PTuple ps, VTuple vs ->
     if List.length ps <> List.length vs
     then None

@@ -41,6 +41,7 @@ let fresh_tyvar =
 
 let lookup_var x env = List.assoc_opt x env.vars
 let lookup_ctor c env = List.assoc_opt c env.ctors
+let lookup_type name env = List.assoc_opt name env.types
 let extend_vars env xs = { env with vars = xs @ env.vars }
 let extend_ctors env cs = { env with ctors = cs @ env.ctors }
 
@@ -126,6 +127,7 @@ let instantiate (Forall (vars, t)) =
 let rec bind_pattern env p t =
   match p, prune t with
   | PVar x, t -> [ x, t ]
+  | PWildcard, _ -> []
   | PTuple ps, TTuple ts ->
     if List.length ps <> List.length ts
     then raise (TypeError "tuple pattern length mismatch");
@@ -270,7 +272,7 @@ let rec infer env = function
     t_res
 ;;
 
-let rec ast_to_typ tp_env = function
+let rec ast_to_typ env tp_env = function
   | TEInt -> TInt
   | TEBool -> TBool
   | TEUnit -> TUnit
@@ -278,9 +280,15 @@ let rec ast_to_typ tp_env = function
     (match List.assoc_opt name tp_env with
      | Some t -> t
      | None -> raise (TypeError ("unbound type parameter " ^ name)))
-  | TEArrow (t1, t2) -> TFun (ast_to_typ tp_env t1, ast_to_typ tp_env t2)
-  | TETuple ts -> TTuple (List.map (ast_to_typ tp_env) ts)
-  | TEConstr (name, args) -> TCon (name, List.map (ast_to_typ tp_env) args)
+  | TEArrow (t1, t2) -> TFun (ast_to_typ env tp_env t1, ast_to_typ env tp_env t2)
+  | TETuple ts -> TTuple (List.map (ast_to_typ env tp_env) ts)
+  | TEConstr (name, args) ->
+    (match lookup_type name env with
+     | None -> raise (TypeError ("unknown type " ^ name))
+     | Some params ->
+       if List.length args <> List.length params
+       then raise (TypeError "type constructor arity mismatch")
+       else TCon (name, List.map (ast_to_typ env tp_env) args))
 ;;
 
 type tc_state =
@@ -289,6 +297,9 @@ type tc_state =
   }
 
 let process_type_decl env td =
+  let env_with_type =
+    { env with types = (td.type_name, td.type_params) :: env.types }
+  in
   let distinct_vars = List.map (fun name -> name, fresh_tyvar ()) td.type_params in
   let forall_vars =
     List.map
@@ -301,17 +312,18 @@ let process_type_decl env td =
   let new_ctors =
     List.map
       (fun c ->
-        let arg_types = List.map (ast_to_typ distinct_vars) c.ctor_args in
+        let arg_types =
+          List.map (ast_to_typ env_with_type distinct_vars) c.ctor_args
+        in
         let ctor_ty =
           List.fold_right (fun arg acc -> TFun (arg, acc)) arg_types result_type
         in
         c.ctor_name, Forall (forall_vars, ctor_ty))
       td.constructors
   in
-  let env = extend_ctors env new_ctors in
-  { env with
-    types = (td.type_name, td.type_params) :: env.types
-  ; type_def_ctors =
+  let env_with_ctors = extend_ctors env_with_type new_ctors in
+  { env_with_ctors with
+    type_def_ctors =
       (td.type_name, List.map (fun c -> c.ctor_name) td.constructors)
       :: env.type_def_ctors
   }
@@ -343,9 +355,16 @@ let check_toplevel state tl =
 
 let initial_env =
   let a = fresh_tyvar () in
+  let option_var =
+    match a with
+    | TVar { contents = Unbound id } -> id
+    | _ -> failwith "impossible"
+  in
   let option_a = TCon ("option", [ a ]) in
   let option_ctors =
-    [ "None", Forall ([], option_a); "Some", Forall ([], TFun (a, option_a)) ]
+    [ "None", Forall ([ option_var ], option_a)
+    ; "Some", Forall ([ option_var ], TFun (a, option_a))
+    ]
   in
   { vars =
       [ "print_int", Forall ([], TFun (TInt, TUnit))
