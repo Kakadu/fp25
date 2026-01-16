@@ -11,9 +11,9 @@ type value =
   | BuiltinVal of (value -> value eval)
 
 and env = (name * value ref) list
-(* Mutable cells let us model recursive bindings by creating a placeholder
-   before evaluating the body and then updating it, mirroring the operational
-   semantics of `let rec`. *)
+(* Mutable cells intentionally mirror the operational semantics of `let rec` and
+   `fix`: we allocate a placeholder first, allow the RHS to refer to it while
+   evaluating, then mutate the cell with the real value once known. *)
 
 and eval_error =
   | Unbound_variable of name
@@ -68,16 +68,16 @@ let step : unit eval =
 
 (* environment helpers *)
 
-(* List.assoc_opt x env tries to find the cell value
-   ref by name x in the list of pairs
-   (The ! operator dereferences the reference,
-   so !cell retrieves the stored value)
-*)
+(* We dereference the stored cell because recursive bindings keep a placeholder
+   `ref` that gets updated after evaluation; lookup must always read the latest
+   contents. *)
 let lookup (env : env) (x : name) : value eval =
   fun fuel ->
   match List.assoc_opt x env with
   | None -> Error (Unbound_variable x)
-  | Some cell -> Ok (!cell, fuel)
+  | Some cell ->
+    (* Dereference the placeholder produced by let rec / fix. *)
+    Ok (!cell, fuel)
 ;;
 
 (* extend adds a new binding to the environment *)
@@ -163,8 +163,9 @@ and eval (env : env) (e : expression) : value eval =
        (* recursive binding *)
        let cell = ref UnitVal in
        let env' = (name, cell) :: env in
-       (* Start with a dummy cell so the body of rhs can refer to itself. *)
+       (* Dummy cell lets the RHS call itself (or be captured) during evaluation. *)
        let* v_rhs = eval env' rhs in
+       (* Update the placeholder with the computed value, keeping sharing intact. *)
        cell := v_rhs;
        (match body_opt with
         | Some body -> eval env' body

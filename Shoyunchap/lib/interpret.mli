@@ -11,8 +11,9 @@ type value =
   | ClosureVal of name * expression * env
   | BuiltinVal of (value -> value eval)
 
-(** Mutable cells are kept so `let rec` and `fix` can allocate a placeholder
-    before evaluating the RHS and later update it. *)
+(** Environment entries are mutable on purpose: `let rec`/`fix` need a placeholder
+    cell that is filled after evaluating the RHS, so a `(name * value ref)` list
+    models that operationally. *)
 and env = (name * value ref) list
 
 and eval_error =
