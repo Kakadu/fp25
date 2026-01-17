@@ -1,10 +1,20 @@
 (library
  (name MiniML)
  (public_name Balyshev.MiniML)
- (modules Parsetree Typedtree Monads Parser Interpreter Ident Inferencer)
+ (modules
+  Parsetree
+  Typedtree
+  Valuetree
+  Pprint
+  Monads
+  Parser
+  Interpreter
+  Ident
+  Inferencer)
  (modes native byte)
  (flags
-  (:standard -g))
+  (:standard -g)
+  (:standard -w +32))
  (libraries base angstrom str)
  (preprocess
   (pps ppx_deriving.show))
