@@ -1,2 +1,9 @@
 (cram
  (deps %{project_root}/bin/REPL.exe))
+
+(test
+ (name parser)
+ (libraries MiniML qcheck)
+ (modules parser)
+ (preprocess
+  (pps ppx_deriving.show)))
