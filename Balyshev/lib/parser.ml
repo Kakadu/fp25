@@ -53,12 +53,6 @@ let var_name =
   name_fabric regexp message
 ;;
 
-let constructor_name =
-  let regexp = "^[A-Z][a-zA-Z0-9_]*$" in
-  let message = "not a constructor name" in
-  name_fabric regexp message
-;;
-
 let type_name =
   let regexp = "^[a-z_][a-zA-Z0-9_]*$" in
   let message = "not a type name" in
@@ -88,6 +82,14 @@ let pnil = PConstruct ("[]", None)
 let enil = EConstruct ("[]", None)
 let pcons hd tl = PConstruct ("::", Some (PTuple (hd, tl, [])))
 let econs hd tl = EConstruct ("::", Some (ETuple (hd, tl, [])))
+let brackets p = char '[' *> ws *> p <* ws <* char ']'
+
+let parse_constant =
+  string "()" *> return CUnit
+  <|> string "true" *> return (CBool true)
+  <|> string "false" *> return (CBool false)
+  <|> (take_while1 is_digit >>| fun chs -> CInt (int_of_string chs))
+;;
 
 let patt_basic d =
   ws
@@ -95,16 +97,13 @@ let patt_basic d =
     fail ""
     <|> parens (d.patt d)
     <|> char '_' *> return PAny
+    <|> (parse_constant >>| fun x -> PConstant x)
     <|> (var_name >>| fun v -> PVar v)
     <|> string "[]" *> return pnil
-    <|> (char '['
-         *> ws
-         *>
-         let* first = d.patt d in
-         (let* rest = many (ws *> char ';' *> d.patt d) in
-          return (pcons first (List.fold_right pcons rest pnil)))
-         <* ws
-         <* char ']')
+    <|> brackets
+          (let* first = d.patt d in
+           let* rest = many (ws *> char ';' *> d.patt d) in
+           return (pcons first (List.fold_right pcons rest pnil)))
     <|> let* name = ws *> constructor_name in
         (let* patt = ws *> d.patt_basic d in
          return (PConstruct (name, Some patt)))
@@ -166,6 +165,22 @@ let expr_match expr =
   <*> many (match_case expr)
 ;;
 
+let expr_list_brackets expr =
+  brackets
+    (let* first = expr in
+     let* rest = many (ws *> char ';' *> expr) in
+     return (econs first (List.fold_right econs rest enil)))
+;;
+
+let expr_list_cons expr =
+  fix (fun self ->
+    let* head = ws *> expr in
+    (let* () = ws <* string "::" in
+     let* tail = ws *> self in
+     return (econs head tail))
+    <|> return head)
+;;
+
 let rec_flag = ws *> (string "rec" *> return Recursive <|> return NonRecursive)
 
 let expr_binding expr =
@@ -208,21 +223,9 @@ let expr_tuple expr =
 
 let expr_atom =
   fail ""
-  <|> string "()" *> return (EConstant CUnit)
-  <|> string "true" *> return (EConstant (CBool true))
-  <|> string "false" *> return (EConstant (CBool false))
+  <|> (parse_constant >>| fun x -> EConstant x)
   <|> char '[' *> ws *> char ']' *> return enil
-  <|> (take_while1 is_digit >>| fun chs -> EConstant (CInt (int_of_string chs)))
   <|> (var_name >>| fun v -> EVar v)
-;;
-
-let brackets p = ws *> char '[' *> ws *> p <* ws <* char ']'
-
-let expr_list expr =
-  brackets
-    (return (fun frst rest -> econs frst (List.fold_right econs rest enil))
-     <*> expr
-     <*> many (ws *> char ';' *> ws *> expr))
 ;;
 
 let constant_constructor = ws *> constructor_name >>| fun name -> EConstruct (name, None)
@@ -241,37 +244,36 @@ let expr_long expr =
   | f :: xs -> List.fold_left (fun f x -> EApp (f, x)) f xs |> return
 ;;
 
-let left_chain expr op sep =
-  return (fun init items -> List.fold_left (fun a b -> EBinop (op, a, b)) init items)
+let binop_left_alter expr op_sep_ls =
+  let make_parser (op, sep) =
+    return (fun b a -> EBinop (op, a, b)) <*> ws *> string sep *> ws *> expr
+  in
+  let parsers = List.map make_parser op_sep_ls in
+  return (fun init fs -> List.fold_left (fun acc f -> f acc) init fs)
   <*> ws *> expr
-  <*> many1 (ws *> string sep *> ws *> expr)
+  <*> many1 (choice parsers)
 ;;
-
-let left_chain_choice expr op_sep_ls =
-  let make_parser acc (op, sep) = left_chain expr op sep :: acc in
-  let parsers = Base.List.fold ~f:make_parser op_sep_ls ~init:[] in
-  choice parsers
-;;
-
-let cmp expr =
-  left_chain_choice expr [ Ne, "<>"; Le, "<="; Ge, ">="; Eq, "=="; Lt, "<"; Gt, ">" ]
-;;
-
-let add_sub expr = left_chain_choice expr [ Add, "+"; Sub, "-" ]
-let mul_div expr = left_chain_choice expr [ Mul, "*"; Div, "/" ]
 
 let fold_alter ~cases ~init =
   Base.List.fold cases ~init ~f:(fun acc expr -> expr acc <|> acc)
 ;;
 
-let expr_binop expr = fold_alter ~init:expr ~cases:[ mul_div; add_sub; cmp ]
+let expr_binop expr =
+  let cmp expr =
+    binop_left_alter expr [ Ne, "<>"; Le, "<="; Ge, ">="; Eq, "=="; Lt, "<"; Gt, ">" ]
+  in
+  let add_sub expr = binop_left_alter expr [ Add, "+"; Sub, "-" ] in
+  let mul_div expr = binop_left_alter expr [ Mul, "*"; Div, "/" ] in
+  fold_alter ~init:expr ~cases:[ mul_div; add_sub; cmp ]
+;;
 
 let expression =
   ws
   *> fix (fun self ->
     fold_alter
-      ~init:(expr_atom <|> parens self <|> expr_list self)
-      ~cases:[ constructor; expr_long; expr_binop; expr_tuple; expr_complex ])
+      ~init:(expr_atom <|> parens self <|> expr_list_brackets self)
+      ~cases:
+        [ constructor; expr_long; expr_list_cons; expr_binop; expr_tuple; expr_complex ])
 ;;
 
 let parse_expression text = parse_string ~consume:All (expression <* end_of_input) text
@@ -282,9 +284,6 @@ let type_param_tuple =
   | frst :: scnd :: rest -> return (frst :: scnd :: rest) <* ws *> char ')'
   | _ -> fail "tuple of param names expected"
 ;;
-
-let type_param_tuple = parens (sep_by (ws *> char ',') (ws *> type_param_name))
-let core_type_var = ws *> (type_name <|> type_param_name >>| fun name -> Pty_var name)
 
 let core_type_arrow core_type =
   fix (fun self ->
