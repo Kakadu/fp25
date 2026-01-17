@@ -80,11 +80,7 @@ module Env = struct
   ;;
 
   let empty = Map.empty (module String)
-
-  let env_with_print_funs =
-    let env = extend empty "print_int" (ValBuiltin "print_int") in
-    extend env "print_endline" (ValBuiltin "print_endline")
-  ;;
+  let env_with_print_funs = extend empty "print_int" (ValBuiltin "print_int")
 end
 
 module Eval = struct
