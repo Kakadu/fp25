@@ -1,74 +1,80 @@
-open Parsetree
 open Base
 
-type value =
-  | VConstant of constant
-  | VTuple of value * value * value list
-  | VFun of pattern * expression * environment
-  | VConstruct of string * value option
+module Error = struct
+  type t =
+    | Is_not_a_function of Parsetree.expression
+    | Unbound_value of string
+    | Type_mismatch of string
+    | Division_by_zero
+    | Not_implemented of string
+    | LeftSideRec of string
+    | RightSideRec of string
+    | Match_failure
 
-and error =
-  | Is_not_a_function of expression
-  | Unbound_value of string
-  | Type_mismatch of string
-  | Division_by_zero
-  | Not_implemented of string
+  open Format
 
-and environment = (string, value, Base.String.comparator_witness) Base.Map.t
+  let show = function
+    | Is_not_a_function expr ->
+      sprintf
+        "{ %s } is not a function, it can not be applied"
+        (Parsetree.show_expression expr)
+    | Unbound_value name -> sprintf "unbound value: { %s }" name
+    | Type_mismatch msg -> sprintf "type mismatch: { %s }" msg
+    | Division_by_zero -> sprintf "division by zero"
+    | Not_implemented s -> sprintf "not implemented: %s" s
+    | LeftSideRec patt_str -> sprintf "invalid left-hand side of let rec: { %s }" patt_str
+    | RightSideRec name ->
+      sprintf "invalid right-hand side of let rec in declaration of { %s }" name
+    | Match_failure -> sprintf "match failure"
+  ;;
 
-open Format
+  let pp ppf error = fprintf ppf "%s" (show error)
+end
 
-let rec show_environment env =
-  let bindings =
-    Map.to_alist env |> List.map ~f:(fun (name, value) -> name ^ " = " ^ show_value value)
-  in
-  "{ " ^ String.concat ~sep:"; " bindings ^ " }"
+open Error
 
-and show_value = function
-  | VConstant CUnit -> sprintf "()"
-  | VConstant (CInt x) -> sprintf "%d" x
-  | VConstant (CBool x) -> sprintf "%b" x
-  | VTuple (a, b, xs) ->
-    Stdlib.List.map (fun x -> show_value x) (a :: b :: xs)
-    |> String.concat ~sep:", "
-    |> sprintf "@[(%s)@]"
-  | VConstruct ("::", Some (VTuple (head, tail, []))) ->
-    let rec helper acc = function
-      | VConstruct ("::", Some (VTuple (hd, tl, []))) -> helper (hd :: acc) tl
-      | VConstruct ("[]", None) ->
-        sprintf
-          "@[[ %s ]@]"
-          (String.concat ~sep:"; " (List.map ~f:show_value (head :: List.rev acc)))
-      | _ as exp ->
-        String.concat ~sep:" :: " (List.map ~f:show_value (head :: List.rev (exp :: acc)))
+module Builtin (M : Monads.STATE_MONAD) = struct
+  open M
+  open Parsetree
+  open Valuetree.Make (M) (Error)
+
+  let fix =
+    let efun x b = EFun (PVar x, b) in
+    let x = EVar "x" in
+    let y = EVar "y" in
+    let u = efun "x" (EApp (EVar "f", efun "y" (EApp (EApp (x, x), y)))) in
+    VFun (PVar "f", EApp (u, u), Base.Map.empty (module Base.String))
+  ;;
+
+  let print_value =
+    let aux v =
+      Format.printf "%a" pp_value v;
+      return (VConstant CUnit)
     in
-    helper [] tail
-  | VConstruct ("[]", None) -> sprintf "[]"
-  | VConstruct (name, None) -> sprintf "%s" name
-  | VConstruct (name, Some arg) -> sprintf "@[%s (%s)@]" name (show_value arg)
-  | VFun (patt, expr, _) ->
-    sprintf "(%s -> %s)" (Parsetree.show_pattern patt) (Parsetree.show_expression expr)
-;;
+    vprimitive "print_value" aux
+  ;;
 
-let pp_value ppf value = fprintf ppf "%s" (show_value value)
+  let printn_value =
+    let aux v =
+      Format.printf "%a\n" pp_value v;
+      return (VConstant CUnit)
+    in
+    vprimitive "printn_value" aux
+  ;;
 
-let show_error : error -> string = function
-  | Is_not_a_function expr ->
-    sprintf "| %s | is not a function, it can not be applied" (show_expression expr)
-  | Unbound_value name -> sprintf "unbound value: %s" name
-  | Type_mismatch msg -> sprintf "type mismatch: %s" msg
-  | Division_by_zero -> sprintf "division by zero"
-  | Not_implemented s -> sprintf "not implemented in <%s>" s
-;;
-
-let pp_error ppf error = fprintf ppf "%s" (show_error error)
+  let env_with_primitives =
+    Base.Map.empty (module Base.String)
+    |> Map.set ~key:"fix" ~data:fix
+    |> Map.set ~key:"print_value" ~data:print_value
+    |> Map.set ~key:"printn_value" ~data:printn_value
+  ;;
+end
 
 module Eval (M : Monads.STATE_MONAD) = struct
+  module Builtin = Builtin (M)
+  open Parsetree
+  open Valuetree.Make (M) (Error)
   open M
-
-  let init_env : (string, 'ok, Base.String.comparator_witness) Base.Map.t =
-    Base.Map.empty (module Base.String)
-  ;;
 
   let from_env env key =
     match Map.find env key with
@@ -76,113 +82,186 @@ module Eval (M : Monads.STATE_MONAD) = struct
     | None -> fail (Unbound_value key)
   ;;
 
+  let eval_int f a b = return (VConstant (CInt (f a b)))
+  let eval_bool f a b = return (VConstant (CBool (f a b)))
+  let update env name value = Map.update env name ~f:(fun _ -> value)
+
+  let merge env1 env2 =
+    Map.fold env2 ~f:(fun ~key ~data env -> update env key data) ~init:env1
+  ;;
+
   let eval_binop op a b =
-    match op, a, b with
-    | Add, VConstant (CInt a), VConstant (CInt b) -> return (VConstant (CInt (a + b)))
-    | Sub, VConstant (CInt a), VConstant (CInt b) -> return (VConstant (CInt (a - b)))
-    | Mul, VConstant (CInt a), VConstant (CInt b) -> return (VConstant (CInt (a * b)))
-    | Div, VConstant (CInt a), VConstant (CInt b) ->
-      if b = 0 then fail Division_by_zero else return (VConstant (CInt (a / b)))
-    | Lt, VConstant (CInt a), VConstant (CInt b) -> return (VConstant (CBool (a < b)))
-    | Gt, VConstant (CInt a), VConstant (CInt b) -> return (VConstant (CBool (a > b)))
-    | Le, VConstant (CInt a), VConstant (CInt b) -> return (VConstant (CBool (a <= b)))
-    | Ge, VConstant (CInt a), VConstant (CInt b) -> return (VConstant (CBool (a >= b)))
-    | Eq, VConstant (CInt a), VConstant (CInt b) -> return (VConstant (CBool (a == b)))
-    | Eq, VConstant (CBool a), VConstant (CBool b) -> return (VConstant (CBool (a == b)))
-    | Ne, VConstant (CInt a), VConstant (CInt b) -> return (VConstant (CBool (a <> b)))
-    | Ne, VConstant (CBool a), VConstant (CBool b) -> return (VConstant (CBool (a != b)))
-    | Eq, VConstant CUnit, VConstant CUnit -> return (VConstant (CBool true))
-    | Ne, VConstant CUnit, VConstant CUnit -> return (VConstant (CBool false))
-    | Cons, left, right -> return (VConstruct ("Cons", Some (VTuple (left, right, []))))
-    | _ ->
-      fail
-        (Type_mismatch
-           (sprintf "incompatible values: %s, %s" (show_value a) (show_value b)))
+    match a, b with
+    | VConstant a, VConstant b ->
+      (match op, a, b with
+       | Div, _, CInt 0 -> fail Division_by_zero
+       | Add, CInt a, CInt b -> eval_int ( + ) a b
+       | Sub, CInt a, CInt b -> eval_int ( - ) a b
+       | Mul, CInt a, CInt b -> eval_int ( * ) a b
+       | Div, CInt a, CInt b -> eval_int ( / ) a b
+       | Eq, CInt a, CInt b -> eval_bool ( = ) a b
+       | Ne, CInt a, CInt b -> eval_bool ( <> ) a b
+       | Le, CInt a, CInt b -> eval_bool ( <= ) a b
+       | Ge, CInt a, CInt b -> eval_bool ( >= ) a b
+       | Lt, CInt a, CInt b -> eval_bool ( < ) a b
+       | Gt, CInt a, CInt b -> eval_bool ( > ) a b
+       | Eq, CBool a, CBool b -> eval_bool ( == ) a b
+       | Ne, CBool a, CBool b -> eval_bool ( != ) a b
+       | _ -> fail (Type_mismatch "eval_binop operands are not compatible"))
+    | _ -> fail (Type_mismatch "eval_binop operands are not constants")
   ;;
 
-  let eval_tuple env eval (a, b, xs) =
-    let* a = eval env a in
-    let* b = eval env b in
-    let rec helper items acc =
-      match items with
-      | [] -> return (List.rev acc)
-      | x :: xs ->
-        let* exp = eval env x in
-        helper xs (exp :: acc)
-    in
-    let* xs = helper xs [] in
-    return (VTuple (a, b, xs))
-  ;;
-
-  let rec bind_to_env env eval patt value =
+  let rec bind_to_env env patt value =
     match patt, value with
     | PAny, _ -> return env
     | PVar x, value -> Map.set env ~key:x ~data:value |> return
-    | PConstruct (name, Some patt), value ->
-      (match value with
-       | VConstruct (name2, Some value) when String.equal name name2 ->
-         bind_to_env env eval patt value
-       | VConstruct (name2, _) ->
-         fail (Type_mismatch (sprintf "different constructors: %s and %s" name name2))
-       | _ -> fail (Type_mismatch (sprintf "constructor %s expected" name)))
-    | PTuple (p1, p2, ps), VTuple (v1, v2, vs) ->
-      let rec helper env = function
-        | [], [] -> return env
-        | p :: ps, v :: vs ->
-          let* env' = bind_to_env env eval p v in
-          helper env' (ps, vs)
-        | _ -> fail (Type_mismatch "different tuple arities")
-      in
-      helper env (p1 :: p2 :: ps, v1 :: v2 :: vs)
-    | PConstruct (name, None), _ ->
-      fail (Type_mismatch (sprintf "can not bind constant constructor: %s" name))
-    | _ -> fail (Type_mismatch "value does not match pattern")
+    | PTuple (p1, p2, ps), VTuple (v1, v2, vs) when List.length ps = List.length vs ->
+      bind_many_exn env (p1 :: p2 :: ps) (v1 :: v2 :: vs)
+    | PConstruct (pname, Some parg), VConstruct (vname, Some varg)
+      when String.equal pname vname -> bind_to_env env parg varg
+    | PConstruct (pname, None), VConstruct (vname, None) when String.equal pname vname ->
+      return env
+    | PConstant CUnit, VConstant CUnit -> return env
+    | PConstant (CInt x), VConstant (CInt y) when Int.equal x y -> return env
+    | PConstant (CBool x), VConstant (CBool y) when Bool.equal x y -> return env
+    | PConstant (CInt _), VConstant (CInt _)
+    | PConstant (CBool _), VConstant (CBool _)
+    | PConstruct _, VConstruct _ -> fail Match_failure
+    | _ ->
+      fail
+        (Type_mismatch
+           (Format.sprintf
+              "{ value = %s } does not match { pattern = %s }"
+              (show_value value)
+              (show_pattern patt)))
+
+  and bind_many_exn env patts values =
+    let aux env patt value =
+      let* env = env in
+      bind_to_env env patt value
+    in
+    Base.List.fold2_exn ~init:(return env) ~f:aux patts values
   ;;
 
-  let bind_name_to_env env name value = Base.Map.set env ~key:name ~data:value
-
-  let rec eval_expression env = function
+  let rec expression env = function
     | EVar name -> from_env env name
     | EConstant (_ as x) -> return (VConstant x)
     | EBinop (op, a, b) ->
-      let* a = eval_expression env a in
-      let* b = eval_expression env b in
+      let* a = expression env a in
+      let* b = expression env b in
       eval_binop op a b
-    | ETuple (a, b, xs) -> eval_tuple env eval_expression (a, b, xs)
-    | EConstruct (name, None) -> M.return (VConstruct (name, None))
+    | ETuple (e1, e2, es) ->
+      let* v1 = expression env e1 in
+      let* v2 = expression env e2 in
+      let* vs = expression_many env es in
+      return (VTuple (v1, v2, vs))
+    | EConstruct (name, None) -> return (VConstruct (name, None))
     | EConstruct (name, Some arg) ->
-      let* arg = eval_expression env arg in
+      let* arg = expression env arg in
       return (VConstruct (name, Some arg))
-    | ELet (NonRecursive, (pe, pes), body) ->
-      let helper env (patt, expr) =
-        let* env = env in
-        let* value = eval_expression env expr in
-        bind_to_env env eval_expression patt value
+    | ELet (rec_flag, (vb1, vbs), body) ->
+      let eval_vbs =
+        match rec_flag with
+        | NonRecursive -> bind_value_many
+        | Recursive -> bind_rec_value_many
       in
-      let* env' = List.fold (pe :: pes) ~f:helper ~init:(return env) in
-      eval_expression env' body
+      let* env = eval_vbs env (vb1, vbs) in
+      expression env body
     | EApp (f, arg) ->
-      let* arg' = eval_expression env arg in
-      let* f' = eval_expression env f in
-      (match f' with
+      let* varg = expression env arg in
+      let* vfun = expression env f in
+      (match vfun with
        | VFun (patt, body, closure) ->
-         let* env = bind_to_env closure eval_expression patt arg' in
-         eval_expression env body
+         let env = merge env closure in
+         let* env = bind_to_env env patt varg in
+         let* rez = expression env body in
+         return rez
+       | VPrimitive (_name, f) -> f varg
        | _ -> fail (Is_not_a_function f))
     | EFun (patt, expr) -> return (VFun (patt, expr, env))
     | EIf (cond, expr_then, expr_else) ->
-      eval_expression env cond
+      expression env cond
       >>= (function
-       | VConstant (CBool true) -> eval_expression env expr_then
-       | VConstant (CBool false) -> eval_expression env expr_else
+       | VConstant (CBool true) -> expression env expr_then
+       | VConstant (CBool false) -> expression env expr_else
        | _ -> fail (Type_mismatch "boolean expr expected"))
-    | ELet (Recursive, _, _) -> fail (Not_implemented "let rec in eval_expr")
-    | EMatch _ -> fail (Not_implemented "match with in eval_expr")
+    | EMatch (scrut, (case, cases)) ->
+      let* scrut = expression env scrut in
+      let f acc (patt, expr) =
+        acc
+        <|> let* env' = bind_to_env env patt scrut in
+            expression env' expr
+      in
+      List.fold ~f ~init:(fail Match_failure) (case :: cases)
+
+  and expression_many env exprs =
+    let aux acc expr =
+      let* values = acc in
+      let* value = expression env expr in
+      return (value :: values)
+    in
+    let* values = List.fold ~f:aux exprs ~init:(return []) in
+    return (List.rev values)
+
+  and bind_value_m env (patt, expr) =
+    let* env = env in
+    let* value = expression env expr in
+    bind_to_env env patt value
+
+  and bind_value_many env (vb1, vbs) =
+    List.fold ~init:(return env) (vb1 :: vbs) ~f:bind_value_m
+
+  and bind_rec_value_m env (patt, expr) =
+    let* env = env in
+    match patt, expr with
+    | PVar fun_name, EFun (patt, expr) ->
+      let value = VFun (patt, expr, env) in
+      return (update env fun_name value)
+    | PVar fun_name, _ -> fail (RightSideRec fun_name)
+    | patt, _ -> fail (LeftSideRec (Parsetree.show_pattern patt))
+
+  and bind_rec_value_many env (vb1, vbs) =
+    List.fold ~init:(return env) (vb1 :: vbs) ~f:bind_rec_value_m
   ;;
 
-  let eval_expr expr =
-    match M.run (eval_expression init_env expr) (return 0) with
+  let stru_item env (patt, expr) =
+    let* value = expression env expr in
+    let* env = bind_to_env env patt value in
+    return (env, (patt, value))
+  ;;
+
+  let stru_item_many env items =
+    let aux acc item =
+      let* env, items = acc in
+      let* env, item = stru_item env item in
+      return (env, item :: items)
+    in
+    let* env, items = List.fold items ~init:(return (env, [])) ~f:aux in
+    return (env, List.rev items)
+  ;;
+
+  let structure env (vb1, vbs) =
+    let* env, vb1 = stru_item env vb1 in
+    let* _env, vbs = stru_item_many env vbs in
+    return (vb1, List.rev vbs)
+  ;;
+end
+
+module Make (M : Monads.STATE_MONAD) = struct
+  module Builtin = Builtin (M)
+  module Eval = Eval (M)
+
+  let init_state = 0
+
+  let eval_expression expr =
+    match M.run (Eval.expression Builtin.env_with_primitives expr) init_state with
     | Ok (_state, value) -> Ok value
+    | Error err -> Error err
+  ;;
+
+  let eval_structure vbs =
+    match M.run (Eval.structure Builtin.env_with_primitives vbs) init_state with
+    | Ok (_state, stru) -> Ok stru
     | Error err -> Error err
   ;;
 end
