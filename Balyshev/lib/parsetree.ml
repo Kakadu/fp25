@@ -11,6 +11,7 @@ type constant =
 
 and pattern =
   | PAny
+  | PConstant of constant
   | PVar of string
   | PTuple of pattern * pattern * pattern list
   | PConstruct of string * pattern option
@@ -32,7 +33,6 @@ and binop =
   | Mul
   | Sub
   | Div
-  | Cons
   | Eq
   | Ne
   | Le
@@ -43,15 +43,15 @@ and binop =
 type value_binding = pattern * expression
 
 type type_declaration =
-  { pty_params : string list (** ['a] is param in [type 'a list = ...]  *)
-  ; pty_name : string (** [list] is name in [type 'a list = ...]  *)
+  { pty_params : string list (** ['a] is param in [type 'a list = ...] *)
+  ; pty_name : string (** [list] is name in [type 'a list = ...] *)
   ; pty_kind : type_kind
   }
 
 and type_kind =
   | Pty_abstract of core_type option (** [ type t ], [ type t = x ] *)
   | Pty_variants of (string * core_type option) list1
-  (** [ type t = Some of int | None ]  *)
+  (** [ type t = Some of int | None ] *)
 
 and core_type =
   | Pty_var of string (** [ 'a, 'b ] are type variables in [ type ('a, 'b) ty = ... ] *)
@@ -65,13 +65,10 @@ type structure_item =
 
 type structure = structure_item list1
 
-open Format
+open Base.Format
 open Base
-
-let show_tuple ?(sep = ", ") show_item (a, b, xs) =
-  String.concat ~sep (List.map ~f:(fun x -> show_item x) (a :: b :: xs))
-  |> sprintf "@[(%s)@]"
-;;
+open Pprint
+open Pprint.Parens
 
 let show_rec_flag = function
   | Recursive -> " rec "
@@ -83,8 +80,7 @@ let show_binop = function
   | Mul -> "*"
   | Sub -> "-"
   | Div -> "/"
-  | Cons -> "::"
-  | Eq -> "="
+  | Eq -> "=="
   | Ne -> "<>"
   | Le -> "<="
   | Ge -> ">="
@@ -94,126 +90,161 @@ let show_binop = function
 
 let pp_binop ppf x = fprintf ppf "%s" (show_binop x)
 
-let rec show_pattern = function
-  | PAny -> sprintf "_"
-  | PVar name -> sprintf "%s" name
-  | PTuple (a, b, xs) -> show_tuple show_pattern (a, b, xs)
-  | PConstruct ("[]", None) -> "[]"
-  | PConstruct ("::", Some (PTuple (head, tail, []))) ->
-    let rec helper acc = function
-      | PConstruct ("::", Some (PTuple (hd, tl, []))) -> helper (hd :: acc) tl
-      | PConstruct ("[]", None) ->
-        sprintf
-          "@[[ %s ]@]"
-          (String.concat ~sep:"; " (List.map ~f:show_pattern (head :: List.rev acc)))
-      | _ as exp ->
-        String.concat
-          ~sep:" :: "
-          (List.map ~f:show_pattern (head :: List.rev (exp :: acc)))
-    in
-    helper [] tail
-  | PConstruct (name, None) -> sprintf "%s" name
-  | PConstruct (name, Some arg) -> sprintf "@[%s (%s)@]" name (show_pattern arg)
-;;
-
-let pp_pattern ppf patt = Format.fprintf ppf "%s" (show_pattern patt)
-
 let show_constant = function
-  | CUnit -> sprintf "()"
+  | CUnit -> "()"
   | CInt x -> sprintf "%d" x
   | CBool x -> sprintf "%b" x
 ;;
 
-let pp_constant ppf constant = Format.fprintf ppf "%s" (show_constant constant)
+let rec show_pattern ?(ctx = Parens.Free) = function
+  | PAny -> "_"
+  | PConstant c -> show_constant c
+  | PVar name -> name
+  | PTuple (a, b, xs) ->
+    set_parens ~ctx [ Tuple; App; LeftSideFun; LeftSideLet; Binop ]
+    @@ show_tuple (show_pattern ~ctx:Tuple) (a, b, xs)
+  | PConstruct ("::", Some (PTuple (head, tail, []))) ->
+    let rec helper acc = function
+      | PConstruct ("::", Some (PTuple (hd, tl, []))) -> helper (hd :: acc) tl
+      | PConstruct ("[]", None) -> show_list_brackets show_pattern (head :: List.rev acc)
+      | _ as exp -> show_list_cons ~ctx show_pattern (head :: List.rev (exp :: acc))
+    in
+    helper [] tail
+  | PConstruct (name, None) -> name
+  | PConstruct (name, Some arg) ->
+    set_parens ~ctx [ App; LeftSideFun; LeftSideLet ]
+    @@ sprintf "%s %s" name (show_pattern ~ctx:App arg)
+;;
 
-let rec show_expression = function
+let pp_constant ppf constant = fprintf ppf "%s" (show_constant constant)
+
+let rec show_expression ?(ctx = Parens.Free) = function
   | EConstant x -> show_constant x
-  | EVar x -> sprintf "%s" x
+  | EVar x -> x
   | EBinop (binop, left, right) ->
-    sprintf
-      "@[(%s %s %s)@]"
-      (show_expression left)
-      (show_binop binop)
-      (show_expression right)
-  | ETuple (a, b, xs) -> show_tuple show_expression (a, b, xs)
+    set_parens ~ctx [ App; Binop ]
+    @@ sprintf
+         "@[%s %s %s@]"
+         (show_expression ~ctx:Binop left)
+         (show_binop binop)
+         (show_expression ~ctx:Binop right)
+  | ETuple (a, b, xs) ->
+    set_parens ~ctx [ Tuple; App; Binop ]
+    @@ show_tuple (show_expression ~ctx:Tuple) (a, b, xs)
   | EConstruct ("::", Some (ETuple (head, tail, []))) ->
     let rec helper acc = function
       | EConstruct ("::", Some (ETuple (hd, tl, []))) -> helper (hd :: acc) tl
       | EConstruct ("[]", None) ->
-        sprintf
-          "@[[ %s ]@]"
-          (String.concat ~sep:"; " (List.map ~f:show_expression (head :: List.rev acc)))
-      | _ as exp ->
-        String.concat
-          ~sep:" :: "
-          (List.map ~f:show_expression (head :: List.rev (exp :: acc)))
+        show_list_brackets show_expression (head :: List.rev acc)
+      | _ as exp -> show_list_cons ~ctx show_expression (head :: List.rev (exp :: acc))
     in
     helper [] tail
-  | EConstruct ("[]", None) -> sprintf "[]"
-  | EConstruct (name, None) -> sprintf "%s" name
-  | EConstruct (name, Some arg) -> sprintf "@[%s (%s)@]" name (show_expression arg)
+  | EConstruct (name, None) -> name
+  | EConstruct (name, Some arg) ->
+    set_parens ~ctx [ App ] @@ sprintf "@[%s %s@]" name (show_expression ~ctx:App arg)
   | ELet (rec_flag, (vb, vbs), body) ->
-    sprintf "%s in %s" (show_value_binding rec_flag vb vbs) (show_expression body)
-  | EApp (f, x) -> sprintf "%s %s" (show_expression f) (show_expression x)
-  | EFun (p, e) -> sprintf "(fun %s -> %s)" (show_pattern p) (show_expression e)
+    set_parens ~ctx [ App; Binop; Tuple ]
+    @@ sprintf
+         "@[%s in@;<1 2>%s@]"
+         (show_value_binding rec_flag vb vbs)
+         (show_expression ~ctx:Free body)
+  | EApp (f, x) ->
+    set_parens ~ctx [ App ]
+    @@ sprintf "%s %s" (show_expression ~ctx:App f) (show_expression ~ctx:App x)
+  | EFun (p, e) ->
+    set_parens ~ctx [ Tuple; Binop; App ]
+    @@ sprintf
+         "@[fun %s ->@;<1 2>%s@]"
+         (show_pattern ~ctx:LeftSideFun p)
+         (show_expression ~ctx:RightSideFun e)
   | EIf (i, t, e) ->
-    sprintf
-      "if %s then %s else %s"
-      (show_expression i)
-      (show_expression t)
-      (show_expression e)
-  | EMatch (e, (pe, pes)) ->
-    let show_case (p, e) = sprintf "| %s -> %s" (show_pattern p) (show_expression e) in
-    sprintf
-      "(match %s with@ %s)"
-      (show_expression e)
-      (Base.String.concat ~sep:(sprintf "@ ") (Base.List.map ~f:show_case (pe :: pes)))
+    set_parens ~ctx [ Ite; Tuple; Binop; App ]
+    @@ sprintf
+         "@[if %s then %s else %s@]"
+         (show_expression ~ctx:Ite i)
+         (show_expression ~ctx:Ite t)
+         (show_expression ~ctx:Ite e)
+  | EMatch (e, (case1, cases)) ->
+    let pp_case fmt (p, e) =
+      Format.fprintf
+        fmt
+        "@[| %s -> %s@]"
+        (show_pattern ~ctx:LeftSideMatch p)
+        (show_expression ~ctx:RightSideMatch e)
+    in
+    set_parens ~ctx [ MatchWith; Tuple; Binop; App; RightSideMatch ]
+    @@ Format.asprintf
+         "@[match %s with@]@ %a"
+         (show_expression ~ctx:MatchWith e)
+         (Format.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt "@;") pp_case)
+         (case1 :: cases)
 
 and show_value_binding rec_flag vb vbs =
-  let helper p e = sprintf "%s = %s" (show_pattern p) (show_expression e) in
-  sprintf
-    "let%s%s"
-    (if rec_flag == Recursive then " rec " else " ")
-    (String.concat ~sep:" and " (List.map (vb :: vbs) ~f:(fun (p, e) -> helper p e)))
+  let pp_binding (p, e) =
+    Format.asprintf
+      "%s =@;<1 2>%s"
+      (show_pattern ~ctx:LeftSideLet p)
+      (show_expression ~ctx:RightSideLet e)
+  in
+  Format.asprintf
+    "let%s%a"
+    (show_rec_flag rec_flag)
+    (Format.pp_print_list
+       ~pp_sep:(fun fmt () -> Format.fprintf fmt "@;and ")
+       (fun fmt b -> Format.fprintf fmt "%s" (pp_binding b)))
+    (vb :: vbs)
 ;;
 
-let pp_expression ppf expr = Format.fprintf ppf "@[%s@]" (show_expression expr)
-
-let rec show_core_type = function
-  | Pty_var name -> sprintf "%s" name
-  | Pty_arrow (a, b) -> sprintf "(%s -> %s)" (show_core_type a) (show_core_type b)
-  | Pty_tuple (ct1, ct2, cts) -> show_tuple ~sep:" * " show_core_type (ct1, ct2, cts)
-  | Pty_constr (name, []) -> sprintf "%s" name
-  | Pty_constr (name, args) ->
-    sprintf "(%s) %s" (String.concat ~sep:", " (List.map ~f:show_core_type args)) name
+let rec show_core_type ?(ctx = Parens.Free) = function
+  | Pty_var name -> name
+  | Pty_arrow (a, b) ->
+    set_parens ~ctx [ LeftSideArrow; App; Tuple ]
+    @@ sprintf
+         "%s -> %s"
+         (show_core_type ~ctx:LeftSideArrow a)
+         (show_core_type ~ctx:RightSideArrow b)
+  | Pty_tuple (ct1, ct2, cts) ->
+    set_parens ~ctx [ App; Tuple ]
+    @@ sprintf "%s"
+    @@ show_many ~sep:" * " (show_core_type ~ctx:Tuple) (ct1 :: ct2 :: cts)
+  | Pty_constr (name, []) -> name
+  | Pty_constr (name, [ param ]) ->
+    set_parens ~ctx [ App ] @@ sprintf "%s %s" (show_core_type ~ctx:App param) name
+  | Pty_constr (name, ct1 :: ct2 :: cts) ->
+    set_parens ~ctx [ App ]
+    @@ sprintf "(%s) %s" (show_tuple (show_core_type ~ctx:Free) (ct1, ct2, cts)) name
 ;;
 
-let pp_core_type ppf core_type = Format.fprintf ppf "@[%s@]" (show_core_type core_type)
-
-let show_type_params td =
-  match td.pty_params with
-  | [] -> " "
-  | [ x ] -> sprintf " %s " x
-  | x :: xs -> sprintf " (%s) " (String.concat ~sep:", " (x :: xs))
-;;
-
-let show_type_kind td =
-  match td.pty_kind with
-  | Pty_abstract None -> "@ "
-  | Pty_abstract (Some ct) -> sprintf " = %s@ " (show_core_type ct)
-  | Pty_variants (case, cases) ->
-    let show_case = function
-      | name, None -> sprintf "| %s@ " name
-      | name, Some ct -> sprintf "| %s of %s@ " name (show_core_type ct)
-    in
-    sprintf " =@ %s@ " (String.concat (List.map ~f:show_case (case :: cases)))
-;;
+let pp_core_type ppf core_type = fprintf ppf "@[%s@]" (show_core_type core_type)
 
 let show_type_declaration td tds =
-  let helper td =
-    sprintf "%s%s%s" (show_type_params td) td.pty_name (show_type_kind td)
+  let show_type_params td =
+    match td.pty_params with
+    | [] -> " "
+    | [ x ] -> sprintf " %s " x
+    | x :: xs -> sprintf " (%s) " (String.concat ~sep:", " (x :: xs))
   in
-  sprintf "type%s" (String.concat ~sep:"and" (List.map ~f:helper (td :: tds)))
+  let show_type_kind td =
+    match td.pty_kind with
+    | Pty_abstract None -> "@ "
+    | Pty_abstract (Some ct) -> sprintf " = %s@ " (show_core_type ct)
+    | Pty_variants (case, cases) ->
+      let show_case = function
+        | name, None -> sprintf "| %s@ " name
+        | name, Some ct -> sprintf "| %s of %s@ " name (show_core_type ct)
+      in
+      sprintf " =@ %s@ " (String.concat (List.map ~f:show_case (case :: cases)))
+  in
+  let helper ~keyword td =
+    Format.sprintf
+      "%s%s%s%s"
+      keyword
+      (show_type_params td)
+      td.pty_name
+      (show_type_kind td)
+  in
+  sprintf "%s%s" (helper ~keyword:"type" td)
+  @@ String.concat (List.map ~f:(helper ~keyword:"and") tds)
 ;;
 
 let pp_type_declaration ppf td tds = fprintf ppf "%s" (show_type_declaration td tds)
@@ -226,4 +257,9 @@ let show_structure (item, items) =
   String.concat (List.map ~f:helper (item :: items))
 ;;
 
+let show_expression = show_expression ~ctx:Free
+let show_pattern = show_pattern ~ctx:Free
+let show_core_type = show_core_type ~ctx:Free
 let pp_structure ppf items = fprintf ppf "%s" (show_structure items)
+let pp_pattern ppf patt = fprintf ppf "%s" (show_pattern patt)
+let pp_expression ppf expr = fprintf ppf "@[%s@]" (show_expression expr)
