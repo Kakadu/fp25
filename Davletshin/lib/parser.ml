@@ -67,9 +67,9 @@ let parse_lam =
     fix (fun _ ->
       conde
         [ char '(' *> pack.apps pack <* char ')' <?> "Parentheses expected"
-        ; ((string "λ" <|> string "\\") *> spaces *> varname
+        ; (string "fun" *> spaces *> varname
            <* spaces
-           <* (return () <* char '.' <|> string "->" *> return ())
+           <* (return () <* string "->" *> return ())
            >>= fun var -> pack.apps pack >>= fun b -> return (Ast.Abs (var, b)))
         ; (varname <* spaces >>= fun var -> return (Ast.Var var))
         ; (number <* spaces >>= fun n -> return (Ast.Int n))

@@ -31,7 +31,7 @@ let pp ?(compact = true) =
     | Abs (v1, Abs (v2, Abs (v3, Abs (v4, t)))) when compact ->
       Format.fprintf
         fmt
-        "(λ %a %a %a %a -> %a)"
+        "(fun %a %a %a %a -> %a)"
         (mangle t)
         v1
         (mangle t)
@@ -45,7 +45,7 @@ let pp ?(compact = true) =
     | Abs (v1, Abs (v2, Abs (v3, t))) when compact ->
       Format.fprintf
         fmt
-        "(λ %a %a %a -> %a)"
+        "(fun %a %a %a -> %a)"
         (mangle t)
         v1
         (mangle t)
@@ -55,8 +55,8 @@ let pp ?(compact = true) =
         pp
         t
     | Abs (v1, Abs (v2, t)) when compact ->
-      Format.fprintf fmt "(λ %a %a -> %a)" (mangle t) v1 (mangle t) v2 pp t
-    | Abs (x, t) -> Format.fprintf fmt "(λ %a . %a)" (mangle t) x pp t
+      Format.fprintf fmt "(fun %a %a -> %a)" (mangle t) v1 (mangle t) v2 pp t
+    | Abs (x, t) -> Format.fprintf fmt "(fun %a -> %a)" (mangle t) x pp t
   in
   pp
 ;;

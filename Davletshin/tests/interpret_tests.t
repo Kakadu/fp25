@@ -10,9 +10,9 @@ you could put it into separate file. Thise will need stanza `(cram (deps demo_in
 in the dune file
 
   $ ../bin/REPL.exe -cbv -dparsetree <<EOF
-  > \f.x
+  > fun f -> x
   Parsed result: (Abs (f, (Var x)))
-  Evaluated result: (λ _ . x)
+  Evaluated result: (fun _ -> x)
   $ ../bin/REPL.exe -dparsetree <<EOF
   > garbage242
   Parsed result: (Var garbage242)
@@ -21,13 +21,13 @@ in the dune file
 
 
   $ ../bin/REPL.exe -no -dparsetree <<EOF
-  > (\x.\y.x)(\u.u)((\x. x x)(\x.x x))
+  > (fun x -> fun y -> x)(fun u -> u)((fun x -> x x)(fun x -> x x))
   Parsed result: (App (
                     (App ((Abs (x, (Abs (y, (Var x))))), (Abs (u, (Var u))))),
                     (App ((Abs (x, (App ((Var x), (Var x))))),
                        (Abs (x, (App ((Var x), (Var x)))))))
                     ))
-  Evaluated result: (λ u . u)
+  Evaluated result: (fun u -> u)
 Below we redirect contents of the file to the evaluator
   $ ../bin/REPL.exe -dparsetree -stop-after parsing   < lam_1+1.txt
   Parsed result: (App (
@@ -49,27 +49,27 @@ Below we redirect contents of the file to the evaluator
                     ))
 
   $ ../bin/REPL.exe -ao   < lam_1+1.txt
-  Evaluated result: (λ n f x _x -> ((f (n (f x))) _x))
+  Evaluated result: (fun n f x _x -> ((f (n (f x))) _x))
   $ ../bin/REPL.exe -ao   < lam_2x1.txt
   Evaluated result: 2
 Call by value doesn't reduce under abstraction
   $ ../bin/REPL.exe -cbv   < lam_2x1.txt
-  Evaluated result: (λ z . (2 (1 z)))
+  Evaluated result: (fun z -> (2 (1 z)))
   $ ../bin/REPL.exe -ao -small   < lam_3x2.txt
-   -- ((λ y z -> ((λ f x -> (f (f (f x)))) (y z))) 2)
-   -- ((λ y z x -> ((y z) ((y z) ((y z) x)))) 2)
-   -- (λ z x -> ((2 z) ((2 z) ((2 z) x))))
-   -- (λ z x -> ((λ x . (z (z x))) ((2 z) ((2 z) x))))
-   -- (λ z x -> ((λ x . (z (z x))) ((λ x . (z (z x))) ((2 z) x))))
-   -- (λ z x -> ((λ x . (z (z x))) ((λ x . (z (z x))) ((λ x . (z (z x))) x))))
-   -- (λ z x -> ((λ x . (z (z x))) ((λ x . (z (z x))) (z (z x)))))
-   -- (λ z x -> ((λ x . (z (z x))) (z (z (z (z x))))))
-   -- (λ z x -> (z (z (z (z (z (z x)))))))
-  Evaluated result: (λ z x -> (z (z (z (z (z (z x)))))))
+   -- ((fun y z -> ((fun f x -> (f (f (f x)))) (y z))) 2)
+   -- ((fun y z x -> ((y z) ((y z) ((y z) x)))) 2)
+   -- (fun z x -> ((2 z) ((2 z) ((2 z) x))))
+   -- (fun z x -> ((fun x -> (z (z x))) ((2 z) ((2 z) x))))
+   -- (fun z x -> ((fun x -> (z (z x))) ((fun x -> (z (z x))) ((2 z) x))))
+   -- (fun z x -> ((fun x -> (z (z x))) ((fun x -> (z (z x))) ((fun x -> (z (z x))) x))))
+   -- (fun z x -> ((fun x -> (z (z x))) ((fun x -> (z (z x))) (z (z x)))))
+   -- (fun z x -> ((fun x -> (z (z x))) (z (z (z (z x))))))
+   -- (fun z x -> (z (z (z (z (z (z x)))))))
+  Evaluated result: (fun z x -> (z (z (z (z (z (z x)))))))
   $ ../bin/REPL.exe -ao   < lam_zero.txt
   Evaluated result: ⊥
 For 3! we use noral order reduction
   $ cat lam_fac3.txt
-  (((λ f . ((λ x . (f (x x))) (λ x . (f (x x))))) (λ s . (λ n . ((((λ n . ((n (λ x . (λ x . (λ y . y)))) (λ x . (λ y . x)))) n) (λ f . (λ x . (f x)))) (((λ x . (λ y . (λ z . (x (y z))))) (s ((λ n . (λ f . (λ x . (((n (λ g . (λ h . (h (g f))))) (λ u . x)) (λ u . u))))) n))) n))))) (λ f . (λ x . (f (f (f x))))))
+  (((fun f -> ((fun x -> (f (x x))) (fun x -> (f (x x))))) (fun s -> (fun n -> ((((fun n -> ((n (fun x -> (fun x -> (fun y -> y)))) (fun x -> (fun y -> x)))) n) (fun f -> (fun x -> (f x)))) (((fun x -> (fun y -> (fun z -> (x (y z))))) (s ((fun n -> (fun f -> (fun x -> (((n (fun g -> (fun h -> (h (g f))))) (fun u -> x)) (fun u -> u))))) n))) n))))) (fun f -> (fun x -> (f (f (f x))))))
   $ ../bin/REPL.exe -no   < lam_fac3.txt
-  Evaluated result: (λ z x -> (z (z (z (z (z (z x)))))))
+  Evaluated result: (fun z x -> (z (z (z (z (z (z x)))))))

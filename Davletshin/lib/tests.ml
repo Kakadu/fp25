@@ -34,17 +34,17 @@ let%expect_test _ =
 ;;
 
 let%expect_test _ =
-  Format.printf "%a" pp (parse_optimistically "(\\x . x x)");
+  Format.printf "%a" pp (parse_optimistically "(fun x -> x x)");
   [%expect {| (Abs (x, (App ((Var x), (Var x))))) |}]
 ;;
 
 let%expect_test _ =
-  Format.printf "%a" pp (parse_optimistically "(λf.λx. f (x x))");
+  Format.printf "%a" pp (parse_optimistically "(fun f -> fun x -> f (x x))");
   [%expect {| (Abs (f, (Abs (x, (App ((Var f), (App ((Var x), (Var x))))))))) |}]
 ;;
 
 let%expect_test _ =
-  Format.printf "%a" pp (parse_optimistically "(λf.λx. f (1 1))");
+  Format.printf "%a" pp (parse_optimistically "(fun f -> fun x -> f (1 1))");
   [%expect {| (Abs (f, (Abs (x, (App ((Var f), (App ((Int 1), (Int 1))))))))) |}]
 ;;
 
