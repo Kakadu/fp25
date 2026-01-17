@@ -263,10 +263,10 @@ let parse_expression =
     let expr_app = parse_expr_apply expr_if <|> expr_if in
     let expr_unop = parse_expr_unop expr_app <|> expr_app in
     let expr_binop = parse_expr_binop expr_unop <|> expr_unop in
-    let expr_match = parse_expr_match expr_binop <|> expr_binop in
-    let expr_functon = parse_expr_function expr_match <|> expr_match in
-    let expr_let = parse_let expr_functon <|> expr_functon in
-    let expr_fun = parse_expr_fun expr_let <|> expr_let in
+    let expr_match = parse_expr_match self <|> expr_binop in
+    let expr_functon = parse_expr_function self <|> expr_match in
+    let expr_let = parse_let self <|> expr_functon in
+    let expr_fun = parse_expr_fun self <|> expr_let in
     expr_fun)
 ;;
 
