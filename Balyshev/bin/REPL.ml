@@ -1,7 +1,16 @@
 open Base
 open MiniML
-module Eval = Interpreter.Eval (Monads.State)
-module Infer = Inferencer.Infer (Monads.State)
+module Valuetree = Valuetree.Make (Monads.State) (Interpreter.Error)
+
+let eval_expression, eval_structure =
+  let open Interpreter.Make (Monads.State) in
+  eval_expression, eval_structure
+;;
+
+let infer_expression, infer_structure =
+  let open Inferencer.Make (Monads.State) in
+  infer_expression, infer_structure
+;;
 
 type ty =
   | Expr
@@ -21,12 +30,12 @@ let run_expr ~mode text =
     (match mode with
      | Parse -> Format.printf "parsed: %a\n" Parsetree.pp_expression ast
      | Eval ->
-       (match Eval.eval_expr ast with
-        | Error err -> Format.printf "interpreter error: %a\n" Interpreter.pp_error err
-        | Ok value -> Format.printf "evaluated: %a\n" Interpreter.pp_value value)
+       (match eval_expression ast with
+        | Error err -> Format.printf "interpreter error: %a\n" Interpreter.Error.pp err
+        | Ok value -> Format.printf "evaluated: %a\n" Valuetree.pp_value value)
      | Infer ->
-       (match Infer.expression ast with
-        | Error err -> Format.printf "inferencer error: %a\n" Inferencer.pp_error err
+       (match infer_expression ast with
+        | Error err -> Format.printf "inferencer error: %a\n" Inferencer.Error.pp err
         | Ok ty -> Format.printf "inferred: %a" Typedtree.pp_ty ty))
 ;;
 
@@ -37,10 +46,10 @@ let run_stru ~mode text =
     (match mode with
      | Parse -> Format.printf "parsed: %a\n" Parsetree.pp_structure ast
      | Infer ->
-       (match Infer.structure ast with
+       (match infer_structure ast with
         | Ok typed_stru ->
           Format.printf "typed structure:@.%a" Typedtree.pp_structure typed_stru
-        | Error err -> Format.printf "inferencer error: %a" Inferencer.pp_error err)
+        | Error err -> Format.printf "inferencer error: %a" Inferencer.Error.pp err)
      | _ -> failwith "not implemented REPL.exe")
 ;;
 
@@ -74,11 +83,11 @@ let () =
   Stdlib.Arg.parse
     [ "-expr", arg_type Expr, "\t expression"
     ; "-stru", arg_type Stru, "\t structure"
+    ; "-patt", arg_type Patt, "\t pattern"
+    ; "-core-type", arg_type CoreType, "\t core type"
     ; "-parse", arg_mode Parse, "\t parser"
     ; "-eval", arg_mode Eval, "\t interpreter"
     ; "-infer", arg_mode Infer, "\t inferencer"
-    ; "-patt", arg_type Patt, "\t pattern"
-    ; "-core-type", arg_type CoreType, "\t core type"
     ]
     (fun _ -> assert false)
     "REPL";

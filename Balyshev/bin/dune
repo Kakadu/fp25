@@ -1,3 +1,6 @@
+(cram
+ (deps %{project_root}/bin/REPL.exe))
+
 (executable
  (name REPL)
  (public_name Balyshev.REPL)
