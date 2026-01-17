@@ -10,10 +10,3 @@ type error = [ `Parsing_error of string ]
 
 val pp_error : Format.formatter -> [< `Parsing_error of string ] -> unit
 val parse : string -> (Ast.name Ast.t, [> error ]) result
-
-type dispatch =
-  { apps : dispatch -> Ast.name Ast.t Angstrom.t
-  ; single : dispatch -> Ast.name Ast.t Angstrom.t
-  }
-
-val parse_lam : dispatch

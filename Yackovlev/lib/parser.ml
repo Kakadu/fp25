@@ -45,11 +45,6 @@ let integer =
   |> token
 ;;
 
-type dispatch =
-  { apps : dispatch -> string Ast.t Angstrom.t
-  ; single : dispatch -> string Ast.t Angstrom.t
-  }
-
 type error = [ `Parsing_error of string ]
 
 let pp_error ppf = function
@@ -147,12 +142,6 @@ let expr : string Ast.t Angstrom.t =
       if is_rec then Let_rec (name, rhs', body) else Let (name, rhs', body)
     in
     choice [ let_expr; if_expr; fun_expr; cmp ])
-;;
-
-let parse_lam =
-  let apps _ = expr in
-  let single _ = expr in
-  { apps; single }
 ;;
 
 let parse str =
