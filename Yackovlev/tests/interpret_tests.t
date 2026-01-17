@@ -17,9 +17,34 @@ in the dune file
   7
 
   $ $REPL <<EOF
-  > 10 / 0
-  (10 / 0)
-  Error: Division by zero
+  > 20 / 2
+  (20 / 2)
+  10
+
+  $ $REPL <<EOF
+  > -5 + 3
+  ((-5) + 3)
+  -2
+
+  $ $REPL <<EOF
+  > -(1 + 2)
+  (0 - (1 + 2))
+  -3
+
+  $ $REPL <<EOF
+  > 1 = 1
+  (1 = 1)
+  1
+
+  $ $REPL <<EOF
+  > 1 <> 2
+  (1 <> 2)
+  1
+
+  $ $REPL <<EOF
+  > 5 > 10
+  (5 > 10)
+  0
 
   $ $REPL <<EOF
   > if 1 < 2 then 100 else 200
@@ -27,14 +52,9 @@ in the dune file
   100
 
   $ $REPL <<EOF
-  > if 5 then 1 else 0
-  (if 5 then 1 else 0)
-  1
-
-  $ $REPL <<EOF
-  > if 0 then 100 else 200
-  (if 0 then 100 else 200)
-  200
+  > if 0 then 1 else 0
+  (if 0 then 1 else 0)
+  0
 
   $ $REPL <<EOF
   > let x = 5 in let y = x + 1 in x * y
@@ -42,9 +62,36 @@ in the dune file
   30
 
   $ $REPL <<EOF
+  > let x = 10 in let x = 20 in x
+  (let x = 10 in (let x = 20 in x))
+  20
+
+  $ $REPL <<EOF
   > let f = fun x y z -> x + y + z in f 1 2 3
   (let f = (fun x -> (fun y -> (fun z -> ((x + y) + z)))) in (((f 1) 2) 3))
   6
+
+  $ $REPL <<EOF
+  > print_int 0
+  (print_int 0)
+  0
+  ()
+
+  $ $REPL <<EOF
+  > let _ = print_int 999 in 0
+  (let _ = (print_int 999) in 0)
+  999
+  0
+
+  $ $REPL <<EOF
+  > print_int
+  print_int
+  <prim print_int>
+
+  $ $REPL <<EOF
+  > fix
+  fix
+  <prim fix>
 
   $ $REPL <<EOF
   > let rec fact n = if n <= 1 then 1 else n * fact (n - 1) in fact 5
@@ -57,11 +104,8 @@ in the dune file
   55
 
   $ $REPL <<EOF
-  > let rec fix f x = f (fix f) x in
-  > let fact_gen fact n = if n = 0 then 1 else n * fact (n - 1) in
-  > let fact = fix fact_gen in
-  > fact 5
-  (let rec fix = (fun f -> (fun x -> ((f (fix f)) x))) in (let fact_gen = (fun fact -> (fun n -> (if (n = 0) then 1 else (n * (fact (n - 1)))))) in (let fact = (fix fact_gen) in (fact 5))))
+  > let fact = fix (fun self -> fun n -> if n = 0 then 1 else n * self (n - 1)) in fact 5
+  (let fact = (fix (fun self -> (fun n -> (if (n = 0) then 1 else (n * (self (n - 1))))))) in (fact 5))
   120
 
   $ $REPL <<EOF
@@ -70,20 +114,9 @@ in the dune file
   Error: Out of fuel
 
   $ $REPL <<EOF
-  > let _ = print_int 999 in 0
-  (let _ = (print_int 999) in 0)
-  999
-  0
-
-  $ $REPL <<EOF
-  > -5 + 3
-  ((-5) + 3)
-  -2
-
-  $ $REPL <<EOF
-  > let x = 10 in let x = 20 in x
-  (let x = 10 in (let x = 20 in x))
-  20
+  > 10 / 0
+  (10 / 0)
+  Error: Division by zero
 
   $ $REPL <<EOF
   > unknown_var
@@ -106,39 +139,14 @@ in the dune file
   Error: Type error: if condition must be an int
 
   $ $REPL <<EOF
-  > 1 = 1
-  (1 = 1)
-  1
+  > (fun x -> x) > 0
+  ((fun x -> x) > 0)
+  Error: Type error: comparison expects integer operands
 
   $ $REPL <<EOF
-  > 1 <> 2
-  (1 <> 2)
-  1
-
-  $ $REPL <<EOF
-  > 5 > 10
-  (5 > 10)
-  0
-
-  $ $REPL <<EOF
-  > 5 >= 5
-  (5 >= 5)
-  1
-
-  $ $REPL <<EOF
-  > 2 <= 2
-  (2 <= 2)
-  1
-
-  $ $REPL <<EOF
-  > 3 <= 2
-  (3 <= 2)
-  0
-
-  $ $REPL <<EOF
-  > let fact = fix (fun self -> fun n -> if n = 0 then 1 else n * self (n - 1)) in fact 5
-  (let fact = (fix (fun self -> (fun n -> (if (n = 0) then 1 else (n * (self (n - 1))))))) in (fact 5))
-  120
+  > print_int (fun x -> x)
+  (print_int (fun x -> x))
+  Error: Type error: print_int expects int, got <fun>
 
   $ $REPL <<EOF
   > fix 5
@@ -151,21 +159,10 @@ in the dune file
   Error: Type error: fix expects a function that returns a function
 
   $ $REPL <<EOF
-  > print_int (fun x -> x)
-  (print_int (fun x -> x))
-  Error: Type error: print_int expects int, got <fun>
+  > let rec x = 5 in x
+  (let rec x = 5 in x)
+  Error: Type error: let rec expects a function on the right-hand side
 
   $ $REPL <<EOF
-  > (fun x -> x) > 0
-  ((fun x -> x) > 0)
-  Error: Type error: comparison expects integer operands
-
-  $ $REPL <<EOF
-  > -(1 + 2)
-  (0 - (1 + 2))
-  -3
-
-  $ $REPL <<EOF
-  > let x = 5 in --x
-  (let x = 5 in (0 - (0 - x)))
-  5
+  > 1 + * 2
+  Error: : end_of_input
