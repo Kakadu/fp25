@@ -257,13 +257,17 @@
 
   $ ../bin/REPL.exe -dparsetree <<EOF
   > let x = 123x
-  [(Str_value (NonRecursive,
-      { vb_pat = (Pat_var "x"); vb_expr = (Expr_const (Const_int 123)) }, 
-      []));
-    (Str_eval (Expr_ident "x"))]
+  : end_of_input
 
   $ ../bin/REPL.exe -dparsetree <<EOF
   > let  _ = 8
   [(Str_value (NonRecursive,
       { vb_pat = Pat_any; vb_expr = (Expr_const (Const_int 8)) }, []))
+    ]
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > let x = truexe and y = false992f
+  [(Str_value (NonRecursive,
+      { vb_pat = (Pat_var "x"); vb_expr = (Expr_ident "truexe") },
+      [{ vb_pat = (Pat_var "y"); vb_expr = (Expr_ident "false992f") }]))
     ]
