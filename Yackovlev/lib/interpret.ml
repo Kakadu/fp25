@@ -69,100 +69,29 @@ let string_of_error : error -> string = function
   | `Out_of_fuel -> "Out of fuel"
 ;;
 
-let eval_int_binop (op : binop) (n1 : int) (n2 : int) : (int, error) result =
-  match op with
-  | Add -> ok (n1 + n2)
-  | Sub -> ok (n1 - n2)
-  | Mul -> ok (n1 * n2)
-  | Div -> if n2 = 0 then error `Division_by_zero else ok (n1 / n2)
-;;
-
-let eval_cmpop (op : cmpop) (n1 : int) (n2 : int) : (int, error) result =
-  let b =
-    match op with
-    | Eq -> n1 = n2
-    | Neq -> n1 <> n2
-    | Lt -> n1 < n2
-    | Le -> n1 <= n2
-    | Gt -> n1 > n2
-    | Ge -> n1 >= n2
-  in
-  let as_int = if b then 1 else 0 in
-  ok as_int
-;;
-
-let apply_prim (fuel : fuel) (p : prim) (arg : value) : (value * fuel, error) result =
-  match p, arg with
-  | Print_int, VInt n ->
-    print_endline (string_of_int n);
-    ok (VUnit, fuel)
-  | Print_int, v ->
-    error (`Type_error ("print_int expects int, got " ^ string_of_value v))
-  | Fix, VClosure { param = self; body; env } ->
-    (match body with
-     | Abs (arg, inner_body) ->
-       let rec rec_closure =
-         VClosure { param = arg; body = inner_body; env = (self, rec_closure) :: env }
-       in
-       ok (rec_closure, fuel)
-     | _ -> error (`Type_error "fix expects a function that returns a function"))
-  | Fix, v -> error (`Type_error ("fix expects a function, got " ^ string_of_value v))
-;;
-
 let rec apply (fuel : fuel) (f : value) (arg : value) : (value * fuel, error) result =
   match f with
   | VClosure { param; body; env } ->
     let env' = (param, arg) :: env in
     eval env' fuel body
-  | VPrim p -> apply_prim fuel p arg
+  | VPrim Print_int ->
+    (match arg with
+     | VInt n ->
+       print_endline (string_of_int n);
+       ok (VUnit, fuel)
+     | v -> error (`Type_error ("print_int expects int, got " ^ string_of_value v)))
+  | VPrim Fix ->
+    (match arg with
+     | VClosure { param = self; body; env } ->
+       (match body with
+        | Abs (arg, inner_body) ->
+          let rec rec_closure =
+            VClosure { param = arg; body = inner_body; env = (self, rec_closure) :: env }
+          in
+          ok (rec_closure, fuel)
+        | _ -> error (`Type_error "fix expects a function that returns a function"))
+     | v -> error (`Type_error ("fix expects a function, got " ^ string_of_value v)))
   | v -> error (`Not_a_function v)
-
-and eval_if (env : env) (fuel : fuel) (cond : expr) (e_then : expr) (e_else : expr)
-  : (value * fuel, error) result
-  =
-  let* v_cond, fuel1 = eval env fuel cond in
-  match v_cond with
-  | VInt n -> if n <> 0 then eval env fuel1 e_then else eval env fuel1 e_else
-  | _ -> error (`Type_error "if condition must be an int")
-
-and eval_let (env : env) (fuel : fuel) (x : name) (e1 : expr) (e2 : expr)
-  : (value * fuel, error) result
-  =
-  let* v1, fuel1 = eval env fuel e1 in
-  let env' = (x, v1) :: env in
-  eval env' fuel1 e2
-
-and eval_let_rec (env : env) (fuel : fuel) (f : name) (rhs : expr) (body : expr)
-  : (value * fuel, error) result
-  =
-  match rhs with
-  | Abs (x, fun_body) ->
-    let rec closure = VClosure { param = x; body = fun_body; env = env' }
-    and env' = (f, closure) :: env in
-    eval env' fuel body
-  | _ -> error (`Type_error "let rec expects a function on the right-hand side")
-
-and eval_binop (env : env) (fuel : fuel) (op : binop) (e1 : expr) (e2 : expr)
-  : (value * fuel, error) result
-  =
-  let* v1, fuel1 = eval env fuel e1 in
-  let* v2, fuel2 = eval env fuel1 e2 in
-  match v1, v2 with
-  | VInt n1, VInt n2 ->
-    let* n = eval_int_binop op n1 n2 in
-    ok (VInt n, fuel2)
-  | _ -> error (`Type_error "integer operands expected in arithmetic")
-
-and eval_cmp (env : env) (fuel : fuel) (op : cmpop) (e1 : expr) (e2 : expr)
-  : (value * fuel, error) result
-  =
-  let* v1, fuel1 = eval env fuel e1 in
-  let* v2, fuel2 = eval env fuel1 e2 in
-  match v1, v2 with
-  | VInt n1, VInt n2 ->
-    let* n = eval_cmpop op n1 n2 in
-    ok (VInt n, fuel2)
-  | _ -> error (`Type_error "comparison expects integer operands")
 
 and eval (env : env) (fuel : fuel) (e : expr) : (value * fuel, error) result =
   let* (), fuel = tick fuel in
@@ -177,11 +106,52 @@ and eval (env : env) (fuel : fuel) (e : expr) : (value * fuel, error) result =
     let* f, fuel1 = eval env fuel e1 in
     let* arg, fuel2 = eval env fuel1 e2 in
     apply fuel2 f arg
-  | Let (x, e1, e2) -> eval_let env fuel x e1 e2
-  | Let_rec (f, rhs, body) -> eval_let_rec env fuel f rhs body
-  | If (cond, e_then, e_else) -> eval_if env fuel cond e_then e_else
-  | Binop (op, e1, e2) -> eval_binop env fuel op e1 e2
-  | Cmp (op, e1, e2) -> eval_cmp env fuel op e1 e2
+  | Let (x, e1, e2) ->
+    let* v1, fuel1 = eval env fuel e1 in
+    let env' = (x, v1) :: env in
+    eval env' fuel1 e2
+  | Let_rec (f, rhs, body) ->
+    (match rhs with
+     | Abs (x, fun_body) ->
+       let rec closure = VClosure { param = x; body = fun_body; env = env' }
+       and env' = (f, closure) :: env in
+       eval env' fuel body
+     | _ -> error (`Type_error "let rec expects a function on the right-hand side"))
+  | If (cond, e_then, e_else) ->
+    let* v_cond, fuel1 = eval env fuel cond in
+    (match v_cond with
+     | VInt n -> if n <> 0 then eval env fuel1 e_then else eval env fuel1 e_else
+     | _ -> error (`Type_error "if condition must be an int"))
+  | Binop (op, e1, e2) ->
+    let* v1, fuel1 = eval env fuel e1 in
+    let* v2, fuel2 = eval env fuel1 e2 in
+    (match v1, v2 with
+     | VInt n1, VInt n2 ->
+       let* n =
+         match op with
+         | Add -> ok (n1 + n2)
+         | Sub -> ok (n1 - n2)
+         | Mul -> ok (n1 * n2)
+         | Div -> if n2 = 0 then error `Division_by_zero else ok (n1 / n2)
+       in
+       ok (VInt n, fuel2)
+     | _ -> error (`Type_error "integer operands expected in arithmetic"))
+  | Cmp (op, e1, e2) ->
+    let* v1, fuel1 = eval env fuel e1 in
+    let* v2, fuel2 = eval env fuel1 e2 in
+    (match v1, v2 with
+     | VInt n1, VInt n2 ->
+       let b =
+         match op with
+         | Eq -> n1 = n2
+         | Neq -> n1 <> n2
+         | Lt -> n1 < n2
+         | Le -> n1 <= n2
+         | Gt -> n1 > n2
+         | Ge -> n1 >= n2
+       in
+       ok (VInt (if b then 1 else 0), fuel2)
+     | _ -> error (`Type_error "comparison expects integer operands"))
 ;;
 
 let initial_env : env = [ "print_int", VPrim Print_int; "fix", VPrim Fix ]
