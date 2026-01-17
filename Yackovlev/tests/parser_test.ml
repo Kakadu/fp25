@@ -7,7 +7,7 @@ open Ast
 
 let gen_name =
   let open QCheck.Gen in
-  oneofl [ "x"; "y"; "z"; "a"; "b"; "c"; "f"; "g"; "n"; "m"; "res"; "fact"; "fib" ]
+  oneofl [ "x"; "y"; "z"; "a"; "b"; "c"; "x1"; "y_2"; "n'"; "fact"; "fib" ]
 ;;
 
 let gen_binop =
