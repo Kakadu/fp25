@@ -11,6 +11,20 @@ open Base
 let ws = skip_while Char.is_whitespace
 let ws1 = skip Char.is_whitespace *> ws
 let token str = ws *> string str
+
+let is_ident_char = function
+  | 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' | '_' | '\'' -> true
+  | _ -> false
+;;
+
+let keyword str =
+  token str *> peek_char
+  >>= function
+  | Some c when is_ident_char c ->
+    fail (Printf.sprintf "There is no separator after %S." str)
+  | _ -> return str
+;;
+
 let skip_round_par parse = token "(" *> parse <* token ")"
 
 let chain_left parse p_function =
@@ -21,15 +35,19 @@ let chain_left parse p_function =
 (* ==================== constant ==================== *)
 
 let parse_int =
-  take_while1 Char.is_digit >>| fun int_value -> Const_int (Int.of_string int_value)
+  let* n = take_while1 Char.is_digit in
+  peek_char
+  >>= function
+  | Some c when is_ident_char c -> fail "There is no separator after integer"
+  | _ -> return (Const_int (Int.of_string n))
 ;;
 
-let parse_unit = token "()" *> return Const_unit
+let parse_unit = keyword "()" *> return Const_unit
 
 let parse_bool =
   choice
-    [ token "true" *> return (Const_bool true)
-    ; token "false" *> return (Const_bool false)
+    [ keyword "true" *> return (Const_bool true)
+    ; keyword "false" *> return (Const_bool false)
     ]
 ;;
 
@@ -46,11 +64,7 @@ let parse_ident =
       | _ -> false)
     >>| String.of_char
   in
-  let* rest_str =
-    take_while (function
-      | 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' | '_' | '\'' -> true
-      | _ -> false)
-  in
+  let* rest_str = take_while is_ident_char in
   let id = fst_char ^ rest_str in
   if is_keyword id then fail (Printf.sprintf "Impossible name: %S." id) else return id
 ;;
@@ -66,14 +80,14 @@ let parse_type_var =
 
 let parse_base_type =
   choice
-    [ token "unit" *> return Type_unit
-    ; token "int" *> return Type_int
-    ; token "bool" *> return Type_bool
+    [ keyword "unit" *> return Type_unit
+    ; keyword "int" *> return Type_int
+    ; keyword "bool" *> return Type_bool
     ]
 ;;
 
 let parse_type_option p_type =
-  let* t = p_type <* ws1 <* token "option" in
+  let* t = p_type <* ws1 <* keyword "option" in
   return (Type_option t)
 ;;
 
@@ -94,14 +108,14 @@ let parse_type =
 
 (* -------------------- pattern -------------------- *)
 
-let parse_pat_any = token "_" *> return Pat_any
+let parse_pat_any = keyword "_" *> return Pat_any
 let parse_pat_const = parse_const >>| fun c -> Pat_constant c
 let parse_pat_var = parse_ident >>| fun i -> Pat_var i
 
 let parse_pat_option parse_pat =
-  token "Some" *> ws1 *> parse_pat
+  keyword "Some" *> parse_pat
   >>| (fun e -> Some e)
-  <|> token "None" *> return None
+  <|> keyword "None" *> return None
   >>| fun e -> Pat_option e
 ;;
 
@@ -153,7 +167,7 @@ let parse_unop =
   choice
     [ token "-" *> return Negative
     ; token "+" *> return Positive
-    ; token "not" *> ws1 *> return Not
+    ; keyword "not" *> return Not
     ]
 ;;
 
@@ -165,14 +179,14 @@ let parse_expr_unop parse_expr =
 
 (* -------------------- expression -------------------- *)
 
-let parse_rec_flag = token "rec" *> ws1 *> return Recursive <|> return NonRecursive
+let parse_rec_flag = keyword "rec" *> return Recursive <|> return NonRecursive
 let parse_expr_const = parse_const >>| fun c -> Expr_const c
 let parse_expr_ident = parse_ident >>| fun i -> Expr_ident i
 
 let parse_expr_option parse_expr =
-  token "Some" *> ws1 *> parse_expr
+  keyword "Some" *> parse_expr
   >>| (fun op -> Some op)
-  <|> token "None" *> return None
+  <|> keyword "None" *> return None
   >>| fun e -> Expr_option e
 ;;
 
@@ -183,7 +197,7 @@ let parse_expr_constraint parse_expr =
 ;;
 
 let parse_expr_fun parse_expr =
-  let* pat = token "fun" *> ws1 *> parse_pattern in
+  let* pat = keyword "fun" *> parse_pattern in
   let* params = many parse_pattern in
   let* body_expr = token "->" *> parse_expr in
   let expr =
@@ -199,10 +213,10 @@ let parse_expr_apply parse_expr =
 ;;
 
 let parse_expr_if parse_expr =
-  let* cond = token "if" *> ws1 *> parse_expr in
-  let* expr_then = ws1 *> token "then" *> ws1 *> parse_expr in
+  let* cond = keyword "if" *> parse_expr in
+  let* expr_then = ws1 *> keyword "then" *> parse_expr in
   let* expr_else =
-    ws1 *> token "else" *> ws1 *> parse_expr >>| (fun e -> Some e) <|> return None
+    ws1 *> keyword "else" *> parse_expr >>| (fun e -> Some e) <|> return None
   in
   return (Expr_if (cond, expr_then, expr_else))
 ;;
@@ -220,12 +234,10 @@ let parse_value_binding parse_expr =
 ;;
 
 let parse_let parse_expr =
-  let* rec_flag = token "let" *> ws1 *> parse_rec_flag in
+  let* rec_flag = keyword "let" *> parse_rec_flag in
   let* vb = parse_value_binding parse_expr in
-  let* value_bindings =
-    many (ws1 *> token "and" *> ws1 *> parse_value_binding parse_expr)
-  in
-  let+ expr = ws1 *> token "in" *> ws1 *> parse_expr in
+  let* value_bindings = many (ws1 *> keyword "and" *> parse_value_binding parse_expr) in
+  let+ expr = ws1 *> keyword "in" *> parse_expr in
   Expr_let (rec_flag, vb, value_bindings, expr)
 ;;
 
@@ -236,13 +248,13 @@ let parse_case parse_expr =
 ;;
 
 let parse_expr_function parse_expr =
-  let* case = token "function" *> ws1 *> parse_case parse_expr in
+  let* case = keyword "function" *> parse_case parse_expr in
   let* casel = many (ws1 *> parse_case parse_expr) in
   return (Expr_function (case, casel))
 ;;
 
 let parse_expr_match parse_expr =
-  let* expr = token "match" *> ws1 *> parse_expr <* ws1 <* token "with" <* ws1 in
+  let* expr = keyword "match" *> parse_expr <* ws1 <* keyword "with" in
   let* case = parse_case parse_expr in
   let* casel = many (ws1 *> parse_case parse_expr) in
   return (Expr_match (expr, case, casel))
@@ -273,14 +285,11 @@ let parse_expression =
 (* ==================== structure ==================== *)
 
 let parse_structure_value =
-  token "let"
-  *> ws1
+  keyword "let"
   *>
   let* rec_flag = parse_rec_flag in
   let* vb = parse_value_binding parse_expression in
-  let+ value_bindings =
-    many (token "and" *> ws1 *> parse_value_binding parse_expression)
-  in
+  let+ value_bindings = many (keyword "and" *> parse_value_binding parse_expression) in
   Str_value (rec_flag, vb, value_bindings)
 ;;
 
