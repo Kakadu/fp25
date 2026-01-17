@@ -124,7 +124,7 @@
     ]
 
   $ ../bin/REPL.exe -dparsetree <<EOF
-  > fun x y -> (fun z -> x y z)
+  > fun x y -> fun z -> x y z
   [(Str_eval
       (Expr_fun ((Pat_var "x"),
          (Expr_fun ((Pat_var "y"),

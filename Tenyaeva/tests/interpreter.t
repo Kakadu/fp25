@@ -32,7 +32,7 @@
   true
 
   $ ../bin/REPL.exe <<EOF
-  > if 6 < 10 then 1 else (if 6 >= 0 then 2 else (if 9 > 10 then 3 else 4));;
+  > if 6 < 10 then 1 else if 6 >= 0 then 2 else if 9 > 10 then 3 else 4;;
   1
 
   $ ../bin/REPL.exe -max-steps=1000 <<EOF
@@ -73,11 +73,11 @@
   val w = -10
 
   $ ../bin/REPL.exe <<EOF
-  > if 122 >= 221 then (print_int 122)
+  > if 122 >= 221 then print_int 122
   ()
 
   $ ../bin/REPL.exe <<EOF
-  > let () = (print_int 10);; let _ = 8 + 123
+  > let () = print_int 10;; let _ = 8 + 123
   10
 
   $ ../bin/REPL.exe <<EOF
