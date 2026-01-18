@@ -122,11 +122,10 @@ module Eval = struct
   ;;
 
   let rec extend_names_from_pat (env : environment) = function
-    | Pat_any, _ -> return env
-    | Pat_constant Const_unit, ValUnit -> return env
-    | Pat_option None, ValOption None -> return env
+    | Pat_any, _ | Pat_constant Const_unit, ValUnit | Pat_option None, ValOption None ->
+      return env
     | Pat_var id, value -> return (extend env id value)
-    | Pat_option (Some pat), ValOption (Some value) ->
+    | Pat_constraint (_, pat), value | Pat_option (Some pat), ValOption (Some value) ->
       extend_names_from_pat env (pat, value)
     | _ -> fail TypeError
   ;;
@@ -213,13 +212,8 @@ module Eval = struct
       ~f:(fun acc { vb_pat; vb_expr } ->
         let* env = acc in
         let* value = eval_expression env vb_expr in
-        match vb_pat with
-        | Pat_var name | Pat_constraint (_, Pat_var name) ->
-          let env = extend env name value in
-          return env
-        | _ ->
-          let* env = extend_names_from_pat env (vb_pat, value) in
-          return env)
+        let* env = extend_names_from_pat env (vb_pat, value) in
+        return env)
       ~init:(return env)
       value_binding_list
 
