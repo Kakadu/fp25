@@ -22,7 +22,76 @@ in the dune file
 This code should work after adding arithmetic operators
   $ ../bin/REPL.exe -dparsetree <<EOF
   > (fun x -> ((fun x -> x) 6) + x) 5
-  Error: : count_while1
+  Parsed result: (App (
+                    (Abs (x,
+                       (Binop (Plus, (App ((Abs (x, (Var x))), (Int 6))),
+                          (Var x)))
+                       )),
+                    (Int 5)))
+  Evaluated result: 11
+
+CBV argument evaluation
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > (fun x -> x) ((fun  y -> y) 4)
+  Parsed result: (App ((Abs (x, (Var x))), (App ((Abs (y, (Var y))), (Int 4)))
+                    ))
+  Evaluated result: 4
+
+  $ ../bin/REPL.exe <<EOF
+  > (fun x -> (fun y -> x + y)) 5 8
+  Evaluated result: 13
+
+  $ ../bin/REPL.exe <<EOF
+  > (fun x -> x) ((fun y -> y * 2) 9)
+  Evaluated result: 18
+
+Integer arithmetic
+
+  $ ../bin/REPL.exe <<EOF
+  > 42
+  Evaluated result: 42
+
+  $ ../bin/REPL.exe <<EOF
+  > 7 * 6
+  Evaluated result: 42
+
+  $ ../bin/REPL.exe <<EOF
+  > 1 + 2 * 3
+  Evaluated result: 7
+
+  $ ../bin/REPL.exe -dparsetree <<EOF
+  > (4 + 5*10 < (  4 + 5) * 10 - 28)
+  Parsed result: (Binop (Lt,
+                    (Binop (Plus, (Int 4), (Binop (Times, (Int 5), (Int 10))))),
+                    (Binop (Minus,
+                       (Binop (Times, (Binop (Plus, (Int 4), (Int 5))),
+                          (Int 10))),
+                       (Int 28)))
+                    ))
+  Evaluated result: 1
+
+Negative numbers
+  $ ../bin/REPL.exe <<EOF
+  >  1 -2
+  Evaluated result: -1
+
+  $ ../bin/REPL.exe <<EOF
+  >  - (1 -2)
+  Evaluated result: 1
+
+  $ ../bin/REPL.exe <<EOF
+  >  -2
+  Evaluated result: -2
+
+Arithmetic and application precedence
+
+  $ ../bin/REPL.exe <<EOF
+  >  (fun x -> x) 4 + 5
+  Evaluated result: 9
+
+  $ ../bin/REPL.exe <<EOF
+  >  (fun x -> x + 1) 2 * 3
+  Evaluated result: 9
 
 Below we redirect contents of the file to the evaluator
   $ ../bin/REPL.exe -dparsetree -stop-after parsing   < lam_1+1.txt

@@ -6,6 +6,9 @@ open Ast
 open Base
 open Utils
 
+let bop_err = "TODO: Fix it"
+let uop_err = "TODO: Fix it"
+
 (* Smart constructors *)
 let int n = Int n
 let var x = Var x
@@ -20,12 +23,19 @@ let replace_name x ~by =
     | App (l, r) -> App (helper l, helper r)
     | Abs (y, t) when String.equal x y -> Abs (by, helper t)
     | Abs (z, t) -> Abs (z, helper t)
+    | Binop (op, l, r) -> Binop (op, helper l, helper r)
+    | Unop (op, e) -> Unop (op, helper e)
   in
   helper
 ;;
 
 let rec next_name s old =
   if List.mem ~equal:String.equal old s then next_name ("_" ^ s) old else s
+;;
+
+let is_value = function
+  | Int _ -> true
+  | _ -> false
 ;;
 
 (*  The call [subst x ~by:v e] means `[x/v]e` or `e[v -> x]` *)
@@ -41,6 +51,8 @@ let subst x ~by:v =
       let w = next_name y frees in
       helper (abs w (replace_name y ~by:w t))
     | Abs (y, b) -> abs y (helper b)
+    | Binop (op, l, r) -> Binop (op, helper l, helper r)
+    | Unop (op, e) -> Unop (op, helper e)
   in
   helper
 ;;
@@ -59,6 +71,28 @@ let rec cbv_strat = function
       | f2 -> App (f2, cbv_strat arg)
     in
     on_app l r
+  | Binop (op, l, r) -> step_bop op l r
+  | Unop (op, e) -> step_uop op e
+
+and step_uop op e =
+  match op, cbv_strat e with
+  | Pos, Int a -> Int (+a)
+  | Neg, Int a -> Int (-a)
+  | _ -> failwith uop_err
+
+and step_bop bop l r =
+  match bop, cbv_strat l, cbv_strat r with
+  | Plus, Int a, Int b -> Int (a + b)
+  | Minus, Int a, Int b -> Int (a - b)
+  | Times, Int a, Int b -> Int (a * b)
+  | Divide, Int a, Int b -> Int (a / b)
+  | Eq, Int a, Int b -> Int (if a = b then 1 else 0)
+  | Neq, Int a, Int b -> Int (if a <> b then 1 else 0)
+  | Lt, Int a, Int b -> Int (if a < b then 1 else 0)
+  | Gt, Int a, Int b -> Int (if a > b then 1 else 0)
+  | Le, Int a, Int b -> Int (if a <= b then 1 else 0)
+  | Ge, Int a, Int b -> Int (if a >= b then 1 else 0)
+  | _ -> failwith bop_err
 ;;
 
 let a = var "a"

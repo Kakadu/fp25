@@ -48,6 +48,11 @@ let%expect_test _ =
   [%expect {| (Abs (f, (Abs (x, (App ((Var f), (App ((Int 1), (Int 1))))))))) |}]
 ;;
 
+let%expect_test _ =
+  Format.printf "%a" pp (parse_optimistically "(fun f -> 1 + 2)");
+  [%expect {| (Abs (f, (Binop (Plus, (Int 1), (Int 2))))) |}]
+;;
+
 let _ = Miniml_lib.Interpret.parse_and_run
 let _ = Miniml_lib.Lambda.a
 let _ = Miniml_lib.Lambda.one

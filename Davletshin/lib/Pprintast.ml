@@ -21,6 +21,28 @@ let pp ?(compact = true) =
     | Var s -> Format.fprintf fmt "%s" s
     | App (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
     | Abs (x, t) -> Format.fprintf fmt "(fun %a -> %a)" (mangle t) x pp t
+    | Binop (op, l, r) ->
+      let bop =
+        match op with
+        | Plus -> "+"
+        | Minus -> "-"
+        | Times -> "*"
+        | Divide -> "/"
+        | Eq -> "="
+        | Neq -> "<>"
+        | Lt -> "<"
+        | Gt -> ">"
+        | Le -> "<="
+        | Ge -> ">="
+      in
+      Format.fprintf fmt "(%a %s %a)" pp l bop pp r
+    | Unop (op, e) ->
+      let uop =
+        match op with
+        | Pos -> "+"
+        | Neg -> "-"
+      in
+      Format.fprintf fmt "(%s%a)" uop pp e
   in
   pp
 ;;

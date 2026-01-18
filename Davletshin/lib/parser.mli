@@ -14,8 +14,12 @@ val pp_error : Format.formatter -> [< `Parsing_error of string ] -> unit
 val parse : string -> (Ast.name Ast.t, [> error ]) result
 
 type dispatch =
-  { apps : dispatch -> Ast.name Ast.t Angstrom.t
-  ; single : dispatch -> Ast.name Ast.t Angstrom.t
+  { apps : dispatch -> string Ast.t Angstrom.t
+  ; single : dispatch -> string Ast.t Angstrom.t
+  ; multiplicative : dispatch -> string Ast.t Angstrom.t
+  ; additive : dispatch -> string Ast.t Angstrom.t
+  ; unary : dispatch -> string Ast.t Angstrom.t
+  ; comparison : dispatch -> string Ast.t Angstrom.t
   }
 
 (* A collection of miniparsers *)

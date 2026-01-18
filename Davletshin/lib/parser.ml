@@ -4,6 +4,7 @@
 
 (* TODO: implement parser here *)
 open Angstrom
+open Ast
 
 let is_space = function
   | ' ' | '\t' | '\n' | '\r' -> true
@@ -43,7 +44,7 @@ let is_digit = function
 
 let number =
   let integer = take_while1 is_digit >>| int_of_string in
-  char '-' >>= (fun _ -> integer >>= fun n -> return (-n)) <|> integer
+  (*char '-' >>= (fun _ -> integer >>= fun n -> return (-n)) <|>*) integer
 ;;
 
 let conde = function
@@ -54,6 +55,10 @@ let conde = function
 type dispatch =
   { apps : dispatch -> string Ast.t Angstrom.t
   ; single : dispatch -> string Ast.t Angstrom.t
+  ; multiplicative : dispatch -> string Ast.t Angstrom.t
+  ; additive : dispatch -> string Ast.t Angstrom.t
+  ; unary : dispatch -> string Ast.t Angstrom.t
+  ; comparison : dispatch -> string Ast.t Angstrom.t
   }
 
 type error = [ `Parsing_error of string ]
@@ -62,31 +67,69 @@ let pp_error ppf = function
   | `Parsing_error s -> Format.fprintf ppf "%s" s
 ;;
 
+let chain_left term op =
+  term
+  >>= fun first ->
+  many (op >>= fun o -> term >>| fun right -> o, right)
+  >>| fun rest ->
+  List.fold_left (fun left (o, right) -> Binop (o, left, right)) first rest
+;;
+
 let parse_lam =
   let single pack =
     fix (fun _ ->
       conde
-        [ char '(' *> pack.apps pack <* char ')' <?> "Parentheses expected"
+        [ char '(' *> pack.comparison pack <* char ')' <?> "Parentheses expected"
         ; (string "fun" *> spaces *> varname
            <* spaces
            <* (return () <* string "->" *> return ())
-           >>= fun var -> pack.apps pack >>= fun b -> return (Ast.Abs (var, b)))
-        ; (varname <* spaces >>= fun var -> return (Ast.Var var))
-        ; (number <* spaces >>= fun n -> return (Ast.Int n))
+           >>= fun var -> pack.comparison pack >>= fun b -> return (Abs (var, b)))
+        ; (varname <* spaces >>= fun var -> return (Var var))
+        ; (number <* spaces >>= fun n -> return (Int n))
         ])
   in
   let apps pack =
     many1 (spaces *> pack.single pack <* spaces)
     >>= function
     | [] -> fail "bad syntax"
-    | x :: xs -> return @@ List.fold_left (fun l r -> Ast.App (l, r)) x xs
+    | x :: xs -> return @@ List.fold_left (fun l r -> App (l, r)) x xs
   in
-  { single; apps }
+  let multiplicative pack =
+    chain_left
+      (apps pack)
+      (conde [ spaces *> char '*' *> return Times; spaces *> char '/' *> return Divide ])
+  in
+  let additive pack =
+    chain_left
+      (multiplicative pack)
+      (conde [ spaces *> char '+' *> return Plus; spaces *> char '-' *> return Minus ])
+  in
+  let unary pack =
+    spaces *> char '-' *> spaces *> pack.additive pack
+    >>| (fun e -> Unop (Neg, e))
+    <|> pack.additive pack
+  in
+  let comparison pack =
+    chain_left
+      (unary pack)
+      (conde
+         [ spaces *> string "=" *> return Eq
+         ; spaces *> string "<>" *> return Neq
+         ; spaces *> string "<" *> return Lt
+         ; spaces *> string ">" *> return Gt
+         ; spaces *> string ">=" *> return Le
+         ; spaces *> string ">=" *> return Ge
+         ])
+  in
+  { single; apps; multiplicative; additive; unary; comparison }
 ;;
 
 let parse str =
   match
-    Angstrom.parse_string (parse_lam.apps parse_lam) ~consume:Angstrom.Consume.All str
+    Angstrom.parse_string
+      (parse_lam.comparison parse_lam)
+      ~consume:Angstrom.Consume.All
+      str
   with
   | Result.Ok x -> Result.Ok x
   | Error er -> Result.Error (`Parsing_error er)
