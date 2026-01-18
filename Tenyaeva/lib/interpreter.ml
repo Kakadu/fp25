@@ -17,7 +17,7 @@ let pp_eval_error ppf : eval_error -> _ = function
   | DivisionByZero -> Format.fprintf ppf "Division by zero"
   | MatchFailure -> Format.fprintf ppf "Matching failure"
   | NoVariable id -> Format.fprintf ppf "Undefined variable '%s'" id
-  | OutOfSteps -> Format.fprintf ppf "OutOfSteps"
+  | OutOfSteps -> Format.fprintf ppf "Out of steps"
 ;;
 
 type value =
