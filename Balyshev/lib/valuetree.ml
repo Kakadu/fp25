@@ -27,7 +27,7 @@ module Make (M : Monads.STATE_MONAD) (Error : ERROR) = struct
     (** [ Some 123, None, Ok (fun x -> x + 1) etc. ] *)
     | VPrimitive of string * (value -> (state, value, Error.t) M.t)
     (** [ print_value ] is presented as
-            [ VPrimitive ("print_value", implementation) ] *)
+        [ VPrimitive ("print_value", implementation) ] *)
 
   (** represents function closures (for both recursive and non-recursive functions) *)
   and environment = (string, value, Base.String.comparator_witness) Base.Map.t

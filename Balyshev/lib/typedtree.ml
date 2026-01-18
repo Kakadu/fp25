@@ -42,19 +42,19 @@ type type_kind =
 
 type type_declaration =
   { tty_ident : Ident.t
-    (** for type [ t ] it will be [ { id: <generated integer>, name: "t" } ] *)
+  (** for type [ t ] it will be [ { id: <generated integer>, name: "t" } ] *)
   ; tty_params : Ident.t list
-    (** for type [ ('k, 'v) map ] it will be [ [ ident('k); ident('v) ] ] *)
+  (** for type [ ('k, 'v) map ] it will be [ [ ident('k); ident('v) ] ] *)
   ; tty_kind : type_kind
   }
 
 type constructor_info =
   { constr_ident : Ident.t
-    (** constructor's name and its zero-based index in the declaration *)
+  (** constructor's name and its zero-based index in the declaration *)
   ; constr_type_ident : Ident.t
-    (** corresponds to the [ tty_ident ] of type in which the constructor was declared *)
+  (** corresponds to the [ tty_ident ] of type in which the constructor was declared *)
   ; constr_arg : ty option
-    (** [ None ] for constant constructors; [ Some ty ] where [ ty ] — type of constructor's argument for constructors with argument *)
+  (** [ None ] for constant constructors; [ Some ty ] where [ ty ] — type of constructor's argument for constructors with argument *)
   }
 
 type value_binding =

@@ -10,7 +10,7 @@ type rec_flag =
   | Recursive
   | NonRecursive
 
-type 'a list1 = 'a * 'a list (* non-empty list *)
+type 'a list1 = 'a * 'a list
 
 type constant =
   | CUnit
@@ -18,23 +18,23 @@ type constant =
   | CBool of bool
 
 type binop =
-  | Add (** [ + ] *)
-  | Mul (** [ * ] *)
-  | Sub (** [ - ] *)
-  | Div (** [ / ] *)
-  | Eq (** [ == ] *)
-  | Ne (** [ <> ] *)
-  | Le (** [ <= ] *)
-  | Ge (** [ >= ] *)
-  | Lt (** [ < ] *)
-  | Gt (** [ > ] *)
+  | Add
+  | Mul
+  | Sub
+  | Div
+  | Eq
+  | Ne
+  | Le
+  | Ge
+  | Lt
+  | Gt
 
 type pattern =
-  | PAny (** [ _ ] *)
+  | PAny
   | PConstant of constant
   | PVar of string
   | PTuple of pattern * pattern * pattern list
-  | PConstruct of string * pattern option (** [ Some 666, None, Ok (1, 2, 3) ] etc. *)
+  | PConstruct of string * pattern option
 
 type expression =
   | EConstant of constant
@@ -42,36 +42,33 @@ type expression =
   | ETuple of expression * expression * expression list
   | EBinop of binop * expression * expression
   | ELet of rec_flag * (pattern * expression) list1 * expression
-  (** [ let patt1 = expr1 and patt2 = expr2 and ... and pattN = exprN in expr ] *)
-  | EFun of pattern * expression (** [ fun pattern -> expression ] *)
+  | EFun of pattern * expression
   | EIf of expression * expression * expression
   | EApp of expression * expression
-  | EConstruct of string * expression option (** [ Some 666, None, Ok (1, 2, 3) ] etc. *)
+  | EConstruct of string * expression option
   | EMatch of expression * (pattern * expression) list1
-  (** [ match expession with | patt1 -> expr1 ... | pattN -> exprN ] *)
 
 type value_binding = pattern * expression
 
 type core_type =
-  | Pty_var of string (** [ 'a, 'b ] are type variables in [ type ('a, 'b) ty = ... ] *)
-  | Pty_arrow of core_type * core_type (** ['a -> 'b] *)
-  | Pty_tuple of core_type * core_type * core_type list (** [ 'a * 'b * 'c ] *)
-  | Pty_constr of string * core_type list (** [ int ], ['a option], [ ('a, 'b) list ] *)
+  | Pty_var of string
+  | Pty_arrow of core_type * core_type
+  | Pty_tuple of core_type * core_type * core_type list
+  | Pty_constr of string * core_type list
 
 type type_kind =
-  | Pty_abstract of core_type option (** [ type t ], [ type t = x ] *)
+  | Pty_abstract of core_type option
   | Pty_variants of (string * core_type option) list1
-  (** [ type t = Some of int | None ] *)
 
 type type_declaration =
-  { pty_params : string list (** ['a] is param in [type 'a list = ...] *)
-  ; pty_name : string (** [list] is name in [type 'a list = ...] *)
+  { pty_params : string list
+  ; pty_name : string
   ; pty_kind : type_kind
   }
 
 type structure_item =
-  | Pstr_value of rec_flag * value_binding list1 (** [ let x = ... ] *)
-  | Pstr_type of type_declaration list1 (** [ type x = ... ] *)
+  | Pstr_value of rec_flag * value_binding list1
+  | Pstr_type of type_declaration list1
 
 type structure = structure_item list1
 
@@ -97,8 +94,6 @@ let show_binop = function
   | Lt -> "<"
   | Gt -> ">"
 ;;
-
-let pp_binop ppf x = fprintf ppf "%s" (show_binop x)
 
 let show_constant = function
   | CUnit -> "()"
@@ -126,8 +121,6 @@ let rec show_pattern ?(ctx = Parens.Free) = function
     set_parens ~ctx [ App; LeftSideFun; LeftSideLet ]
     @@ sprintf "%s %s" name (show_pattern ~ctx:App arg)
 ;;
-
-let pp_constant ppf constant = fprintf ppf "%s" (show_constant constant)
 
 let rec show_expression ?(ctx = Parens.Free) = function
   | EConstant x -> show_constant x
@@ -157,7 +150,7 @@ let rec show_expression ?(ctx = Parens.Free) = function
     set_parens ~ctx [ App; Binop; Tuple ]
     @@ sprintf
          "@[%s in@;<1 2>%s@]"
-         (show_value_binding rec_flag vb vbs)
+         (show_many_vbs rec_flag vb vbs)
          (show_expression ~ctx:Free body)
   | EApp (f, x) ->
     set_parens ~ctx [ App ]
@@ -190,7 +183,7 @@ let rec show_expression ?(ctx = Parens.Free) = function
          (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@;") pp_case)
          (case1 :: cases)
 
-and show_value_binding rec_flag vb vbs =
+and show_many_vbs rec_flag vb vbs =
   let pp_binding (p, e) =
     asprintf
       "%s =@;<1 2>%s"
@@ -253,11 +246,9 @@ let show_type_declaration td tds =
   @@ String.concat (List.map ~f:(helper ~keyword:"and") tds)
 ;;
 
-let pp_type_declaration ppf td tds = fprintf ppf "%s" (show_type_declaration td tds)
-
 let show_structure (item, items) =
   let helper = function
-    | Pstr_value (rec_flag, (vb, vbs)) -> show_value_binding rec_flag vb vbs
+    | Pstr_value (rec_flag, (vb, vbs)) -> show_many_vbs rec_flag vb vbs
     | Pstr_type (td, tds) -> show_type_declaration td tds
   in
   String.concat (List.map ~f:helper (item :: items))
