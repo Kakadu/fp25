@@ -44,8 +44,3 @@ Below we redirect contents of the file to the evaluator
                        (Abs (f, (Abs (x, (App ((Var f), (Var x)))))))))
                     ))
 
-Call by value doesn't reduce under abstraction
-  $ ../bin/REPL.exe   < lam_2x1.txt
-  Evaluated result: (fun z -> (2 (1 z)))
-  $ ../bin/REPL.exe   < lam_zero.txt
-  Evaluated result: ⊥
