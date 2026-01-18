@@ -4,7 +4,7 @@
 
 open Mardukml_lib
 
-let repl =
+let _ =
   let _ = Printf.printf "MardukML REPL\n\n" in
   while true do
     try
