@@ -15,8 +15,8 @@ module Parens = struct
     | Binop (** [ XXX + XXX * (XXX - XXX) ] *)
     | Tuple (** [ XXX, XXX ]*)
     | App (** [ XXX XXX ] *)
-    | LeftSideFun (** [ fun XXX -> ... ]  *)
-    | RightSideFun (** [ fun ... -> XXX ]  *)
+    | LeftSideFun (** [ fun XXX -> ... ] *)
+    | RightSideFun (** [ fun ... -> XXX ] *)
     | MatchWith (** [ match XXX with ... ] *)
     | LeftSideMatch (** [ match ... with | XXX -> ... ] *)
     | RightSideMatch (** [ match ... with | ... -> XXX ] *)
@@ -48,12 +48,11 @@ let show_list_brackets show_item = function
   | items -> sprintf "[ %s ]" (show_many ~sep:"; " show_item items)
 ;;
 
-let show_list_cons
-      ?(ctx = Parens.Free)
-      (show_item : ?ctx:Parens.context -> 'a -> string)
-      items
-  =
+let show_list_cons =
   let open Parens in
-  set_parens ~ctx [ App; Binop ]
-  @@ String.concat ~sep:" :: " (List.map ~f:(show_item ~ctx:Binop) items)
+  let aux ?(ctx = Free) (show_item : ?ctx:context -> 'a -> string) items =
+    set_parens ~ctx [ App; Binop ]
+    @@ String.concat ~sep:" :: " (List.map ~f:(show_item ~ctx:Binop) items)
+  in
+  aux
 ;;

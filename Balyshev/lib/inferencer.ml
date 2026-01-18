@@ -355,15 +355,14 @@ module Infer (M : Monads.STATE_MONAD) = struct
   module Scheme = Scheme (M)
   module TypeEnv = TypeEnv (M)
 
-  let instantiate (Scheme.Scheme (bind_set, ty)) =
-    VarSet.fold
-      (fun ident ty ->
-         let* ty = ty in
-         let* fresh = State.fresh_tvar in
-         let sub = Map.singleton (module String) ident.name fresh in
-         return (Substitution.apply sub ty))
-      bind_set
-      (return ty)
+  let instantiate (Scheme.Scheme (var_set, ty)) =
+    let aux (ident : Ident.t) ty =
+      let* ty = ty in
+      let* fresh = State.fresh_tvar in
+      let sub = Map.singleton (module String) ident.name fresh in
+      return (Substitution.apply sub ty)
+    in
+    VarSet.fold aux var_set (return ty)
   ;;
 
   let generalize (env : TypeEnv.t) ty =
