@@ -154,7 +154,7 @@
   $ infer -expr << EOF
   > match (1, 2) with
   > | x -> x, 3
-  inferred: int * int * int
+  inferred: (int * int) * int
 
   $ infer -expr << EOF
   > match (1, 2) with
@@ -366,7 +366,7 @@
   $ infer -expr << EOF
   > let swap (a, b) = (b, a) in
   > swap (1, 2), swap (true, false)
-  inferred: int * int * bool * bool
+  inferred: (int * int) * (bool * bool)
 
   $ infer -stru << EOF
   > let twice f x = f (f x)
@@ -604,7 +604,7 @@
   > let not x = if x then false else true in
   > let inc x = x + 1 in
   > apply not, apply inc
-  inferred: bool -> bool * int -> int
+  inferred: (bool -> bool) * (int -> int)
 
 
   $ infer -stru << EOF
