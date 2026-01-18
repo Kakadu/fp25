@@ -7,9 +7,9 @@ open Filichkin_lib.Interpret
 
 let run_program program =
   let toplevels = parser program |> Result.get_ok in
-  match interpret_program toplevels with
-  | Ok (Some value) -> string_of_value value
-  | Ok None -> "No result"
+  match interpret_program initial_state toplevels with
+  | Ok (_, Some value) -> string_of_value value
+  | Ok (_, None) -> "No result"
   | Error err -> string_of_error err
 ;;
 

@@ -261,6 +261,7 @@ let init_env =
         | _ -> err (TypeError "print_bool expects a boolean"))
   in
   [ "print_int", print_int_fun
+  ; "println_int", print_int_fun
   ; "true", VBool true
   ; "false", VBool false
   ; "print_bool", print_bool_fun
@@ -286,6 +287,9 @@ let interpret_program toplevels =
   in
   loop initial_state None toplevels
 ;;
+
+let initial_state = { env = init_env }
+let run_interpret expr = eval init_env expr 1000
 
 let rec string_of_value = function
   | VInt n -> Int.to_string n

@@ -12,10 +12,10 @@ let%expect_test "typecheck_fibonacci" =
        else 1 else 0 in fib 10"
     |> Result.get_ok
   in
-  let res = typecheck_program toplevels in
+  let res = typecheck_program initial_state toplevels in
   match res with
-  | Ok () ->
-    (match get_last_type () with
+  | Ok state ->
+    (match get_last_type state with
      | Some typ -> print_string (string_of_type typ)
      | None -> print_string "No type");
     [%expect {| int |}]
@@ -29,10 +29,10 @@ let%expect_test "typecheck_factorial" =
     parser "let rec fac = fun x -> if x = 1 then 1 else x * fac(x-1) in fac 5"
     |> Result.get_ok
   in
-  let res = typecheck_program toplevels in
+  let res = typecheck_program initial_state toplevels in
   match res with
-  | Ok () ->
-    (match get_last_type () with
+  | Ok state ->
+    (match get_last_type state with
      | Some typ -> print_string (string_of_type typ)
      | None -> print_string "No type");
     [%expect {| int |}]
@@ -43,10 +43,10 @@ let%expect_test "typecheck_factorial" =
 
 let%expect_test "typecheck_function_type" =
   let toplevels = parser "let add x y = x + y" |> Result.get_ok in
-  let res = typecheck_program toplevels in
+  let res = typecheck_program initial_state toplevels in
   match res with
-  | Ok () ->
-    (match get_last_type () with
+  | Ok state ->
+    (match get_last_type state with
      | Some typ -> print_string (string_of_type typ)
      | None -> print_string "No type");
     [%expect {| int -> int -> int |}]
@@ -59,10 +59,10 @@ let%expect_test "typecheck_partial_application" =
   let toplevels =
     parser "let add x y = x + y in let add5 = add 5 in add5" |> Result.get_ok
   in
-  let res = typecheck_program toplevels in
+  let res = typecheck_program initial_state toplevels in
   match res with
-  | Ok () ->
-    (match get_last_type () with
+  | Ok state ->
+    (match get_last_type state with
      | Some typ -> print_string (string_of_type typ)
      | None -> print_string "No type");
     [%expect {| int -> int |}]
@@ -73,10 +73,10 @@ let%expect_test "typecheck_partial_application" =
 
 let%expect_test "typecheck_tuple" =
   let toplevels = parser "(1, true, 3)" |> Result.get_ok in
-  let res = typecheck_program toplevels in
+  let res = typecheck_program initial_state toplevels in
   match res with
-  | Ok () ->
-    (match get_last_type () with
+  | Ok state ->
+    (match get_last_type state with
      | Some typ -> print_string (string_of_type typ)
      | None -> print_string "No type");
     [%expect {| (int * bool * int) |}]
@@ -87,9 +87,9 @@ let%expect_test "typecheck_tuple" =
 
 let%expect_test "typecheck_type_error_int_bool_addition" =
   let toplevels = parser "5 + true" |> Result.get_ok in
-  let res = typecheck_program toplevels in
+  let res = typecheck_program initial_state toplevels in
   match res with
-  | Ok () ->
+  | Ok _ ->
     print_string "Unexpected success";
     [%expect.unreachable]
   | Error err ->
@@ -99,9 +99,9 @@ let%expect_test "typecheck_type_error_int_bool_addition" =
 
 let%expect_test "typecheck_type_error_if_condition" =
   let toplevels = parser "if 5 then 1 else 2" |> Result.get_ok in
-  let res = typecheck_program toplevels in
+  let res = typecheck_program initial_state toplevels in
   match res with
-  | Ok () ->
+  | Ok _ ->
     print_string "Unexpected success";
     [%expect.unreachable]
   | Error err ->
@@ -111,9 +111,9 @@ let%expect_test "typecheck_type_error_if_condition" =
 
 let%expect_test "typecheck_type_error_branch_mismatch" =
   let toplevels = parser "if true then 1 else false" |> Result.get_ok in
-  let res = typecheck_program toplevels in
+  let res = typecheck_program initial_state toplevels in
   match res with
-  | Ok () ->
+  | Ok _ ->
     print_string "Unexpected success";
     [%expect.unreachable]
   | Error err ->
@@ -138,9 +138,9 @@ let%expect_test "typecheck_type_error_branch_mismatch" =
 
 let%expect_test "typecheck_match_non_exhaustive" =
   let toplevels = parser "match None with | Some x -> x" |> Result.get_ok in
-  let res = typecheck_program toplevels in
+  let res = typecheck_program initial_state toplevels in
   match res with
-  | Ok () ->
+  | Ok _ ->
     print_string "Unexpected success";
     [%expect.unreachable]
   | Error err ->
@@ -152,10 +152,10 @@ let%expect_test "typecheck_recursive_function" =
   let toplevels =
     parser "let rec f x = if x = 0 then 1 else f (x - 1) in f" |> Result.get_ok
   in
-  let res = typecheck_program toplevels in
+  let res = typecheck_program initial_state toplevels in
   match res with
-  | Ok () ->
-    (match get_last_type () with
+  | Ok state ->
+    (match get_last_type state with
      | Some typ -> print_string (string_of_type typ)
      | None -> print_string "No type");
     [%expect {| int -> int |}]
@@ -166,10 +166,10 @@ let%expect_test "typecheck_recursive_function" =
 
 let%expect_test "typecheck_polymorphic_identity" =
   let toplevels = parser "let id x = x in (id 5, id true)" |> Result.get_ok in
-  let res = typecheck_program toplevels in
+  let res = typecheck_program initial_state toplevels in
   match res with
-  | Ok () ->
-    (match get_last_type () with
+  | Ok state ->
+    (match get_last_type state with
      | Some typ -> print_string (string_of_type typ)
      | None -> print_string "No type");
     [%expect {| (int * bool) |}]

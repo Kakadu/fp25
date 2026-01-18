@@ -6,11 +6,10 @@ open Filichkin_lib.Parser
 open Filichkin_lib.Typecheck
 
 let typecheck_program_str program =
-  reset ();
   let toplevels = parser program |> Result.get_ok in
-  match typecheck_program toplevels with
-  | Ok () ->
-    (match get_last_type () with
+  match typecheck_program initial_state toplevels with
+  | Ok state ->
+    (match get_last_type state with
      | Some typ -> string_of_type typ
      | None -> "No type")
   | Error err -> err

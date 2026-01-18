@@ -17,7 +17,7 @@ type typ =
   | TFun of typ * typ
   | TTuple of typ list
   | TCon of string * typ list
-  | TVar of tyvar
+  | TVar of int
 
 (* Полиморфная схема типов (нужна для сигнатуры infer) *)
 type scheme = Forall of int list * typ
@@ -35,9 +35,9 @@ type tc_state
 
 val string_of_type : typ -> string
 val initial_env : type_env
+val initial_state : tc_state
 val infer : type_env -> expr -> typ
-val check_toplevel : tc_state -> toplevel -> (tc_state, ident) result
-val reset : unit -> unit
-val typecheck_toplevel : Ast.toplevel -> (unit, string) result
-val typecheck_program : Ast.toplevel list -> (unit, string) result
-val get_last_type : unit -> typ option
+val check_toplevel : tc_state -> toplevel -> (tc_state, string) result
+val typecheck_toplevel : tc_state -> Ast.toplevel -> (tc_state, string) result
+val typecheck_program : tc_state -> Ast.toplevel list -> (tc_state, string) result
+val get_last_type : tc_state -> typ option

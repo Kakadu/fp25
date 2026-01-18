@@ -150,7 +150,6 @@ let rec gen_expr size =
 let rec shrink_expr = function
   | Int _ | Var _ | Bool _ | Constr _ -> Iter.empty
   | Tuple es ->
-    let open Iter in
     Shrink.list ~shrink:shrink_expr es
     |> Iter.filter (fun es' -> List.length es' >= 2)
     |> Iter.map (fun es' -> Tuple es')
