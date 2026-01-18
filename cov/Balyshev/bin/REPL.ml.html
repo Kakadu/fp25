@@ -360,7 +360,7 @@ let () =
     ; "-eval", arg_mod<span data-count="279">e</span> Eval, "\t interpreter"
     ; "-infer", arg_mod<span data-count="279">e</span> Infer, "\t inferencer"
     ]
-    (fun _ -&gt; <span data-count="0">a</span>ssert false)
+    (fun arg -&gt; <span data-count="0">S</span>tdlib.Format.eprintf "error: unexpected argument '%s'\n" arg)
     "REPL";
   <span data-count="278">(</span>match opts.ty with
    | <span data-count="197">E</span>xpr -&gt; run_expr ~mode:opts.mode
