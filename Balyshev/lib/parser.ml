@@ -121,7 +121,7 @@ let patt_basic d =
 let patt_cons d =
   ws
   *> fix (fun _self ->
-    return (fun head tail -> pcons head tail)
+    return pcons
     <*> d.patt_basic d
     <*> ws *> string "::" *> ws *> d.patt_cons d
     <|> d.patt_basic d)

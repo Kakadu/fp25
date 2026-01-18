@@ -38,7 +38,7 @@ let run_expr ~mode text =
   | Error err -> printf "parsing error: %s\n" err
   | Ok ast ->
     (match mode with
-     | Parse -> printf "parsed: %a\n" Parsetree.pp_expression ast
+     | Parse -> printf "parsed:@.%a\n" Parsetree.pp_expression ast
      | Eval ->
        (match eval_expression ast with
         | Error err -> printf "interpreter error: %a\n" Interpreter.Error.pp err
@@ -54,12 +54,12 @@ let run_stru ~mode text =
   | Error err -> printf "parsing error: %s\n" err
   | Ok ast ->
     (match mode with
-     | Parse -> printf "parsed: %a\n" Parsetree.pp_structure ast
+     | Parse -> printf "parsed:@.%a\n" Parsetree.pp_structure ast
      | Infer ->
        (match infer_structure ast with
         | Ok typed_stru -> printf "typed structure:@.%a" Typedtree.pp_structure typed_stru
         | Error err -> printf "inferencer error: %a" Inferencer.Error.pp err)
-     | _ -> failwith "not implemented REPL.exe")
+     | Eval -> printf "not implemented: eval stru")
 ;;
 
 let run_patt ~mode text =
@@ -68,7 +68,8 @@ let run_patt ~mode text =
   | Ok ast ->
     (match mode with
      | Parse -> printf "parsed: %a\n" Parsetree.pp_pattern ast
-     | _ -> failwith "Not supported")
+     | Infer -> printf "not supported: infer pattern"
+     | Eval -> printf "not supported: eval pattern")
 ;;
 
 let run_core_type ~mode text =
@@ -77,7 +78,8 @@ let run_core_type ~mode text =
   | Ok ast ->
     (match mode with
      | Parse -> printf "parsed: %a\n" Parsetree.pp_core_type ast
-     | _ -> failwith "Not supported")
+     | Infer -> printf "not supported: infer core-type"
+     | Eval -> printf "not supported: eval core-type")
 ;;
 
 type opts =

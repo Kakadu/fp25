@@ -125,8 +125,7 @@ module Substitution (M : Monads.STATE_MONAD) = struct
       compose sub sub2
     | None -> return (Map.set sub ~key:name ~data:(apply sub ty))
 
-  and apply (sub : t) ty =
-    match ty with
+  and apply (sub : t) = function
     | Tty_var ident ->
       (match walk sub ident.name with
        | Some new_ty -> apply sub new_ty
@@ -622,11 +621,11 @@ module Infer (M : Monads.STATE_MONAD) = struct
        | None -> fail (Unbound_type_variable name)
        | Some ty -> return ty)
     | Pty_arrow (a, b) ->
-      return (fun a b -> tty_arrow a b)
+      return tty_arrow
       <*> infer_core_type env param_map a
       <*> infer_core_type env param_map b
     | Pty_tuple (a, b, xs) ->
-      return (fun a b xs -> tty_prod a b xs)
+      return tty_prod
       <*> infer_core_type env param_map a
       <*> infer_core_type env param_map b
       <*> fold_infer_core_type env param_map xs

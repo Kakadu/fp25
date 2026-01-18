@@ -26,9 +26,7 @@ module Parens = struct
     | RightSideLet (** [ let ... = XXX in ... ] *)
     | Ite (** [ if XXX then XXX else XXX ] *)
 
-  let parens s = sprintf "(%s)" s
-
-  let set_parens ~ctx cases s =
+  let set_parens ~(ctx : context) cases s =
     if List.exists cases ~f:(fun x -> Stdlib.compare x ctx = 0)
     then sprintf "(%s)" s
     else s

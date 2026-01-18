@@ -43,5 +43,5 @@ module State : STATE_MONAD = struct
     | Error _ -> m2 s
   ;;
 
-  let run m s = m s
+  let run (m : 's -> ('s * 'ok, 'err) Result.t) = m
 end
