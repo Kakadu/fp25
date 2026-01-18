@@ -288,32 +288,6 @@ module TypeEnv (M : Monads.STATE_MONAD) = struct
 
   let find (env : t) = Map.find env.env_values
 
-  let rec extend env pat (Scheme.Scheme (varset, ty) as scheme) =
-    match pat, ty with
-    | PAny, _ -> return env
-    | PVar name, _ -> return (set_value ~name scheme env)
-    | PTuple (p1, p2, ps), Tty_prod (ty1, ty2, tys) when List.length ps = List.length tys
-      -> extend_many_exn env varset (p1 :: p2 :: ps) (ty1 :: ty2 :: tys)
-    | PConstant CUnit, Tty_constr ([], "unit")
-    | PConstant (CInt _), Tty_constr ([], "int")
-    | PConstant (CBool _), Tty_constr ([], "bool") -> return env
-    | PConstruct _, _ ->
-      fail (Not_implemented "pconstruct in extend env (use match-with idk)")
-    | _ -> fail (TypeEnv_invariant_violation "scheme does not correspond pattern")
-
-  and extend_many_exn env varset patts tys =
-    let helper acc patt ty =
-      let* env = acc in
-      extend env patt (Scheme (varset, ty))
-    in
-    List.fold2_exn ~f:helper patts tys ~init:(return env)
-  ;;
-
-  let extend_types ~ident tty_params tty_kind (env : t) =
-    let type_entry = { tty_ident = ident; tty_params; tty_kind } in
-    { env with env_types = Base.Map.set ~key:ident.name ~data:type_entry env.env_types }
-  ;;
-
   let apply_to_type_declaration sub { tty_ident; tty_params; tty_kind } =
     let aux sub =
       let sub = List.fold ~f:Substitution.remove tty_params ~init:sub in
@@ -343,6 +317,38 @@ module TypeEnv (M : Monads.STATE_MONAD) = struct
       Base.Map.map env.env_constructors ~f:(apply_to_constructor_info sub)
     in
     { env_values; env_types; env_constructors }
+  ;;
+
+  let rec extend env pat (Scheme.Scheme (varset, ty) as scheme) =
+    match pat, ty with
+    | PAny, _ -> return env
+    | PVar name, _ -> return (set_value ~name scheme env)
+    | PTuple (p1, p2, ps), Tty_prod (ty1, ty2, tys) when List.length ps = List.length tys
+      -> extend_many_exn env varset (p1 :: p2 :: ps) (ty1 :: ty2 :: tys)
+    | PConstant CUnit, _ ->
+      let* sub = Substitution.unify ty ty_unit in
+      return (apply sub env)
+    | PConstant (CInt _), _ ->
+      let* sub = Substitution.unify ty ty_int in
+      return (apply sub env)
+    | PConstant (CBool _), _ ->
+      let* sub = Substitution.unify ty ty_bool in
+      return (apply sub env)
+    | PConstruct _, _ ->
+      fail (Not_implemented "pconstruct in extend env (use match-with idk)")
+    | _ -> fail (TypeEnv_invariant_violation "scheme does not correspond pattern")
+
+  and extend_many_exn env varset patts tys =
+    let helper acc patt ty =
+      let* env = acc in
+      extend env patt (Scheme (varset, ty))
+    in
+    List.fold2_exn ~f:helper patts tys ~init:(return env)
+  ;;
+
+  let extend_types ~ident tty_params tty_kind (env : t) =
+    let type_entry = { tty_ident = ident; tty_params; tty_kind } in
+    { env with env_types = Base.Map.set ~key:ident.name ~data:type_entry env.env_types }
   ;;
 end
 

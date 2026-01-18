@@ -25,8 +25,5 @@ module Make (M : Monads.STATE_MONAD) : sig
   open Valuetree.Make(M)(Error)
 
   val eval_expression : Parsetree.expression -> (value, Error.t) Result.t
-
-  val eval_structure
-    :  Parsetree.value_binding * Parsetree.value_binding list
-    -> (structure, Error.t) Result.t
+  val eval_structure : Parsetree.structure -> (structure, Error.t) Result.t
 end

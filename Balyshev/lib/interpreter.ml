@@ -229,26 +229,46 @@ module Eval (M : Monads.STATE_MONAD) = struct
     List.fold ~init:(return env) (vb1 :: vbs) ~f:bind_rec_value_m
   ;;
 
-  let stru_item env (patt, expr) =
+  let value_binding env (patt, expr) =
     let* value = expression env expr in
     let* env = bind_to_env env patt value in
     return (env, (patt, value))
   ;;
 
-  let stru_item_many env items =
-    let aux acc item =
-      let* env, items = acc in
-      let* env, item = stru_item env item in
-      return (env, item :: items)
-    in
-    let* env, items = List.fold items ~init:(return (env, [])) ~f:aux in
-    return (env, List.rev items)
+  let rec_value_binding env = function
+    | PVar fun_name, EFun (patt, expr) ->
+      let value = VFun (patt, expr, env) in
+      return (update env fun_name value, (PVar fun_name, value))
+    | PVar fun_name, _ -> fail (Error.RightSideRec fun_name)
+    | patt, _ -> fail (Error.LeftSideRec (Parsetree.show_pattern patt))
   ;;
 
-  let structure env (vb1, vbs) =
-    let* env, vb1 = stru_item env vb1 in
-    let* _env, vbs = stru_item_many env vbs in
-    return (vb1, List.rev vbs)
+  let many_value_bindings env ~rec_flag vbs =
+    let eval_vb =
+      match rec_flag with
+      | Recursive -> rec_value_binding
+      | NonRecursive -> value_binding
+    in
+    let aux acc vb =
+      let* env, vbs = acc in
+      let* env, vb = eval_vb env vb in
+      return (env, vb :: vbs)
+    in
+    let* env, vbs = List.fold vbs ~init:(return (env, [])) ~f:aux in
+    return (env, List.rev vbs)
+  ;;
+
+  let structure env (item1, items) =
+    let aux acc item =
+      let* env, acc_vbs = acc in
+      match item with
+      | Pstr_value (rec_flag, (vb1, vbs)) ->
+        let* new_env, new_vbs = many_value_bindings env ~rec_flag (vb1 :: vbs) in
+        return (new_env, new_vbs @ acc_vbs)
+      | Pstr_type _ -> return (env, acc_vbs)
+    in
+    let* _env, vbs = List.fold ~f:aux (item1 :: items) ~init:(return (env, [])) in
+    return (List.rev vbs)
   ;;
 end
 
@@ -258,14 +278,14 @@ module Make (M : Monads.STATE_MONAD) = struct
 
   let init_state = 0
 
-  let eval_expression expr =
+  let eval_expression (expr : Parsetree.expression) =
     match M.run (Eval.expression Builtin.env_with_primitives expr) init_state with
     | Ok (_state, value) -> Ok value
     | Error err -> Error err
   ;;
 
-  let eval_structure vbs =
-    match M.run (Eval.structure Builtin.env_with_primitives vbs) init_state with
+  let eval_structure (stru : Parsetree.structure) =
+    match M.run (Eval.structure Builtin.env_with_primitives stru) init_state with
     | Ok (_state, stru) -> Ok stru
     | Error err -> Error err
   ;;

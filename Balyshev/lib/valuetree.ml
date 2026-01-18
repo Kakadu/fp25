@@ -35,7 +35,7 @@ module Make (M : Monads.STATE_MONAD) (Error : ERROR) = struct
   (** [ let pattern = value ] *)
   type value_binding = Parsetree.pattern * value
 
-  type structure = value_binding * value_binding list
+  type structure = value_binding list
 
   let vprimitive name impl = VPrimitive (name, impl)
 
@@ -68,4 +68,11 @@ module Make (M : Monads.STATE_MONAD) (Error : ERROR) = struct
   ;;
 
   let pp_value ppf value = fprintf ppf "%s" (show_value value)
+
+  let pp_structure ppf stru =
+    let aux (patt, value) =
+      fprintf ppf "%s = %s\n" (Parsetree.show_pattern patt) (show_value value)
+    in
+    List.iter ~f:aux stru
+  ;;
 end
