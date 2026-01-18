@@ -243,7 +243,7 @@
   | Not
 [@@deriving show { with_path = false }]
 
-<span data-count="0">t</span>ype ident = <span data-count="10684">s</span>tring [@@deriving show { with_path = false }]
+<span data-count="0">t</span>ype ident = <span data-count="10772">s</span>tring [@@deriving show { with_path = false }]
 
 <span data-count="0">t</span>ype type_expr =
   | TEInt
@@ -268,26 +268,26 @@
   }
 [@@deriving show { with_path = false }<span data-count="0">]</span>
 
-<span data-count="7078">t</span>ype pattern =
+<span data-count="7238">t</span>ype pattern =
   | PVar of ident
-  | PTuple of <span data-count="1498">p</span>attern lis<span data-count="340">t</span>
-  | PConstr of ident * <span data-count="366">p</span>attern lis<span data-count="244">t</span>
+  | PTuple of <span data-count="1300">p</span>attern lis<span data-count="296">t</span>
+  | PConstr of ident * <span data-count="342">p</span>attern lis<span data-count="228">t</span>
   | PWildcard
 [@@deriving show { with_path = false }]
 
-<span data-count="73148">t</span>ype expr =
-  | Int of in<span data-count="14132">t</span>
+<span data-count="73542">t</span>ype expr =
+  | Int of in<span data-count="14110">t</span>
   | Var of ident
   | Constr of ident
   | BinOp of binop * expr * expr
-  | Bool of boo<span data-count="2504">l</span>
+  | Bool of boo<span data-count="2600">l</span>
   | UnOp of unop * expr
   | If of expr * expr * expr
-  | Let of rec_flag * pattern * expr * <span data-count="4864">e</span>xpr optio<span data-count="1216">n</span>
+  | Let of rec_flag * pattern * expr * <span data-count="4912">e</span>xpr optio<span data-count="1228">n</span>
   | Abs of pattern * expr
   | App of expr * expr
-  | Tuple of <span data-count="17668">e</span>xpr lis<span data-count="4016">t</span>
-  | Match of expr * <span data-count="7152">(</span><span data-count="2540">p</span>attern * expr) lis<span data-count="2306">t</span>
+  | Tuple of <span data-count="17732">e</span>xpr lis<span data-count="4030">t</span>
+  | Match of expr * <span data-count="7028">(</span><span data-count="2484">p</span>attern * expr) lis<span data-count="2272">t</span>
 [@@deriving show { with_path = false }]
 
 <span data-count="0">t</span>ype toplevel =

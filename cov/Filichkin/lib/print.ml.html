@@ -544,17 +544,17 @@
 open Ast
 
 let rec pattern = function
-  | <span data-count="1483">P</span>Var x -&gt; x
-  | <span data-count="74">P</span>Tuple ps -&gt;
-    let ps_str = List.map pattern ps |&gt; <span data-count="74">S</span>tring.concat ", " in
-    <span data-count="74">S</span>tring.concat "" [ "("; ps_str; ")" ]
-  | <span data-count="63">P</span>Constr (name, args) -&gt;
+  | <span data-count="1536">P</span>Var x -&gt; x
+  | <span data-count="63">P</span>Tuple ps -&gt;
+    let ps_str = List.map pattern ps |&gt; <span data-count="63">S</span>tring.concat ", " in
+    <span data-count="63">S</span>tring.concat "" [ "("; ps_str; ")" ]
+  | <span data-count="59">P</span>Constr (name, args) -&gt;
     (match args with
-     | <span data-count="62">[</span>] -&gt; name
+     | <span data-count="58">[</span>] -&gt; name
      | <span data-count="1">a</span>rgs -&gt;
        let args_str = List.map pattern args |&gt; <span data-count="1">S</span>tring.concat ", " in
        <span data-count="1">S</span>tring.concat "" [ name; " ("; args_str; ")" ])
-  | <span data-count="49">P</span>Wildcard -&gt; "_"
+  | <span data-count="50">P</span>Wildcard -&gt; "_"
 ;;
 
 let rec pattern_ast = function
@@ -664,67 +664,67 @@ let rec print_ast = function
 ;;
 
 let rec print_expr = function
-  | <span data-count="1367">I</span>nt n -&gt; string_of_int n
-  | <span data-count="1260">V</span>ar s -&gt; s
-  | <span data-count="555">C</span>onstr name -&gt; name
+  | <span data-count="1356">I</span>nt n -&gt; string_of_int n
+  | <span data-count="1257">V</span>ar s -&gt; s
+  | <span data-count="553">C</span>onstr name -&gt; name
   | <span data-count="691">B</span>inOp (op, left, right) -&gt;
     let oper =
       match op with
-      | <span data-count="65">P</span>lus -&gt; "+"
-      | <span data-count="57">M</span>inus -&gt; "-"
-      | <span data-count="55">M</span>ult -&gt; "*"
-      | <span data-count="57">D</span>iv -&gt; "/"
-      | <span data-count="63">E</span>qual -&gt; "="
-      | <span data-count="58">M</span>ore -&gt; "&gt;"
-      | <span data-count="47">L</span>ess -&gt; "&lt;"
-      | <span data-count="45">E</span>More -&gt; "&gt;="
-      | <span data-count="78">E</span>Less -&gt; "&lt;="
-      | <span data-count="53">N</span>otEqual -&gt; "&lt;&gt;"
-      | <span data-count="56">A</span>nd -&gt; "&amp;&amp;"
-      | <span data-count="57">O</span>r -&gt; "||"
+      | <span data-count="61">P</span>lus -&gt; "+"
+      | <span data-count="55">M</span>inus -&gt; "-"
+      | <span data-count="63">M</span>ult -&gt; "*"
+      | <span data-count="74">D</span>iv -&gt; "/"
+      | <span data-count="54">E</span>qual -&gt; "="
+      | <span data-count="57">M</span>ore -&gt; "&gt;"
+      | <span data-count="58">L</span>ess -&gt; "&lt;"
+      | <span data-count="52">E</span>More -&gt; "&gt;="
+      | <span data-count="62">E</span>Less -&gt; "&lt;="
+      | <span data-count="47">N</span>otEqual -&gt; "&lt;&gt;"
+      | <span data-count="53">A</span>nd -&gt; "&amp;&amp;"
+      | <span data-count="55">O</span>r -&gt; "||"
     in
     let left_str = print_expr left in
     <span data-count="691">l</span>et right_str = print_expr right in
     <span data-count="691">P</span>rintf.sprintf "((%s) %s (%s))" left_str oper right_str
-  | <span data-count="219">U</span>nOp (op, e) -&gt;
+  | <span data-count="227">U</span>nOp (op, e) -&gt;
     let oper =
       match op with
-      | <span data-count="107">N</span>eg -&gt; "-"
-      | <span data-count="112">N</span>ot -&gt; "not"
+      | <span data-count="116">N</span>eg -&gt; "-"
+      | <span data-count="111">N</span>ot -&gt; "not"
     in
-    Printf.sprintf "(%s (%s))" oper (print_exp<span data-count="219">r</span> e)
-  | <span data-count="449">I</span>f (cond, thn, els) -&gt;
+    Printf.sprintf "(%s (%s))" oper (print_exp<span data-count="227">r</span> e)
+  | <span data-count="441">I</span>f (cond, thn, els) -&gt;
     let cond_str = print_expr cond in
-    <span data-count="449">l</span>et thn_str = print_expr thn in
-    <span data-count="449">l</span>et els_str = Printf.sprintf " else %s" (print_exp<span data-count="449">r</span> els) in
-    <span data-count="449">P</span>rintf.sprintf "(if %s then %s%s)" cond_str thn_str els_str
-  | <span data-count="308">L</span>et (rec_f, name, value, body) -&gt;
+    <span data-count="441">l</span>et thn_str = print_expr thn in
+    <span data-count="441">l</span>et els_str = Printf.sprintf " else %s" (print_exp<span data-count="441">r</span> els) in
+    <span data-count="441">P</span>rintf.sprintf "(if %s then %s%s)" cond_str thn_str els_str
+  | <span data-count="314">L</span>et (rec_f, name, value, body) -&gt;
     let rec_prefix =
       match rec_f with
-      | <span data-count="166">R</span>ec -&gt; "rec "
-      | <span data-count="142">N</span>onRec -&gt; ""
+      | <span data-count="163">R</span>ec -&gt; "rec "
+      | <span data-count="151">N</span>onRec -&gt; ""
     in
     let value_str = print_expr value in
-    <span data-count="308">l</span>et body_str =
+    <span data-count="314">l</span>et body_str =
       match body with
       | <span data-count="0">N</span>one -&gt; ""
-      | <span data-count="308">S</span>ome b -&gt; Printf.sprint<span data-count="308">f</span> " in %s" (print_exp<span data-count="308">r</span> b)
+      | <span data-count="314">S</span>ome b -&gt; Printf.sprint<span data-count="314">f</span> " in %s" (print_exp<span data-count="314">r</span> b)
     in
-    Printf.sprintf "(let %s%s = %s%s)" rec_prefix (patter<span data-count="308">n</span> name) value_str body_str
-  | <span data-count="737">A</span>bs (param, body) -&gt; Printf.sprintf "(fun %s -&gt; %s)" (patter<span data-count="737">n</span> param) (print_exp<span data-count="737">r</span> body)
-  | <span data-count="292">A</span>pp (func, arg) -&gt; Printf.sprintf "(%s %s)" (print_exp<span data-count="292">r</span> func) (print_exp<span data-count="292">r</span> arg)
-  | <span data-count="652">B</span>ool b -&gt; Printf.sprintf "%b" b
-  | <span data-count="202">T</span>uple es -&gt;
-    let es_str = List.map print_expr es |&gt; <span data-count="202">S</span>tring.concat ", " in
-    <span data-count="202">P</span>rintf.sprintf "(%s)" es_str
-  | <span data-count="219">M</span>atch (scrutinee, cases) -&gt;
+    Printf.sprintf "(let %s%s = %s%s)" rec_prefix (patter<span data-count="314">n</span> name) value_str body_str
+  | <span data-count="806">A</span>bs (param, body) -&gt; Printf.sprintf "(fun %s -&gt; %s)" (patter<span data-count="806">n</span> param) (print_exp<span data-count="806">r</span> body)
+  | <span data-count="345">A</span>pp (func, arg) -&gt; Printf.sprintf "(%s %s)" (print_exp<span data-count="345">r</span> func) (print_exp<span data-count="345">r</span> arg)
+  | <span data-count="700">B</span>ool b -&gt; Printf.sprintf "%b" b
+  | <span data-count="206">T</span>uple es -&gt;
+    let es_str = List.map print_expr es |&gt; <span data-count="206">S</span>tring.concat ", " in
+    <span data-count="206">P</span>rintf.sprintf "(%s)" es_str
+  | <span data-count="216">M</span>atch (scrutinee, cases) -&gt;
     let cases_str =
       List.map
-        (fun (p, e) -&gt; <span data-count="337">P</span>rintf.sprintf "| %s -&gt; %s" (patter<span data-count="337">n</span> p) (print_exp<span data-count="337">r</span> e))
+        (fun (p, e) -&gt; <span data-count="323">P</span>rintf.sprintf "| %s -&gt; %s" (patter<span data-count="323">n</span> p) (print_exp<span data-count="323">r</span> e))
         cases
-      |&gt; <span data-count="219">S</span>tring.concat " "
+      |&gt; <span data-count="216">S</span>tring.concat " "
     in
-    <span data-count="219">P</span>rintf.sprintf "(match %s with %s)" (print_exp<span data-count="219">r</span> scrutinee) cases_str
+    <span data-count="216">P</span>rintf.sprintf "(match %s with %s)" (print_exp<span data-count="216">r</span> scrutinee) cases_str
 ;;
 
 let type_decl_to_ast td =

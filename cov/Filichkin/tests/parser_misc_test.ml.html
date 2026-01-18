@@ -48,17 +48,15 @@
 <a id="L24"></a><span > </span>
 <a id="L25"></a><span class="visited"> </span>
 <a id="L26"></a><span class="visited"> </span>
-<a id="L27"></a><span class="visited"> </span>
+<a id="L27"></a><span > </span>
 <a id="L28"></a><span > </span>
-<a id="L29"></a><span > </span>
-<a id="L30"></a><span class="visited"> </span>
+<a id="L29"></a><span class="visited"> </span>
+<a id="L30"></a><span > </span>
 <a id="L31"></a><span > </span>
 <a id="L32"></a><span > </span>
-<a id="L33"></a><span > </span>
+<a id="L33"></a><span class="visited"> </span>
 <a id="L34"></a><span class="visited"> </span>
-<a id="L35"></a><span class="visited"> </span>
-<a id="L36"></a><span class="visited"> </span>
-<a id="L37"></a><span > </span>
+<a id="L35"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -98,8 +96,6 @@
 <a href="#L33">33</a>
 <a href="#L34">34</a>
 <a href="#L35">35</a>
-<a href="#L36">36</a>
-<a href="#L37">37</a>
 </pre>
 <pre><code class="ocaml">(** Copyright 2021-2025, Kakadu and contributors *)
 
@@ -125,8 +121,7 @@ let%expect_test "parse match tuple pattern" =
 ;;
 
 let%expect_test "parse match without leading bar" =
-  <span data-count="1">p</span>rint_ast_p
-    (parser "match (1, 2) with (x, y) -&gt; x + y | _ -&gt; 0" |&gt; <span data-count="1">R</span>esult.get_o<span data-count="1">k</span>);
+  <span data-count="1">p</span>rint_ast_p (parser "match (1, 2) with (x, y) -&gt; x + y | _ -&gt; 0" |&gt; <span data-count="1">R</span>esult.get_o<span data-count="1">k</span>);
   <span data-count="1">[</span>%expect
     {|
     Match (Tuple [Int 1; Int 2], [(PTuple [Var x; Var y], BinOp (Plus, Var "x", Var "y")); (_, Int 0)])
@@ -135,8 +130,7 @@ let%expect_test "parse match without leading bar" =
 
 let%expect_test "parse fun with tuple pattern" =
   <span data-count="1">p</span>rint_ast_p (parser "fun (x, y) -&gt; x + y" |&gt; <span data-count="1">R</span>esult.get_o<span data-count="1">k</span>);
-  <span data-count="1">[</span>%expect
-    {| Abs ("(x, y)", BinOp (Plus, Var "x", Var "y")) |}<span data-count="19">]</span>
+  <span data-count="1">[</span>%expect {| Abs ("(x, y)", BinOp (Plus, Var "x", Var "y")) |}<span data-count="19">]</span>
 ;;
 </code></pre>
       </div>

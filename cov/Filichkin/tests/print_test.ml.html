@@ -56,11 +56,9 @@
 <a id="L32"></a><span > </span>
 <a id="L33"></a><span > </span>
 <a id="L34"></a><span > </span>
-<a id="L35"></a><span > </span>
-<a id="L36"></a><span > </span>
-<a id="L37"></a><span class="visited"> </span>
-<a id="L38"></a><span class="visited"> </span>
-<a id="L39"></a><span > </span>
+<a id="L35"></a><span class="visited"> </span>
+<a id="L36"></a><span class="visited"> </span>
+<a id="L37"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -102,8 +100,6 @@
 <a href="#L35">35</a>
 <a href="#L36">36</a>
 <a href="#L37">37</a>
-<a href="#L38">38</a>
-<a href="#L39">39</a>
 </pre>
 <pre><code class="ocaml">(** Copyright 2021-2025, Kakadu and contributors *)
 
@@ -136,10 +132,8 @@ let%expect_test "print_expr_match" =
   <span data-count="1">l</span>et expr =
     Match
       ( Var "xs"
-      ,
-        [ PConstr ("Nil", []), Int 0
-        ; PConstr ("Cons", [ PVar "x"; PVar "xs" ]), Var "x"
-        ] )
+      , [ PConstr ("Nil", []), Int 0; PConstr ("Cons", [ PVar "x"; PVar "xs" ]), Var "x" ]
+      )
   in
   print_string (print_exp<span data-count="1">r</span> expr);
   <span data-count="1">[</span>%expect {| (match xs with | Nil -&gt; 0 | Cons (x, xs) -&gt; x) |}<span data-count="19">]</span>

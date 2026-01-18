@@ -31,50 +31,45 @@
 <a id="L7"></a><span > </span>
 <a id="L8"></a><span > </span>
 <a id="L9"></a><span class="visited"> </span>
-<a id="L10"></a><span > </span>
+<a id="L10"></a><span class="visited"> </span>
 <a id="L11"></a><span > </span>
-<a id="L12"></a><span class="visited"> </span>
+<a id="L12"></a><span > </span>
 <a id="L13"></a><span class="visited"> </span>
 <a id="L14"></a><span > </span>
 <a id="L15"></a><span > </span>
-<a id="L16"></a><span class="visited"> </span>
-<a id="L17"></a><span > </span>
-<a id="L18"></a><span > </span>
-<a id="L19"></a><span > </span>
-<a id="L20"></a><span class="visited"> </span>
-<a id="L21"></a><span class="visited"> </span>
-<a id="L22"></a><span class="visited"> </span>
-<a id="L23"></a><span > </span>
-<a id="L24"></a><span > </span>
-<a id="L25"></a><span > </span>
-<a id="L26"></a><span class="visited"> </span>
+<a id="L16"></a><span > </span>
+<a id="L17"></a><span class="visited"> </span>
+<a id="L18"></a><span class="visited"> </span>
+<a id="L19"></a><span class="visited"> </span>
+<a id="L20"></a><span > </span>
+<a id="L21"></a><span > </span>
+<a id="L22"></a><span > </span>
+<a id="L23"></a><span class="visited"> </span>
+<a id="L24"></a><span class="visited"> </span>
+<a id="L25"></a><span class="visited"> </span>
+<a id="L26"></a><span > </span>
 <a id="L27"></a><span > </span>
-<a id="L28"></a><span > </span>
-<a id="L29"></a><span class="visited"> </span>
-<a id="L30"></a><span class="visited"> </span>
+<a id="L28"></a><span class="visited"> </span>
+<a id="L29"></a><span > </span>
+<a id="L30"></a><span > </span>
 <a id="L31"></a><span > </span>
-<a id="L32"></a><span > </span>
+<a id="L32"></a><span class="visited"> </span>
 <a id="L33"></a><span class="visited"> </span>
-<a id="L34"></a><span > </span>
+<a id="L34"></a><span class="visited"> </span>
 <a id="L35"></a><span > </span>
 <a id="L36"></a><span > </span>
-<a id="L37"></a><span class="visited"> </span>
+<a id="L37"></a><span > </span>
 <a id="L38"></a><span class="visited"> </span>
 <a id="L39"></a><span class="visited"> </span>
-<a id="L40"></a><span > </span>
-<a id="L41"></a><span > </span>
+<a id="L40"></a><span class="visited"> </span>
+<a id="L41"></a><span class="visited"> </span>
 <a id="L42"></a><span > </span>
-<a id="L43"></a><span class="visited"> </span>
-<a id="L44"></a><span class="visited"> </span>
+<a id="L43"></a><span > </span>
+<a id="L44"></a><span > </span>
 <a id="L45"></a><span class="visited"> </span>
 <a id="L46"></a><span class="visited"> </span>
-<a id="L47"></a><span > </span>
+<a id="L47"></a><span class="visited"> </span>
 <a id="L48"></a><span > </span>
-<a id="L49"></a><span > </span>
-<a id="L50"></a><span class="visited"> </span>
-<a id="L51"></a><span class="visited"> </span>
-<a id="L52"></a><span class="visited"> </span>
-<a id="L53"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -127,11 +122,6 @@
 <a href="#L46">46</a>
 <a href="#L47">47</a>
 <a href="#L48">48</a>
-<a href="#L49">49</a>
-<a href="#L50">50</a>
-<a href="#L51">51</a>
-<a href="#L52">52</a>
-<a href="#L53">53</a>
 </pre>
 <pre><code class="ocaml">(** Copyright 2021-2025, Kakadu and contributors *)
 
@@ -141,10 +131,7 @@ open Filichkin_lib.Parser
 open Filichkin_lib.Print
 
 let%expect_test "parse adt type declaration" =
-  <span data-count="1">p</span>rint_ast_p
-    (parser
-       {|type 'a mylist = Nil | Cons of 'a * 'a mylist|}
-     |&gt; <span data-count="1">R</span>esult.get_o<span data-count="1">k</span>);
+  <span data-count="1">p</span>rint_ast_p (parser {|type 'a mylist = Nil | Cons of 'a * 'a mylist|} |&gt; <span data-count="1">R</span>esult.get_o<span data-count="1">k</span>);
   <span data-count="1">[</span>%expect
     {|
     [type_name mylist, type_params [a], constructors [{ ctor_name = Nil; ctor_args = [] }; { ctor_name = Cons; ctor_args = [TEVar a; TEConstr (mylist, [TEVar a])] }]]
@@ -159,9 +146,7 @@ let%expect_test "parse adt constructor with arrow" =
 
 let%expect_test "parse adt tree declaration" =
   <span data-count="1">p</span>rint_ast_p
-    (parser
-       {|type 'a tree = Leaf of 'a | Node of 'a tree * 'a tree|}
-     |&gt; <span data-count="1">R</span>esult.get_o<span data-count="1">k</span>);
+    (parser {|type 'a tree = Leaf of 'a | Node of 'a tree * 'a tree|} |&gt; <span data-count="1">R</span>esult.get_o<span data-count="1">k</span>);
   <span data-count="1">[</span>%expect
     {|
     [type_name tree, type_params [a], constructors [{ ctor_name = Leaf; ctor_args = [TEVar a] }; { ctor_name = Node; ctor_args = [TEConstr (tree, [TEVar a]); TEConstr (tree, [TEVar a])] }]]
