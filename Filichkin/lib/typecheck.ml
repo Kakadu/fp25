@@ -41,6 +41,8 @@ type infer_state =
   }
 
 let empty_subst = IntMap.empty
+
+let fresh_infer_state next_var = { next_var; subst = empty_subst }
 let map_of_list xs =
   List.fold_left (fun acc (k, v) -> StringMap.add k v acc) StringMap.empty xs
 ;;
@@ -69,13 +71,11 @@ let apply_subst subst ty =
     | TFun (t1, t2) -> TFun (go seen t1, go seen t2)
     | TTuple ts -> TTuple (List.map (go seen) ts)
     | TCon (name, ts) -> TCon (name, List.map (go seen) ts)
+    | TVar id when IntSet.mem id seen -> TVar id
     | TVar id ->
-      if IntSet.mem id seen
-      then TVar id
-      else (
-        match IntMap.find_opt id subst with
-        | None -> TVar id
-        | Some t -> if occurs id t then TVar id else go (IntSet.add id seen) t)
+      (match IntMap.find_opt id subst with
+       | None -> TVar id
+       | Some t -> if occurs id t then TVar id else go (IntSet.add id seen) t)
   in
   go IntSet.empty ty
 ;;
@@ -388,6 +388,8 @@ type tc_state =
   ; next_var : int
   }
 
+let make_tc_state tenv last_type next_var = { tenv; last_type; next_var }
+
 let process_type_decl env next_var td =
   let env_with_type =
     { env with types = StringMap.add td.type_name td.type_params env.types }
@@ -403,7 +405,7 @@ let process_type_decl env next_var td =
     List.map
       (function
         | _, TVar id -> id
-        | _ -> failwith "impossible")
+        | _ -> raise (TypeError "internal error: expected type variable"))
       distinct_vars
   in
   let result_type = TCon (td.type_name, List.map snd distinct_vars) in
@@ -435,7 +437,7 @@ let check_toplevel state tl =
       let tenv, next_var = process_type_decl state.tenv state.next_var td in
       Ok { tenv; last_type = None; next_var }
     | TLExpr (Let (NonRec, pat, expr, None)) ->
-      let st = { next_var = state.next_var; subst = empty_subst } in
+      let st = fresh_infer_state state.next_var in
       let ty, st = infer_expr st state.tenv expr in
       let ty = apply_subst st.subst ty in
       let env = apply_subst_env st.subst state.tenv in
@@ -449,11 +451,11 @@ let check_toplevel state tl =
       in
       let scheme = generalize env.vars ty in
       let ty, st = instantiate st scheme in
-      Ok { tenv = extend_vars env new_vars; last_type = Some ty; next_var = st.next_var }
+      Ok (make_tc_state (extend_vars env new_vars) (Some ty) st.next_var)
     | TLExpr (Let (Rec, PVar name, expr, None)) ->
       (match expr with
        | Abs _ ->
-         let st = { next_var = state.next_var; subst = empty_subst } in
+         let st = fresh_infer_state state.next_var in
          let tv, st = fresh_tyvar st in
          let env_pre = extend_vars state.tenv [ name, Forall ([], tv) ] in
          let t_expr, st = infer_expr st env_pre expr in
@@ -463,12 +465,12 @@ let check_toplevel state tl =
          let scheme = generalize env.vars t_expr in
          let env' = extend_vars env [ name, scheme ] in
          let ty, st = instantiate st scheme in
-         Ok { tenv = env'; last_type = Some ty; next_var = st.next_var }
+         Ok (make_tc_state env' (Some ty) st.next_var)
        | _ -> Error "recursive binding must be a function")
     | TLExpr (Let (Rec, _, _, None)) ->
       Error "Recursive let-tuple is not supported"
     | TLExpr e ->
-      let st = { next_var = state.next_var; subst = empty_subst } in
+      let st = fresh_infer_state state.next_var in
       let ty, st = infer_expr st state.tenv e in
       let ty = apply_subst st.subst ty in
       Ok { state with last_type = Some ty; next_var = st.next_var }
@@ -502,7 +504,7 @@ let initial_env, initial_next_var =
 
 let initial_state = { tenv = initial_env; last_type = None; next_var = initial_next_var }
 
-let typecheck_toplevel state tl = check_toplevel state tl
+let typecheck_toplevel = check_toplevel
 
 let typecheck_program state toplevels =
   let rec loop state = function
