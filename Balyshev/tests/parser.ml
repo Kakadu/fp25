@@ -61,10 +61,10 @@ module GenAst = struct
     let open Gen in
     map
       (fun items ->
-         Base.List.fold
-           ~f:(fun acc item -> EConstruct ("::", Some (ETuple (item, acc, []))))
-           ~init:(EConstruct ("[]", None))
-           items)
+        Base.List.fold
+          ~f:(fun acc item -> EConstruct ("::", Some (ETuple (item, acc, []))))
+          ~init:(EConstruct ("[]", None))
+          items)
       (list_size (int_bound 3) gen)
   ;;
 
@@ -72,10 +72,10 @@ module GenAst = struct
     let open Gen in
     map
       (fun items ->
-         Base.List.fold
-           ~f:(fun acc item -> PConstruct ("::", Some (PTuple (item, acc, []))))
-           ~init:(PConstruct ("[]", None))
-           items)
+        Base.List.fold
+          ~f:(fun acc item -> PConstruct ("::", Some (PTuple (item, acc, []))))
+          ~init:(PConstruct ("[]", None))
+          items)
       (list_size (int_bound 3) gen)
   ;;
 
@@ -124,8 +124,8 @@ module GenAst = struct
           ; map3 (fun op l r -> EBinop (op, l, r)) binop (self (n / 2)) (self (n / 2))
           ; tuple (self (n / 4)) (fun x1 x2 xs -> ETuple (x1, x2, xs))
             (* ; map3 (fun c t e -> EIf (c, t, e)) self self self
-          ; map2 (fun f x -> EApp (f, x)) self self
-          ; map2 (fun name arg -> EConstruct (name, Some arg)) constructor_name self *)
+               ; map2 (fun f x -> EApp (f, x)) self self
+               ; map2 (fun name arg -> EConstruct (name, Some arg)) constructor_name self *)
           ])
   ;;
 end
