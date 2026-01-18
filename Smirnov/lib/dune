@@ -2,18 +2,23 @@
  (name mardukml_lib)
  (public_name Smirnov.Lib)
  (modules Ast Lambda Parser Lexer Mardukml)
- (preprocess (pps ppx_deriving.show))
- (instrumentation (backend bisect_ppx))
+ (preprocess
+  (pps ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx))
  (libraries menhirLib))
 
 (ocamllex lexer)
 
-(menhir (modules parser))
+(menhir
+ (modules parser))
 
 (library
  (name tests)
  (modules tests)
  (libraries mardukml_lib)
- (preprocess (pps ppx_expect ppx_deriving.show))
- (instrumentation (backend bisect_ppx))
+ (preprocess
+  (pps ppx_expect ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx))
  (inline_tests))
