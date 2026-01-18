@@ -1,1 +1,4 @@
 forward mutability_check ignore bin/REPL.ml
+forward lint_filesystem ignore lib/parsetree.ml
+forward lint_filesystem ignore lib/valuetree.ml
+forward lint_filesystem ignore lib/typedtree.ml
