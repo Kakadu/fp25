@@ -6,29 +6,14 @@
 
 [@@@ocaml.text "/*"]
 
-(*
-   val var : 'a -> 'a Ast.t
-   val abs : 'a -> 'a Ast.t -> 'a Ast.t
-   val app : 'a Ast.t -> 'a Ast.t -> 'a Ast.t *)
-
+val int : int -> 'a Ast.t
+val var : 'a -> 'a Ast.t
+val abs : 'a -> 'a Ast.t -> 'a Ast.t
+val app : 'a Ast.t -> 'a Ast.t -> 'a Ast.t
 val subst : string -> by:string Ast.t -> string Ast.t -> string Ast.t
-
-type strat =
-  { on_int : strat -> int -> string Ast.t
-  ; on_var : strat -> Ast.name -> string Ast.t
-  ; on_abs : strat -> Ast.name -> string Ast.t -> string Ast.t
-  ; on_app : strat -> string Ast.t -> string Ast.t -> string Ast.t
-  }
-
-val apply_strat : strat -> string Ast.t -> string Ast.t
-val without_strat : strat
+val cbv_strat : string Ast.t -> string Ast.t
 
 (** Predefined strategies *)
-
-val cbn_strat : strat
-val nor_strat : strat
-val cbv_strat : strat
-val ao_strat : strat
 
 (** Example lambda expressions *)
 

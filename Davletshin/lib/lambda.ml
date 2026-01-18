@@ -7,7 +7,7 @@ open Base
 open Utils
 
 (* Smart constructors *)
-let int_cons n = Int n
+let int n = Int n
 let var x = Var x
 let abs x y = Abs (x, y)
 let app x y = App (x, y)
@@ -45,69 +45,22 @@ let subst x ~by:v =
   helper
 ;;
 
-type strat =
-  { on_int : strat -> int -> string Ast.t
-  ; on_var : strat -> name -> string Ast.t
-  ; on_abs : strat -> name -> string Ast.t -> string Ast.t
-  ; on_app : strat -> string Ast.t -> string Ast.t -> string Ast.t
-  }
-
-let apply_strat st = function
-  | Int n -> st.on_int st n
-  | Var name -> st.on_var st name
-  | Abs (x, b) -> st.on_abs st x b
-  | App (l, r) -> st.on_app st l r
-;;
-
-let without_strat =
-  let on_int _ = int_cons in
-  let on_var _ = var in
-  let on_abs _ = abs in
-  let on_app _ = app in
-  { on_int; on_var; on_abs; on_app }
-;;
-
-let cbn_strat =
-  let on_app st f arg =
-    match apply_strat st f with
-    | Abs (x, e) -> apply_strat st (subst x ~by:arg e)
-    | f2 -> App (f2, arg)
-  in
-  { without_strat with on_app }
-;;
-
-let under_abstraction st x b = abs x (apply_strat st b)
-
-(* Normal Order Reduction to Normal Form
-   Application function reduced as CBN first
-   + Reduce under abstractions *)
-let nor_strat =
-  let on_app st f arg =
-    match apply_strat cbn_strat f with
-    | Abs (x, e) -> apply_strat st @@ subst x ~by:arg e
-    | f1 ->
-      let f2 = apply_strat st f1 in
-      let arg2 = apply_strat st arg in
-      App (f2, arg2)
-  in
-  { without_strat with on_app; on_abs = under_abstraction }
-;;
-
 (* Call-by-Value Reduction to Weak Normal Form *)
-let cbv_strat =
-  let on_app st f arg =
-    match apply_strat st f with
-    | Abs (x, e) ->
-      let arg2 = apply_strat st arg in
-      apply_strat st @@ subst x ~by:arg2 e
-    | f2 -> App (f2, apply_strat st arg)
-  in
-  { without_strat with on_app }
+let rec cbv_strat = function
+  | Int n -> int n
+  | Var name -> var name
+  | Abs (x, b) -> abs x b
+  | App (l, r) ->
+    let on_app f arg =
+      match cbv_strat f with
+      | Abs (x, e) ->
+        let arg2 = cbv_strat arg in
+        cbv_strat @@ subst x ~by:arg2 e
+      | f2 -> App (f2, cbv_strat arg)
+    in
+    on_app l r
 ;;
 
-(* Applicative Order Reduction to Normal Form
-   As CBV but reduce under abstractions *)
-let ao_strat = { cbv_strat with on_abs = under_abstraction }
 let a = var "a"
 let x = var "x"
 let y = var "y"

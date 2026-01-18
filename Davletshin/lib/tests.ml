@@ -54,7 +54,6 @@ let _ = Miniml_lib.Lambda.one
 let _ = Miniml_lib.Lambda.p
 let _ = Miniml_lib.Lambda.three
 let _ = Miniml_lib.Lambda.two
-let _ = Miniml_lib.Lambda.without_strat
 let _ = Miniml_lib.Lambda.zero
 let _ = Miniml_lib.Parser.parse_lam
 let _ = Miniml_lib.Printast.pp
