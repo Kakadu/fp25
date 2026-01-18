@@ -6,8 +6,8 @@
 
 [@@@ocaml.text "/*"]
 
-open Base.Format
 open Base
+open Stdlib.Format
 
 module Parens = struct
   type context =
@@ -29,7 +29,9 @@ module Parens = struct
   let parens s = sprintf "(%s)" s
 
   let set_parens ~ctx cases s =
-    if List.exists cases ~f:(fun x -> x == ctx) then sprintf "(%s)" s else s
+    if List.exists cases ~f:(fun x -> Stdlib.compare x ctx = 0)
+    then sprintf "(%s)" s
+    else s
   ;;
 end
 

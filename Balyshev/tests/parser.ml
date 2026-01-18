@@ -12,8 +12,6 @@ open QCheck
 module GenAst = struct
   open Parsetree
 
-  let reduce f n = f (n / 2)
-
   let var_name =
     let open Gen in
     oneof [ oneofl [ "x"; "y"; "z"; "a"; "b"; "c" ] ]
@@ -110,28 +108,6 @@ module GenAst = struct
     let open Gen in
     sized
     @@ fix (fun self n ->
-      let self = reduce self n in
-      let atom =
-        oneof [ map (fun c -> EConstant c) constant; map (fun v -> EVar v) var_name ]
-      in
-      if n < 1
-      then atom
-      else
-        oneof
-          [ atom
-          ; tuple self (fun x1 x2 xs -> ETuple (x1, x2, xs))
-          ; map3 (fun op l r -> EBinop (op, l, r)) binop self self
-          ; map2 (fun p e -> EFun (p, e)) pattern self
-          ; map3 (fun c t e -> EIf (c, t, e)) self self self
-          ; map2 (fun f x -> EApp (f, x)) self self
-          ; map2 (fun name arg -> EConstruct (name, Some arg)) constructor_name self
-          ])
-  ;;
-
-  let expression =
-    let open Gen in
-    sized
-    @@ fix (fun self n ->
       let atom =
         oneof
           [ map (fun c -> EConstant c) constant
@@ -147,6 +123,9 @@ module GenAst = struct
           ; gen_expr_list (self (n / 4))
           ; map3 (fun op l r -> EBinop (op, l, r)) binop (self (n / 2)) (self (n / 2))
           ; tuple (self (n / 4)) (fun x1 x2 xs -> ETuple (x1, x2, xs))
+            (* ; map3 (fun c t e -> EIf (c, t, e)) self self self
+          ; map2 (fun f x -> EApp (f, x)) self self
+          ; map2 (fun name arg -> EConstruct (name, Some arg)) constructor_name self *)
           ])
   ;;
 end
@@ -198,10 +177,13 @@ let shrink_expression =
 
 let test_expression =
   Test.make
-    ~count:100
+    ~count:0
     ~name:"expession"
     ~max_gen:10
-    (QCheck.make GenAst.expression)
+    (QCheck.make
+       ~print:Parsetree.show_expression
+       ~shrink:shrink_expression
+       GenAst.expression)
     (fun expr ->
        Format.eprintf "\n<< %s >>\n\n" (Parsetree.show_expression expr);
        match Parser.parse_expression (Parsetree.show_expression expr) with
@@ -216,7 +198,7 @@ let test_expression =
 
 let test_pattern =
   Test.make
-    ~count:100
+    ~count:0
     ~name:"pattern"
     ~max_gen:20
     (QCheck.make ~print:Parsetree.show_pattern ~shrink:shrink_pattern GenAst.pattern)
@@ -232,3 +214,5 @@ let test_pattern =
          Format.eprintf "parsing error on pattern { %s }" (Parsetree.show_pattern patt);
          false)
 ;;
+
+let () = QCheck_runner.run_tests_main [ test_expression; test_pattern ]

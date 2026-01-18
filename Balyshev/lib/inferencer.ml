@@ -98,12 +98,8 @@ module Substitution (M : Monads.STATE_MONAD) = struct
 
   type t = (string, ty, String.comparator_witness) Map.t
 
-  let empty = Map.empty (module String)
-  let walk sub name = Map.find sub name
-
-  let ident_equal (ident1 : Ident.t) (ident2 : Ident.t) =
-    String.equal ident1.name ident2.name
-  ;;
+  let empty : t = Map.empty (module String)
+  let walk (sub : t) name = Map.find sub name
 
   let occurs_in name ty =
     let rec helper = function
@@ -121,7 +117,7 @@ module Substitution (M : Monads.STATE_MONAD) = struct
     if occurs_in name ty then fail (Occurs_check (name, ty)) else return ()
   ;;
 
-  let rec extend sub name ty =
+  let rec extend (sub : t) name ty =
     let* () = occurs_check name ty in
     match walk sub name with
     | Some old_ty ->
@@ -129,7 +125,7 @@ module Substitution (M : Monads.STATE_MONAD) = struct
       compose sub sub2
     | None -> return (Map.set sub ~key:name ~data:(apply sub ty))
 
-  and apply sub ty =
+  and apply (sub : t) ty =
     match ty with
     | Tty_var ident ->
       (match walk sub ident.name with
@@ -140,11 +136,11 @@ module Substitution (M : Monads.STATE_MONAD) = struct
     | Tty_arrow (ty1, ty2) -> Tty_arrow (apply sub ty1, apply sub ty2)
     | Tty_constr (tys, ident) -> Tty_constr (apply_many sub tys, ident)
 
-  and apply_many sub tys = List.map tys ~f:(apply sub)
+  and apply_many (sub : t) tys = List.map tys ~f:(apply sub)
 
   and unify ty1 ty2 =
     match ty1, ty2 with
-    | Tty_var ident1, Tty_var ident2 when ident_equal ident1 ident2 -> return empty
+    | Tty_var ident1, Tty_var ident2 when Ident.equal ident1 ident2 -> return empty
     | Tty_var ident, ty when occurs_in ident.name ty ->
       fail (Occurs_check (ident.name, ty2))
     | ty, Tty_var ident when occurs_in ident.name ty ->
@@ -167,7 +163,7 @@ module Substitution (M : Monads.STATE_MONAD) = struct
     in
     List.fold2_exn ~init:(return empty) ~f:unify_m tys1 tys2
 
-  and compose sub1 sub2 =
+  and compose (sub1 : t) (sub2 : t) =
     let helper ~key ~data acc =
       let* acc_sub = acc in
       extend acc_sub key data

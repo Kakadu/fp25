@@ -31,9 +31,9 @@ module Make (M : Monads.STATE_MONAD) (Error : ERROR) = struct
   let vprimitive name impl = VPrimitive (name, impl)
 
   open Base
-  open Base.Format
   open Pprint
   open Pprint.Parens
+  open Stdlib.Format
 
   let rec show_value ?(ctx = Free) = function
     | VConstant x -> sprintf "%s" (Parsetree.show_constant x)

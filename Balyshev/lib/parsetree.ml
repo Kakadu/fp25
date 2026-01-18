@@ -73,10 +73,10 @@ type structure_item =
 
 type structure = structure_item list1
 
-open Base.Format
 open Base
 open Pprint
 open Pprint.Parens
+open Stdlib.Format
 
 let show_rec_flag = function
   | Recursive -> " rec "
@@ -114,7 +114,8 @@ let rec show_pattern ?(ctx = Parens.Free) = function
   | PConstruct ("::", Some (PTuple (head, tail, []))) ->
     let rec helper acc = function
       | PConstruct ("::", Some (PTuple (hd, tl, []))) -> helper (hd :: acc) tl
-      | PConstruct ("[]", None) -> show_list_brackets show_pattern (head :: List.rev acc)
+      | PConstruct ("[]", None) ->
+        show_list_brackets (show_pattern ~ctx:Free) (head :: List.rev acc)
       | _ as exp -> show_list_cons ~ctx show_pattern (head :: List.rev (exp :: acc))
     in
     helper [] tail
@@ -143,7 +144,7 @@ let rec show_expression ?(ctx = Parens.Free) = function
     let rec helper acc = function
       | EConstruct ("::", Some (ETuple (hd, tl, []))) -> helper (hd :: acc) tl
       | EConstruct ("[]", None) ->
-        show_list_brackets show_expression (head :: List.rev acc)
+        show_list_brackets (show_expression ~ctx:Free) (head :: List.rev acc)
       | _ as exp -> show_list_cons ~ctx show_expression (head :: List.rev (exp :: acc))
     in
     helper [] tail
@@ -174,32 +175,32 @@ let rec show_expression ?(ctx = Parens.Free) = function
          (show_expression ~ctx:Ite e)
   | EMatch (e, (case1, cases)) ->
     let pp_case fmt (p, e) =
-      Format.fprintf
+      fprintf
         fmt
         "@[| %s -> %s@]"
         (show_pattern ~ctx:LeftSideMatch p)
         (show_expression ~ctx:RightSideMatch e)
     in
     set_parens ~ctx [ MatchWith; Tuple; Binop; App; RightSideMatch ]
-    @@ Format.asprintf
+    @@ asprintf
          "@[match %s with@]@ %a"
          (show_expression ~ctx:MatchWith e)
-         (Format.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt "@;") pp_case)
+         (pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt "@;") pp_case)
          (case1 :: cases)
 
 and show_value_binding rec_flag vb vbs =
   let pp_binding (p, e) =
-    Format.asprintf
+    asprintf
       "%s =@;<1 2>%s"
       (show_pattern ~ctx:LeftSideLet p)
       (show_expression ~ctx:RightSideLet e)
   in
-  Format.asprintf
+  asprintf
     "let%s%a"
     (show_rec_flag rec_flag)
-    (Format.pp_print_list
-       ~pp_sep:(fun fmt () -> Format.fprintf fmt "@;and ")
-       (fun fmt b -> Format.fprintf fmt "%s" (pp_binding b)))
+    (pp_print_list
+       ~pp_sep:(fun fmt () -> fprintf fmt "@;and ")
+       (fun fmt b -> fprintf fmt "%s" (pp_binding b)))
     (vb :: vbs)
 ;;
 
@@ -244,12 +245,7 @@ let show_type_declaration td tds =
       sprintf " =@ %s@ " (String.concat (List.map ~f:show_case (case :: cases)))
   in
   let helper ~keyword td =
-    Format.sprintf
-      "%s%s%s%s"
-      keyword
-      (show_type_params td)
-      td.pty_name
-      (show_type_kind td)
+    sprintf "%s%s%s%s" keyword (show_type_params td) td.pty_name (show_type_kind td)
   in
   sprintf "%s%s" (helper ~keyword:"type" td)
   @@ String.concat (List.map ~f:(helper ~keyword:"and") tds)

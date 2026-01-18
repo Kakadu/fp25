@@ -19,7 +19,7 @@ module Error = struct
     | RightSideRec of string
     | Match_failure
 
-  open Format
+  open Stdlib.Format
 
   let show = function
     | Is_not_a_function expr ->
@@ -39,8 +39,6 @@ module Error = struct
   let pp ppf error = fprintf ppf "%s" (show error)
 end
 
-open Error
-
 module Builtin (M : Monads.STATE_MONAD) = struct
   open M
   open Parsetree
@@ -56,7 +54,7 @@ module Builtin (M : Monads.STATE_MONAD) = struct
 
   let print_value =
     let aux v =
-      Format.printf "%a" pp_value v;
+      Stdlib.Format.printf "%a" pp_value v;
       return (VConstant CUnit)
     in
     vprimitive "print_value" aux
@@ -64,7 +62,7 @@ module Builtin (M : Monads.STATE_MONAD) = struct
 
   let printn_value =
     let aux v =
-      Format.printf "%a\n" pp_value v;
+      Stdlib.Format.printf "%a\n" pp_value v;
       return (VConstant CUnit)
     in
     vprimitive "printn_value" aux
@@ -79,7 +77,6 @@ module Builtin (M : Monads.STATE_MONAD) = struct
 end
 
 module Eval (M : Monads.STATE_MONAD) = struct
-  module Builtin = Builtin (M)
   open Parsetree
   open Valuetree.Make (M) (Error)
   open M
@@ -87,7 +84,7 @@ module Eval (M : Monads.STATE_MONAD) = struct
   let from_env env key =
     match Map.find env key with
     | Some value -> return value
-    | None -> fail (Unbound_value key)
+    | None -> fail (Error.Unbound_value key)
   ;;
 
   let eval_int f a b = return (VConstant (CInt (f a b)))
@@ -102,7 +99,7 @@ module Eval (M : Monads.STATE_MONAD) = struct
     match a, b with
     | VConstant a, VConstant b ->
       (match op, a, b with
-       | Div, _, CInt 0 -> fail Division_by_zero
+       | Div, _, CInt 0 -> fail Error.Division_by_zero
        | Add, CInt a, CInt b -> eval_int ( + ) a b
        | Sub, CInt a, CInt b -> eval_int ( - ) a b
        | Mul, CInt a, CInt b -> eval_int ( * ) a b
@@ -113,10 +110,10 @@ module Eval (M : Monads.STATE_MONAD) = struct
        | Ge, CInt a, CInt b -> eval_bool ( >= ) a b
        | Lt, CInt a, CInt b -> eval_bool ( < ) a b
        | Gt, CInt a, CInt b -> eval_bool ( > ) a b
-       | Eq, CBool a, CBool b -> eval_bool ( == ) a b
-       | Ne, CBool a, CBool b -> eval_bool ( != ) a b
-       | _ -> fail (Type_mismatch "eval_binop operands are not compatible"))
-    | _ -> fail (Type_mismatch "eval_binop operands are not constants")
+       | Eq, CBool a, CBool b -> eval_bool (fun a b -> Stdlib.compare a b = 0) a b
+       | Ne, CBool a, CBool b -> eval_bool (fun a b -> Stdlib.compare a b <> 0) a b
+       | _ -> fail (Error.Type_mismatch "eval_binop operands are not compatible"))
+    | _ -> fail (Error.Type_mismatch "eval_binop operands are not constants")
   ;;
 
   let rec bind_to_env env patt value =
@@ -134,11 +131,11 @@ module Eval (M : Monads.STATE_MONAD) = struct
     | PConstant (CBool x), VConstant (CBool y) when Bool.equal x y -> return env
     | PConstant (CInt _), VConstant (CInt _)
     | PConstant (CBool _), VConstant (CBool _)
-    | PConstruct _, VConstruct _ -> fail Match_failure
+    | PConstruct _, VConstruct _ -> fail Error.Match_failure
     | _ ->
       fail
-        (Type_mismatch
-           (Format.sprintf
+        (Error.Type_mismatch
+           (Stdlib.Format.sprintf
               "{ value = %s } does not match { pattern = %s }"
               (show_value value)
               (show_pattern patt)))
@@ -185,14 +182,14 @@ module Eval (M : Monads.STATE_MONAD) = struct
          let* rez = expression env body in
          return rez
        | VPrimitive (_name, f) -> f varg
-       | _ -> fail (Is_not_a_function f))
+       | _ -> fail (Error.Is_not_a_function f))
     | EFun (patt, expr) -> return (VFun (patt, expr, env))
     | EIf (cond, expr_then, expr_else) ->
       expression env cond
       >>= (function
        | VConstant (CBool true) -> expression env expr_then
        | VConstant (CBool false) -> expression env expr_else
-       | _ -> fail (Type_mismatch "boolean expr expected"))
+       | _ -> fail (Error.Type_mismatch "boolean expr expected"))
     | EMatch (scrut, (case, cases)) ->
       let* scrut = expression env scrut in
       let f acc (patt, expr) =
@@ -200,7 +197,7 @@ module Eval (M : Monads.STATE_MONAD) = struct
         <|> let* env' = bind_to_env env patt scrut in
             expression env' expr
       in
-      List.fold ~f ~init:(fail Match_failure) (case :: cases)
+      List.fold ~f ~init:(fail Error.Match_failure) (case :: cases)
 
   and expression_many env exprs =
     let aux acc expr =
@@ -225,8 +222,8 @@ module Eval (M : Monads.STATE_MONAD) = struct
     | PVar fun_name, EFun (patt, expr) ->
       let value = VFun (patt, expr, env) in
       return (update env fun_name value)
-    | PVar fun_name, _ -> fail (RightSideRec fun_name)
-    | patt, _ -> fail (LeftSideRec (Parsetree.show_pattern patt))
+    | PVar fun_name, _ -> fail (Error.RightSideRec fun_name)
+    | patt, _ -> fail (Error.LeftSideRec (Parsetree.show_pattern patt))
 
   and bind_rec_value_many env (vb1, vbs) =
     List.fold ~init:(return env) (vb1 :: vbs) ~f:bind_rec_value_m

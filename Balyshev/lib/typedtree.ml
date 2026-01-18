@@ -61,9 +61,9 @@ type structure_item =
 type structure = structure_item * structure_item list
 
 open Base
-open Base.Format
 open Pprint
 open Pprint.Parens
+open Stdlib.Format
 
 let rec show_ty ?(ctx = Parens.Free) = function
   | Tty_var ident -> sprintf "'ty%d" ident.id
@@ -71,7 +71,8 @@ let rec show_ty ?(ctx = Parens.Free) = function
     set_parens ~ctx [ LeftSideArrow; App; Tuple ]
     @@ sprintf "%s -> %s" (show_ty ~ctx:LeftSideArrow a) (show_ty ~ctx:RightSideArrow b)
   | Tty_prod (a, b, xs) ->
-    set_parens ~ctx [ App; Tuple ] @@ show_many ~sep:" * " show_ty (a :: b :: xs)
+    set_parens ~ctx [ App; Tuple ]
+    @@ show_many ~sep:" * " (show_ty ~ctx:Tuple) (a :: b :: xs)
   | Tty_constr ([], name) -> name
   | Tty_constr ([ ty ], name) ->
     set_parens ~ctx [ App ] @@ sprintf "%s %s" (show_ty ~ctx:App ty) name
@@ -81,7 +82,7 @@ let rec show_ty ?(ctx = Parens.Free) = function
 ;;
 
 let show_ty = show_ty ~ctx:Free
-let pp_ty ppf ty = Format.fprintf ppf "%s" (show_ty ty)
+let pp_ty ppf ty = Stdlib.Format.fprintf ppf "%s" (show_ty ty)
 
 let show_structure_item = function
   | Tstr_value (rec_flag, vb, vbs) ->
