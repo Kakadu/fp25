@@ -31,6 +31,7 @@ type 'name t = 'name Ast.t =
   | App of 'name t * 'name t
   | Binop of bop * 'name t * 'name t
   | Unop of uop * 'name t
+  | If of 'name t * 'name t * 'name t
 [@@deriving show { with_path = false }]
 
 let pp_named = pp Format.pp_print_string

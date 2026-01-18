@@ -20,6 +20,7 @@ let free_vars =
     | App (l, r) -> helper (helper acc r) l
     | Binop (_, l, r) -> helper (helper acc l) r
     | Unop (_, e) -> helper acc e
+    | If (c, t, e) -> helper (helper (helper acc c) t) e
   in
   helper []
 ;;

@@ -98,6 +98,41 @@ Arithmetic and application precedence
   >  (fun x -> x + 1) 2 * 3
   Evaluated result: 9
 
+Condition
+  $ ../bin/REPL.exe <<EOF
+  >  if 1 then 2 else 3
+  Evaluated result: 2
+
+  $ ../bin/REPL.exe <<EOF
+  >  if 0 then 2 else 3
+  Evaluated result: 3
+
+  $ ../bin/REPL.exe <<EOF
+  >  if 1 + 1 then 2 * 3 else 3
+  Evaluated result: 6
+
+  $ ../bin/REPL.exe <<EOF
+  >  if 1 then if 0 then 2 else 3 else 4
+  Evaluated result: 3
+
+
+  $ ../bin/REPL.exe <<EOF
+  >  (if 1 then fun x -> x + 1 else fun x -> x + 2) 4
+  Evaluated result: 5
+
+  $ ../bin/REPL.exe <<EOF
+  >  (if 0 then fun x -> x * 2 else fun x -> x * 3) 5
+  Evaluated result: 15
+
+  $ ../bin/REPL.exe <<EOF
+  >  if (fun x -> x) 1 then 7 else 8
+  Evaluated result: 7
+
+  $ ../bin/REPL.exe <<EOF
+  > (fun x -> if x then x + 1 else x - 1) 4
+  Evaluated result: 5
+
+
 Below we redirect contents of the file to the evaluator
   $ ../bin/REPL.exe -dparsetree -stop-after parsing   < lam_1+1.txt
   Parsed result: (App (

@@ -34,3 +34,4 @@ type 'name t =
   | App of 'name t * 'name t (** Application [f g] *)
   | Binop of bop * 'name t * 'name t (** Binary operator [a op b] *)
   | Unop of uop * 'name t (** Unary operator [op e] *)
+  | If of 'name t * 'name t * 'name t (** Condition [if c then t else e] *)

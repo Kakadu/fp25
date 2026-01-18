@@ -43,6 +43,7 @@ let pp ?(compact = true) =
         | Neg -> "-"
       in
       Format.fprintf fmt "(%s%a)" uop pp e
+    | If (c, t, e) -> Format.fprintf fmt "if %a then %a else %a" pp c pp t pp e
   in
   pp
 ;;

@@ -8,6 +8,7 @@ open Utils
 
 let bop_err = "TODO: Fix it"
 let uop_err = "TODO: Fix it"
+let if_guard_err = "TODO: Fix it"
 
 (* Smart constructors *)
 let int n = Int n
@@ -25,6 +26,7 @@ let replace_name x ~by =
     | Abs (z, t) -> Abs (z, helper t)
     | Binop (op, l, r) -> Binop (op, helper l, helper r)
     | Unop (op, e) -> Unop (op, helper e)
+    | If (c, t, e) -> If (helper c, helper t, helper e)
   in
   helper
 ;;
@@ -53,6 +55,7 @@ let subst x ~by:v =
     | Abs (y, b) -> abs y (helper b)
     | Binop (op, l, r) -> Binop (op, helper l, helper r)
     | Unop (op, e) -> Unop (op, helper e)
+    | If (c, t, e) -> If (helper c, helper t, helper e)
   in
   helper
 ;;
@@ -71,16 +74,11 @@ let rec cbv_strat = function
       | f2 -> App (f2, cbv_strat arg)
     in
     on_app l r
-  | Binop (op, l, r) -> step_bop op l r
-  | Unop (op, e) -> step_uop op e
+  | Binop (op, l, r) -> eval_bop op l r
+  | Unop (op, e) -> eval_uop op e
+  | If (c, t, e) -> eval_if c t e
 
-and step_uop op e =
-  match op, cbv_strat e with
-  | Pos, Int a -> Int (+a)
-  | Neg, Int a -> Int (-a)
-  | _ -> failwith uop_err
-
-and step_bop bop l r =
+and eval_bop bop l r =
   match bop, cbv_strat l, cbv_strat r with
   | Plus, Int a, Int b -> Int (a + b)
   | Minus, Int a, Int b -> Int (a - b)
@@ -93,6 +91,18 @@ and step_bop bop l r =
   | Le, Int a, Int b -> Int (if a <= b then 1 else 0)
   | Ge, Int a, Int b -> Int (if a >= b then 1 else 0)
   | _ -> failwith bop_err
+
+and eval_uop op e =
+  match op, cbv_strat e with
+  | Pos, Int a -> Int (+a)
+  | Neg, Int a -> Int (-a)
+  | _ -> failwith uop_err
+
+and eval_if c t e =
+  match cbv_strat c with
+  | Int 0 -> cbv_strat e
+  | Int _ -> cbv_strat t
+  | _ -> failwith if_guard_err
 ;;
 
 let a = var "a"

@@ -89,6 +89,11 @@ let parse_lam =
            pack.comparison pack >>= fun body -> return (desugar_abs args body))
         ; (varname <* spaces >>= fun var -> return (Var var))
         ; (number <* spaces >>= fun n -> return (Int n))
+        ; (spaces *> string "if" *> pack.comparison pack
+           >>= fun c ->
+           spaces *> string "then" *> pack.comparison pack
+           >>= fun t ->
+           spaces *> string "else" *> pack.comparison pack >>| fun e -> If (c, t, e))
         ])
   in
   let apps pack =
