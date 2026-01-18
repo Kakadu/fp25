@@ -58,11 +58,6 @@
   None
 
   $ ../bin/REPL.exe <<EOF
-  > let rec x = 21 and y = x + 1;;
-  val x = 21
-  val y = 22
-
-  $ ../bin/REPL.exe <<EOF
   > let x = let y = 1 and z = 2 and w = y + 3 in w;;
   val x = 4
 
@@ -88,8 +83,16 @@
   > (fun Some x -> x) Some 3
   3
 
+  $ ../bin/REPL.exe -max-steps=1000 <<EOF
+  > let match = 123
+  : end_of_input
+
   $ ../bin/REPL.exe <<EOF
   > -4 + ()
+  Type error
+
+  $ ../bin/REPL.exe <<EOF
+  > let rec x = 21 and y = x + 1;;
   Type error
 
   $ ../bin/REPL.exe <<EOF
@@ -138,15 +141,11 @@
 
   $ ../bin/REPL.exe -max-steps=5 <<EOF
   > let x = 1;; match x with | 0 -> x + 2 | 1 -> x + 3;;
-  OutOfSteps
+  Out of steps
 
   $ ../bin/REPL.exe -max-steps=1000 <<EOF
   > let rec loop x = loop x in loop 0;;
-  OutOfSteps
-
-  $ ../bin/REPL.exe <<EOF
-  > let loak ==0ih
-  : end_of_input
+  Out of steps
 
   $ ../bin/REPL.exe <<EOF
   > let y = let x = 1 in x + 1;; x + 1;;
@@ -225,3 +224,21 @@
   10
   val f = <function>
   None
+
+  $ ../bin/REPL.exe <<EOF
+  > let fix f = (fun x -> f (fun v -> (x x) v)) (fun x -> f (fun v -> (x x) v))
+  > in let fact = fix (fun f n -> if n > 0 then (f (n-1) * n) else 1)
+  > in print_int (fact 5)
+  120
+  ()
+
+  $ ../bin/REPL.exe <<EOF
+  > let fact n = let rec helper n k = if n > 0 then helper (n-1) (fun r -> k (n * r)) else k 1
+  > in helper n (fun n -> n)
+  > in print_int (fact 10)
+  3628800
+  ()
+
+  $ ../bin/REPL.exe <<EOF
+  > let Some (x : int) = Some 3
+  val x = 3
