@@ -18,6 +18,8 @@ let free_vars =
     | Var s -> s :: acc
     | Abs (s, l) -> acc @ list_remove s (helper [] l)
     | App (l, r) -> helper (helper acc r) l
+    | Binop (_, l, r) -> helper (helper acc l) r
+    | Unop (_, e) -> helper acc e
   in
   helper []
 ;;

@@ -75,15 +75,18 @@ let chain_left term op =
   List.fold_left (fun left (o, right) -> Binop (o, left, right)) first rest
 ;;
 
+let desugar_abs args body = List.fold_right (fun arg acc -> Abs (arg, acc)) args body
+
 let parse_lam =
   let single pack =
     fix (fun _ ->
       conde
         [ char '(' *> pack.comparison pack <* char ')' <?> "Parentheses expected"
-        ; (string "fun" *> spaces *> varname
+        ; (string "fun" *> spaces *> many1 (varname <* spaces)
            <* spaces
-           <* (return () <* string "->" *> return ())
-           >>= fun var -> pack.comparison pack >>= fun b -> return (Abs (var, b)))
+           <* string "->"
+           >>= fun args ->
+           pack.comparison pack >>= fun body -> return (desugar_abs args body))
         ; (varname <* spaces >>= fun var -> return (Var var))
         ; (number <* spaces >>= fun n -> return (Int n))
         ])

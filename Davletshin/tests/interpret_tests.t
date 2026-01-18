@@ -19,6 +19,11 @@ in the dune file
                     Int 2)))
   Evaluated result: 2
 
+Desugaring an abstraction
+  $ ../bin/REPL.exe <<EOF
+  > ( fun x y -> x + y ) 1 2
+  Evaluated result: 3
+
 This code should work after adding arithmetic operators
   $ ../bin/REPL.exe -dparsetree <<EOF
   > (fun x -> ((fun x -> x) 6) + x) 5
