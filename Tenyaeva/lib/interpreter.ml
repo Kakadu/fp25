@@ -224,13 +224,12 @@ module Eval = struct
         let* value = eval_expression env vb_expr in
         match vb_pat with
         | Pat_var name | Pat_constraint (_, Pat_var name) ->
-          let value =
-            match value with
-            | ValFun (_, pat, expr, env) -> ValFun (Recursive, pat, expr, env)
-            | other -> other
-          in
-          let env = extend env name value in
-          return env
+          (match value with
+           | ValFun (_, pat, expr, env) ->
+             let value = ValFun (Recursive, pat, expr, env) in
+             let env = extend env name value in
+             return env
+           | _ -> fail TypeError)
         | _ -> fail TypeError)
       ~init:(return env)
       value_binding_list
