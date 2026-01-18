@@ -638,12 +638,12 @@ open Pprint.Parens
 open Stdlib.Format
 
 let show_rec_flag = function
-  | <span data-count="25">R</span>ecursive -&gt; " rec "
-  | <span data-count="79">N</span>onRecursive -&gt; " "
+  | <span data-count="27">R</span>ecursive -&gt; " rec "
+  | <span data-count="83">N</span>onRecursive -&gt; " "
 ;;
 
 let show_binop = function
-  | <span data-count="26">A</span>dd -&gt; "+"
+  | <span data-count="27">A</span>dd -&gt; "+"
   | <span data-count="8">M</span>ul -&gt; "*"
   | <span data-count="15">S</span>ub -&gt; "-"
   | <span data-count="1">D</span>iv -&gt; "/"
@@ -656,18 +656,18 @@ let show_binop = function
 ;;
 
 let show_constant = function
-  | <span data-count="32">C</span>Unit -&gt; "()"
-  | <span data-count="225">C</span>Int x -&gt; sprintf "%d" x
-  | <span data-count="35">C</span>Bool x -&gt; sprintf "%b" x
+  | <span data-count="34">C</span>Unit -&gt; "()"
+  | <span data-count="242">C</span>Int x -&gt; sprintf "%d" x
+  | <span data-count="37">C</span>Bool x -&gt; sprintf "%b" x
 ;;
 
 let rec show_pattern ?(ctx = <span data-count="0">P</span>arens.Free) = function
-  | <span data-count="21">P</span>Any -&gt; "_"
-  | <span data-count="23">P</span>Constant c -&gt; show_constant c
-  | <span data-count="303">P</span>Var name -&gt; name
-  | <span data-count="32">P</span>Tuple (a, b, xs) -&gt;
+  | <span data-count="23">P</span>Any -&gt; "_"
+  | <span data-count="24">P</span>Constant c -&gt; show_constant c
+  | <span data-count="320">P</span>Var name -&gt; name
+  | <span data-count="34">P</span>Tuple (a, b, xs) -&gt;
     set_parens ~ctx [ Tuple; App; LeftSideFun; LeftSideLet; Binop ]
-    @@ show_tupl<span data-count="32">e</span> (show_pattern ~ctx:Tuple) (a, b, xs)
+    @@ show_tupl<span data-count="34">e</span> (show_pattern ~ctx:Tuple) (a, b, xs)
   | <span data-count="23">P</span>Construct ("::", Some (PTuple (head, tail, []))) -&gt;
     let rec helper acc = function
       | <span data-count="11">P</span>Construct ("::", Some (PTuple (hd, tl, []))) -&gt; helper (hd :: acc) tl
@@ -676,25 +676,25 @@ let rec show_pattern ?(ctx = <span data-count="0">P</span>arens.Free) = function
       | <span data-count="16">_</span> as exp -&gt; show_list_cons ~ctx show_pattern (head :: List.re<span data-count="16">v</span> (exp :: acc))
     in
     helper [] tail
-  | <span data-count="26">P</span>Construct (name, None) -&gt; name
-  | <span data-count="18">P</span>Construct (name, Some arg) -&gt;
+  | <span data-count="29">P</span>Construct (name, None) -&gt; name
+  | <span data-count="21">P</span>Construct (name, Some arg) -&gt;
     set_parens ~ctx [ App; LeftSideFun; LeftSideLet ]
-    @@ sprint<span data-count="18">f</span> "%s %s" name (show_patter<span data-count="18">n</span> ~ctx:App arg)
+    @@ sprint<span data-count="21">f</span> "%s %s" name (show_patter<span data-count="21">n</span> ~ctx:App arg)
 ;;
 
 let rec show_expression ?(ctx = <span data-count="0">P</span>arens.Free) = function
-  | <span data-count="184">E</span>Constant x -&gt; show_constant x
-  | <span data-count="356">E</span>Var x -&gt; x
-  | <span data-count="63">E</span>Binop (binop, left, right) -&gt;
+  | <span data-count="190">E</span>Constant x -&gt; show_constant x
+  | <span data-count="377">E</span>Var x -&gt; x
+  | <span data-count="64">E</span>Binop (binop, left, right) -&gt;
     set_parens ~ctx [ App; Binop ]
-    @@ sprint<span data-count="63">f</span>
+    @@ sprint<span data-count="64">f</span>
          "@[%s %s %s@]"
-         (show_expressio<span data-count="63">n</span> ~ctx:Binop left)
-         (show_bino<span data-count="63">p</span> binop)
-         (show_expressio<span data-count="63">n</span> ~ctx:Binop right)
-  | <span data-count="24">E</span>Tuple (a, b, xs) -&gt;
+         (show_expressio<span data-count="64">n</span> ~ctx:Binop left)
+         (show_bino<span data-count="64">p</span> binop)
+         (show_expressio<span data-count="64">n</span> ~ctx:Binop right)
+  | <span data-count="27">E</span>Tuple (a, b, xs) -&gt;
     set_parens ~ctx [ Tuple; App; Binop ]
-    @@ show_tupl<span data-count="24">e</span> (show_expression ~ctx:Tuple) (a, b, xs)
+    @@ show_tupl<span data-count="27">e</span> (show_expression ~ctx:Tuple) (a, b, xs)
   | <span data-count="13">E</span>Construct ("::", Some (ETuple (head, tail, []))) -&gt;
     let rec helper acc = function
       | <span data-count="7">E</span>Construct ("::", Some (ETuple (hd, tl, []))) -&gt; helper (hd :: acc) tl
@@ -703,24 +703,24 @@ let rec show_expression ?(ctx = <span data-count="0">P</span>arens.Free) = funct
       | <span data-count="8">_</span> as exp -&gt; show_list_cons ~ctx show_expression (head :: List.re<span data-count="8">v</span> (exp :: acc))
     in
     helper [] tail
-  | <span data-count="14">E</span>Construct (name, None) -&gt; name
-  | <span data-count="16">E</span>Construct (name, Some arg) -&gt;
-    set_parens ~ctx [ App ] @@ sprint<span data-count="16">f</span> "@[%s %s@]" name (show_expressio<span data-count="16">n</span> ~ctx:App arg)
-  | <span data-count="40">E</span>Let (rec_flag, (vb, vbs), body) -&gt;
+  | <span data-count="18">E</span>Construct (name, None) -&gt; name
+  | <span data-count="18">E</span>Construct (name, Some arg) -&gt;
+    set_parens ~ctx [ App ] @@ sprint<span data-count="18">f</span> "@[%s %s@]" name (show_expressio<span data-count="18">n</span> ~ctx:App arg)
+  | <span data-count="41">E</span>Let (rec_flag, (vb, vbs), body) -&gt;
     set_parens ~ctx [ App; Binop; Tuple ]
-    @@ sprint<span data-count="40">f</span>
+    @@ sprint<span data-count="41">f</span>
          "@[%s in@;&lt;1 2&gt;%s@]"
-         (show_many_vb<span data-count="40">s</span> rec_flag vb vbs)
-         (show_expressio<span data-count="40">n</span> ~ctx:Free body)
-  | <span data-count="119">E</span>App (f, x) -&gt;
+         (show_many_vb<span data-count="41">s</span> rec_flag vb vbs)
+         (show_expressio<span data-count="41">n</span> ~ctx:Free body)
+  | <span data-count="133">E</span>App (f, x) -&gt;
     set_parens ~ctx [ App ]
-    @@ sprint<span data-count="119">f</span> "%s %s" (show_expressio<span data-count="119">n</span> ~ctx:App f) (show_expressio<span data-count="119">n</span> ~ctx:App x)
-  | <span data-count="104">E</span>Fun (p, e) -&gt;
+    @@ sprint<span data-count="133">f</span> "%s %s" (show_expressio<span data-count="133">n</span> ~ctx:App f) (show_expressio<span data-count="133">n</span> ~ctx:App x)
+  | <span data-count="113">E</span>Fun (p, e) -&gt;
     set_parens ~ctx [ Tuple; Binop; App ]
-    @@ sprint<span data-count="104">f</span>
+    @@ sprint<span data-count="113">f</span>
          "@[fun %s -&gt;@;&lt;1 2&gt;%s@]"
-         (show_patter<span data-count="104">n</span> ~ctx:LeftSideFun p)
-         (show_expressio<span data-count="104">n</span> ~ctx:RightSideFun e)
+         (show_patter<span data-count="113">n</span> ~ctx:LeftSideFun p)
+         (show_expressio<span data-count="113">n</span> ~ctx:RightSideFun e)
   | <span data-count="34">E</span>If (i, t, e) -&gt;
     set_parens ~ctx [ Ite; Tuple; Binop; App ]
     @@ sprint<span data-count="34">f</span>
@@ -728,34 +728,34 @@ let rec show_expression ?(ctx = <span data-count="0">P</span>arens.Free) = funct
          (show_expressio<span data-count="34">n</span> ~ctx:Ite i)
          (show_expressio<span data-count="34">n</span> ~ctx:Ite t)
          (show_expressio<span data-count="34">n</span> ~ctx:Ite e)
-  | <span data-count="47">E</span>Match (e, (case1, cases)) -&gt;
+  | <span data-count="50">E</span>Match (e, (case1, cases)) -&gt;
     let pp_case fmt (p, e) =
-      <span data-count="80">f</span>printf
+      <span data-count="86">f</span>printf
         fmt
         "@[| %s -&gt; %s@]"
-        (show_patter<span data-count="80">n</span> ~ctx:LeftSideMatch p)
-        (show_expressio<span data-count="80">n</span> ~ctx:RightSideMatch e)
+        (show_patter<span data-count="86">n</span> ~ctx:LeftSideMatch p)
+        (show_expressio<span data-count="86">n</span> ~ctx:RightSideMatch e)
     in
     set_parens ~ctx [ MatchWith; Tuple; Binop; App; RightSideMatch ]
-    @@ asprint<span data-count="47">f</span>
+    @@ asprint<span data-count="50">f</span>
          "@[match %s with@]@ %a"
-         (show_expressio<span data-count="47">n</span> ~ctx:MatchWith e)
-         (pp_print_lis<span data-count="47">t</span> ~pp_sep:(fun fmt () -&gt; <span data-count="33">f</span>printf fmt "@;") pp_case)
+         (show_expressio<span data-count="50">n</span> ~ctx:MatchWith e)
+         (pp_print_lis<span data-count="50">t</span> ~pp_sep:(fun fmt () -&gt; <span data-count="36">f</span>printf fmt "@;") pp_case)
          (case1 :: cases)
 
 and show_many_vbs rec_flag vb vbs =
-  <span data-count="49">l</span>et pp_binding (p, e) =
-    <span data-count="53">a</span>sprintf
+  <span data-count="50">l</span>et pp_binding (p, e) =
+    <span data-count="54">a</span>sprintf
       "%s =@;&lt;1 2&gt;%s"
-      (show_patter<span data-count="53">n</span> ~ctx:LeftSideLet p)
-      (show_expressio<span data-count="53">n</span> ~ctx:RightSideLet e)
+      (show_patter<span data-count="54">n</span> ~ctx:LeftSideLet p)
+      (show_expressio<span data-count="54">n</span> ~ctx:RightSideLet e)
   in
   asprintf
     "let%s%a"
-    (show_rec_fla<span data-count="49">g</span> rec_flag)
-    (pp_print_lis<span data-count="49">t</span>
+    (show_rec_fla<span data-count="50">g</span> rec_flag)
+    (pp_print_lis<span data-count="50">t</span>
        ~pp_sep:(fun fmt () -&gt; <span data-count="4">f</span>printf fmt "@;and ")
-       (fun fmt b -&gt; <span data-count="53">f</span>printf fmt "%s" (pp_bindin<span data-count="53">g</span> b)))
+       (fun fmt b -&gt; <span data-count="54">f</span>printf fmt "%s" (pp_bindin<span data-count="54">g</span> b)))
     (vb :: vbs)
 ;;
 

@@ -342,10 +342,10 @@ type ty =
 let ty_int = Tty_constr ([], "int")
 let ty_bool = Tty_constr ([], "bool")
 let ty_unit = Tty_constr ([], "unit")
-let tty_var ident = <span data-count="594">T</span>ty_var ident
-let tty_arrow a b = <span data-count="1172">T</span>ty_arrow (a, b)
-let tty_prod a b xs = <span data-count="2">T</span>ty_prod (a, b, xs)
-let tty_constr params name = <span data-count="2">T</span>ty_constr (params, name)
+let tty_var ident = <span data-count="605">T</span>ty_var ident
+let tty_arrow a b = <span data-count="1188">T</span>ty_arrow (a, b)
+let tty_prod a b xs = <span data-count="5">T</span>ty_prod (a, b, xs)
+let tty_constr params name = <span data-count="5">T</span>ty_constr (params, name)
 
 module VarSet = struct
   include Stdlib.Set.Make (Ident)
@@ -400,16 +400,16 @@ open Pprint.Parens
 open Stdlib.Format
 
 let rec show_ty ?(ctx = <span data-count="0">P</span>arens.Free) = function
-  | <span data-count="107">T</span>ty_var ident -&gt; sprintf "'ty%d" ident.id
-  | <span data-count="107">T</span>ty_arrow (a, b) -&gt;
+  | <span data-count="123">T</span>ty_var ident -&gt; sprintf "'ty%d" ident.id
+  | <span data-count="117">T</span>ty_arrow (a, b) -&gt;
     set_parens ~ctx [ LeftSideArrow; App; Tuple ]
-    @@ sprint<span data-count="107">f</span> "%s -&gt; %s" (show_t<span data-count="107">y</span> ~ctx:LeftSideArrow a) (show_t<span data-count="107">y</span> ~ctx:RightSideArrow b)
-  | <span data-count="27">T</span>ty_prod (a, b, xs) -&gt;
+    @@ sprint<span data-count="117">f</span> "%s -&gt; %s" (show_t<span data-count="117">y</span> ~ctx:LeftSideArrow a) (show_t<span data-count="117">y</span> ~ctx:RightSideArrow b)
+  | <span data-count="31">T</span>ty_prod (a, b, xs) -&gt;
     set_parens ~ctx [ App; Tuple ]
-    @@ show_man<span data-count="27">y</span> ~sep:" * " (show_ty ~ctx:Tuple) (a :: b :: xs)
-  | <span data-count="214">T</span>ty_constr ([], name) -&gt; name
-  | <span data-count="19">T</span>ty_constr ([ ty ], name) -&gt;
-    set_parens ~ctx [ App ] @@ sprint<span data-count="19">f</span> "%s %s" (show_t<span data-count="19">y</span> ~ctx:App ty) name
+    @@ show_man<span data-count="31">y</span> ~sep:" * " (show_ty ~ctx:Tuple) (a :: b :: xs)
+  | <span data-count="221">T</span>ty_constr ([], name) -&gt; name
+  | <span data-count="26">T</span>ty_constr ([ ty ], name) -&gt;
+    set_parens ~ctx [ App ] @@ sprint<span data-count="26">f</span> "%s %s" (show_t<span data-count="26">y</span> ~ctx:App ty) name
   | <span data-count="2">T</span>ty_constr (ty1 :: ty2 :: tys, name) -&gt;
     set_parens ~ctx [ App ]
     @@ sprint<span data-count="2">f</span> "(%s) %s" (show_tupl<span data-count="2">e</span> (show_ty ~ctx:Free) (ty1, ty2, tys)) name
@@ -419,36 +419,36 @@ let show_ty = show_ty ~ctx:Free
 let pp_ty ppf ty = <span data-count="55">S</span>tdlib.Format.fprintf ppf "%s" (show_t<span data-count="55">y</span> ty)
 
 let show_structure_item = function
-  | <span data-count="53">T</span>str_value (rec_flag, vb, vbs) -&gt;
+  | <span data-count="58">T</span>str_value (rec_flag, vb, vbs) -&gt;
     let aux ~keyword { tvb_pat; tvb_body; tvb_scheme } =
-      <span data-count="55">l</span>et (Scheme.Scheme (_vs, ty)) = tvb_scheme in
+      <span data-count="60">l</span>et (Scheme.Scheme (_vs, ty)) = tvb_scheme in
       sprintf
         "%s%s%s: %s = %s@."
         keyword
-        (Parsetree.show_rec_fla<span data-count="55">g</span> rec_flag)
-        (Parsetree.show_patter<span data-count="55">n</span> tvb_pat)
-        (show_t<span data-count="55">y</span> ty)
-        (Parsetree.show_expressio<span data-count="55">n</span> tvb_body)
+        (Parsetree.show_rec_fla<span data-count="60">g</span> rec_flag)
+        (Parsetree.show_patter<span data-count="60">n</span> tvb_pat)
+        (show_t<span data-count="60">y</span> ty)
+        (Parsetree.show_expressio<span data-count="60">n</span> tvb_body)
     in
-    String.concat (au<span data-count="53">x</span> ~keyword:"let" vb :: List.ma<span data-count="53">p</span> ~f:(aux ~keyword:"and") vbs)
-  | <span data-count="6">T</span>str_type { tty_ident; tty_kind; tty_params } -&gt;
+    String.concat (au<span data-count="58">x</span> ~keyword:"let" vb :: List.ma<span data-count="58">p</span> ~f:(aux ~keyword:"and") vbs)
+  | <span data-count="9">T</span>str_type { tty_ident; tty_kind; tty_params } -&gt;
     let kind =
       match tty_kind with
       | <span data-count="0">T</span>ty_abstract None -&gt; "@ "
       | <span data-count="0">T</span>ty_abstract (Some ty) -&gt; sprint<span data-count="0">f</span> " = %s@ " (show_t<span data-count="0">y</span> ty)
-      | <span data-count="6">T</span>ty_variants variants -&gt;
+      | <span data-count="9">T</span>ty_variants variants -&gt;
         let show_variant ((ident : Ident.t), ty_opt) =
-          <span data-count="12">m</span>atch ty_opt with
-          | <span data-count="4">N</span>one -&gt; sprintf "| %s@ " ident.name
-          | <span data-count="8">S</span>ome ty -&gt; sprintf "| %s of %s@ " ident.name (show_t<span data-count="8">y</span> ty)
+          <span data-count="18">m</span>atch ty_opt with
+          | <span data-count="7">N</span>one -&gt; sprintf "| %s@ " ident.name
+          | <span data-count="11">S</span>ome ty -&gt; sprintf "| %s of %s@ " ident.name (show_t<span data-count="11">y</span> ty)
         in
-        let s = Base.String.concat (Base.List.ma<span data-count="6">p</span> ~f:show_variant variants) in
-        <span data-count="6">s</span>print<span data-count="6">f</span> " =@ %s" s
+        let s = Base.String.concat (Base.List.ma<span data-count="9">p</span> ~f:show_variant variants) in
+        <span data-count="9">s</span>print<span data-count="9">f</span> " =@ %s" s
     in
     let params =
       match tty_params with
       | <span data-count="0">[</span>] -&gt; " "
-      | <span data-count="4">[</span> x ] -&gt; sprint<span data-count="4">f</span> " 'ty%d " x.id
+      | <span data-count="7">[</span> x ] -&gt; sprint<span data-count="7">f</span> " 'ty%d " x.id
       | <span data-count="2">x</span>1 :: x2 :: xs -&gt;
         sprint<span data-count="2">f</span>
           " %s "
@@ -457,11 +457,11 @@ let show_structure_item = function
     sprintf "type%s%s %s" params tty_ident.name kind
 ;;
 
-let pp_structure_item ppf stru_item = <span data-count="59">f</span>printf ppf "%s" (show_structure_ite<span data-count="59">m</span> stru_item)
+let pp_structure_item ppf stru_item = <span data-count="67">f</span>printf ppf "%s" (show_structure_ite<span data-count="67">m</span> stru_item)
 
 let pp_structure ppf (item1, items) =
-  <span data-count="31">p</span>p_print_list
-    ~pp_sep:(fun ppf () -&gt; <span data-count="28">f</span>printf ppf "@.")
+  <span data-count="34">p</span>p_print_list
+    ~pp_sep:(fun ppf () -&gt; <span data-count="33">f</span>printf ppf "@.")
     pp_structure_item
     ppf
     (item1 :: items)

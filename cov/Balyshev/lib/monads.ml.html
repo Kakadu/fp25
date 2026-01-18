@@ -146,27 +146,27 @@ end
 module State : STATE_MONAD = struct
   type ('s, 'ok, 'err) t = 's -&gt; ('s * 'ok, 'err) Result.t
 
-  let get s = <span data-count="697">O</span>k (s, s)
-  let put new_s _ = <span data-count="697">O</span>k (new_s, ())
-  let return x s = <span data-count="34664">O</span>k (s, x)
-  let fail msg _ = <span data-count="229">E</span>rror msg
+  let get s = <span data-count="751">O</span>k (s, s)
+  let put new_s _ = <span data-count="751">O</span>k (new_s, ())
+  let return x s = <span data-count="38311">O</span>k (s, x)
+  let fail msg _ = <span data-count="289">E</span>rror msg
 
   let ( &gt;&gt;= ) m f s =
-    <span data-count="36215">m</span>atch m s with
-    | <span data-count="285">E</span>rror e -&gt; Error e
-    | <span data-count="35930">O</span>k (s', v) -&gt; f v s'
+    <span data-count="39994">m</span>atch m s with
+    | <span data-count="313">E</span>rror e -&gt; Error e
+    | <span data-count="39681">O</span>k (s', v) -&gt; f v s'
   ;;
 
   let ( let* ) = ( &gt;&gt;= )
-  let ( &lt;*&gt; ) mf mx = <span data-count="6">m</span>f &gt;&gt;= fun f -&gt; <span data-count="6">m</span>x &gt;&gt;= fun x -&gt; <span data-count="6">r</span>eturn (<span data-count="6">f</span> x)
+  let ( &lt;*&gt; ) mf mx = <span data-count="15">m</span>f &gt;&gt;= fun f -&gt; <span data-count="15">m</span>x &gt;&gt;= fun x -&gt; <span data-count="15">r</span>eturn (<span data-count="15">f</span> x)
 
   let ( &lt;|&gt; ) m1 m2 s =
-    <span data-count="197">m</span>atch m1 s with
-    | <span data-count="16">O</span>k x -&gt; Ok x
-    | <span data-count="181">E</span>rror _ -&gt; m2 s
+    <span data-count="261">m</span>atch m1 s with
+    | <span data-count="20">O</span>k x -&gt; Ok x
+    | <span data-count="241">E</span>rror _ -&gt; m2 s
   ;;
 
-  let run (m : 's -&gt; ('s * 'ok, 'err) Result.t) = <span data-count="176">m</span>
+  let run (m : 's -&gt; ('s * 'ok, 'err) Result.t) = <span data-count="180">m</span>
 end
 </code></pre>
       </div>
