@@ -2,79 +2,96 @@
 
   $ parse -expr << EOF
   > 1 + 2 * 3 / 4 - 5
-  parsed: (1 + ((2 * 3) / 4)) - 5
+  parsed:
+  (1 + ((2 * 3) / 4)) - 5
 
   $ parse -expr << EOF
   > a b c
-  parsed: (a b) c
+  parsed:
+  (a b) c
 
   $ parse -expr << EOF
   > x * y + (z - w)
-  parsed: (x * y) + (z - w)
+  parsed:
+  (x * y) + (z - w)
 
   $ parse -expr << EOF
   > (1, (2, 3), (4, 5, 6))
-  parsed: 1, (2, 3), (4, 5, 6)
+  parsed:
+  1, (2, 3), (4, 5, 6)
 
   $ parse -expr << EOF
   > Just (Some None)
-  parsed: Just (Some None)
+  parsed:
+  Just (Some None)
 
   $ parse -expr << EOF
   > Just (x + y + z)
-  parsed: Just ((x + y) + z)
+  parsed:
+  Just ((x + y) + z)
 
   $ parse -expr << EOF
   > Just (x, y, z, w)
-  parsed: Just (x, y, z, w)
+  parsed:
+  Just (x, y, z, w)
 
   $ parse -expr << EOF
   > Just [ x; y; z; w ]
-  parsed: Just [ x; y; z; w ]
+  parsed:
+  Just [ x; y; z; w ]
 
   $ parse -expr << EOF
   > let x = 5 in x + 1
-  parsed: let x =
+  parsed:
+  let x =
     5 in x + 1
 
   $ parse -expr << EOF
   > let _ = 5 in 5
-  parsed: let _ =
+  parsed:
+  let _ =
     5 in 5
 
   $ parse -expr << EOF
   > let (x, y, z) = (1, 2, 3) in x + y + z
-  parsed: let (x, y, z) =
+  parsed:
+  let (x, y, z) =
     1, 2, 3 in (x + y) + z
 
   $ parse -expr << EOF
   > let (x, y, z) = (1, 2, 3) in x + y + z
-  parsed: let (x, y, z) =
+  parsed:
+  let (x, y, z) =
     1, 2, 3 in (x + y) + z
 
   $ parse -expr << EOF
   > let _ = Some (Some None) in 1
-  parsed: let _ =
+  parsed:
+  let _ =
     Some (Some None) in 1
 
   $ parse -expr << EOF
   > let _ = Some (x * y) in x * y
-  parsed: let _ =
+  parsed:
+  let _ =
     Some (x * y) in x * y
 
   $ parse -expr << EOF
   > let _ = Some (x, y) in x, y
-  parsed: let _ =
+  parsed:
+  let _ =
     Some (x, y) in x, y
 
 # application
   $ parse -expr << EOF
   > f x
-  parsed: f x
+  parsed:
+  f x
 
   $ parse -expr << EOF
   > f (g x) (h y z)
-  parsed: (f (g x)) ((h y) z)
+  parsed:
+  (f (g x)) ((h y) z)
 #
 
 # patterns
@@ -134,65 +151,80 @@
 # lambda
   $ parse -expr << EOF
   > fun _ -> 42
-  parsed: fun _ -> 42
+  parsed:
+  fun _ -> 42
 
   $ parse -expr << EOF
   > fun (x, y) -> x
-  parsed: fun (x, y) -> x
+  parsed:
+  fun (x, y) -> x
 
   $ parse -expr << EOF
   > fun x y -> x + y
-  parsed: fun x -> fun y -> x + y
+  parsed:
+  fun x -> fun y -> x + y
 
   $ parse -expr << EOF
   > (fun x -> x, fun x -> x + 1)
-  parsed: fun x -> x, (fun x -> x + 1)
+  parsed:
+  fun x -> x, (fun x -> x + 1)
 
   $ parse -expr << EOF
   > (fun x -> x) (fun x -> x + 1)
-  parsed: (fun x -> x) (fun x -> x + 1)
+  parsed:
+  (fun x -> x) (fun x -> x + 1)
 
   $ parse -expr << EOF
   > map (fun x -> x) items
-  parsed: (map (fun x -> x)) items
+  parsed:
+  (map (fun x -> x)) items
 
   $ parse -expr << EOF
   > fun x -> fun y -> y
-  parsed: fun x -> fun y -> y
+  parsed:
+  fun x -> fun y -> y
 
   $ parse -expr << EOF
   > map (fun x -> x) (fun y -> y)
-  parsed: (map (fun x -> x)) (fun y -> y)
+  parsed:
+  (map (fun x -> x)) (fun y -> y)
 
   $ parse -expr << EOF
   > (fun f g x -> f g x)
-  parsed: fun f -> fun g -> fun x -> (f g) x
+  parsed:
+  fun f -> fun g -> fun x -> (f g) x
 
   $ parse -expr << EOF
   > (fun f g x -> f (g x))
-  parsed: fun f -> fun g -> fun x -> f (g x)
+  parsed:
+  fun f -> fun g -> fun x -> f (g x)
 
 
 # if then else
   $ parse -expr << EOF
   > if 1 then 1 else 0
-  parsed: if 1 then 1 else 0
+  parsed:
+  if 1 then 1 else 0
 
   $ parse -expr << EOF
   > if (a < b) then (a + b) else (a - b)
-  parsed: if a < b then a + b else a - b
+  parsed:
+  if a < b then a + b else a - b
 
   $ parse -expr << EOF
   > if (f x) then (fun f -> f x) else (fun x -> f x)
-  parsed: if f x then fun f -> f x else fun x -> f x
+  parsed:
+  if f x then fun f -> f x else fun x -> f x
 
   $ parse -expr << EOF
   > fun x -> if x then (fun x -> x) else (fun y -> y)
-  parsed: fun x -> if x then fun x -> x else fun y -> y
+  parsed:
+  fun x -> if x then fun x -> x else fun y -> y
 
   $ parse -expr << EOF
   > let rec fact = fun n -> if n < 2 then 1 else n * fact (n - 1) in fact 5
-  parsed: let rec fact =
+  parsed:
+  let rec fact =
     fun n -> if n < 2 then 1 else n * fact (n - 1) in fact 5
 
 # match
@@ -200,7 +232,8 @@
   > match (x, y) with
   > | (x, y) -> (x, y)
   > | _ -> (y, x)
-  parsed: match x, y with | x, y -> x, y
+  parsed:
+  match x, y with | x, y -> x, y
   | _ -> y, x
 
   $ parse -expr << EOF
@@ -210,7 +243,8 @@
   > | (f, (f, s)) -> 2
   > | (f, s) -> 1
   > | s -> 0
-  parsed: match e with | f, (f, (f, (f, s))) -> 4 | f, (f, (f, s)) -> 3
+  parsed:
+  match e with | f, (f, (f, (f, s))) -> 4 | f, (f, (f, s)) -> 3
   | f, (f, s) -> 2 | f, s -> 1
   | s -> 0
   $ parse -expr << EOF
@@ -218,13 +252,15 @@
   > | One x -> 1
   > | Two (x, y) -> 2
   > | Three (x, y, z) -> 3
-  parsed: match x with | One x -> 1 | Two (x, y) -> 2
+  parsed:
+  match x with | One x -> 1 | Two (x, y) -> 2
   | Three (x, y, z) -> 3
 
   $ parse -expr << EOF
   > match x with
   > | _ -> if x then y else z
-  parsed: match x with
+  parsed:
+  match x with
   | _ -> if x then y else z
 
   $ parse -expr << EOF
@@ -234,7 +270,8 @@
   > else 
   >   match z with
   >   | _ -> Z
-  parsed: if x then match y with
+  parsed:
+  if x then match y with
   | _ -> y else match z with
   | _ -> Z
 
@@ -242,7 +279,8 @@
   > match f x with
   > | Some x -> g x
   > | None -> a b c
-  parsed: match f x with | Some x -> g x
+  parsed:
+  match f x with | Some x -> g x
   | None -> (a b) c
 
   $ parse -expr << EOF
@@ -252,7 +290,8 @@
   >   match y with
   >   | C -> c
   >   | D -> d
-  parsed: match x with | A -> a
+  parsed:
+  match x with | A -> a
   | B -> (match y with | C -> c
   | D -> d)
 
@@ -263,47 +302,54 @@
   >    | C -> c
   >    | D -> d)
   > | B -> b
-  parsed: match x with | A -> (match y with | C -> c
+  parsed:
+  match x with | A -> (match y with | C -> c
   | D -> d)
   | B -> b
 
   $ parse -expr << EOF
   > match (match () with _ -> ()) with
   > | _ -> ()
-  parsed: match (match () with
+  parsed:
+  match (match () with
   | _ -> ()) with
   | _ -> ()
 
   $ parse -expr << EOF
   > match (if x then y else z) with
   > | _ -> ()
-  parsed: match if x then y else z with
+  parsed:
+  match if x then y else z with
   | _ -> ()
 
   $ parse -expr << EOF
   > if (match x with _ -> ()) then 1 else 2
-  parsed: if match x with
+  parsed:
+  if match x with
   | _ -> () then 1 else 2
 #
 
 # value binding chains
   $ parse -expr << EOF
   > let x = 1 and y = 2 in x + y
-  parsed: let x =
+  parsed:
+  let x =
     1
   and y =
     2 in x + y
 
   $ parse -expr << EOF
   > let (x, y) = (1, 2) and (z, w) = (3, 4) in x, y, z, w
-  parsed: let (x, y) =
+  parsed:
+  let (x, y) =
     1, 2
   and (z, w) =
     3, 4 in x, y, z, w
 
   $ parse -expr << EOF
   > let _ = 1 and x = 2 and (a, b) = 3 in 0
-  parsed: let _ =
+  parsed:
+  let _ =
     1 and x =
     2
   and (a, b) =
@@ -367,28 +413,33 @@
 # type declarations
   $ parse -stru << EOF
   > type t = int
-  parsed: type t = int
+  parsed:
+  type t = int
   
   $ parse -stru << EOF
   > type 'a my_list = 'a list
-  parsed: type 'a my_list = 'a list
+  parsed:
+  type 'a my_list = 'a list
   
 
   $ parse -stru << EOF
   > type ('a, 'b) pair = 'a * 'b
-  parsed: type ('a, 'b) pair = 'a * 'b
+  parsed:
+  type ('a, 'b) pair = 'a * 'b
   
 
   $ parse -stru << EOF
   > type ('a, 'b) arrow = 'a -> 'b
-  parsed: type ('a, 'b) arrow = 'a -> 'b
+  parsed:
+  type ('a, 'b) arrow = 'a -> 'b
   
 
   $ parse -stru << EOF
   > type 'a option =
   > | Some of 'a
   > | None
-  parsed: type 'a option = | Some of 'a
+  parsed:
+  type 'a option = | Some of 'a
   | None
   
   
@@ -397,7 +448,8 @@
   > type 'a list =
   > | Nil
   > | Cons of 'a * 'a list
-  parsed: type 'a list = | Nil
+  parsed:
+  type 'a list = | Nil
   | Cons of 'a * 'a list
   
   
@@ -406,7 +458,8 @@
   > type ('a, 'b) qwe =
   > | Asd of 'a -> ('a -> 'b) -> 'b
   > | Zxc of ('a -> 'a) * ('a -> 'a) * 'a
-  parsed: type ('a, 'b) qwe = | Asd of 'a -> ('a -> 'b) -> 'b
+  parsed:
+  type ('a, 'b) qwe = | Asd of 'a -> ('a -> 'b) -> 'b
   | Zxc of ('a -> 'a) * ('a -> 'a) * 'a
   
   
@@ -417,7 +470,8 @@
   > type a = int
   > and b = bool
   > and c = char
-  parsed: type a = int
+  parsed:
+  type a = int
   and b = bool
   and c = char
   
@@ -431,7 +485,8 @@
   > | Nothing
   > 
   > and name = string
-  parsed: type 'a box = | Box of 'a
+  parsed:
+  type 'a box = | Box of 'a
   
   and 't maybe = | Just of 't
   | Nothing
@@ -442,37 +497,44 @@
 # stru
   $ parse -stru << EOF
   > type foo = 'a * 'b * 'c -> 'd * 'e -> 'f
-  parsed: type foo = 'a * 'b * 'c -> 'd * 'e -> 'f
+  parsed:
+  type foo = 'a * 'b * 'c -> 'd * 'e -> 'f
   
 
   $ parse -stru << EOF
   > type foo = (int -> int)
-  parsed: type foo = int -> int
+  parsed:
+  type foo = int -> int
   
 
   $ parse -stru << EOF
   > type foo = (a -> b) * (c -> d)
-  parsed: type foo = (a -> b) * (c -> d)
+  parsed:
+  type foo = (a -> b) * (c -> d)
   
 
   $ parse -stru << EOF
   > type foo = (a * b) * (c * d)
-  parsed: type foo = (a * b) * (c * d)
+  parsed:
+  type foo = (a * b) * (c * d)
   
 
   $ parse -stru << EOF
   > type foo = (a -> b) -> (c -> d)
-  parsed: type foo = (a -> b) -> c -> d
+  parsed:
+  type foo = (a -> b) -> c -> d
   
 
   $ parse -stru << EOF
   > let rec fact n = if n < 2 then 1 else n * fact (n - 1)
-  parsed: let rec fact =
+  parsed:
+  let rec fact =
     fun n -> if n < 2 then 1 else n * fact (n - 1)
 
   $ parse -stru << EOF
   > let rec fib n = if n < 2 then 1 else fib (n - 1) + fib (n - 2)
-  parsed: let rec fib =
+  parsed:
+  let rec fib =
     fun n -> if n < 2 then 1 else fib (n - 1) + fib (n - 2)
 #
 
@@ -482,7 +544,8 @@
   >   match items with
   >   | [] -> 0
   >   | _ :: xs -> 1 + length xs
-  parsed: let rec length =
+  parsed:
+  let rec length =
     fun items -> match items with | [] -> 0
   | _ :: xs -> 1 + length xs
 
@@ -491,7 +554,8 @@
   >   match items with
   >   | [] -> []
   >   | hd :: tl -> f hd :: map f tl 
-  parsed: let rec map =
+  parsed:
+  let rec map =
     fun f ->
     fun items -> match items with | [] -> []
   | hd :: tl -> f hd :: (map f) tl
@@ -501,7 +565,8 @@
   >   match items with
   >   | [] -> []
   >   | hd :: tl -> if p hd then hd :: filter p tl else filter p tl
-  parsed: let rec filter =
+  parsed:
+  let rec filter =
     fun p ->
     fun items ->
     match items with | [] -> []
@@ -516,7 +581,8 @@
   >       filter p tl acc2
   > 
   > let filter p items = filter p items []
-  parsed: let rec filter =
+  parsed:
+  let rec filter =
     fun p ->
     fun items ->
     fun acc ->
@@ -530,7 +596,8 @@
   >   match items with
   >   | [] -> []
   >   | hd :: tl -> hd :: rev items
-  parsed: let rec rev =
+  parsed:
+  let rec rev =
     fun items -> match items with | [] -> []
   | hd :: tl -> hd :: rev items
 
@@ -541,7 +608,8 @@
   >       | [] -> acc
   >       | x :: xs -> helper xs (f x acc)
   >   in helper items init
-  parsed: let fold_left =
+  parsed:
+  let fold_left =
     fun f ->
     fun init ->
     fun items ->
@@ -555,53 +623,62 @@
 # nested let
   $ parse -expr << EOF
   > let main = (let x = 1 in x) in main
-  parsed: let main =
+  parsed:
+  let main =
     let x =
     1 in x in main
 
   $ parse -expr << EOF
   > let main = let x = 1 in x in main
-  parsed: let main =
+  parsed:
+  let main =
     let x =
     1 in x in main
 
   $ parse -expr << EOF
   > fun x -> let y = 1 in x + y
-  parsed: fun x -> let y =
+  parsed:
+  fun x -> let y =
     1 in x + y
 
   $ parse -expr << EOF
   > let x = 1 in x, 1
-  parsed: let x =
+  parsed:
+  let x =
     1 in x, 1
 
   $ parse -expr << EOF
   > (let x = 1 in x), 1
-  parsed: (let x =
+  parsed:
+  (let x =
     1 in x), 1
 
   $ parse -expr << EOF
   > [ (let x = 1 in x); (let y = 2 in y) ]
-  parsed: [ let x =
+  parsed:
+  [ let x =
     1 in x; let y =
     2 in y ]
 
   $ parse -expr << EOF
   > [ let x = 1 in x; let y = 2 in y ]
-  parsed: [ let x =
+  parsed:
+  [ let x =
     1 in x; let y =
     2 in y ]
 
   $ parse -expr << EOF
   > if (let x = true in x) then (let y = 1 in y) else (let z = 2 in z)
-  parsed: if let x =
+  parsed:
+  if let x =
     true in x then let y =
     1 in y else let z =
     2 in z
 
   $ parse -expr << EOF
   > if let x = true in x then let y = 1 in y else let z = 2 in z
-  parsed: if let x =
+  parsed:
+  if let x =
     true in x then let y =
     1 in y else let z =
     2 in z
@@ -610,7 +687,8 @@
   >   match (let x = 1 in x) with
   >   | 1 -> (let y = 2 in y)
   >   | _ -> (let z = 3 in z)
-  parsed: match let x =
+  parsed:
+  match let x =
     1 in x with | 1 -> let y =
     2 in y
   | _ -> let z =
@@ -620,7 +698,8 @@
   >   match let x = 1 in x with
   >   | 1 -> let y = 2 in y
   >   | _ -> let z = 3 in z
-  parsed: match let x =
+  parsed:
+  match let x =
     1 in x with | 1 -> let y =
     2 in y
   | _ -> let z =
@@ -631,13 +710,15 @@
 # nested match
   $ parse -expr << EOF
   > let main = (match () with | () -> 0) in main
-  parsed: let main =
+  parsed:
+  let main =
     match () with
   | () -> 0 in main
 
   $ parse -expr << EOF
   > let main = match () with | () -> 0 in main
-  parsed: let main =
+  parsed:
+  let main =
     match () with
   | () -> 0 in main
 
@@ -645,41 +726,48 @@
   > fun x ->
   >   (match x with
   >   | () -> 0)
-  parsed: fun x -> match x with
+  parsed:
+  fun x -> match x with
   | () -> 0
 
   $ parse -expr << EOF
   > fun x ->
   >   match x with
   >   | () -> 0
-  parsed: fun x -> match x with
+  parsed:
+  fun x -> match x with
   | () -> 0
 
   $ parse -expr << EOF
   > (match () with | () -> 0), 0
-  parsed: (match () with
+  parsed:
+  (match () with
   | () -> 0), 0
 
   $ parse -expr << EOF
   > match () with | () -> 0, 0
-  parsed: match () with
+  parsed:
+  match () with
   | () -> 0, 0
 
   $ parse -expr << EOF
   > [ (match () with | () -> 1); (match () with | () -> 2) ]
-  parsed: [ match () with
+  parsed:
+  [ match () with
   | () -> 1; match () with
   | () -> 2 ]
 
   $ parse -expr << EOF
   > [ match () with | () -> 1; match () with | () -> 2 ]
-  parsed: [ match () with
+  parsed:
+  [ match () with
   | () -> 1; match () with
   | () -> 2 ]
 
   $ parse -expr << EOF
   > if (match () with | () -> true) then 1 else 2
-  parsed: if match () with
+  parsed:
+  if match () with
   | () -> true then 1 else 2
 
   $ parse -expr << EOF
@@ -698,7 +786,8 @@
   >      (match 13 with
   >      | 14 -> 15
   >      | 16 -> 17)
-  parsed: match (match 1 with | 2 -> 3
+  parsed:
+  match (match 1 with | 2 -> 3
   | 4 -> 5) with
   | 6 -> (match 7 with | 8 -> 9
   | 10 -> 11)
