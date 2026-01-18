@@ -428,6 +428,27 @@
   let int_ls: int list = Cons (1, empty)
   
   let bool_ls: bool list = Cons (true, empty)
+
+  $ infer -stru << EOF
+  > type 'a list =
+  >   | Cons of 'a * 'a list
+  >   | Nil
+  > 
+  > let is_empty ls =
+  >   match ls with
+  >   | Nil -> true
+  >   | Cons _ -> false
+  > 
+  > let main = is_empty Nil, is_empty (Cons (1, Nil)), is_empty (Cons (Nil, Nil))
+  typed structure:
+  type 'ty0 list  =
+  | Cons of 'ty0 * 'ty0 list
+  | Nil
+  
+  let is_empty: 'ty4 list -> bool = fun ls -> match ls with | Nil -> true
+  | Cons _ -> false
+  
+  let main: bool * bool * bool = is_empty Nil, is_empty (Cons (1, Nil)), is_empty (Cons (Nil, Nil))
 #
 
 # structure
@@ -817,4 +838,51 @@
     fun acc -> match items with | [] -> acc
   | x :: xs -> (helper xs) ((f x) acc) in
     (helper items) init
+
+  $ infer -stru << EOF
+  > type 'a list =
+  >   | Cons of 'a * 'a list
+  >   | Nil
+  > 
+  > let rec fold f ls acc =
+  >   match ls with
+  >   | Nil -> acc
+  >   | Cons (x, xs) -> fold f xs (f acc x)
+  > 
+  > let len ls = fold (fun acc _ -> acc + 1) ls 0
+  typed structure:
+  type 'ty0 list  =
+  | Cons of 'ty0 * 'ty0 list
+  | Nil
+  
+  let rec fold: ('ty14 -> 'ty7 -> 'ty14) -> 'ty7 list -> 'ty14 -> 'ty14 = fun f ->
+    fun ls ->
+    fun acc ->
+    match ls with | Nil -> acc
+  | Cons (x, xs) -> ((fold f) xs) ((f acc) x)
+  
+  let len: 'ty17 list -> int = fun ls -> ((fold (fun acc -> fun _ -> acc + 1)) ls) 0
+
 #
+
+  $ infer -stru << EOF
+  > type 'a list =
+  >   | Cons of 'a * 'a list
+  >   | Nil
+  > 
+  > let rec iter f ls =
+  >   match ls with
+  >   | Nil -> ()
+  >   | Cons (x, xs) ->
+  >     let () = f x in
+  >       iter f xs
+  typed structure:
+  type 'ty0 list  =
+  | Cons of 'ty0 * 'ty0 list
+  | Nil
+  
+  let rec iter: ('ty6 -> unit) -> 'ty6 list -> unit = fun f ->
+    fun ls ->
+    match ls with | Nil -> ()
+  | Cons (x, xs) -> let () =
+    f x in (iter f) xs
