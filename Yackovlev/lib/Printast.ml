@@ -25,23 +25,18 @@ let string_of_cmpop = function
   | Ge -> ">="
 ;;
 
-let rec pp pp_name fmt = function
-  | Var x -> pp_name fmt x
+let rec pp fmt = function
+  | Var x -> pp_print_string fmt x
   | Int n when n < 0 -> fprintf fmt "(%d)" n
   | Int n -> fprintf fmt "%d" n
-  | Abs (x, e) -> fprintf fmt "(fun %a -> %a)" pp_name x (pp pp_name) e
-  | App (e1, e2) -> fprintf fmt "(%a %a)" (pp pp_name) e1 (pp pp_name) e2
-  | Let (x, e1, e2) ->
-    fprintf fmt "(let %a = %a in %a)" pp_name x (pp pp_name) e1 (pp pp_name) e2
-  | Let_rec (f, e1, e2) ->
-    fprintf fmt "(let rec %a = %a in %a)" pp_name f (pp pp_name) e1 (pp pp_name) e2
-  | If (cond, t, e) ->
-    fprintf fmt "(if %a then %a else %a)" (pp pp_name) cond (pp pp_name) t (pp pp_name) e
-  | Binop (op, e1, e2) ->
-    fprintf fmt "(%a %s %a)" (pp pp_name) e1 (string_of_binop op) (pp pp_name) e2
-  | Cmp (op, e1, e2) ->
-    fprintf fmt "(%a %s %a)" (pp pp_name) e1 (string_of_cmpop op) (pp pp_name) e2
+  | Abs (x, e) -> fprintf fmt "(fun %s -> %a)" x pp e
+  | App (e1, e2) -> fprintf fmt "(%a %a)" pp e1 pp e2
+  | Let (x, e1, e2) -> fprintf fmt "(let %s = %a in %a)" x pp e1 pp e2
+  | Let_rec (f, e1, e2) -> fprintf fmt "(let rec %s = %a in %a)" f pp e1 pp e2
+  | If (cond, t, e) -> fprintf fmt "(if %a then %a else %a)" pp cond pp t pp e
+  | Binop (op, e1, e2) -> fprintf fmt "(%a %s %a)" pp e1 (string_of_binop op) pp e2
+  | Cmp (op, e1, e2) -> fprintf fmt "(%a %s %a)" pp e1 (string_of_cmpop op) pp e2
 ;;
 
-let pp_named fmt ast = pp pp_print_string fmt ast
-let show pp_name ast = asprintf "%a" (pp pp_name) ast
+let pp_named = pp
+let show ast = asprintf "%a" pp ast

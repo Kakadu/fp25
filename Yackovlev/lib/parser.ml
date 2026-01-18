@@ -45,13 +45,11 @@ let integer =
   |> token
 ;;
 
-type error = [ `Parsing_error of string ]
+type error = Parsing_error of string
 
-let pp_error ppf = function
-  | `Parsing_error s -> Format.fprintf ppf "%s" s
-;;
+let pp_error ppf (Parsing_error s) = Format.fprintf ppf "%s" s
 
-let expr : string Ast.t Angstrom.t =
+let expr : Ast.expr Angstrom.t =
   let open Ast in
   fix (fun expr ->
     let chainl1 p op =
@@ -149,5 +147,5 @@ let parse str =
     Angstrom.parse_string (spaces *> expr <* spaces) ~consume:Angstrom.Consume.All str
   with
   | Result.Ok x -> Result.Ok x
-  | Error er -> Result.Error (`Parsing_error er)
+  | Error er -> Result.Error (Parsing_error er)
 ;;

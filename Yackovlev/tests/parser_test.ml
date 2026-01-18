@@ -68,7 +68,7 @@ let gen_expr =
   sized (fun n -> expr (min n 5))
 ;;
 
-let print_expr e = Printast.show (fun fmt s -> Format.fprintf fmt "%s" s) e
+let print_expr e = Printast.show e
 let arbitrary_expr = QCheck.make ~print:print_expr gen_expr
 
 let test_print_parse_roundtrip =
@@ -103,7 +103,7 @@ let test_parser_negative =
     (QCheck.make ~print:(fun s -> s) gen_invalid)
     (fun str ->
       match Parser.parse str with
-      | Error (`Parsing_error _) -> true
+      | Error (Parser.Parsing_error _) -> true
       | Ok _ -> false)
 ;;
 

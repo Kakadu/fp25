@@ -22,16 +22,15 @@ type cmpop =
   | Gt (** e1 > e2 *)
   | Ge (** e1 >= e2 *)
 
-type 'name t =
-  | Var of 'name (** Variable, like x *)
+type expr =
+  | Var of name (** Variable, like x *)
   | Int of int (** Integer literal *)
-  | Abs of 'name * 'name t (** Function: fun x -> e *)
-  | App of 'name t * 'name t (** Function application: e1 e2 *)
-  | Let of 'name * 'name t * 'name t (** Non-recursive let: let x = e1 in e2 *)
-  | Let_rec of 'name * 'name t * 'name t (** Recursive let: let rec f = e1 in e2 *)
-  | If of 'name t * 'name t * 'name t (** If expression *)
-  | Binop of binop * 'name t * 'name t (** Arithmetic operation *)
-  | Cmp of cmpop * 'name t * 'name t (** Comparison *)
+  | Abs of name * expr (** Function: fun x -> e *)
+  | App of expr * expr (** Function application: e1 e2 *)
+  | Let of name * expr * expr (** Non-recursive let: let x = e1 in e2 *)
+  | Let_rec of name * expr * expr (** Recursive let: let rec f = e1 in e2 *)
+  | If of expr * expr * expr (** If expression *)
+  | Binop of binop * expr * expr (** Arithmetic operation *)
+  | Cmp of cmpop * expr * expr (** Comparison *)
 
-type expr = name t
 type program = expr

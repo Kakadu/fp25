@@ -11,7 +11,7 @@ open Lambda_lib
 let main () =
   let input = In_channel.input_all In_channel.stdin in
   match Parser.parse input with
-  | Error (`Parsing_error err) -> Format.printf "Error: %s\n%!" err
+  | Error (Parser.Parsing_error err) -> Format.printf "Error: %s\n%!" err
   | Ok ast ->
     Format.printf "%a\n%!" Printast.pp_named ast;
     let fuel = 100_000 in

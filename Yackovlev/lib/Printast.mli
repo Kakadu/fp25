@@ -6,6 +6,6 @@
 
 [@@@ocaml.text "/*"]
 
-val pp_named : Format.formatter -> string Ast.t -> unit
-val pp : (Format.formatter -> 'name -> unit) -> Format.formatter -> 'name Ast.t -> unit
-val show : (Format.formatter -> 'name -> unit) -> 'name Ast.t -> string
+val pp_named : Format.formatter -> Ast.expr -> unit
+val pp : Format.formatter -> Ast.expr -> unit
+val show : Ast.expr -> string
