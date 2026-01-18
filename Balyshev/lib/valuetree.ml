@@ -12,21 +12,30 @@ module type ERROR = sig
   type t
 end
 
+(* represent program after interpreter processing *)
 module Make (M : Monads.STATE_MONAD) (Error : ERROR) = struct
-  type structure = value_binding * value_binding list
-  and value_binding = Parsetree.pattern * value
+  (* counter for generating unique Ident.t for value bindings and local bindings *)
+  type state = int
 
-  and value =
+  (* represents values computed by evaluating type expression *)
+  type value =
     | VConstant of Parsetree.constant
     | VTuple of value * value * value list
     | VFun of Parsetree.pattern * Parsetree.expression * environment
+    (** functions (both recursive and non-recursive) with it's closure *)
     | VConstruct of string * value option
     (** [ Some 123, None, Ok (fun x -> x + 1) etc. ] *)
     | VPrimitive of string * (value -> (state, value, Error.t) M.t)
-    (** [ print_value ] is presented as [ VPrimitive ("print_value", implementation) ] *)
+    (** [ print_value ] is presented as
+            [ VPrimitive ("print_value", implementation) ] *)
 
+  (** represents function closures (for both recursive and non-recursive functions) *)
   and environment = (string, value, Base.String.comparator_witness) Base.Map.t
-  and state = int
+
+  (** [ let pattern = value ] *)
+  type value_binding = Parsetree.pattern * value
+
+  type structure = value_binding * value_binding list
 
   let vprimitive name impl = VPrimitive (name, impl)
 

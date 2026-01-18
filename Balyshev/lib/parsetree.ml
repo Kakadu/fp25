@@ -10,19 +10,31 @@ type rec_flag =
   | Recursive
   | NonRecursive
 
-type 'a list1 = 'a * 'a list
+type 'a list1 = 'a * 'a list (* non-empty list *)
 
 type constant =
   | CUnit
   | CInt of int
   | CBool of bool
 
-and pattern =
-  | PAny
+type binop =
+  | Add (** [ + ] *)
+  | Mul (** [ * ] *)
+  | Sub (** [ - ] *)
+  | Div (** [ / ] *)
+  | Eq (** [ == ] *)
+  | Ne (** [ <> ] *)
+  | Le (** [ <= ] *)
+  | Ge (** [ >= ] *)
+  | Lt (** [ < ] *)
+  | Gt (** [ > ] *)
+
+type pattern =
+  | PAny (** [ _ ] *)
   | PConstant of constant
   | PVar of string
   | PTuple of pattern * pattern * pattern list
-  | PConstruct of string * pattern option
+  | PConstruct of string * pattern option (** [ Some 666, None, Ok (1, 2, 3) ] etc. *)
 
 type expression =
   | EConstant of constant
@@ -30,42 +42,32 @@ type expression =
   | ETuple of expression * expression * expression list
   | EBinop of binop * expression * expression
   | ELet of rec_flag * (pattern * expression) list1 * expression
-  | EFun of pattern * expression
+  (** [ let patt1 = expr1 and patt2 = expr2 and ... and pattN = exprN in expr ] *)
+  | EFun of pattern * expression (** [ fun pattern -> expression ] *)
   | EIf of expression * expression * expression
   | EApp of expression * expression
-  | EConstruct of string * expression option
+  | EConstruct of string * expression option (** [ Some 666, None, Ok (1, 2, 3) ] etc. *)
   | EMatch of expression * (pattern * expression) list1
-
-and binop =
-  | Add
-  | Mul
-  | Sub
-  | Div
-  | Eq
-  | Ne
-  | Le
-  | Ge
-  | Lt
-  | Gt
+  (** [ match expession with | patt1 -> expr1 ... | pattN -> exprN ] *)
 
 type value_binding = pattern * expression
+
+type core_type =
+  | Pty_var of string (** [ 'a, 'b ] are type variables in [ type ('a, 'b) ty = ... ] *)
+  | Pty_arrow of core_type * core_type (** ['a -> 'b] *)
+  | Pty_tuple of core_type * core_type * core_type list (** [ 'a * 'b * 'c ] *)
+  | Pty_constr of string * core_type list (** [ int ], ['a option], [ ('a, 'b) list ] *)
+
+type type_kind =
+  | Pty_abstract of core_type option (** [ type t ], [ type t = x ] *)
+  | Pty_variants of (string * core_type option) list1
+  (** [ type t = Some of int | None ] *)
 
 type type_declaration =
   { pty_params : string list (** ['a] is param in [type 'a list = ...] *)
   ; pty_name : string (** [list] is name in [type 'a list = ...] *)
   ; pty_kind : type_kind
   }
-
-and type_kind =
-  | Pty_abstract of core_type option (** [ type t ], [ type t = x ] *)
-  | Pty_variants of (string * core_type option) list1
-  (** [ type t = Some of int | None ] *)
-
-and core_type =
-  | Pty_var of string (** [ 'a, 'b ] are type variables in [ type ('a, 'b) ty = ... ] *)
-  | Pty_arrow of core_type * core_type (** ['a -> 'b] *)
-  | Pty_tuple of core_type * core_type * core_type list (** [ 'a * 'b * 'c ] *)
-  | Pty_constr of string * core_type list (** [ int ], ['a option], [ ('a, 'b) list ] *)
 
 type structure_item =
   | Pstr_value of rec_flag * value_binding list1 (** [ let x = ... ] *)

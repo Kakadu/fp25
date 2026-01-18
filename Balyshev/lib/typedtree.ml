@@ -10,9 +10,11 @@ open Base
 
 type ty =
   | Tty_var of Ident.t
-  | Tty_arrow of ty * ty
-  | Tty_prod of ty * ty * ty list
+  (** variable [ x ] is represented as [ { id: <generated integer>, name: "x" } ] *)
+  | Tty_arrow of ty * ty (** [ 'a -> 'b ] *)
+  | Tty_prod of ty * ty * ty list (** [ 'a * 'b * 'c ] *)
   | Tty_constr of ty list * string
+  (** [ int ] is represented as [ Tty_constr ([], "int") ], [ 'a list ] is represented as [ Tty_constr([ 'a ], "list") ] etc. *)
 
 let ty_int = Tty_constr ([], "int")
 let ty_bool = Tty_constr ([], "bool")
@@ -27,29 +29,38 @@ module VarSet = struct
 end
 
 module Scheme = struct
-  type t = Scheme of VarSet.t * ty
+  type t =
+    | Scheme of VarSet.t * ty
+    (** [ forall 'a 'b . 'a -> 'b -> int ] is represented as [ Scheme ({ 'a; 'b }, 'a -> 'b -> int) ]*)
 end
 
 type type_kind =
   | Tty_abstract of ty option
+  (** abstract types like [ type t ] or aliases like [ type ('a, 'b) pair = 'a * 'b ] *)
   | Tty_variants of (Ident.t * ty option) list
+  (** algebraic data types like [ type 'a option = Some of 'a | None ] *)
 
 type type_declaration =
   { tty_ident : Ident.t
+    (** for type [ t ] it will be [ { id: <generated integer>, name: "t" } ] *)
   ; tty_params : Ident.t list
+    (** for type [ ('k, 'v) map ] it will be [ [ ident('k); ident('v) ] ] *)
   ; tty_kind : type_kind
   }
 
 type constructor_info =
   { constr_ident : Ident.t
+    (** constructor's name and its zero-based index in the declaration *)
   ; constr_type_ident : Ident.t
+    (** corresponds to the [ tty_ident ] of type in which the constructor was declared *)
   ; constr_arg : ty option
+    (** [ None ] for constant constructors; [ Some ty ] where [ ty ] — type of constructor's argument for constructors with argument *)
   }
 
 type value_binding =
-  { tvb_pat : Parsetree.pattern
-  ; tvb_body : Parsetree.expression
-  ; tvb_scheme : Scheme.t
+  { tvb_pat : Parsetree.pattern (** [ patt ] in [ let patt : ty = expr ] *)
+  ; tvb_body : Parsetree.expression (** [ expr ] in [ let patt : ty = expr ] *)
+  ; tvb_scheme : Scheme.t (** [ ty ] in [ let patt : ty = expr ] *)
   }
 
 type value_declaration = Parsetree.rec_flag * value_binding * value_binding list
