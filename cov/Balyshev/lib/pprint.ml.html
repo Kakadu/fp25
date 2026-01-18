@@ -18,9 +18,9 @@
       <h2>84.21%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="top:49.15%"></span>
-      <span class="unvisited" style="bottom:20.34%"></span>
-      <span class="unvisited" style="bottom:11.86%"></span>
+      <span class="unvisited" style="top:50.00%"></span>
+      <span class="unvisited" style="bottom:18.97%"></span>
+      <span class="unvisited" style="bottom:8.62%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -76,14 +76,13 @@
 <a id="L49"></a><span > </span>
 <a id="L50"></a><span > </span>
 <a id="L51"></a><span > </span>
-<a id="L52"></a><span class="unvisited"> </span>
-<a id="L53"></a><span > </span>
-<a id="L54"></a><span > </span>
-<a id="L55"></a><span > </span>
-<a id="L56"></a><span class="visited"> </span>
+<a id="L52"></a><span > </span>
+<a id="L53"></a><span class="unvisited"> </span>
+<a id="L54"></a><span class="visited"> </span>
+<a id="L55"></a><span class="visited"> </span>
+<a id="L56"></a><span > </span>
 <a id="L57"></a><span > </span>
-<a id="L58"></a><span class="visited"> </span>
-<a id="L59"></a><span > </span>
+<a id="L58"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -146,7 +145,6 @@
 <a href="#L56">56</a>
 <a href="#L57">57</a>
 <a href="#L58">58</a>
-<a href="#L59">59</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -165,8 +163,8 @@ module Parens = struct
     | Binop (** [ XXX + XXX * (XXX - XXX) ] *)
     | Tuple (** [ XXX, XXX ]*)
     | App (** [ XXX XXX ] *)
-    | LeftSideFun (** [ fun XXX -&gt; ... ]  *)
-    | RightSideFun (** [ fun ... -&gt; XXX ]  *)
+    | LeftSideFun (** [ fun XXX -&gt; ... ] *)
+    | RightSideFun (** [ fun ... -&gt; XXX ] *)
     | MatchWith (** [ match XXX with ... ] *)
     | LeftSideMatch (** [ match ... with | XXX -&gt; ... ] *)
     | RightSideMatch (** [ match ... with | ... -&gt; XXX ] *)
@@ -198,14 +196,13 @@ let show_list_brackets show_item = function
   | <span data-count="20">i</span>tems -&gt; sprintf "[ %s ]" (show_man<span data-count="20">y</span> ~sep:"; " show_item items)
 ;;
 
-let show_list_cons
-      ?(ctx = <span data-count="0">P</span>arens.Free)
-      (show_item : ?ctx:Parens.context -&gt; 'a -&gt; string)
-      items
-  =
-  <span data-count="24">l</span>et open Parens in
-  set_parens ~ctx [ App; Binop ]
-  @@ String.conca<span data-count="24">t</span> ~sep:" :: " (List.ma<span data-count="24">p</span> ~f:(show_item ~ctx:Binop) items)
+let show_list_cons =
+  let open Parens in
+  let aux ?(ctx = <span data-count="0">F</span>ree) (show_item : ?ctx:context -&gt; 'a -&gt; string) items =
+    <span data-count="24">s</span>et_parens ~ctx [ App; Binop ]
+    @@ String.conca<span data-count="24">t</span> ~sep:" :: " (List.ma<span data-count="24">p</span> ~f:(show_item ~ctx:Binop) items)
+  in
+  aux
 ;;
 </code></pre>
       </div>
