@@ -1,9 +1,0 @@
-(library
- (name lambda_lib)
- (public_name Lambda.Lib)
- (modules Ast Lambda Parser Printast Pprintast Utils)
- (libraries base angstrom)
- (preprocess
-  (pps ppx_deriving.show))
- (instrumentation
-  (backend bisect_ppx)))
