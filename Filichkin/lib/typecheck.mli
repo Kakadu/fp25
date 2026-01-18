@@ -22,11 +22,13 @@ type scheme = Forall of int list * typ
 
 exception TypeError of string
 
+module StringMap : Map.S with type key = string
+
 type type_env =
-  { vars : (string * scheme) list
-  ; ctors : (string * scheme) list
-  ; types : (string * string list) list
-  ; type_def_ctors : (string * string list) list
+  { vars : scheme StringMap.t
+  ; ctors : scheme StringMap.t
+  ; types : string list StringMap.t
+  ; type_def_ctors : string list StringMap.t
   }
 
 type tc_state

@@ -19,11 +19,13 @@ type typ =
 
 type scheme = Forall of int list * typ
 
+module StringMap = Map.Make (String)
+
 type type_env =
-  { vars : (string * scheme) list
-  ; ctors : (string * scheme) list
-  ; types : (string * string list) list
-  ; type_def_ctors : (string * string list) list
+  { vars : scheme StringMap.t
+  ; ctors : scheme StringMap.t
+  ; types : string list StringMap.t
+  ; type_def_ctors : string list StringMap.t
   }
 
 exception TypeError of string
@@ -39,12 +41,19 @@ type infer_state =
   }
 
 let empty_subst = IntMap.empty
+let map_of_list xs =
+  List.fold_left (fun acc (k, v) -> StringMap.add k v acc) StringMap.empty xs
+;;
 
-let lookup_var x env = List.assoc_opt x env.vars
-let lookup_ctor c env = List.assoc_opt c env.ctors
-let lookup_type name env = List.assoc_opt name env.types
-let extend_vars env xs = { env with vars = xs @ env.vars }
-let extend_ctors env cs = { env with ctors = cs @ env.ctors }
+let add_bindings map xs =
+  List.fold_left (fun acc (k, v) -> StringMap.add k v acc) map xs
+;;
+
+let lookup_var x env = StringMap.find_opt x env.vars
+let lookup_ctor c env = StringMap.find_opt c env.ctors
+let lookup_type name env = StringMap.find_opt name env.types
+let extend_vars env xs = { env with vars = add_bindings env.vars xs }
+let extend_ctors env cs = { env with ctors = add_bindings env.ctors cs }
 
 let rec occurs id = function
   | TInt | TBool | TUnit -> false
@@ -78,8 +87,8 @@ let apply_subst_scheme subst (Forall (vars, t)) =
 
 let apply_subst_env subst env =
   { env with
-    vars = List.map (fun (x, sch) -> x, apply_subst_scheme subst sch) env.vars
-  ; ctors = List.map (fun (x, sch) -> x, apply_subst_scheme subst sch) env.ctors
+    vars = StringMap.map (apply_subst_scheme subst) env.vars
+  ; ctors = StringMap.map (apply_subst_scheme subst) env.ctors
   }
 ;;
 
@@ -123,10 +132,10 @@ let free_scheme (Forall (vars, t)) = IntSet.diff (free_tyvars t) (IntSet.of_list
 
 let generalize env_vars t =
   let env_fv =
-    List.fold_left
-      (fun acc (_, sch) -> IntSet.union acc (free_scheme sch))
-      IntSet.empty
+    StringMap.fold
+      (fun _ sch acc -> IntSet.union acc (free_scheme sch))
       env_vars
+      IntSet.empty
   in
   let t_fv = free_tyvars t in
   let vars = IntSet.elements (IntSet.diff t_fv env_fv) in
@@ -208,7 +217,7 @@ type coverage =
 let check_exhaustive_match env scrutinee_ty cases =
   match scrutinee_ty with
   | TCon (type_name, _) ->
-    (match List.assoc_opt type_name env.type_def_ctors with
+    (match StringMap.find_opt type_name env.type_def_ctors with
      | None -> ()
      | Some all_ctors ->
        let covered =
@@ -381,7 +390,7 @@ type tc_state =
 
 let process_type_decl env next_var td =
   let env_with_type =
-    { env with types = (td.type_name, td.type_params) :: env.types }
+    { env with types = StringMap.add td.type_name td.type_params env.types }
   in
   let rec fresh_params next acc = function
     | [] -> List.rev acc, next
@@ -411,8 +420,10 @@ let process_type_decl env next_var td =
   let env_with_ctors = extend_ctors env_with_type new_ctors in
   ( { env_with_ctors with
       type_def_ctors =
-        (td.type_name, List.map (fun c -> c.ctor_name) td.constructors)
-        :: env.type_def_ctors
+        StringMap.add
+          td.type_name
+          (List.map (fun c -> c.ctor_name) td.constructors)
+          env.type_def_ctors
     }
   , next_var )
 ;;
@@ -475,15 +486,16 @@ let initial_env, initial_next_var =
     ]
   in
     ( { vars =
-        [ "print_int", Forall ([], TFun (TInt, TUnit))
-        ; "println_int", Forall ([], TFun (TInt, TUnit))
-        ; "print_bool", Forall ([], TFun (TBool, TUnit))
-        ; "true", Forall ([], TBool)
-        ; "false", Forall ([], TBool)
-        ]
-    ; ctors = option_ctors
-    ; types = [ "option", [ "a" ] ]
-    ; type_def_ctors = [ "option", [ "None"; "Some" ] ]
+        map_of_list
+          [ "print_int", Forall ([], TFun (TInt, TUnit))
+          ; "println_int", Forall ([], TFun (TInt, TUnit))
+          ; "print_bool", Forall ([], TFun (TBool, TUnit))
+          ; "true", Forall ([], TBool)
+          ; "false", Forall ([], TBool)
+          ]
+    ; ctors = map_of_list option_ctors
+    ; types = map_of_list [ "option", [ "a" ] ]
+    ; type_def_ctors = map_of_list [ "option", [ "None"; "Some" ] ]
     }
   , next_var )
 ;;
