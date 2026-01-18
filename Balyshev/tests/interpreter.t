@@ -5,6 +5,10 @@
   evaluated: 15
 
   $ run -expr << EOF
+  > (1 <> 2) == (1 == 1)
+  evaluated: true
+
+  $ run -expr << EOF
   > 1, 2 + 3
   evaluated: 1, 5
 
@@ -47,6 +51,10 @@
   $ run -expr << EOF
   > let x = 5 in let y = 10 in x + y
   evaluated: 15
+
+  $ run -expr << EOF
+  > let () = () in ()
+  evaluated: ()
 
   $ run -expr << EOF
   > let id x = x in id 5
@@ -306,4 +314,54 @@
   > | _ :: _ :: [] -> 2
   > | _ :: [ _; _ ] -> 3
   interpreter error: match failure
+#
+
+# should fail
+  $ run -expr << EOF
+  > 0 1
+  interpreter error: { 0 } is not a function, it can not be applied
+
+  $ run -expr << EOF
+  > x + 1
+  interpreter error: unbound value: { x }
+
+  $ run -expr << EOF
+  > 1 / 0
+  interpreter error: division by zero
+
+  $ run -expr << EOF
+  > 1 / false
+  interpreter error: type mismatch: { eval_binop operands are not compatible }
+
+  $ run -expr << EOF
+  > 1 / (fun x -> x + 1)
+  interpreter error: type mismatch: { eval_binop operands are not constants }
+
+  $ run -expr << EOF
+  > let rec (fact, n) = if n < 1 then 1 else n * fact (n - 1) in (fact, 5)
+  interpreter error: invalid left-hand side of let rec: { fact, n }
+
+  $ run -expr << EOF
+  > let rec f = f in f
+  interpreter error: invalid right-hand side of let rec in declaration of { f }
+
+  $ run -expr << EOF
+  > let (1, x) = (false, 1) in x
+  interpreter error: type mismatch: { { value = false } does not match { pattern = 1 } }
+
+  $ run -expr << EOF
+  > let (1, x) = (0, 1) in x
+  interpreter error: match failure
+
+  $ run -expr << EOF
+  > let true = false in ()
+  interpreter error: match failure
+
+  $ run -expr << EOF
+  > let () = fun x -> x + 1 in ()
+  interpreter error: type mismatch: { { value = (fun x -> x + 1) } does not match { pattern = () } }
+
+  $ run -expr << EOF
+  > if 0 then () else ()
+  interpreter error: type mismatch: { boolean expr expected }
 #
