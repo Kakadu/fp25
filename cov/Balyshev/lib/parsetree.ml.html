@@ -667,7 +667,7 @@ let show_rec_flag = function
 ;;
 
 let show_binop = function
-  | <span data-count="25">A</span>dd -&gt; "+"
+  | <span data-count="26">A</span>dd -&gt; "+"
   | <span data-count="8">M</span>ul -&gt; "*"
   | <span data-count="15">S</span>ub -&gt; "-"
   | <span data-count="1">D</span>iv -&gt; "/"
@@ -682,18 +682,18 @@ let show_binop = function
 let pp_binop ppf x = <span data-count="0">f</span>printf ppf "%s" (show_bino<span data-count="0">p</span> x)
 
 let show_constant = function
-  | <span data-count="30">C</span>Unit -&gt; "()"
-  | <span data-count="222">C</span>Int x -&gt; sprintf "%d" x
-  | <span data-count="33">C</span>Bool x -&gt; sprintf "%b" x
+  | <span data-count="32">C</span>Unit -&gt; "()"
+  | <span data-count="225">C</span>Int x -&gt; sprintf "%d" x
+  | <span data-count="35">C</span>Bool x -&gt; sprintf "%b" x
 ;;
 
 let rec show_pattern ?(ctx = <span data-count="0">P</span>arens.Free) = function
   | <span data-count="21">P</span>Any -&gt; "_"
-  | <span data-count="21">P</span>Constant c -&gt; show_constant c
-  | <span data-count="300">P</span>Var name -&gt; name
-  | <span data-count="31">P</span>Tuple (a, b, xs) -&gt;
+  | <span data-count="23">P</span>Constant c -&gt; show_constant c
+  | <span data-count="303">P</span>Var name -&gt; name
+  | <span data-count="32">P</span>Tuple (a, b, xs) -&gt;
     set_parens ~ctx [ Tuple; App; LeftSideFun; LeftSideLet; Binop ]
-    @@ show_tupl<span data-count="31">e</span> (show_pattern ~ctx:Tuple) (a, b, xs)
+    @@ show_tupl<span data-count="32">e</span> (show_pattern ~ctx:Tuple) (a, b, xs)
   | <span data-count="23">P</span>Construct ("::", Some (PTuple (head, tail, []))) -&gt;
     let rec helper acc = function
       | <span data-count="11">P</span>Construct ("::", Some (PTuple (hd, tl, []))) -&gt; helper (hd :: acc) tl
@@ -711,15 +711,15 @@ let rec show_pattern ?(ctx = <span data-count="0">P</span>arens.Free) = function
 let pp_constant ppf constant = <span data-count="0">f</span>printf ppf "%s" (show_constan<span data-count="0">t</span> constant)
 
 let rec show_expression ?(ctx = <span data-count="0">P</span>arens.Free) = function
-  | <span data-count="182">E</span>Constant x -&gt; show_constant x
-  | <span data-count="355">E</span>Var x -&gt; x
-  | <span data-count="62">E</span>Binop (binop, left, right) -&gt;
+  | <span data-count="184">E</span>Constant x -&gt; show_constant x
+  | <span data-count="356">E</span>Var x -&gt; x
+  | <span data-count="63">E</span>Binop (binop, left, right) -&gt;
     set_parens ~ctx [ App; Binop ]
-    @@ sprint<span data-count="62">f</span>
+    @@ sprint<span data-count="63">f</span>
          "@[%s %s %s@]"
-         (show_expressio<span data-count="62">n</span> ~ctx:Binop left)
-         (show_bino<span data-count="62">p</span> binop)
-         (show_expressio<span data-count="62">n</span> ~ctx:Binop right)
+         (show_expressio<span data-count="63">n</span> ~ctx:Binop left)
+         (show_bino<span data-count="63">p</span> binop)
+         (show_expressio<span data-count="63">n</span> ~ctx:Binop right)
   | <span data-count="24">E</span>Tuple (a, b, xs) -&gt;
     set_parens ~ctx [ Tuple; App; Binop ]
     @@ show_tupl<span data-count="24">e</span> (show_expression ~ctx:Tuple) (a, b, xs)

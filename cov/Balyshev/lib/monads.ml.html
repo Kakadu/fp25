@@ -148,13 +148,13 @@ module State : STATE_MONAD = struct
 
   let get s = <span data-count="697">O</span>k (s, s)
   let put new_s _ = <span data-count="697">O</span>k (new_s, ())
-  let return x s = <span data-count="34624">O</span>k (s, x)
-  let fail msg _ = <span data-count="217">E</span>rror msg
+  let return x s = <span data-count="34664">O</span>k (s, x)
+  let fail msg _ = <span data-count="229">E</span>rror msg
 
   let ( &gt;&gt;= ) m f s =
-    <span data-count="36168">m</span>atch m s with
-    | <span data-count="276">E</span>rror e -&gt; Error e
-    | <span data-count="35892">O</span>k (s', v) -&gt; f v s'
+    <span data-count="36215">m</span>atch m s with
+    | <span data-count="285">E</span>rror e -&gt; Error e
+    | <span data-count="35930">O</span>k (s', v) -&gt; f v s'
   ;;
 
   let ( let* ) = ( &gt;&gt;= )
@@ -166,7 +166,7 @@ module State : STATE_MONAD = struct
     | <span data-count="181">E</span>rror _ -&gt; m2 s
   ;;
 
-  let run (m : 's -&gt; ('s * 'ok, 'err) Result.t) = <span data-count="162">m</span>
+  let run (m : 's -&gt; ('s * 'ok, 'err) Result.t) = <span data-count="176">m</span>
 end
 </code></pre>
       </div>

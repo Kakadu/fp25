@@ -294,15 +294,15 @@ type mode =
 open Stdlib.Format
 
 let run_expr ~mode text =
-  <span data-count="197">m</span>atch Parser.parse_expression text with
+  <span data-count="211">m</span>atch Parser.parse_expression text with
   | <span data-count="1">E</span>rror err -&gt; printf "parsing error: %s\n" err
-  | <span data-count="196">O</span>k ast -&gt;
+  | <span data-count="210">O</span>k ast -&gt;
     (match mode with
      | <span data-count="67">P</span>arse -&gt; printf "parsed:@.%a\n" Parsetree.pp_expression ast
-     | <span data-count="42">E</span>val -&gt;
+     | <span data-count="56">E</span>val -&gt;
        (match eval_expression ast with
-        | <span data-count="2">E</span>rror err -&gt; printf "interpreter error: %a\n" Interpreter.Error.pp err
-        | <span data-count="40">O</span>k value -&gt; printf "evaluated: %a\n" Valuetree.pp_value value)
+        | <span data-count="14">E</span>rror err -&gt; printf "interpreter error: %a\n" Interpreter.Error.pp err
+        | <span data-count="42">O</span>k value -&gt; printf "evaluated: %a\n" Valuetree.pp_value value)
      | <span data-count="87">I</span>nfer -&gt;
        (match infer_expression ast with
         | <span data-count="32">E</span>rror err -&gt; printf "inferencer error: %a\n" Inferencer.Error.pp err
@@ -349,25 +349,25 @@ type opts =
 
 let () =
   let opts = { ty = Expr; mode = Eval } in
-  let arg_mode v = <span data-count="837">S</span>tdlib.Arg.Unit (fun () -&gt; <span data-count="278">o</span>pts.mode &lt;- v) in
-  let arg_type v = <span data-count="1116">S</span>tdlib.Arg.Unit (fun () -&gt; <span data-count="278">o</span>pts.ty &lt;- v) in
+  let arg_mode v = <span data-count="879">S</span>tdlib.Arg.Unit (fun () -&gt; <span data-count="292">o</span>pts.mode &lt;- v) in
+  let arg_type v = <span data-count="1172">S</span>tdlib.Arg.Unit (fun () -&gt; <span data-count="292">o</span>pts.ty &lt;- v) in
   Stdlib.Arg.parse
-    [ "-expr", arg_typ<span data-count="279">e</span> Expr, "\t expression"
-    ; "-stru", arg_typ<span data-count="279">e</span> Stru, "\t structure"
-    ; "-patt", arg_typ<span data-count="279">e</span> Patt, "\t pattern"
-    ; "-core-type", arg_typ<span data-count="279">e</span> CoreType, "\t core type"
-    ; "-parse", arg_mod<span data-count="279">e</span> Parse, "\t parser"
-    ; "-eval", arg_mod<span data-count="279">e</span> Eval, "\t interpreter"
-    ; "-infer", arg_mod<span data-count="279">e</span> Infer, "\t inferencer"
+    [ "-expr", arg_typ<span data-count="293">e</span> Expr, "\t expression"
+    ; "-stru", arg_typ<span data-count="293">e</span> Stru, "\t structure"
+    ; "-patt", arg_typ<span data-count="293">e</span> Patt, "\t pattern"
+    ; "-core-type", arg_typ<span data-count="293">e</span> CoreType, "\t core type"
+    ; "-parse", arg_mod<span data-count="293">e</span> Parse, "\t parser"
+    ; "-eval", arg_mod<span data-count="293">e</span> Eval, "\t interpreter"
+    ; "-infer", arg_mod<span data-count="293">e</span> Infer, "\t inferencer"
     ]
     (fun arg -&gt; <span data-count="0">S</span>tdlib.Format.eprintf "error: unexpected argument '%s'\n" arg)
     "REPL";
-  <span data-count="278">(</span>match opts.ty with
-   | <span data-count="197">E</span>xpr -&gt; run_expr ~mode:opts.mode
+  <span data-count="292">(</span>match opts.ty with
+   | <span data-count="211">E</span>xpr -&gt; run_expr ~mode:opts.mode
    | <span data-count="13">P</span>att -&gt; run_patt ~mode:opts.mode
    | <span data-count="55">S</span>tru -&gt; run_stru ~mode:opts.mode
-   | <span data-count="13">C</span>oreType -&gt; run_core_type ~mode:opts.mode<span data-count="278">)</span>
-    (Stdio.In_channel.(input_al<span data-count="278">l</span> stdin) |&gt; String.rstri<span data-count="278">p</span>)
+   | <span data-count="13">C</span>oreType -&gt; run_core_type ~mode:opts.mode<span data-count="292">)</span>
+    (Stdio.In_channel.(input_al<span data-count="292">l</span> stdin) |&gt; String.rstri<span data-count="292">p</span>)
 ;;
 </code></pre>
       </div>

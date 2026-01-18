@@ -1651,7 +1651,7 @@ module Substitution (M : Monads.STATE_MONAD) = struct
 
   type t = (string, ty, String.comparator_witness) Map.t
 
-  let empty : t = Map.empt<span data-count="1953">y</span> (module String)
+  let empty : t = Map.empt<span data-count="2051">y</span> (module String)
   let walk (sub : t) name = <span data-count="37215">M</span>ap.find sub name
 
   let occurs_in name ty =
@@ -1751,22 +1751,22 @@ module TypeEnv (M : Monads.STATE_MONAD) = struct
     }
 
   let empty =
-    { env_values = Map.empt<span data-count="558">y</span> (module String)
-    ; env_types = Map.empt<span data-count="558">y</span> (module String)
-    ; env_constructors = Map.empt<span data-count="558">y</span> (module String)
+    { env_values = Map.empt<span data-count="586">y</span> (module String)
+    ; env_types = Map.empt<span data-count="586">y</span> (module String)
+    ; env_constructors = Map.empt<span data-count="586">y</span> (module String)
     }
   ;;
 
   let typ_unit : type_declaration =
-    { tty_ident = Ident.iden<span data-count="558">t</span> (-1) "unit"; tty_params = []; tty_kind = Tty_abstract None }
+    { tty_ident = Ident.iden<span data-count="586">t</span> (-1) "unit"; tty_params = []; tty_kind = Tty_abstract None }
   ;;
 
   let typ_int : type_declaration =
-    { tty_ident = Ident.iden<span data-count="558">t</span> (-2) "int"; tty_params = []; tty_kind = Tty_abstract None }
+    { tty_ident = Ident.iden<span data-count="586">t</span> (-2) "int"; tty_params = []; tty_kind = Tty_abstract None }
   ;;
 
   let typ_bool : type_declaration =
-    { tty_ident = Ident.iden<span data-count="558">t</span> (-3) "bool"; tty_params = []; tty_kind = Tty_abstract None }
+    { tty_ident = Ident.iden<span data-count="586">t</span> (-3) "bool"; tty_params = []; tty_kind = Tty_abstract None }
   ;;
 
   module TypeList : sig
@@ -1774,14 +1774,14 @@ module TypeEnv (M : Monads.STATE_MONAD) = struct
     val constr_nil : constructor_info
     val constr_cons : constructor_info
   end = struct
-    let param_ident = Ident.iden<span data-count="558">t</span> (-1) "'a"
+    let param_ident = Ident.iden<span data-count="586">t</span> (-1) "'a"
     let param_ty = Tty_var param_ident
-    let nil_ident = Ident.iden<span data-count="558">t</span> 0 "[]"
-    let cons_ident = Ident.iden<span data-count="558">t</span> 1 "::"
+    let nil_ident = Ident.iden<span data-count="586">t</span> 0 "[]"
+    let cons_ident = Ident.iden<span data-count="586">t</span> 1 "::"
     let cons_arg_ty = Some (Tty_prod (param_ty, Tty_constr ([ param_ty ], "list"), []))
 
     let typ_list : type_declaration =
-      { tty_ident = Ident.iden<span data-count="558">t</span> (-4) "list"
+      { tty_ident = Ident.iden<span data-count="586">t</span> (-4) "list"
       ; tty_params = [ param_ident ]
       ; tty_kind = Tty_variants [ nil_ident, None; cons_ident, cons_arg_ty ]
       }
@@ -1804,34 +1804,34 @@ module TypeEnv (M : Monads.STATE_MONAD) = struct
 
   let fix_scheme =
     let a_ident = Ident.ident (-5) "'a" in
-    <span data-count="558">l</span>et a_var = tty_var a_ident in
-    <span data-count="558">l</span>et fix_ty = tty_arrow (tty_arro<span data-count="558">w</span> a_var a_var) a_var in
-    <span data-count="558">S</span>cheme.Scheme (VarSet.singleto<span data-count="558">n</span> a_ident, fix_ty)
+    <span data-count="586">l</span>et a_var = tty_var a_ident in
+    <span data-count="586">l</span>et fix_ty = tty_arrow (tty_arro<span data-count="586">w</span> a_var a_var) a_var in
+    <span data-count="586">S</span>cheme.Scheme (VarSet.singleto<span data-count="586">n</span> a_ident, fix_ty)
   ;;
 
   let set_type (td : type_declaration) (env : t) =
-    <span data-count="2232">l</span>et key = td.tty_ident.name in
-    { env with env_types = Map.se<span data-count="2232">t</span> ~key ~data:td env.env_types }
+    <span data-count="2344">l</span>et key = td.tty_ident.name in
+    { env with env_types = Map.se<span data-count="2344">t</span> ~key ~data:td env.env_types }
   ;;
 
   let set_constructor (constr : constructor_info) (env : t) =
-    <span data-count="1128">l</span>et key = constr.constr_ident.name in
-    { env with env_constructors = Map.se<span data-count="1128">t</span> ~key ~data:constr env.env_constructors }
+    <span data-count="1184">l</span>et key = constr.constr_ident.name in
+    { env with env_constructors = Map.se<span data-count="1184">t</span> ~key ~data:constr env.env_constructors }
   ;;
 
   let set_value ~name (scheme : Scheme.t) (env : t) =
-    <span data-count="1052">{</span> env with env_values = Map.se<span data-count="1052">t</span> ~key:name ~data:scheme env.env_values }
+    <span data-count="1080">{</span> env with env_values = Map.se<span data-count="1080">t</span> ~key:name ~data:scheme env.env_values }
   ;;
 
   let env_with_base_types =
     empty
     |&gt; set_type typ_unit
-    |&gt; <span data-count="558">s</span>et_type typ_int
-    |&gt; <span data-count="558">s</span>et_type typ_bool
-    |&gt; <span data-count="558">s</span>et_type TypeList.typ_list
-    |&gt; <span data-count="558">s</span>et_constructor TypeList.constr_nil
-    |&gt; <span data-count="558">s</span>et_constructor TypeList.constr_cons
-    |&gt; <span data-count="558">s</span>et_valu<span data-count="558">e</span> ~name:"fix" fix_scheme
+    |&gt; <span data-count="586">s</span>et_type typ_int
+    |&gt; <span data-count="586">s</span>et_type typ_bool
+    |&gt; <span data-count="586">s</span>et_type TypeList.typ_list
+    |&gt; <span data-count="586">s</span>et_constructor TypeList.constr_nil
+    |&gt; <span data-count="586">s</span>et_constructor TypeList.constr_cons
+    |&gt; <span data-count="586">s</span>et_valu<span data-count="586">e</span> ~name:"fix" fix_scheme
   ;;
 
   let free_vars (env : t) =
