@@ -365,3 +365,39 @@
   > if 0 then () else ()
   interpreter error: type mismatch: { boolean expr expected }
 #
+
+# stru
+  $ run -stru -silent << EOF
+  > let rec fact n = if n < 1 then 1 else n * fact (n - 1)
+  > let rec fib n = if n < 2 then n else fib (n - 1) + fib (n - 2)
+  > 
+  > let rec iter f ls =
+  >   match ls with
+  >   | [] -> ()
+  >   | x :: xs ->
+  >     let () = f x in
+  >       iter f xs
+  > 
+  > let rec map f ls =
+  >   match ls with
+  >   | [] -> []
+  >   | x :: xs -> f x :: map f xs
+  > 
+  > let ls = [ 1; 2; 3; 4; 5; 6; 7 ]
+  > let () = iter printn_value (map (fun n -> fact n) ls)
+  > let () = iter printn_value (map (fun n -> fib n) ls)
+  1
+  2
+  6
+  24
+  120
+  720
+  5040
+  1
+  1
+  2
+  3
+  5
+  8
+  13
+#
