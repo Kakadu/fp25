@@ -1,3 +1,6 @@
+(** Copyright 2026, Kirill K. Smirnov *)
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
 open Mardukml_lib
 
 let repl = let _ = Printf.printf "MardukML REPL\n\n" in
