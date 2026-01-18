@@ -100,7 +100,7 @@ let () =
     ; "-eval", arg_mode Eval, "\t interpreter"
     ; "-infer", arg_mode Infer, "\t inferencer"
     ]
-    (fun _ -> assert false)
+    (fun arg -> Stdlib.Format.eprintf "error: unexpected argument '%s'\n" arg)
     "REPL";
   (match opts.ty with
    | Expr -> run_expr ~mode:opts.mode

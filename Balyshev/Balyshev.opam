@@ -2,7 +2,7 @@
 opam-version: "2.0"
 version: "0.1"
 synopsis: "MiniML"
-description: "implementation of a subset of OCaml"
+description: "interpreter for a subset of OCaml"
 maintainer: ["Balyshev Artem <github.com/psiblvdegod>"]
 authors: ["Balyshev Artem <github.com/psiblvdegod>"]
 license: "LGPL-3.0-or-later WITH OCaml-LGPL-linking-exception"

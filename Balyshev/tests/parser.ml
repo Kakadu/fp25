@@ -61,10 +61,10 @@ module GenAst = struct
     let open Gen in
     map
       (fun items ->
-        Base.List.fold
-          ~f:(fun acc item -> EConstruct ("::", Some (ETuple (item, acc, []))))
-          ~init:(EConstruct ("[]", None))
-          items)
+         Base.List.fold
+           ~f:(fun acc item -> EConstruct ("::", Some (ETuple (item, acc, []))))
+           ~init:(EConstruct ("[]", None))
+           items)
       (list_size (int_bound 3) gen)
   ;;
 
@@ -72,10 +72,10 @@ module GenAst = struct
     let open Gen in
     map
       (fun items ->
-        Base.List.fold
-          ~f:(fun acc item -> PConstruct ("::", Some (PTuple (item, acc, []))))
-          ~init:(PConstruct ("[]", None))
-          items)
+         Base.List.fold
+           ~f:(fun acc item -> PConstruct ("::", Some (PTuple (item, acc, []))))
+           ~init:(PConstruct ("[]", None))
+           items)
       (list_size (int_bound 3) gen)
   ;;
 
