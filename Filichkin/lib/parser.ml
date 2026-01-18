@@ -283,10 +283,7 @@ let type_expr =
       <* spaces
     in
     let paren_args =
-      spaces
-      *> char '('
-      *> spaces
-      *> sep_by1 comma type_expr
+      spaces *> char '(' *> spaces *> sep_by1 comma type_expr
       <* spaces
       <* char ')'
       <* spaces
@@ -355,7 +352,7 @@ let normalize_self_apply_fix expr =
 ;;
 
 let rec normalize_expr = function
-  | Int _ | Var _ | Constr _ | Bool _ as e -> e
+  | (Int _ | Var _ | Constr _ | Bool _) as e -> e
   | BinOp (op, l, r) -> BinOp (op, normalize_expr l, normalize_expr r)
   | UnOp (op, e) -> UnOp (op, normalize_expr e)
   | If (c, t, e) -> If (normalize_expr c, normalize_expr t, normalize_expr e)

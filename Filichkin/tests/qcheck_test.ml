@@ -191,10 +191,10 @@ let rec shrink_expr = function
 ;;
 
 let arb_expr = QCheck.make ~print:print_expr ~shrink:shrink_expr (gen_expr 20)
-
 let gen_small_int = int_range 0 1000
 let arb_small_int = QCheck.make ~print:string_of_int gen_small_int
 let arb_bool = QCheck.make ~print:Bool.to_string bool
+
 let arb_two_ints =
   QCheck.make
     ~print:(fun (a, b) -> Printf.sprintf "%d,%d" a b)
@@ -308,14 +308,8 @@ let parse_tuple_two =
 ;;
 
 let parse_tuple_three =
-  QCheck.Test.make
-    ~count:300
-    ~name:"parse 3-tuple"
-    arb_three_ints
-    (fun (a, b, c) ->
-       expr_matches
-         (Printf.sprintf "(%d, %d, %d)" a b c)
-         (Tuple [ Int a; Int b; Int c ]))
+  QCheck.Test.make ~count:300 ~name:"parse 3-tuple" arb_three_ints (fun (a, b, c) ->
+    expr_matches (Printf.sprintf "(%d, %d, %d)" a b c) (Tuple [ Int a; Int b; Int c ]))
 ;;
 
 let parse_binop_precedence_add_mult =
@@ -342,7 +336,9 @@ let parse_binop_precedence_mult_add =
 
 let parse_if_then_else =
   QCheck.Test.make ~count:300 ~name:"parse if-then-else" arb_two_ints (fun (a, b) ->
-    expr_matches (Printf.sprintf "if true then %d else %d" a b) (If (Bool true, Int a, Int b)))
+    expr_matches
+      (Printf.sprintf "if true then %d else %d" a b)
+      (If (Bool true, Int a, Int b)))
 ;;
 
 let parse_let_in =
@@ -376,3 +372,4 @@ let () =
     ; parse_let_in
     ; parse_match_wildcard
     ]
+;;

@@ -29,10 +29,8 @@ let%expect_test "print_expr_match" =
   let expr =
     Match
       ( Var "xs"
-      ,
-        [ PConstr ("Nil", []), Int 0
-        ; PConstr ("Cons", [ PVar "x"; PVar "xs" ]), Var "x"
-        ] )
+      , [ PConstr ("Nil", []), Int 0; PConstr ("Cons", [ PVar "x"; PVar "xs" ]), Var "x" ]
+      )
   in
   print_string (print_expr expr);
   [%expect {| (match xs with | Nil -> 0 | Cons (x, xs) -> x) |}]

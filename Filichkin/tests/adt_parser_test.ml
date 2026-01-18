@@ -6,10 +6,7 @@ open Filichkin_lib.Parser
 open Filichkin_lib.Print
 
 let%expect_test "parse adt type declaration" =
-  print_ast_p
-    (parser
-       {|type 'a mylist = Nil | Cons of 'a * 'a mylist|}
-     |> Result.get_ok);
+  print_ast_p (parser {|type 'a mylist = Nil | Cons of 'a * 'a mylist|} |> Result.get_ok);
   [%expect
     {|
     [type_name mylist, type_params [a], constructors [{ ctor_name = Nil; ctor_args = [] }; { ctor_name = Cons; ctor_args = [TEVar a; TEConstr (mylist, [TEVar a])] }]]
@@ -24,9 +21,7 @@ let%expect_test "parse adt constructor with arrow" =
 
 let%expect_test "parse adt tree declaration" =
   print_ast_p
-    (parser
-       {|type 'a tree = Leaf of 'a | Node of 'a tree * 'a tree|}
-     |> Result.get_ok);
+    (parser {|type 'a tree = Leaf of 'a | Node of 'a tree * 'a tree|} |> Result.get_ok);
   [%expect
     {|
     [type_name tree, type_params [a], constructors [{ ctor_name = Leaf; ctor_args = [TEVar a] }; { ctor_name = Node; ctor_args = [TEConstr (tree, [TEVar a]); TEConstr (tree, [TEVar a])] }]]

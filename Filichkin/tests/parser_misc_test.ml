@@ -22,8 +22,7 @@ let%expect_test "parse match tuple pattern" =
 ;;
 
 let%expect_test "parse match without leading bar" =
-  print_ast_p
-    (parser "match (1, 2) with (x, y) -> x + y | _ -> 0" |> Result.get_ok);
+  print_ast_p (parser "match (1, 2) with (x, y) -> x + y | _ -> 0" |> Result.get_ok);
   [%expect
     {|
     Match (Tuple [Int 1; Int 2], [(PTuple [Var x; Var y], BinOp (Plus, Var "x", Var "y")); (_, Int 0)])
@@ -32,6 +31,5 @@ let%expect_test "parse match without leading bar" =
 
 let%expect_test "parse fun with tuple pattern" =
   print_ast_p (parser "fun (x, y) -> x + y" |> Result.get_ok);
-  [%expect
-    {| Abs ("(x, y)", BinOp (Plus, Var "x", Var "y")) |}]
+  [%expect {| Abs ("(x, y)", BinOp (Plus, Var "x", Var "y")) |}]
 ;;

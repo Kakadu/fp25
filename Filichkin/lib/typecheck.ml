@@ -41,16 +41,13 @@ type infer_state =
   }
 
 let empty_subst = IntMap.empty
-
 let fresh_infer_state next_var = { next_var; subst = empty_subst }
+
 let map_of_list xs =
   List.fold_left (fun acc (k, v) -> StringMap.add k v acc) StringMap.empty xs
 ;;
 
-let add_bindings map xs =
-  List.fold_left (fun acc (k, v) -> StringMap.add k v acc) map xs
-;;
-
+let add_bindings map xs = List.fold_left (fun acc (k, v) -> StringMap.add k v acc) map xs
 let lookup_var x env = StringMap.find_opt x env.vars
 let lookup_ctor c env = StringMap.find_opt c env.ctors
 let lookup_type name env = StringMap.find_opt name env.types
@@ -67,7 +64,7 @@ let rec occurs id = function
 
 let apply_subst subst ty =
   let rec go seen = function
-    | TInt | TBool | TUnit as t -> t
+    | (TInt | TBool | TUnit) as t -> t
     | TFun (t1, t2) -> TFun (go seen t1, go seen t2)
     | TTuple ts -> TTuple (List.map (go seen) ts)
     | TCon (name, ts) -> TCon (name, List.map (go seen) ts)
@@ -190,8 +187,7 @@ let rec bind_pattern st env pat ty =
       elem_tys
   | PConstr (name, ps), t ->
     (match lookup_ctor name env with
-     | None ->
-       raise (TypeError (String.concat "" [ "unknown constructor "; name ]))
+     | None -> raise (TypeError (String.concat "" [ "unknown constructor "; name ]))
      | Some scheme ->
        let scheme = apply_subst_scheme st.subst scheme in
        let ctor_ty, st = instantiate st scheme in
@@ -243,9 +239,7 @@ let check_exhaustive_match env scrutinee_ty cases =
               (TypeError
                  (String.concat
                     ""
-                    [ "non-exhaustive match, missing: "
-                    ; String.concat ", " missing
-                    ]))))
+                    [ "non-exhaustive match, missing: "; String.concat ", " missing ]))))
   | _ -> ()
 ;;
 
@@ -292,9 +286,7 @@ let rec infer_expr st env = function
     let st, bindings = bind_pattern st env pat t1 in
     let env = apply_subst_env st.subst env in
     let new_vars =
-      List.map
-        (fun (x, t) -> x, generalize env.vars (apply_subst st.subst t))
-        bindings
+      List.map (fun (x, t) -> x, generalize env.vars (apply_subst st.subst t)) bindings
     in
     let env' = extend_vars env new_vars in
     (match body_opt with
@@ -451,9 +443,7 @@ let check_toplevel state tl =
       let env = apply_subst_env st.subst env in
       let ty = apply_subst st.subst ty in
       let new_vars =
-        List.map
-          (fun (n, t) -> n, generalize env.vars (apply_subst st.subst t))
-          bindings
+        List.map (fun (n, t) -> n, generalize env.vars (apply_subst st.subst t)) bindings
       in
       let scheme = generalize env.vars ty in
       let ty, st = instantiate st scheme in
@@ -473,8 +463,7 @@ let check_toplevel state tl =
          let ty, st = instantiate st scheme in
          Ok (make_tc_state env' (Some ty) st.next_var)
        | _ -> Error "recursive binding must be a function")
-    | TLExpr (Let (Rec, _, _, None)) ->
-      Error "Recursive let-tuple is not supported"
+    | TLExpr (Let (Rec, _, _, None)) -> Error "Recursive let-tuple is not supported"
     | TLExpr e ->
       let st = fresh_infer_state state.next_var in
       let ty, st = infer_expr st state.tenv e in
@@ -493,7 +482,7 @@ let initial_env, initial_next_var =
     ; "Some", Forall ([ option_var ], TFun (TVar option_var, option_a))
     ]
   in
-    ( { vars =
+  ( { vars =
         map_of_list
           [ "print_int", Forall ([], TFun (TInt, TUnit))
           ; "println_int", Forall ([], TFun (TInt, TUnit))
@@ -509,7 +498,6 @@ let initial_env, initial_next_var =
 ;;
 
 let initial_state = { tenv = initial_env; last_type = None; next_var = initial_next_var }
-
 let typecheck_toplevel = check_toplevel
 
 let typecheck_program state toplevels =
