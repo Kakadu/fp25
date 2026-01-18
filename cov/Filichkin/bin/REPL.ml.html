@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>REPL.ml &mdash; Coverage report</title>
-    <meta name="description" content="100.00% coverage in bin/REPL.ml">
+    <meta name="description" content="82.61% coverage in bin/REPL.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,9 +15,13 @@
           <span class="dirname">bin/</span>REPL.ml
         </a>
       </h1>
-      <h2>100.00%</h2>
+      <h2>82.61%</h2>
     </div>
     <div id="navbar">
+      <span class="unvisited" style="top:40.91%"></span>
+      <span class="unvisited" style="bottom:47.73%"></span>
+      <span class="unvisited" style="bottom:22.73%"></span>
+      <span class="unvisited" style="bottom:9.09%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -35,22 +39,37 @@
 <a id="L11"></a><span > </span>
 <a id="L12"></a><span > </span>
 <a id="L13"></a><span > </span>
-<a id="L14"></a><span class="visited"> </span>
-<a id="L15"></a><span class="visited"> </span>
-<a id="L16"></a><span class="visited"> </span>
-<a id="L17"></a><span > </span>
-<a id="L18"></a><span class="visited"> </span>
-<a id="L19"></a><span class="visited"> </span>
-<a id="L20"></a><span class="visited"> </span>
+<a id="L14"></a><span > </span>
+<a id="L15"></a><span > </span>
+<a id="L16"></a><span > </span>
+<a id="L17"></a><span class="visited"> </span>
+<a id="L18"></a><span class="unvisited"> </span>
+<a id="L19"></a><span > </span>
+<a id="L20"></a><span > </span>
 <a id="L21"></a><span > </span>
 <a id="L22"></a><span class="visited"> </span>
-<a id="L23"></a><span > </span>
+<a id="L23"></a><span class="unvisited"> </span>
 <a id="L24"></a><span class="visited"> </span>
 <a id="L25"></a><span > </span>
-<a id="L26"></a><span > </span>
-<a id="L27"></a><span > </span>
+<a id="L26"></a><span class="visited"> </span>
+<a id="L27"></a><span class="visited"> </span>
 <a id="L28"></a><span > </span>
 <a id="L29"></a><span class="visited"> </span>
+<a id="L30"></a><span class="visited"> </span>
+<a id="L31"></a><span class="visited"> </span>
+<a id="L32"></a><span > </span>
+<a id="L33"></a><span class="visited"> </span>
+<a id="L34"></a><span class="unvisited"> </span>
+<a id="L35"></a><span > </span>
+<a id="L36"></a><span class="visited"> </span>
+<a id="L37"></a><span class="visited"> </span>
+<a id="L38"></a><span > </span>
+<a id="L39"></a><span class="visited"> </span>
+<a id="L40"></a><span class="unvisited"> </span>
+<a id="L41"></a><span > </span>
+<a id="L42"></a><span > </span>
+<a id="L43"></a><span > </span>
+<a id="L44"></a><span class="visited"> </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -84,6 +103,21 @@
 <a href="#L27">27</a>
 <a href="#L28">28</a>
 <a href="#L29">29</a>
+<a href="#L30">30</a>
+<a href="#L31">31</a>
+<a href="#L32">32</a>
+<a href="#L33">33</a>
+<a href="#L34">34</a>
+<a href="#L35">35</a>
+<a href="#L36">36</a>
+<a href="#L37">37</a>
+<a href="#L38">38</a>
+<a href="#L39">39</a>
+<a href="#L40">40</a>
+<a href="#L41">41</a>
+<a href="#L42">42</a>
+<a href="#L43">43</a>
+<a href="#L44">44</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -96,24 +130,39 @@
 open Filichkin_lib.Print
 open Filichkin_lib.Parser
 open Filichkin_lib.Interpret
+open Filichkin_lib.Typecheck
+module Interpret = Filichkin_lib.Interpret
+module Typecheck = Filichkin_lib.Typecheck
 
-let repl () =
-  <span data-count="35">l</span>et input = read_line () in
-  <span data-count="35">m</span>atch parser input with
-  | <span data-count="34">O</span>k ast -&gt;
-    let printed_ast = print_ast ast in
-    <span data-count="34">P</span>rintf.printf "%s\n" printed_ast;
-    <span data-count="34">(</span>match run_interpret ast with
-     | <span data-count="29">O</span>k value -&gt; Printf.printf "%s\n\n" (string_of_valu<span data-count="29">e</span> value)
-     (* repl () *)
-     | <span data-count="5">E</span>rror err -&gt; Printf.printf "%s\n\n" (string_of_erro<span data-count="5">r</span> err))
-    (* repl () *)
-  | <span data-count="1">E</span>rror (`parse_error msg) -&gt; Printf.printf "Parse error: %s\n\n" msg
+let read_one_line () =
+  <span data-count="62">t</span>ry Some (read_lin<span data-count="62">e</span> ()) with
+  | <span data-count="0">E</span>nd_of_file -&gt; None
 ;;
 
-(* repl () *)
+let repl () =
+  <span data-count="62">m</span>atch read_one_line () with
+  | <span data-count="0">N</span>one -&gt; ()
+  | <span data-count="62">S</span>ome input -&gt;
+    (match parser input with
+     | <span data-count="1">E</span>rror (`parse_error msg) -&gt; Printf.printf "Parse error: %s\n" msg
+     | <span data-count="61">O</span>k toplevels -&gt;
+       print_ast_p toplevels;
+       <span data-count="61">(</span>match typecheck_program Typecheck.initial_state toplevels with
+        | <span data-count="7">E</span>rror type_err -&gt; Printf.printf "Type error: %s\n" type_err
+        | <span data-count="54">O</span>k tc_state -&gt;
+          (match get_last_type tc_state with
+           | <span data-count="54">S</span>ome ty -&gt; Printf.print<span data-count="54">f</span> "Type: %s\n" (string_of_typ<span data-count="54">e</span> ty)
+           | <span data-count="0">N</span>one -&gt; ());
+          (match interpret_program Interpret.initial_state toplevels with
+           | <span data-count="3">E</span>rror err -&gt; Printf.printf "%s\n" (string_of_erro<span data-count="3">r</span> err)
+           | <span data-count="51">O</span>k (_, last_result) -&gt;
+             (match last_result with
+              | <span data-count="51">S</span>ome v -&gt; Printf.print<span data-count="51">f</span> "%s\n" (string_of_valu<span data-count="51">e</span> v)
+              | <span data-count="0">N</span>one -&gt; ());
+             Printf.printf "\n")))
+;;
 
-let () = rep<span data-count="35">l</span> ()
+let () = rep<span data-count="62">l</span> ()
 </code></pre>
       </div>
     </div>
