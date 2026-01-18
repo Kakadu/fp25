@@ -8,8 +8,6 @@
 
 open Ast
 
-type tyvar = int
-
 type typ =
   | TInt
   | TBool
@@ -20,12 +18,6 @@ type typ =
   | TVar of int
 
 type scheme = Forall of int list * typ
-
-module TyVarMap = Map.Make (Int)
-
-type subst = typ TyVarMap.t
-
-let subst_ref : subst ref = ref TyVarMap.empty
 
 type type_env =
   { vars : (string * scheme) list

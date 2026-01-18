@@ -8,8 +8,6 @@
 
 open Ast
 
-type tyvar = int
-
 type typ =
   | TInt
   | TBool

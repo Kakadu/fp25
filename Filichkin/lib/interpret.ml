@@ -268,12 +268,12 @@ let init_env =
   ]
 ;;
 
+let initial_state = { env = init_env }
 let run_interpret expr = eval init_env expr 1000
 
-let interpret_program toplevels =
-  let initial_state = { env = init_env } in
+let interpret_program st toplevels =
   let rec loop st last_result = function
-    | [] -> Ok last_result
+    | [] -> Ok (st, last_result)
     | tl :: tls ->
       (match interpret_toplevel st tl with
        | Error err -> Error err
@@ -285,11 +285,8 @@ let interpret_program toplevels =
          in
          loop st' last_result tls)
   in
-  loop initial_state None toplevels
+  loop st None toplevels
 ;;
-
-let initial_state = { env = init_env }
-let run_interpret expr = eval init_env expr 1000
 
 let rec string_of_value = function
   | VInt n -> Int.to_string n
