@@ -190,7 +190,8 @@ let rec bind_pattern st env pat ty =
       elem_tys
   | PConstr (name, ps), t ->
     (match lookup_ctor name env with
-     | None -> raise (TypeError ("unknown constructor " ^ name))
+     | None ->
+       raise (TypeError (String.concat "" [ "unknown constructor "; name ]))
      | Some scheme ->
        let scheme = apply_subst_scheme st.subst scheme in
        let ctor_ty, st = instantiate st scheme in
@@ -239,7 +240,12 @@ let check_exhaustive_match env scrutinee_ty cases =
           if missing <> []
           then
             raise
-              (TypeError ("non-exhaustive match, missing: " ^ String.concat ", " missing))))
+              (TypeError
+                 (String.concat
+                    ""
+                    [ "non-exhaustive match, missing: "
+                    ; String.concat ", " missing
+                    ]))))
   | _ -> ()
 ;;
 
@@ -251,13 +257,13 @@ let rec infer_expr st env = function
      | Some scheme ->
        let scheme = apply_subst_scheme st.subst scheme in
        instantiate st scheme
-     | None -> raise (TypeError ("unbound variable " ^ x)))
+     | None -> raise (TypeError (String.concat "" [ "unbound variable "; x ])))
   | Constr c ->
     (match lookup_ctor c env with
      | Some scheme ->
        let scheme = apply_subst_scheme st.subst scheme in
        instantiate st scheme
-     | None -> raise (TypeError ("unknown constructor " ^ c)))
+     | None -> raise (TypeError (String.concat "" [ "unknown constructor "; c ])))
   | Abs (pat, body) ->
     let tv, st = fresh_tyvar st in
     let st, bindings = bind_pattern st env pat tv in
@@ -370,12 +376,12 @@ let rec ast_to_typ env tp_env = function
   | TEVar name ->
     (match List.assoc_opt name tp_env with
      | Some t -> t
-     | None -> raise (TypeError ("unbound type parameter " ^ name)))
+     | None -> raise (TypeError (String.concat "" [ "unbound type parameter "; name ])))
   | TEArrow (t1, t2) -> TFun (ast_to_typ env tp_env t1, ast_to_typ env tp_env t2)
   | TETuple ts -> TTuple (List.map (ast_to_typ env tp_env) ts)
   | TEConstr (name, args) ->
     (match lookup_type name env with
-     | None -> raise (TypeError ("unknown type " ^ name))
+     | None -> raise (TypeError (String.concat "" [ "unknown type "; name ]))
      | Some params ->
        if List.length args <> List.length params
        then raise (TypeError "type constructor arity mismatch")
@@ -532,14 +538,17 @@ let rec string_of_type = function
   | TFun ((TFun _ as t1), t2) ->
     Printf.sprintf "(%s) -> %s" (string_of_type t1) (string_of_type t2)
   | TFun (t1, t2) -> Printf.sprintf "%s -> %s" (string_of_type t1) (string_of_type t2)
-  | TTuple ts -> "(" ^ String.concat " * " (List.map string_of_type ts) ^ ")"
+  | TTuple ts ->
+    String.concat "" [ "("; String.concat " * " (List.map string_of_type ts); ")" ]
   | TCon (name, []) -> name
   | TCon (name, ts) ->
     Printf.sprintf "%s(%s)" name (String.concat ", " (List.map string_of_type ts))
   | TVar id ->
     let rec id_to_str n =
       let letter = String.make 1 (Char.chr (97 + (n mod 26))) in
-      if n < 26 then "'" ^ letter else "{" ^ id_to_str ((n / 26) - 1) ^ letter
+      if n < 26
+      then String.concat "" [ "'"; letter ]
+      else String.concat "" [ "{"; id_to_str ((n / 26) - 1); letter ]
     in
     id_to_str id
 ;;

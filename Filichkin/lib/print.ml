@@ -12,13 +12,13 @@ let rec pattern = function
   | PVar x -> x
   | PTuple ps ->
     let ps_str = List.map pattern ps |> String.concat ", " in
-    "(" ^ ps_str ^ ")"
+    String.concat "" [ "("; ps_str; ")" ]
   | PConstr (name, args) ->
     (match args with
      | [] -> name
      | args ->
        let args_str = List.map pattern args |> String.concat ", " in
-       name ^ " (" ^ args_str ^ ")")
+       String.concat "" [ name; " ("; args_str; ")" ])
   | PWildcard -> "_"
 ;;
 
@@ -37,7 +37,7 @@ let rec string_of_type_expr = function
   | TEInt -> "int"
   | TEBool -> "bool"
   | TEUnit -> "unit"
-  | TEVar v -> "'" ^ v
+  | TEVar v -> String.concat "" [ "'"; v ]
   | TEArrow (t1, t2) ->
     Printf.sprintf "(%s -> %s)" (string_of_type_expr t1) (string_of_type_expr t2)
   | TETuple ts ->
@@ -212,7 +212,7 @@ let type_decl_to_string td =
   let params_str =
     match td.type_params with
     | [] -> ""
-    | ps -> "'" ^ String.concat " '" ps ^ " "
+    | ps -> String.concat "" [ "'"; String.concat " '" ps; " " ]
   in
   let constrs_str =
     List.map

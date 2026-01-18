@@ -217,7 +217,7 @@ let arb_three_var_names =
 ;;
 
 let parse_after_print expr =
-  let s = print_expr expr ^ " ;;" in
+  let s = String.concat "" [ print_expr expr; " ;;" ] in
   match parser s with
   | Ok [ TLExpr expr' ] -> Ok expr'
   | Ok _ -> Error "expected expression"
@@ -270,7 +270,7 @@ let parse_int_literal =
 
 let parse_negative_int =
   QCheck.Test.make ~count:300 ~name:"parse negative int" arb_small_int (fun n ->
-    expr_matches ("-" ^ string_of_int n) (UnOp (Neg, Int n)))
+    expr_matches (String.concat "" [ "-"; string_of_int n ]) (UnOp (Neg, Int n)))
 ;;
 
 let parse_bool_literal =

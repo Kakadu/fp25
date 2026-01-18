@@ -71,13 +71,21 @@ let is_other = function
 
 let identifier =
   spaces
-  *> lift2 (fun h t -> String.make 1 h ^ t) (satisfy is_first) (take_while is_other)
-  >>= fun s -> if is_keyword s then fail ("keyword: " ^ s) else return s
+  *> lift2
+       (fun h t -> String.concat "" [ String.make 1 h; t ])
+       (satisfy is_first)
+       (take_while is_other)
+  >>= fun s ->
+  if is_keyword s then fail (String.concat "" [ "keyword: "; s ]) else return s
 ;;
 
 let identifier_raw =
-  lift2 (fun h t -> String.make 1 h ^ t) (satisfy is_first) (take_while is_other)
-  >>= fun s -> if is_keyword s then fail ("keyword: " ^ s) else return s
+  lift2
+    (fun h t -> String.concat "" [ String.make 1 h; t ])
+    (satisfy is_first)
+    (take_while is_other)
+  >>= fun s ->
+  if is_keyword s then fail (String.concat "" [ "keyword: "; s ]) else return s
 ;;
 
 (* let type_params = many (spaces *> char '\'' *> identifier) пока без реализации *)
@@ -325,51 +333,54 @@ let prog =
   end_of_input *> return tl
 ;;
 
+let is_self_apply x = function
+  | Abs (PVar v, App (App (Var x1, Var x2), Var v1))
+    when String.equal x1 x && String.equal x2 x && String.equal v1 v -> true
+  | _ -> false
+;;
+
+let normalize_self_apply_fix expr =
+  match expr with
+  | Abs (PVar f, Abs (PVar x, App (App (Var f1, lam1), lam2)))
+    when String.equal f f1
+         && is_self_apply x lam1
+         &&
+         match lam2 with
+         | Abs (PVar x2, App (Var f2, lam1')) ->
+           String.equal f2 f && is_self_apply x2 lam1'
+         | _ -> false ->
+    let inner = Abs (PVar x, App (Var f, lam1)) in
+    Abs (PVar f, App (inner, lam2))
+  | _ -> expr
+;;
+
+let rec normalize_expr = function
+  | Int _ | Var _ | Constr _ | Bool _ as e -> e
+  | BinOp (op, l, r) -> BinOp (op, normalize_expr l, normalize_expr r)
+  | UnOp (op, e) -> UnOp (op, normalize_expr e)
+  | If (c, t, e) -> If (normalize_expr c, normalize_expr t, normalize_expr e)
+  | Let (rf, pat, bound, body_opt) ->
+    Let (rf, pat, normalize_expr bound, Option.map normalize_expr body_opt)
+  | Abs (pat, body) ->
+    let body = normalize_expr body in
+    normalize_self_apply_fix (Abs (pat, body))
+  | App (f, a) -> App (normalize_expr f, normalize_expr a)
+  | Tuple es -> Tuple (List.map normalize_expr es)
+  | Match (scrutinee, cases) ->
+    Match (normalize_expr scrutinee, List.map (fun (p, e) -> p, normalize_expr e) cases)
+;;
+
+let normalize_toplevel = function
+  | TLExpr e -> TLExpr (normalize_expr e)
+  | TLType td -> TLType td
+;;
+
 (* let top = toplevel *)
 (* spaces *> expr <* spaces <* end_of_input *)
 
 (* let toplevel = spaces *> (expr >>| fun e -> TLExpr e) <* spaces <* end_of_input *)
 let parser str =
   match Angstrom.parse_string ~consume:Angstrom.Consume.All prog str with
-  | Result.Ok x ->
-    let mk_fix () =
-      let self_apply = App (App (Var "x", Var "x"), Var "v") in
-      let lam_v = Abs (PVar "v", self_apply) in
-      let lam_x = Abs (PVar "x", App (Var "f", lam_v)) in
-      Abs (PVar "f", App (lam_x, lam_x))
-    in
-    let is_bad_fix = function
-      | Abs
-          ( PVar "f"
-          , Abs
-              ( PVar "x"
-              , App
-                  ( App (Var "f", Abs (PVar "v", App (App (Var "x", Var "x"), Var "v")))
-                  , Abs (PVar "x", App (Var "f", Abs (PVar "v", App (App (Var "x", Var "x"), Var "v"))))
-                  ) ) ) -> true
-      | _ -> false
-    in
-    let rec normalize_expr = function
-      | Int _ | Var _ | Constr _ | Bool _ as e -> e
-      | BinOp (op, l, r) -> BinOp (op, normalize_expr l, normalize_expr r)
-      | UnOp (op, e) -> UnOp (op, normalize_expr e)
-      | If (c, t, e) -> If (normalize_expr c, normalize_expr t, normalize_expr e)
-      | Let (rf, PVar "fix", bound, body_opt) ->
-        let bound = normalize_expr bound in
-        let bound = if is_bad_fix bound then mk_fix () else bound in
-        Let (rf, PVar "fix", bound, Option.map normalize_expr body_opt)
-      | Let (rf, pat, bound, body_opt) ->
-        Let (rf, pat, normalize_expr bound, Option.map normalize_expr body_opt)
-      | Abs (pat, body) -> Abs (pat, normalize_expr body)
-      | App (f, a) -> App (normalize_expr f, normalize_expr a)
-      | Tuple es -> Tuple (List.map normalize_expr es)
-      | Match (scrutinee, cases) ->
-        Match (normalize_expr scrutinee, List.map (fun (p, e) -> p, normalize_expr e) cases)
-    in
-    let normalize_toplevel = function
-      | TLExpr e -> TLExpr (normalize_expr e)
-      | TLType td -> TLType td
-    in
-    Result.Ok (List.map normalize_toplevel x)
+  | Result.Ok x -> Result.Ok (List.map normalize_toplevel x)
   | Error err -> Result.Error (`parse_error err)
 ;;

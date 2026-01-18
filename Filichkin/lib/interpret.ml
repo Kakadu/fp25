@@ -292,12 +292,17 @@ let rec string_of_value = function
   | VInt n -> Int.to_string n
   | VBool b -> Bool.to_string b
   | VUnit -> "()"
-  | VTuple vs -> "(" ^ (List.map vs ~f:string_of_value |> String.concat ~sep:", ") ^ ")"
+  | VTuple vs ->
+    String.concat
+      ~sep:""
+      [ "("; List.map vs ~f:string_of_value |> String.concat ~sep:", "; ")" ]
   | VClosure _ -> "<fun>"
   | VBuiltin _ -> "<builtin>"
   | VConstr (name, []) -> name
   | VConstr (name, args) ->
-    name ^ " " ^ (List.map args ~f:string_of_value |> String.concat ~sep:" ")
+    String.concat
+      ~sep:""
+      [ name; " "; List.map args ~f:string_of_value |> String.concat ~sep:" " ]
 ;;
 
 let string_of_error = function
