@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>REPL.ml &mdash; Coverage report</title>
-    <meta name="description" content="85.42% coverage in bin/REPL.ml">
+    <meta name="description" content="82.00% coverage in bin/REPL.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,16 +15,18 @@
           <span class="dirname">bin/</span>REPL.ml
         </a>
       </h1>
-      <h2>85.42%</h2>
+      <h2>82.00%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="top:49.54%"></span>
-      <span class="unvisited" style="bottom:43.12%"></span>
-      <span class="unvisited" style="bottom:38.53%"></span>
-      <span class="unvisited" style="bottom:34.86%"></span>
-      <span class="unvisited" style="bottom:30.28%"></span>
-      <span class="unvisited" style="bottom:26.61%"></span>
-      <span class="unvisited" style="bottom:7.34%"></span>
+      <span class="unvisited" style="top:48.65%"></span>
+      <span class="unvisited" style="bottom:44.14%"></span>
+      <span class="unvisited" style="bottom:39.64%"></span>
+      <span class="unvisited" style="bottom:36.04%"></span>
+      <span class="unvisited" style="bottom:35.14%"></span>
+      <span class="unvisited" style="bottom:30.63%"></span>
+      <span class="unvisited" style="bottom:27.03%"></span>
+      <span class="unvisited" style="bottom:26.13%"></span>
+      <span class="unvisited" style="bottom:7.21%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -100,17 +102,17 @@
 <a id="L69"></a><span > </span>
 <a id="L70"></a><span class="visited"> </span>
 <a id="L71"></a><span class="unvisited"> </span>
-<a id="L72"></a><span > </span>
+<a id="L72"></a><span class="unvisited"> </span>
 <a id="L73"></a><span > </span>
 <a id="L74"></a><span > </span>
-<a id="L75"></a><span class="visited"> </span>
-<a id="L76"></a><span class="unvisited"> </span>
-<a id="L77"></a><span class="visited"> </span>
-<a id="L78"></a><span > </span>
-<a id="L79"></a><span class="visited"> </span>
-<a id="L80"></a><span class="unvisited"> </span>
-<a id="L81"></a><span > </span>
-<a id="L82"></a><span > </span>
+<a id="L75"></a><span > </span>
+<a id="L76"></a><span class="visited"> </span>
+<a id="L77"></a><span class="unvisited"> </span>
+<a id="L78"></a><span class="visited"> </span>
+<a id="L79"></a><span > </span>
+<a id="L80"></a><span class="visited"> </span>
+<a id="L81"></a><span class="unvisited"> </span>
+<a id="L82"></a><span class="unvisited"> </span>
 <a id="L83"></a><span > </span>
 <a id="L84"></a><span > </span>
 <a id="L85"></a><span > </span>
@@ -118,26 +120,28 @@
 <a id="L87"></a><span > </span>
 <a id="L88"></a><span > </span>
 <a id="L89"></a><span > </span>
-<a id="L90"></a><span class="visited"> </span>
-<a id="L91"></a><span class="visited"> </span>
-<a id="L92"></a><span > </span>
+<a id="L90"></a><span > </span>
+<a id="L91"></a><span > </span>
+<a id="L92"></a><span class="visited"> </span>
 <a id="L93"></a><span class="visited"> </span>
-<a id="L94"></a><span class="visited"> </span>
+<a id="L94"></a><span > </span>
 <a id="L95"></a><span class="visited"> </span>
 <a id="L96"></a><span class="visited"> </span>
 <a id="L97"></a><span class="visited"> </span>
 <a id="L98"></a><span class="visited"> </span>
 <a id="L99"></a><span class="visited"> </span>
-<a id="L100"></a><span > </span>
-<a id="L101"></a><span class="unvisited"> </span>
+<a id="L100"></a><span class="visited"> </span>
+<a id="L101"></a><span class="visited"> </span>
 <a id="L102"></a><span > </span>
-<a id="L103"></a><span class="visited"> </span>
-<a id="L104"></a><span class="visited"> </span>
+<a id="L103"></a><span class="unvisited"> </span>
+<a id="L104"></a><span > </span>
 <a id="L105"></a><span class="visited"> </span>
 <a id="L106"></a><span class="visited"> </span>
 <a id="L107"></a><span class="visited"> </span>
 <a id="L108"></a><span class="visited"> </span>
-<a id="L109"></a><span > </span>
+<a id="L109"></a><span class="visited"> </span>
+<a id="L110"></a><span class="visited"> </span>
+<a id="L111"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -251,6 +255,8 @@
 <a href="#L107">107</a>
 <a href="#L108">108</a>
 <a href="#L109">109</a>
+<a href="#L110">110</a>
+<a href="#L111">111</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -292,7 +298,7 @@ let run_expr ~mode text =
   | <span data-count="1">E</span>rror err -&gt; printf "parsing error: %s\n" err
   | <span data-count="196">O</span>k ast -&gt;
     (match mode with
-     | <span data-count="67">P</span>arse -&gt; printf "parsed: %a\n" Parsetree.pp_expression ast
+     | <span data-count="67">P</span>arse -&gt; printf "parsed:@.%a\n" Parsetree.pp_expression ast
      | <span data-count="42">E</span>val -&gt;
        (match eval_expression ast with
         | <span data-count="2">E</span>rror err -&gt; printf "interpreter error: %a\n" Interpreter.Error.pp err
@@ -308,12 +314,12 @@ let run_stru ~mode text =
   | <span data-count="0">E</span>rror err -&gt; printf "parsing error: %s\n" err
   | <span data-count="55">O</span>k ast -&gt;
     (match mode with
-     | <span data-count="22">P</span>arse -&gt; printf "parsed: %a\n" Parsetree.pp_structure ast
+     | <span data-count="22">P</span>arse -&gt; printf "parsed:@.%a\n" Parsetree.pp_structure ast
      | <span data-count="33">I</span>nfer -&gt;
        (match infer_structure ast with
         | <span data-count="31">O</span>k typed_stru -&gt; printf "typed structure:@.%a" Typedtree.pp_structure typed_stru
         | <span data-count="2">E</span>rror err -&gt; printf "inferencer error: %a" Inferencer.Error.pp err)
-     | <span data-count="0">_</span> -&gt; failwith "not implemented REPL.exe")
+     | <span data-count="0">E</span>val -&gt; printf "not implemented: eval stru")
 ;;
 
 let run_patt ~mode text =
@@ -322,7 +328,8 @@ let run_patt ~mode text =
   | <span data-count="13">O</span>k ast -&gt;
     (match mode with
      | <span data-count="13">P</span>arse -&gt; printf "parsed: %a\n" Parsetree.pp_pattern ast
-     | <span data-count="0">_</span> -&gt; failwith "Not supported")
+     | <span data-count="0">I</span>nfer -&gt; printf "not supported: infer pattern"
+     | <span data-count="0">E</span>val -&gt; printf "not supported: eval pattern")
 ;;
 
 let run_core_type ~mode text =
@@ -331,7 +338,8 @@ let run_core_type ~mode text =
   | <span data-count="13">O</span>k ast -&gt;
     (match mode with
      | <span data-count="13">P</span>arse -&gt; printf "parsed: %a\n" Parsetree.pp_core_type ast
-     | <span data-count="0">_</span> -&gt; failwith "Not supported")
+     | <span data-count="0">I</span>nfer -&gt; printf "not supported: infer core-type"
+     | <span data-count="0">E</span>val -&gt; printf "not supported: eval core-type")
 ;;
 
 type opts =

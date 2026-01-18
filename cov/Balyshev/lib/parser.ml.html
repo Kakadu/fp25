@@ -941,7 +941,7 @@ let patt_basic d =
 let patt_cons d =
   <span data-count="9220">w</span>s
   *&gt; fi<span data-count="9220">x</span> (fun _self -&gt;
-    <span data-count="1261">r</span>etur<span data-count="1261">n</span> (fun head tail -&gt; <span data-count="90">p</span>cons head tail)
+    <span data-count="1261">r</span>etur<span data-count="1261">n</span> pcons
     &lt;*<span data-count="1261">&gt;</span> d.patt_basi<span data-count="1261">c</span> d
     &lt;*<span data-count="1261">&gt;</span> ws *<span data-count="1261">&gt;</span> strin<span data-count="1261">g</span> "::" *<span data-count="1261">&gt;</span> ws *<span data-count="1261">&gt;</span> d.patt_con<span data-count="1261">s</span> d
     &lt;|&gt; d.patt_basi<span data-count="1261">c</span> d)

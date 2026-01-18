@@ -166,7 +166,7 @@ module State : STATE_MONAD = struct
     | <span data-count="181">E</span>rror _ -&gt; m2 s
   ;;
 
-  let run m s = <span data-count="162">m</span> s
+  let run (m : 's -&gt; ('s * 'ok, 'err) Result.t) = <span data-count="162">m</span>
 end
 </code></pre>
       </div>
