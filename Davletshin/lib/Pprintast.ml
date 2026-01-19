@@ -44,6 +44,8 @@ let pp ?(compact = true) =
       in
       Format.fprintf fmt "(%s%a)" uop pp e
     | If (c, t, e) -> Format.fprintf fmt "if %a then %a else %a" pp c pp t pp e
+    | Let (Nonrec, n, e1, e2) -> Format.fprintf fmt "let %s = %a in %a" n pp e1 pp e2
+    | Let (Rec, n, e1, e2) -> Format.fprintf fmt "let rec %s = %a in %a" n pp e1 pp e2
   in
   pp
 ;;

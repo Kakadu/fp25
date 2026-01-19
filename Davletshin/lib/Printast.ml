@@ -6,6 +6,11 @@
 
 [@@@ocaml.text "/*"]
 
+type flag = Ast.flag =
+  | Rec
+  | Nonrec
+[@@deriving show { with_path = false }]
+
 type uop = Ast.uop =
   | Pos
   | Neg
@@ -32,6 +37,7 @@ type 'name t = 'name Ast.t =
   | Binop of bop * 'name t * 'name t
   | Unop of uop * 'name t
   | If of 'name t * 'name t * 'name t
+  | Let of flag * 'name * 'name t * 'name t
 [@@deriving show { with_path = false }]
 
 let pp_named = pp Format.pp_print_string

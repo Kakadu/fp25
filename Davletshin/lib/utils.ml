@@ -21,6 +21,7 @@ let free_vars =
     | Binop (_, l, r) -> helper (helper acc l) r
     | Unop (_, e) -> helper acc e
     | If (c, t, e) -> helper (helper (helper acc c) t) e
+    | Let (_, n, e1, e2) -> acc @ list_remove n (helper [] e2) @ helper [] e1
   in
   helper []
 ;;

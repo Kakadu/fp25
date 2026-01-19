@@ -42,10 +42,7 @@ let is_digit = function
   | _ -> false
 ;;
 
-let number =
-  let integer = take_while1 is_digit >>| int_of_string in
-  (*char '-' >>= (fun _ -> integer >>= fun n -> return (-n)) <|>*) integer
-;;
+let number = take_while1 is_digit >>| int_of_string
 
 let conde = function
   | [] -> fail "empty conde"
@@ -89,11 +86,21 @@ let parse_lam =
            pack.comparison pack >>= fun body -> return (desugar_abs args body))
         ; (varname <* spaces >>= fun var -> return (Var var))
         ; (number <* spaces >>= fun n -> return (Int n))
-        ; (spaces *> string "if" *> pack.comparison pack
+        ; (string "if" *> pack.comparison pack
            >>= fun c ->
            spaces *> string "then" *> pack.comparison pack
            >>= fun t ->
            spaces *> string "else" *> pack.comparison pack >>| fun e -> If (c, t, e))
+        ; (string "let" *> option Nonrec (spaces *> string "rec" *> return Rec)
+           >>= fun flag ->
+           spaces *> varname
+           >>= fun name ->
+           many (spaces *> varname)
+           >>= fun args ->
+           spaces *> char '=' *> pack.comparison pack
+           >>= fun bind ->
+           spaces *> string "in" *> pack.comparison pack
+           >>| fun body -> Let (flag, name, desugar_abs args bind, body))
         ])
   in
   let apps pack =

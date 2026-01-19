@@ -6,6 +6,11 @@
 
 [@@@ocaml.text "/*"]
 
+(** recursive and not recursive flag *)
+type flag =
+  | Rec
+  | Nonrec
+
 (** unary operators *)
 type uop =
   | Pos
@@ -35,3 +40,5 @@ type 'name t =
   | Binop of bop * 'name t * 'name t (** Binary operator [a op b] *)
   | Unop of uop * 'name t (** Unary operator [op e] *)
   | If of 'name t * 'name t * 'name t (** Condition [if c then t else e] *)
+  | Let of flag * 'name * 'name t * 'name t (** Let binding [let p = e1 in e2] *)
+(** Recursive let binding [let rec p = e1 in e2] *)
