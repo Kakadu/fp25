@@ -6,5 +6,7 @@
 
 [@@@ocaml.text "/*"]
 
-val print_ast : Ast.expr -> string
+val print_ast_p : Ast.toplevel list -> unit
+val print_p : Ast.toplevel list -> unit
 val print_expr : Ast.expr -> string
+val toplevel_to_string : Ast.toplevel -> string

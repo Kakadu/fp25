@@ -23,9 +23,17 @@ type env = (string * value) list
 and value =
   | VInt of int
   | VUnit
-  | VClosure of string * expr * env
+  | VBool of bool
+  | VTuple of value list
+  | VClosure of pattern * expr * env
   | VBuiltin of (value -> value eval_result)
+  | VConstr of string * value list
 
+type state
+
+val initial_state : state
 val string_of_value : value -> string
 val string_of_error : error -> string
+val interpret_toplevel : state -> toplevel -> (state * value option, error) result
+val interpret_program : state -> toplevel list -> (state * value option, error) result
 val run_interpret : expr -> value eval_result
