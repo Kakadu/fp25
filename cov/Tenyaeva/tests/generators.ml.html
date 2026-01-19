@@ -205,7 +205,7 @@ open Gen
 
 let gen_atom =
   oneo<span data-count="4">f</span>
-    [ ma<span data-count="4">p</span> (fun c -&gt; <span data-count="61878">E</span>xpr_const c) gen_constant; ma<span data-count="4">p</span> (fun id -&gt; <span data-count="61781">E</span>xpr_ident id) gen_ident ]
+    [ ma<span data-count="4">p</span> (fun c -&gt; <span data-count="62395">E</span>xpr_const c) gen_constant; ma<span data-count="4">p</span> (fun id -&gt; <span data-count="62111">E</span>xpr_ident id) gen_ident ]
 ;;
 
 let rec gen_expression n =
@@ -213,42 +213,42 @@ let rec gen_expression n =
   then <span data-count="60">g</span>en_atom
   else <span data-count="8">(</span>
     let gen_under_expr = gen_expression (n / 5) in
-    <span data-count="8">l</span>et gen_some f = <span data-count="16">o</span>neof [ retur<span data-count="16">n</span> None; ma<span data-count="16">p</span> (fun x -&gt; <span data-count="5096">S</span>ome x) f ] in
+    <span data-count="8">l</span>et gen_some f = <span data-count="16">o</span>neof [ retur<span data-count="16">n</span> None; ma<span data-count="16">p</span> (fun x -&gt; <span data-count="5188">S</span>ome x) f ] in
     frequency
       [ 5, gen_atom
-      ; 4, ma<span data-count="8">p</span> (fun e -&gt; <span data-count="8316">E</span>xpr_option e) (gen_som<span data-count="8">e</span> gen_atom)
-      ; 4, map<span data-count="8">2</span> (fun t e -&gt; <span data-count="8356">E</span>xpr_constraint (t, e)) gen_type_annot gen_atom
+      ; 4, ma<span data-count="8">p</span> (fun e -&gt; <span data-count="8389">E</span>xpr_option e) (gen_som<span data-count="8">e</span> gen_atom)
+      ; 4, map<span data-count="8">2</span> (fun t e -&gt; <span data-count="8324">E</span>xpr_constraint (t, e)) gen_type_annot gen_atom
       ; ( 4
         , map<span data-count="8">3</span>
-            (fun op e1 e2 -&gt; <span data-count="8293">E</span>xpr_binop (op, e1, e2))
+            (fun op e1 e2 -&gt; <span data-count="8562">E</span>xpr_binop (op, e1, e2))
             gen_binary_op
             gen_under_expr
             gen_under_expr )
-      ; 3, map<span data-count="8">2</span> (fun op e -&gt; <span data-count="6418">E</span>xpr_unop (op, e)) gen_unary_op gen_under_expr
-      ; 3, map<span data-count="8">2</span> (fun p e -&gt; <span data-count="6463">E</span>xpr_fun (p, e)) (gen_pattern_size<span data-count="8">d</span> (n / 20)) gen_under_expr
-      ; 3, map<span data-count="8">2</span> (fun e1 e2 -&gt; <span data-count="6321">E</span>xpr_apply (e1, e2)) gen_under_expr gen_under_expr
+      ; 3, map<span data-count="8">2</span> (fun op e -&gt; <span data-count="6331">E</span>xpr_unop (op, e)) gen_unary_op gen_under_expr
+      ; 3, map<span data-count="8">2</span> (fun p e -&gt; <span data-count="6337">E</span>xpr_fun (p, e)) (gen_pattern_size<span data-count="8">d</span> (n / 20)) gen_under_expr
+      ; 3, map<span data-count="8">2</span> (fun e1 e2 -&gt; <span data-count="6366">E</span>xpr_apply (e1, e2)) gen_under_expr gen_under_expr
       ; 5, gen_under_expr
       ; ( 1
         , map<span data-count="8">3</span>
-            (fun c t e -&gt; <span data-count="2051">E</span>xpr_if (c, t, e))
+            (fun c t e -&gt; <span data-count="2082">E</span>xpr_if (c, t, e))
             gen_under_expr
             gen_under_expr
             (gen_som<span data-count="8">e</span> gen_under_expr) )
       ; ( 1
         , map<span data-count="8">4</span>
-            (fun rf vb vb_l e -&gt; <span data-count="2104">E</span>xpr_let (rf, vb, vb_l, e))
+            (fun rf vb vb_l e -&gt; <span data-count="2152">E</span>xpr_let (rf, vb, vb_l, e))
             gen_rec_flag
             (gen_value_bindin<span data-count="8">g</span> (n / 5))
             (list_siz<span data-count="8">e</span> (0 -<span data-count="8">-</span> 2) (gen_value_bindin<span data-count="8">g</span> (n / 5)))
             gen_under_expr )
       ; ( 1
         , map<span data-count="8">2</span>
-            (fun cs cs_l -&gt; <span data-count="2083">E</span>xpr_function (cs, cs_l))
+            (fun cs cs_l -&gt; <span data-count="2118">E</span>xpr_function (cs, cs_l))
             (gen_cas<span data-count="8">e</span> (n / 5))
             (list_siz<span data-count="8">e</span> (0 -<span data-count="8">-</span> 2) (gen_cas<span data-count="8">e</span> (n / 5))) )
       ; ( 1
         , map<span data-count="8">3</span>
-            (fun e cs cs_l -&gt; <span data-count="2033">E</span>xpr_match (e, cs, cs_l))
+            (fun e cs cs_l -&gt; <span data-count="2136">E</span>xpr_match (e, cs, cs_l))
             gen_under_expr
             (gen_cas<span data-count="8">e</span> (n / 5))
             (list_siz<span data-count="8">e</span> (0 -<span data-count="8">-</span> 2) (gen_cas<span data-count="8">e</span> (n / 5))) )
@@ -256,13 +256,13 @@ let rec gen_expression n =
 
 and gen_value_binding n =
   <span data-count="24">m</span>ap2
-    (fun vb_p vb_e -&gt; <span data-count="64178">{</span> vb_pat = vb_p; vb_expr = vb_e })
+    (fun vb_p vb_e -&gt; <span data-count="64413">{</span> vb_pat = vb_p; vb_expr = vb_e })
     gen_pattern
     (gen_expressio<span data-count="24">n</span> (n / 20))
 
 and gen_case n =
   <span data-count="32">m</span>ap2
-    (fun cs_p cs_e -&gt; <span data-count="8234">{</span> case_pat = cs_p; case_expr = cs_e })
+    (fun cs_p cs_e -&gt; <span data-count="8431">{</span> case_pat = cs_p; case_expr = cs_e })
     gen_pattern
     (gen_expressio<span data-count="32">n</span> (n / 20))
 ;;
@@ -271,9 +271,9 @@ let gen_structure =
   list_siz<span data-count="4">e</span>
     (1 -<span data-count="4">-</span> 3)
     (oneo<span data-count="4">f</span>
-       [ ma<span data-count="4">p</span> (fun e -&gt; <span data-count="39885">S</span>tr_eval e) (gen_expressio<span data-count="4">n</span> 5)
+       [ ma<span data-count="4">p</span> (fun e -&gt; <span data-count="39971">S</span>tr_eval e) (gen_expressio<span data-count="4">n</span> 5)
        ; map<span data-count="4">3</span>
-           (fun rf vb vb_l -&gt; <span data-count="39917">S</span>tr_value (rf, vb, vb_l))
+           (fun rf vb vb_l -&gt; <span data-count="40084">S</span>tr_value (rf, vb, vb_l))
            gen_rec_flag
            (gen_value_bindin<span data-count="4">g</span> 5)
            (list_siz<span data-count="4">e</span> (0 -<span data-count="4">-</span> 1) (gen_value_bindin<span data-count="4">g</span> 3))

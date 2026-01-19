@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>ast.ml &mdash; Coverage report</title>
-    <meta name="description" content="86.76% coverage in lib/ast.ml">
+    <meta name="description" content="88.24% coverage in lib/ast.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,11 +15,10 @@
           <span class="dirname">lib/</span>ast.ml
         </a>
       </h1>
-      <h2>86.76%</h2>
+      <h2>88.24%</h2>
     </div>
     <div id="navbar">
       <span class="some-visited" style="top:7.52%"></span>
-      <span class="unvisited" style="top:10.53%"></span>
       <span class="unvisited" style="top:16.54%"></span>
       <span class="unvisited" style="top:17.29%"></span>
       <span class="unvisited" style="top:18.05%"></span>
@@ -44,7 +43,7 @@
 <a id="L11"></a><span > </span>
 <a id="L12"></a><span > </span>
 <a id="L13"></a><span class="visited"> </span>
-<a id="L14"></a><span class="unvisited"> </span>
+<a id="L14"></a><span class="visited"> </span>
 <a id="L15"></a><span class="visited"> </span>
 <a id="L16"></a><span class="visited"> </span>
 <a id="L17"></a><span class="visited"> </span>
@@ -314,30 +313,30 @@ open Stdlib
 <span data-count="0">t</span>ype ident = <span data-count="87">s</span>tring [@@deriving show { with_path = false }] (* identifier *)
 
 let is_keyword = function
-  | <span data-count="159844">"</span>let"
-  | <span data-count="0">"</span>rec"
-  | <span data-count="42225">"</span>and"
-  | <span data-count="2144">"</span>in"
-  | <span data-count="19">"</span>if"
-  | <span data-count="2069">"</span>then"
-  | <span data-count="1004">"</span>else"
+  | <span data-count="160514">"</span>let"
+  | <span data-count="1">"</span>rec"
+  | <span data-count="42188">"</span>and"
+  | <span data-count="2182">"</span>in"
+  | <span data-count="18">"</span>if"
+  | <span data-count="2100">"</span>then"
+  | <span data-count="1037">"</span>else"
   | <span data-count="2">"</span>match"
-  | <span data-count="2045">"</span>with"
+  | <span data-count="2148">"</span>with"
   | <span data-count="0">"</span>true"
   | <span data-count="0">"</span>false"
   | <span data-count="0">"</span>Some"
   | <span data-count="0">"</span>None"
   | <span data-count="2">"</span>type"
-  | <span data-count="55614">"</span>_" -&gt; true
-  | <span data-count="286982">_</span> -&gt; false
+  | <span data-count="55566">"</span>_" -&gt; true
+  | <span data-count="289420">_</span> -&gt; false
 ;;
 
 let gen_char = ma<span data-count="94">p</span> Char.chr (int_rang<span data-count="94">e</span> (Char.cod<span data-count="94">e</span> 'a') (Char.cod<span data-count="94">e</span> 'z'))
 
 let rec gen_filtered_ident non_filtered =
-  <span data-count="138">n</span>on_filtered
+  <span data-count="131">n</span>on_filtered
   &gt;&gt;= fun ident -&gt;
-  <span data-count="95245">i</span>f is_keyword ident then <span data-count="44">g</span>en_filtered_ident non_filtered else <span data-count="95201">r</span>eturn ident
+  <span data-count="95485">i</span>f is_keyword ident then <span data-count="37">g</span>en_filtered_ident non_filtered else <span data-count="95448">r</span>eturn ident
 ;;
 
 let gen_ident =
@@ -345,7 +344,7 @@ let gen_ident =
   <span data-count="94">g</span>en_filtered_iden<span data-count="94">t</span> non_filtered
 ;;
 
-<span data-count="58234">t</span>ype constant =
+<span data-count="58631">t</span>ype constant =
   | Const_int of (in<span data-count="11">t</span>[@gen small_int]) (** integer, e.g. 122 *)
   | Const_bool of boo<span data-count="1">l</span> (** boolean, e.g. true *)
   | Const_unit (** [()] *)
@@ -375,26 +374,26 @@ let gen_ident =
   | Not (** [not] *)
 [@@deriving show { with_path = false }, qcheck<span data-count="470">]</span>
 
-<span data-count="710925">t</span>ype type_annot =
+<span data-count="714756">t</span>ype type_annot =
   | Type_int (** integer type - [int] *)
   | Type_bool (** boolean type - [bool] *)
   | Type_unit (** unit type - [unit] *)
   | Type_var of (ident[@gen gen_ident]) (** variable type *)
   | Type_arrow of
-      (type_annot[@gen gen_type_annot_size<span data-count="106552">d</span> (n / 20)])
-      * (type_annot[@gen gen_type_annot_size<span data-count="106552">d</span> (n / 20)]) (** arrow type *)
-  | Type_option of (type_annot[@gen gen_type_annot_size<span data-count="106552">d</span> (n / 20)]) (** type option *)
-[@@deriving show { with_path = false }, qcheck<span data-count="1704412">]</span>
+      (type_annot[@gen gen_type_annot_size<span data-count="107146">d</span> (n / 20)])
+      * (type_annot[@gen gen_type_annot_size<span data-count="107146">d</span> (n / 20)]) (** arrow type *)
+  | Type_option of (type_annot[@gen gen_type_annot_size<span data-count="107146">d</span> (n / 20)]) (** type option *)
+[@@deriving show { with_path = false }, qcheck<span data-count="1713606">]</span>
 
-<span data-count="3644529">t</span>ype pattern =
+<span data-count="3647161">t</span>ype pattern =
   | Pat_any (** matches any value without binding it - [_] *)
   | Pat_var of (ident[@gen gen_ident])
   (** matches any value and binds it to a variable, e.g. x *)
   | Pat_constant of constant (** matches a constant value, e.g. 42, true *)
   | Pat_option of <span data-count="4">p</span>attern option (** matches an optional pattern, e.g. Some x or None *)
-  | Pat_constraint of type_annot * (pattern[@gen gen_pattern_size<span data-count="853087">d</span> (n / 20)])
+  | Pat_constraint of type_annot * (pattern[@gen gen_pattern_size<span data-count="853515">d</span> (n / 20)])
   (** typed pattern, e.g. a: int *)
-[@@deriving show { with_path = false }, qcheck<span data-count="9601405">]</span>
+[@@deriving show { with_path = false }, qcheck<span data-count="9607409">]</span>
 
 <span data-count="203">t</span>ype expression =
   | Expr_const of constant (** constant, e.g. 10*)
