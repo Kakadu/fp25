@@ -14,13 +14,11 @@ open Utils
 module Interpret (M : MONADERROR) : sig
   val run : name Ast.t -> int M.t
 end = struct
-  module Env = Map.Make (String)
-
-  type env = value Env.t
+  type env = (name * value) list
 
   and value =
     | VInt of int
-    | VClosure of string * string Ast.t * env
+    | VClosure of name * name Ast.t * env
 
   let ( let* ) = M.( let* )
   let vint n = M.return (VInt n)
@@ -37,21 +35,23 @@ end = struct
     | Unop (op, e) -> eval_unop env op e
     | If (c, t, e) -> eval_if env c t e
     | Let (Nonrec, n, e1, e2) -> eval_let env n e1 e2
-    | Let (Rec, n, e1, e2) -> eval_let env n e1 e2
+    | Let (Rec, n, Abs (x, b), e2) -> eval_letrec env n x b e2
+    | Let (Rec, _, _, _) ->
+      M.fail (TypeError "Tried to bind non-function to recursive binding")
 
   (** [eval_var env x] is the [v] such that [<env, x> ==> v]. *)
   and eval_var env x =
-    try M.return (Env.find x env) with
-    | Not_found -> M.fail (UnknownVariable x)
+    match env with
+    | [] -> M.fail (UnknownVariable "x")
+    | (y, v) :: rest -> if y = x then M.return v else eval_var rest x
 
   (** [eval_app env e1 e2] is the [v] such that [<env, e1 e2> ==> v]. *)
   and eval_app env e1 e2 =
-    let open M in
     let* v1 = eval env e1 in
     match v1 with
     | VClosure (n, body, defenv) ->
       let* v2 = eval env e2 in
-      eval (Env.add n v2 defenv) body
+      eval ((n, v2) :: defenv) body
     | _ -> M.fail (TypeError "Tried to apply non-function")
 
   and eval_binop env op e1 e2 =
@@ -87,7 +87,11 @@ end = struct
 
   and eval_let env n e1 e2 =
     let* v1 = eval env e1 in
-    eval (Env.add n v1 env) e2
+    eval ((n, v1) :: env) e2
+
+  and eval_letrec env n x b e2 =
+    let rec env' = (n, VClosure (x, b, env')) :: env in
+    eval env' e2
 
   and print (e : value) =
     match e with
@@ -96,7 +100,7 @@ end = struct
   ;;
 
   let run e =
-    let* v = eval Env.empty e in
+    let* v = eval [] e in
     print v
   ;;
 end

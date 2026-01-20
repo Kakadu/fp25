@@ -140,3 +140,8 @@ Below we redirect contents of the file to the evaluator
   $ ../bin/REPL.exe   < lam_1+1.txt
   TypeError: Tried to return non-integer
 
+recursive
+  $ ../bin/REPL.exe <<EOF
+  > let rec fact n = if n = 1 then 1 else n * fact (n - 1) in fact 5
+  Success: 120
+

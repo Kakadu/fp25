@@ -24,8 +24,21 @@ let parse_optimistically str = Result.get_ok (parse str)
 let pp = Printast.pp_named
 
 let%expect_test _ =
-  Format.printf "%a" pp (parse_optimistically "x y");
-  [%expect {| (App ((Var x), (Var y))) |}]
+  Format.printf
+    "%a"
+    pp
+    (parse_optimistically
+       "let rec fact n = if n = 1 then 1 else n * fact (n - 1) in fact 5");
+  [%expect
+    {|
+    (Let (Rec, fact,
+       (Abs (n,
+          (If ((Binop (Eq, (Var n), (Int 1))), (Int 1),
+             (Binop (Times, (Var n),
+                (App ((Var fact), (Binop (Minus, (Var n), (Int 1)))))))
+             ))
+          )),
+       (App ((Var fact), (Int 5))))) |}]
 ;;
 
 let%expect_test _ =
