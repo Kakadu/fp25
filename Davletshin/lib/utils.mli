@@ -6,9 +6,6 @@
 
 [@@@ocaml.text "/*"]
 
-val free_vars : string Ast.t -> string list
-val is_free_in : string -> string Ast.t -> bool
-
 (** Smart constructors *)
 
 val int_cons : int -> 'a Ast.t
@@ -21,3 +18,23 @@ module type MONAD_FAIL = sig
 
   val fail : 'e -> ('a, 'e) t
 end
+
+type error =
+  | UnknownVariable of string
+  | TypeError of string
+  | DivisionByZero
+
+module type MONAD = sig
+  type 'a t
+
+  val return : 'a -> 'a t
+  val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
+end
+
+module type MONADERROR = sig
+  include MONAD
+
+  val fail : error -> 'a t
+end
+
+module RESULT : MONADERROR with type 'a t = ('a, error) Result.t

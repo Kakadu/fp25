@@ -54,12 +54,6 @@ let%expect_test _ =
 ;;
 
 let _ = Miniml_lib.Interpret.parse_and_run
-let _ = Miniml_lib.Lambda.a
-let _ = Miniml_lib.Lambda.one
-let _ = Miniml_lib.Lambda.p
-let _ = Miniml_lib.Lambda.three
-let _ = Miniml_lib.Lambda.two
-let _ = Miniml_lib.Lambda.zero
 let _ = Miniml_lib.Parser.parse_lam
 let _ = Miniml_lib.Printast.pp
 let _ = Miniml_lib.Printast.show

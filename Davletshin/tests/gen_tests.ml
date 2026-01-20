@@ -8,9 +8,18 @@
 
 open Miniml_lib
 open Ast
-open Lambda
 open Utils
 
+let a = var "a"
+let x = var "x"
+let y = var "y"
+let z = var "z"
+let f = var "f"
+let g = var "g"
+let h = var "h"
+let m = var "m"
+let n = var "n"
+let p = var "p"
 let zero = abs "g" @@ abs "y" @@ Var "y"
 let one = abs "f" @@ abs "x" @@ app f (Var "x")
 let two = abs "f" @@ abs "x" @@ app f (app f x)

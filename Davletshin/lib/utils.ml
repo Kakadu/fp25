@@ -6,27 +6,8 @@
 
 [@@@ocaml.text "/*"]
 
-open Base
 open Ast
 
-(* TODO: use a set instead of list *)
-let list_remove x = List.filter ~f:(fun a -> not (String.equal a x))
-
-let free_vars =
-  let rec helper acc = function
-    | Int _ -> acc
-    | Var s -> s :: acc
-    | Abs (s, l) -> acc @ list_remove s (helper [] l)
-    | App (l, r) -> helper (helper acc r) l
-    | Binop (_, l, r) -> helper (helper acc l) r
-    | Unop (_, e) -> helper acc e
-    | If (c, t, e) -> helper (helper (helper acc c) t) e
-    | Let (_, n, e1, e2) -> acc @ list_remove n (helper [] e2) @ helper [] e1
-  in
-  helper []
-;;
-
-let is_free_in x term = List.mem (free_vars term) x ~equal:String.equal
 let int_cons n = Int n
 let var x = Var x
 let abs x l = Abs (x, l)
@@ -37,4 +18,35 @@ module type MONAD_FAIL = sig
   include Base.Monad.S2
 
   val fail : 'e -> ('a, 'e) t
+end
+
+type error =
+  | UnknownVariable of string
+  | TypeError of string
+  | DivisionByZero
+
+module type MONAD = sig
+  type 'a t
+
+  val return : 'a -> 'a t
+  val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
+end
+
+module type MONADERROR = sig
+  include MONAD
+
+  val fail : error -> 'a t
+end
+
+module RESULT : MONADERROR with type 'a t = ('a, error) Result.t = struct
+  type 'a t = ('a, error) Result.t
+
+  let return x = Ok x
+  let fail x = Error x
+
+  let ( let* ) m f =
+    match m with
+    | Ok x -> f x
+    | Error e -> Error e
+  ;;
 end

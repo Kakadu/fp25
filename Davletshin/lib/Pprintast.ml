@@ -9,18 +9,15 @@
 (* Pretty printer goes here *)
 
 open Ast
-open Utils
 
-let pp ?(compact = true) =
+let pp =
   let open Format in
-  let mangle t fmt x =
-    if is_free_in x t || not compact then fprintf fmt "%s" x else fprintf fmt "_"
-  in
+  let mangle fmt x = fprintf fmt "%s" x in
   let rec pp fmt = function
     | Int n -> Format.fprintf fmt "%d" n
     | Var s -> Format.fprintf fmt "%s" s
     | App (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
-    | Abs (x, t) -> Format.fprintf fmt "(fun %a -> %a)" (mangle t) x pp t
+    | Abs (x, t) -> Format.fprintf fmt "(fun %a -> %a)" mangle x pp t
     | Binop (op, l, r) ->
       let bop =
         match op with
@@ -50,5 +47,4 @@ let pp ?(compact = true) =
   pp
 ;;
 
-let pp_hum = pp ~compact:true
-let pp = pp ~compact:false
+let pp_hum = pp

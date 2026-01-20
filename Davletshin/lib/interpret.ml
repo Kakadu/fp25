@@ -9,48 +9,7 @@
 (** Real monadic interpreter goes here *)
 open Ast
 
-type error =
-  | UnknownVariable of string
-  | TypeError of string
-  | DivisionByZero
-
-module type MONAD = sig
-  type 'a t
-
-  val return : 'a -> 'a t
-
-  module Syntax : sig
-    (* A synonym for >>= *)
-    val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
-  end
-end
-
-module type MONADERROR = sig
-  include MONAD
-
-  val fail : error -> 'a t
-end
-
-module RESULT : MONADERROR with type 'a t = ('a, error) Result.t = struct
-  type 'a t = ('a, error) Result.t
-
-  let return x = Ok x
-  let fail x = Error x
-
-  let ( let* ) m f =
-    match m with
-    | Ok x -> f x
-    | Error e -> Error e
-  ;;
-
-  module Syntax = struct
-    let ( let* ) m f =
-      match m with
-      | Ok x -> f x
-      | Error e -> Error e
-    ;;
-  end
-end
+open Utils
 
 module Interpret (M : MONADERROR) : sig
   val run : name Ast.t -> int M.t
@@ -63,6 +22,7 @@ end = struct
     | VInt of int
     | VClosure of string * string Ast.t * env
 
+  let ( let* ) = M.( let* )
   let vint n = M.return (VInt n)
   let vclosure n e env = M.return (VClosure (n, e, env))
 
@@ -86,7 +46,7 @@ end = struct
 
   (** [eval_app env e1 e2] is the [v] such that [<env, e1 e2> ==> v]. *)
   and eval_app env e1 e2 =
-    let open M.Syntax in
+    let open M in
     let* v1 = eval env e1 in
     match v1 with
     | VClosure (n, body, defenv) ->
@@ -95,7 +55,6 @@ end = struct
     | _ -> M.fail (TypeError "Tried to apply non-function")
 
   and eval_binop env op e1 e2 =
-    let open M.Syntax in
     let* v1 = eval env e1 in
     let* v2 = eval env e2 in
     match op, v1, v2 with
@@ -113,7 +72,6 @@ end = struct
     | _ -> M.fail (TypeError "Invalid binary operation")
 
   and eval_unop env op e =
-    let open M.Syntax in
     let* v = eval env e in
     match op, v with
     | Pos, VInt a -> vint (+a)
@@ -121,7 +79,6 @@ end = struct
     | _ -> M.fail (TypeError "Invalid unary operation")
 
   and eval_if env c t e =
-    let open M.Syntax in
     let* guard = eval env c in
     match guard with
     | VInt 0 -> eval env e
@@ -129,7 +86,6 @@ end = struct
     | _ -> M.fail (TypeError "if guard must be an integer")
 
   and eval_let env n e1 e2 =
-    let open M.Syntax in
     let* v1 = eval env e1 in
     eval (Env.add n v1 env) e2
 
@@ -140,7 +96,6 @@ end = struct
   ;;
 
   let run e =
-    let open M.Syntax in
     let* v = eval Env.empty e in
     print v
   ;;
