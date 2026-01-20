@@ -11,7 +11,6 @@ val var : 'a -> 'a Ast.t
 val abs : 'a -> 'a Ast.t -> 'a Ast.t
 val app : 'a Ast.t -> 'a Ast.t -> 'a Ast.t
 val subst : string -> by:string Ast.t -> string Ast.t -> string Ast.t
-val cbv_strat : string Ast.t -> string Ast.t
 
 (** Predefined strategies *)
 

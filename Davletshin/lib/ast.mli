@@ -8,13 +8,13 @@
 
 (** recursive and not recursive flag *)
 type flag =
-  | Rec
-  | Nonrec
+  | Rec (** Recursive *)
+  | Nonrec (** Non recursive *)
 
 (** unary operators *)
 type uop =
-  | Pos
-  | Neg
+  | Pos (** Positive *)
+  | Neg (** Negative *)
 
 (** binary operators *)
 type bop =

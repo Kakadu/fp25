@@ -19,7 +19,7 @@ let is_keyword = function
 ;;
 
 let first_letter = function
-  | 'a' .. 'z' | 'A' .. 'Z' -> true
+  | 'a' .. 'z' -> true
   | _ -> false
 ;;
 

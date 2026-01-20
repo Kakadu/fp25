@@ -9,163 +9,134 @@ If you need to put sample program and use it both in your interpreter and preins
 you could put it into separate file. Thise will need stanza `(cram (deps demo_input.txt))`
 in the dune file
 
-  $ ../bin/REPL.exe -dparsetree <<EOF
+  $ ../bin/REPL.exe <<EOF
   > fun f -> x
-  Parsed result: (Abs (f, (Var x)))
-  Evaluated result: (fun _ -> x)
-  $ ../bin/REPL.exe -dparsetree <<EOF
+  TypeError: Tried to return non-integer
+
+  $ ../bin/REPL.exe <<EOF
   > ( fun x -> fun x -> x ) 1 2
-  Parsed result: (App ((App ((Abs (x, (Abs (x, (Var x))))), (Int 1))), (
-                    Int 2)))
-  Evaluated result: 2
+  Success: 2
 
 Desugaring an abstraction
   $ ../bin/REPL.exe <<EOF
   > ( fun x y -> x + y ) 1 2
-  Evaluated result: 3
+  Success: 3
 
 This code should work after adding arithmetic operators
-  $ ../bin/REPL.exe -dparsetree <<EOF
+  $ ../bin/REPL.exe <<EOF
   > (fun x -> ((fun x -> x) 6) + x) 5
-  Parsed result: (App (
-                    (Abs (x,
-                       (Binop (Plus, (App ((Abs (x, (Var x))), (Int 6))),
-                          (Var x)))
-                       )),
-                    (Int 5)))
-  Evaluated result: 11
+  Success: 11
 
 CBV argument evaluation
-  $ ../bin/REPL.exe -dparsetree <<EOF
+  $ ../bin/REPL.exe <<EOF
   > (fun x -> x) ((fun  y -> y) 4)
-  Parsed result: (App ((Abs (x, (Var x))), (App ((Abs (y, (Var y))), (Int 4)))
-                    ))
-  Evaluated result: 4
+  Success: 4
 
   $ ../bin/REPL.exe <<EOF
   > (fun x -> (fun y -> x + y)) 5 8
-  Evaluated result: 13
+  Success: 13
 
   $ ../bin/REPL.exe <<EOF
   > (fun x -> x) ((fun y -> y * 2) 9)
-  Evaluated result: 18
+  Success: 18
 
 Integer arithmetic
 
   $ ../bin/REPL.exe <<EOF
   > 42
-  Evaluated result: 42
+  Success: 42
 
   $ ../bin/REPL.exe <<EOF
   > 7 * 6
-  Evaluated result: 42
+  Success: 42
 
   $ ../bin/REPL.exe <<EOF
   > 1 + 2 * 3
-  Evaluated result: 7
+  Success: 7
 
-  $ ../bin/REPL.exe -dparsetree <<EOF
+  $ ../bin/REPL.exe <<EOF
   > (4 + 5*10 < (  4 + 5) * 10 - 28)
-  Parsed result: (Binop (Lt,
-                    (Binop (Plus, (Int 4), (Binop (Times, (Int 5), (Int 10))))),
-                    (Binop (Minus,
-                       (Binop (Times, (Binop (Plus, (Int 4), (Int 5))),
-                          (Int 10))),
-                       (Int 28)))
-                    ))
-  Evaluated result: 1
+  Success: 1
 
 Negative numbers
   $ ../bin/REPL.exe <<EOF
   >  1 -2
-  Evaluated result: -1
+  Success: -1
 
   $ ../bin/REPL.exe <<EOF
   >  - (1 -2)
-  Evaluated result: 1
+  Success: 1
 
   $ ../bin/REPL.exe <<EOF
   >  -2
-  Evaluated result: -2
+  Success: -2
+
+  $ ../bin/REPL.exe <<EOF
+  >  1/0
+  Division by zero
 
 Arithmetic and application precedence
 
   $ ../bin/REPL.exe <<EOF
   >  (fun x -> x) 4 + 5
-  Evaluated result: 9
+  Success: 9
 
   $ ../bin/REPL.exe <<EOF
   >  (fun x -> x + 1) 2 * 3
-  Evaluated result: 9
+  Success: 9
 
 Condition
   $ ../bin/REPL.exe <<EOF
   >  if 1 then 2 else 3
-  Evaluated result: 2
+  Success: 2
 
   $ ../bin/REPL.exe <<EOF
   >  if 0 then 2 else 3
-  Evaluated result: 3
+  Success: 3
 
   $ ../bin/REPL.exe <<EOF
   >  if 1 + 1 then 2 * 3 else 3
-  Evaluated result: 6
+  Success: 6
 
   $ ../bin/REPL.exe <<EOF
   >  if 1 then if 0 then 2 else 3 else 4
-  Evaluated result: 3
+  Success: 3
 
 
   $ ../bin/REPL.exe <<EOF
   >  (if 1 then fun x -> x + 1 else fun x -> x + 2) 4
-  Evaluated result: 5
+  Success: 5
 
   $ ../bin/REPL.exe <<EOF
   >  (if 0 then fun x -> x * 2 else fun x -> x * 3) 5
-  Evaluated result: 15
+  Success: 15
 
   $ ../bin/REPL.exe <<EOF
   >  if (fun x -> x) 1 then 7 else 8
-  Evaluated result: 7
+  Success: 7
 
   $ ../bin/REPL.exe <<EOF
   > (fun x -> if x then x + 1 else x - 1) 4
-  Evaluated result: 5
+  Success: 5
 
 let expressions
   $ ../bin/REPL.exe <<EOF
   > let x = 42 in x
-  Evaluated result: 42
+  Success: 42
 
   $ ../bin/REPL.exe <<EOF
   > let double n = n * 2 in double 5
-  Evaluated result: 10
+  Success: 10
 
   $ ../bin/REPL.exe <<EOF
   > let x = 1 in let y = 2 in x + y
-  Evaluated result: 3
+  Success: 3
 
   $ ../bin/REPL.exe <<EOF
   > let f x = if x then 222 else 91 in f 0
-  Evaluated result: 91
+  Success: 91
 
 Below we redirect contents of the file to the evaluator
-  $ ../bin/REPL.exe -dparsetree -stop-after parsing   < lam_1+1.txt
-  Parsed result: (App (
-                    (Abs (m,
-                       (Abs (n,
-                          (Abs (f,
-                             (Abs (x,
-                                (App ((Var m),
-                                   (App ((Var f),
-                                      (App ((Var n), (App ((Var f), (Var x)))))
-                                      ))
-                                   ))
-                                ))
-                             ))
-                          ))
-                       )),
-                    (App ((Abs (f, (Abs (x, (App ((Var f), (Var x))))))),
-                       (Abs (f, (Abs (x, (App ((Var f), (Var x)))))))))
-                    ))
+  $ ../bin/REPL.exe   < lam_1+1.txt
+  TypeError: Tried to return non-integer
 

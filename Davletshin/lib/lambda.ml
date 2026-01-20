@@ -6,10 +6,6 @@ open Ast
 open Base
 open Utils
 
-let bop_err = "TODO: Fix it"
-let uop_err = "TODO: Fix it"
-let if_guard_err = "TODO: Fix it"
-
 (* Smart constructors *)
 let int n = Int n
 let var x = Var x
@@ -41,11 +37,6 @@ let rec next_name s old =
   if List.mem ~equal:String.equal old s then next_name ("_" ^ s) old else s
 ;;
 
-let is_value = function
-  | Int _ -> true
-  | _ -> false
-;;
-
 (**  The call [subst x ~by:v e] means `[x/v]e` or `e[v -> x]` *)
 let subst x ~by:v =
   let rec helper = function
@@ -73,7 +64,7 @@ let subst x ~by:v =
 ;;
 
 (* Call-by-Value Reduction to Weak Normal Form *)
-(** понятно что let rec нужно реализовать *)
+(** 
 let rec cbv_strat = function
   | Int n -> int n
   | Var name -> var name
@@ -117,7 +108,7 @@ and eval_if c t e =
   | Int 0 -> cbv_strat e
   | Int _ -> cbv_strat t
   | _ -> failwith if_guard_err
-;;
+;; *)
 
 let a = var "a"
 let x = var "x"
