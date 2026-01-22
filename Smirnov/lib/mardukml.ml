@@ -47,9 +47,13 @@ let rec compile_to_lambda_cbv : mlterm -> Lambda.lterm = function
   | Fun (x, t) -> Abs (x, compile_to_lambda_cbv t)
 ;;
 
-let interp str =
+let parse str =
   let lexer = Lexing.from_string str in
-  let ml_ast = Parser.prog Lexer.token lexer in
+  Parser.prog Lexer.token lexer
+;;
+
+let interp str =
+  let ml_ast = parse str in
   let l_ast = compile_to_lambda_cbv ml_ast in
   Lambda.beta_reduce Lambda.beta_step_in_cbv l_ast
 ;;
