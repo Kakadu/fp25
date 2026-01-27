@@ -31,36 +31,15 @@ let initial_context : (string * mltype) list =
   ]
 ;;
 
-let rec find_first_entry_in_context (v : string) (ctx : (string * mltype) list)
-  : mltype option
-  =
-  match ctx with
-  | (v1, tp) :: tail -> if v1 = v then Some tp else find_first_entry_in_context v tail
-  | _ -> None
+let rec subst_var (v : int) (t : qf_mltype) = function
+  | Arrowtype (t1, t2) -> Arrowtype (subst_var v t t1, subst_var v t t2)
+  | Vartype u when u = v -> t
+  | _ as qft -> qft
 ;;
 
-let rec drop_first_entry_in_context (v : string) (ctx : (string * mltype) list) =
-  match ctx with
-  | (v1, _) :: tail when v1 = v -> tail
-  | h :: tail -> h :: drop_first_entry_in_context v tail
-  | [] -> []
-;;
-
-let rec rename_variable_raw qft v1 v2 =
-  match qft with
-  | Arrowtype (t1, t2) ->
-    Arrowtype (rename_variable_raw t1 v1 v2, rename_variable_raw t2 v1 v2)
-  | Vartype v when v = v1 -> Vartype v2
-  | _ -> qft
-;;
-
-let rename_free_variable t v1 v2 =
-  if List.mem v1 (snd t) then t else rename_variable_raw (fst t) v1 v2, snd t
-;;
-
-let instantiate t cnt =
-  let helper acc v = rename_variable_raw (fst acc) v (snd acc), snd acc + 1 in
-  let qftype, cnt = List.fold_left helper (fst t, cnt) (snd t) in
+let instantiate (t : mltype) cnt =
+  let inst_var (t1, c) v = subst_var v (Vartype c) t1, c + 1 in
+  let qftype, cnt = List.fold_left inst_var (fst t, cnt) (snd t) in
   (*   let () = Printf.printf "Inst: %s -> %s\n%!" (type_to_string t) (type_to_string (qftype, [])) in *)
   (qftype, []), cnt
 ;;
@@ -79,37 +58,24 @@ let quantify (t : mltype) (ctx : (string * mltype) list) (cnt : int) =
       (List.sort_uniq compare (helper (fst t)))
   in
   let collect_vars_ctx ctx =
-    let rec helper = function
-      | h :: tail -> collect_vars (snd h) @ helper tail
-      | [] -> []
-    in
-    List.sort_uniq compare (helper ctx)
+    ctx |> List.concat_map (fun x -> collect_vars (snd x)) |> List.sort_uniq compare
   in
   let bound_vars =
     List.filter (fun x -> not (List.mem x (collect_vars_ctx ctx))) (collect_vars t)
   in
   List.fold_left
-    (fun acc v ->
-      ( (rename_variable_raw (fst (fst acc)) v (snd acc), snd acc :: snd (fst acc))
-      , snd acc + 1 ))
+    (fun ((t, vs), c) v -> (subst_var v (Vartype c) t, c :: vs), c + 1)
     ((fst t, []), cnt)
     bound_vars
 ;;
 
-let apply_subst subst t =
-  let rec helper subst qft bound =
-    match qft with
-    | Vartype i ->
-      (match List.find_opt (fun x -> fst x = i) subst with
-       | Some (_, qft') -> if List.mem i bound then qft else qft'
-       | None -> qft)
-    | Arrowtype (t1, t2) -> Arrowtype (helper subst t1 bound, helper subst t2 bound)
-    | _ -> qft
-  in
-  helper subst (fst t) (snd t), snd t
+let apply_subst subst ((t, bound) : mltype) =
+  let subst' = List.filter (fun (v, _) -> not (List.mem v bound)) subst in
+  let helper acc (v, t1) = subst_var v t1 acc in
+  List.fold_left helper t subst', bound
 ;;
 
-let apply_subst_ctx subst ctx = List.map (fun x -> fst x, apply_subst subst (snd x)) ctx
+let apply_subst_ctx subst ctx = List.map (fun (v, t) -> v, apply_subst subst t) ctx
 
 let rec occurs i = function
   | Vartype j when i = j -> true
@@ -118,16 +84,7 @@ let rec occurs i = function
 ;;
 
 let unify qft1 qft2 =
-  let rec subst_var i t tp =
-    match tp with
-    | Arrowtype (t1, t2) -> Arrowtype (subst_var i t t1, subst_var i t t2)
-    | Vartype j when i = j -> t
-    | _ -> tp
-  in
-  (*  let pairs_to_string pairs = String.concat "\n" (List.map (fun x -> "[" ^ (type_to_string (fst x, [])) ^ " = " ^ (type_to_string (snd x, [])) ^ "]") pairs)
-      in *)
   let rec helper pairs acc =
-    (*    let () = Printf.printf "unify: %s\n%!" (pairs_to_string pairs) in *)
     match pairs with
     | (t1, t2) :: tail when t1 = t2 -> helper tail acc
     | (Vartype i, t2) :: tail ->
@@ -136,8 +93,8 @@ let unify qft1 qft2 =
       else
         Option.bind
           (helper
-             (List.map (fun x -> subst_var i t2 (fst x), subst_var i t2 (snd x)) tail)
-             (List.map (fun x -> fst x, subst_var i t2 (snd x)) acc))
+             (List.map (fun (u1, u2) -> subst_var i t2 u1, subst_var i t2 u2) tail)
+             (List.map (fun (i, t) -> i, subst_var i t2 t) acc))
           (fun x -> Some ((i, t2) :: x))
     | (t1, Vartype i) :: tail -> helper ((Vartype i, t1) :: tail) acc
     | (Arrowtype (t1, t2), Arrowtype (t3, t4)) :: tail ->
@@ -148,12 +105,15 @@ let unify qft1 qft2 =
   helper [ qft1, qft2 ] []
 ;;
 
+(* There are lots of HM inference algorithm. Wikipedia presents J and S variants. *)
+(* I failed to implement Kosarev's variant of HM, implemented Transpodis' algo instead. *)
+(* Its complexity is DEXPTIME but the algo is much easier to understand *)
 let hm_typechecker (term : mlterm) =
   let rec helper (term : mlterm) (ctx : (string * mltype) list) (cnt : int) =
     (*    let () = Printf.printf "%s\n%!" (mlterm_to_string term) in *)
     match term with
     | Var v ->
-      (match find_first_entry_in_context v ctx with
+      (match List.assoc_opt v ctx with
        | Some tp ->
          let t', cnt' = instantiate tp cnt in
          t', ctx, cnt'
@@ -176,16 +136,14 @@ let hm_typechecker (term : mlterm) =
       (*      let () = Printf.printf "let: %s : %s\n%!" (mlterm_to_string t1) (type_to_string tp1) in *)
       let tp1', cnt'' = quantify tp1 ctx' cnt' in
       let tp2, ctx'', cnt''' = helper t2 ((v, tp1') :: ctx') cnt'' in
-      tp2, drop_first_entry_in_context v ctx'', cnt'''
+      tp2, List.remove_assoc v ctx'', cnt'''
     | LetRec (v, t1, t2) ->
       let tp1, ctx', cnt' = helper t1 ((v, (Vartype cnt, [])) :: ctx) (cnt + 1) in
       (*      let _ = if occurs cnt (fst tp1) then raise (Failure "occurs check") else () in *)
       (*      let () = Printf.printf "let rec: %s : %s\n%!" (mlterm_to_string t1) (type_to_string tp1) in *)
       let tp1', cnt'' = quantify tp1 ctx' cnt' in
-      let tp2, ctx'', cnt''' =
-        helper t2 ((v, tp1') :: drop_first_entry_in_context v ctx') cnt''
-      in
-      tp2, drop_first_entry_in_context v ctx'', cnt'''
+      let tp2, ctx'', cnt''' = helper t2 ((v, tp1') :: List.remove_assoc v ctx') cnt'' in
+      tp2, List.remove_assoc v ctx'', cnt'''
     | App (t1, t2) ->
       let tp1, ctx', cnt' = helper t1 ctx cnt in
       let tp2, ctx'', cnt'' = helper t2 ctx' cnt' in
@@ -197,12 +155,12 @@ let hm_typechecker (term : mlterm) =
     | Fun (v, t) ->
       let t', ctx', cnt' = helper t ((v, (Vartype cnt, [])) :: ctx) (cnt + 1) in
       let newtype =
-        match find_first_entry_in_context v ctx' with
+        match List.assoc_opt v ctx' with
         | Some value -> value
         | None -> raise (Failure "should not happen")
       in
       (*      let () = Printf.printf "Fun: v : %d, t : %s\n%!" cnt (type_to_string newtype) in *)
-      (Arrowtype (fst newtype, fst t'), []), drop_first_entry_in_context v ctx', cnt'
+      (Arrowtype (fst newtype, fst t'), []), List.remove_assoc v ctx', cnt'
   in
   helper term initial_context 0
 ;;
