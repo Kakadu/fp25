@@ -1,3 +1,7 @@
+(** Copyright 2026, Kirill K. Smirnov *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
 open Ast
 
 type qf_mltype =
@@ -107,9 +111,7 @@ let apply_subst subst t =
 
 let apply_subst_ctx subst ctx = List.map (fun x -> fst x, apply_subst subst (snd x)) ctx
 
-let rec occurs i t =
-  (*  let () = Printf.printf "Occurs: %d in %s\n%!" i (type_to_string (t, [])) in *)
-  match t with
+let rec occurs i = function
   | Vartype j when i = j -> true
   | Arrowtype (t1, t2) -> occurs i t1 || occurs i t2
   | _ -> false
