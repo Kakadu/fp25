@@ -13,8 +13,11 @@ let _ =
       if String.trim s = ""
       then ()
       else (
-        let res = Mardukml.interp s in
-        Printf.printf "%s\n" (Lambda.lterm_to_string res))
+        let res, tp = Mardukml.interp s in
+        Printf.printf
+          "%s : %s\n%!"
+          (Lambda.lterm_to_string res)
+          (Typing.type_to_string tp))
     with
     | End_of_file ->
       let () = Printf.printf "\n" in

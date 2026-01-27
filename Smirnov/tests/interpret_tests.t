@@ -14,7 +14,7 @@ in the dune file
   > EOF
   MardukML REPL
   
-  # x
+  # unbound variable
   # 
 
   $ ../bin/REPL.exe << EOF
@@ -22,7 +22,7 @@ in the dune file
   > EOF
   MardukML REPL
   
-  # garbage242
+  # unbound variable
   # 
 
   $ ../bin/REPL.exe << EOF
@@ -30,7 +30,7 @@ in the dune file
   > EOF
   MardukML REPL
   
-  # 1
+  # 1 : int
   # 
 
 Println test 1
@@ -40,7 +40,7 @@ Println test 1
   MardukML REPL
   
   # 5
-  ()
+  () : unit
   # 
 
 Println test 2
@@ -49,7 +49,7 @@ Println test 2
   > EOF
   MardukML REPL
   
-  # (println_int x)
+  # unbound variable
   # 
 
 Explicit fix factorial
@@ -60,7 +60,7 @@ Explicit fix factorial
   > EOF
   MardukML REPL
   
-  # 120
+  # function and args types mismatch
   # 
 
 Simple factorial
@@ -70,7 +70,7 @@ Simple factorial
   > EOF
   MardukML REPL
   
-  # 120
+  # 120 : int
   # 
 
 CPS factorial
@@ -81,7 +81,7 @@ CPS factorial
   > EOF
   MardukML REPL
   
-  # 40320
+  # 40320 : int
   # 
 
 CPS fib
@@ -92,7 +92,7 @@ CPS fib
   > EOF
   MardukML REPL
   
-  # 21
+  # 21 : int
   # 
 
 Simple fib
@@ -102,5 +102,5 @@ Simple fib
   > EOF
   MardukML REPL
   
-  # 21
+  # 21 : int
   # 

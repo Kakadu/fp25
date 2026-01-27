@@ -4,28 +4,6 @@
 
 open Ast
 
-let rec mlterm_to_string : mlterm -> string = function
-  | Var x -> x
-  | Int i -> Printf.sprintf "%d" i
-  | Bool true -> "true"
-  | Bool false -> "false"
-  | Unit -> "()"
-  | ITE (c, th, e) ->
-    "(if "
-    ^ mlterm_to_string c
-    ^ " then "
-    ^ mlterm_to_string th
-    ^ " else "
-    ^ mlterm_to_string e
-    ^ ")"
-  | Let (v, t1, t2) ->
-    "let " ^ v ^ "=" ^ mlterm_to_string t1 ^ " in " ^ mlterm_to_string t2
-  | LetRec (v, t1, t2) ->
-    "let rec " ^ v ^ "=" ^ mlterm_to_string t1 ^ " in " ^ mlterm_to_string t2
-  | App (t1, t2) -> "(" ^ mlterm_to_string t1 ^ " " ^ mlterm_to_string t2 ^ ")"
-  | Fun (x, t2) -> "fun " ^ x ^ " -> " ^ mlterm_to_string t2
-;;
-
 let rec compile_to_lambda_cbv : mlterm -> Lambda.lterm = function
   | Var x -> Var x
   | Int i -> Int i
@@ -54,6 +32,7 @@ let parse str =
 
 let interp str =
   let ml_ast = parse str in
+  let tp, _, _ = Typing.hm_typechecker ml_ast in
   let l_ast = compile_to_lambda_cbv ml_ast in
-  Lambda.beta_reduce Lambda.beta_step_in_cbv l_ast
+  Lambda.beta_reduce Lambda.beta_step_in_cbv l_ast, tp
 ;;
