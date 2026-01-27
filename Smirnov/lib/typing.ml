@@ -91,11 +91,9 @@ let unify qft1 qft2 =
       if occurs i t2
       then None
       else
-        Option.bind
-          (helper
-             (List.map (fun (u1, u2) -> subst_var i t2 u1, subst_var i t2 u2) tail)
-             (List.map (fun (j, t) -> j, subst_var i t2 t) acc))
-          (fun x -> Some ((i, t2) :: x))
+        helper
+          (List.map (fun (u1, u2) -> subst_var i t2 u1, subst_var i t2 u2) tail)
+          ((i, t2) :: List.map (fun (j, t) -> j, subst_var i t2 t) acc)
     | (t1, Vartype i) :: tail -> helper ((Vartype i, t1) :: tail) acc
     | (Arrowtype (t1, t2), Arrowtype (t3, t4)) :: tail ->
       helper ((t1, t3) :: (t2, t4) :: tail) acc
