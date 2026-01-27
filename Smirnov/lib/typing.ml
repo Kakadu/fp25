@@ -94,7 +94,7 @@ let unify qft1 qft2 =
         Option.bind
           (helper
              (List.map (fun (u1, u2) -> subst_var i t2 u1, subst_var i t2 u2) tail)
-             (List.map (fun (i, t) -> i, subst_var i t2 t) acc))
+             (List.map (fun (j, t) -> j, subst_var i t2 t) acc))
           (fun x -> Some ((i, t2) :: x))
     | (t1, Vartype i) :: tail -> helper ((Vartype i, t1) :: tail) acc
     | (Arrowtype (t1, t2), Arrowtype (t3, t4)) :: tail ->
