@@ -5,6 +5,9 @@
 open Ast
 
 let rec compile_to_lambda_cbv : mlterm -> Lambda.lterm = function
+  | App (Var "not", t) -> compile_to_lambda_cbv (ITE (t, Bool false, Bool true))
+  | App (App (Var "&&", t1), t2) -> compile_to_lambda_cbv (ITE (t1, t2, Bool false))
+  | App (App (Var "||", t1), t2) -> compile_to_lambda_cbv (ITE (t1, Bool true, t2))
   | Var x -> Var x
   | Int i -> Int i
   | Bool true -> Lambda.ltrue

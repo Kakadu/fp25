@@ -104,3 +104,30 @@ Simple fib
   
   # 21 : int
   # 
+
+Booleans 1
+  $ ../bin/REPL.exe << EOF
+  > true
+  > EOF
+  MardukML REPL
+  
+  # (\x.(\y.x)) : bool
+  # 
+
+Booleans 3
+  $ ../bin/REPL.exe << EOF
+  > false
+  > EOF
+  MardukML REPL
+  
+  # (\x.(\y.y)) : bool
+  # 
+
+Booleans 3
+  $ ../bin/REPL.exe << EOF
+  > (if (1 == 2) then false else true)
+  > EOF
+  MardukML REPL
+  
+  # (\x.(\y.x)) : bool
+  # 

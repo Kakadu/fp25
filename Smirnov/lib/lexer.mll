@@ -15,11 +15,14 @@ rule token = parse
     | "->" { MAPSTO }
     | "true" { TRUE }
     | "false" { FALSE }
+    | "not" { NOT }
     | "println_int" as op { VAR op }
     | ['0'-'9']+ as num { INT (int_of_string num) }
     | ['a'-'z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']* as name { VAR name }
     | ['+' '*' '<' '>' '-'] as op { INFIXOP (String.make 1 op) }
     | "==" as op { INFIXOP op }
+    | "||" as op { INFIXOP op }
+    | "&&" as op { INFIXOP op }
     | "(" { LEFT_BRACK }
     | ")" { RIGHT_BRACK }
     | "=" { EQ }

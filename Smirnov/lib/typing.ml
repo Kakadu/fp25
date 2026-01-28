@@ -27,6 +27,9 @@ let initial_context : (string * mltype) list =
   ; "==", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "bool")), [])
   ; "<", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "bool")), [])
   ; ">", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "bool")), [])
+  ; "&&", (Arrowtype (Basetype "bool", Arrowtype (Basetype "bool", Basetype "bool")), [])
+  ; "||", (Arrowtype (Basetype "bool", Arrowtype (Basetype "bool", Basetype "bool")), [])
+  ; "not", (Arrowtype (Basetype "bool", Basetype "bool"), [])
   ; "println_int", (Arrowtype (Basetype "int", Basetype "unit"), [])
   ]
 ;;
