@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>lexer.ml &mdash; Coverage report</title>
-    <meta name="description" content="73.17% coverage in lib/lexer.ml">
+    <meta name="description" content="82.93% coverage in lib/lexer.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,14 +15,10 @@
           <span class="dirname">lib/</span>lexer.ml
         </a>
       </h1>
-      <h2>73.17%</h2>
+      <h2>82.93%</h2>
     </div>
     <div id="navbar">
       <span class="unvisited" style="bottom:9.26%"></span>
-      <span class="unvisited" style="bottom:4.59%"></span>
-      <span class="unvisited" style="bottom:3.99%"></span>
-      <span class="unvisited" style="bottom:3.74%"></span>
-      <span class="unvisited" style="bottom:3.14%"></span>
       <span class="unvisited" style="bottom:1.61%"></span>
       <span class="unvisited" style="bottom:1.02%"></span>
       <span class="unvisited" style="bottom:0.34%"></span>
@@ -1153,24 +1149,24 @@
 <a id="L1120"></a><span class="visited"> </span>
 <a id="L1121"></a><span > </span>
 <a id="L1122"></a><span > </span>
-<a id="L1123"></a><span class="unvisited"> </span>
+<a id="L1123"></a><span class="visited"> </span>
 <a id="L1124"></a><span > </span>
 <a id="L1125"></a><span > </span>
 <a id="L1126"></a><span > </span>
 <a id="L1127"></a><span > </span>
 <a id="L1128"></a><span > </span>
 <a id="L1129"></a><span > </span>
-<a id="L1130"></a><span class="unvisited"> </span>
+<a id="L1130"></a><span class="visited"> </span>
 <a id="L1131"></a><span > </span>
 <a id="L1132"></a><span > </span>
-<a id="L1133"></a><span class="unvisited"> </span>
+<a id="L1133"></a><span class="visited"> </span>
 <a id="L1134"></a><span > </span>
 <a id="L1135"></a><span > </span>
 <a id="L1136"></a><span > </span>
 <a id="L1137"></a><span > </span>
 <a id="L1138"></a><span > </span>
 <a id="L1139"></a><span > </span>
-<a id="L1140"></a><span class="unvisited"> </span>
+<a id="L1140"></a><span class="visited"> </span>
 <a id="L1141"></a><span > </span>
 <a id="L1142"></a><span > </span>
 <a id="L1143"></a><span class="visited"> </span>
@@ -3394,65 +3390,65 @@ let __ocaml_lex_tables = {
 }
 
 let rec token lexbuf =
-   <span data-count="2290410">_</span>_ocaml_lex_token_rec lexbuf 0
+   <span data-count="2311182">_</span>_ocaml_lex_token_rec lexbuf 0
 and __ocaml_lex_token_rec lexbuf __ocaml_lex_state =
-  <span data-count="2290410">m</span>atch Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
-      | <span data-count="836165">0</span> -&gt;
+  <span data-count="2311182">m</span>atch Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
+      | <span data-count="844202">0</span> -&gt;
 # 6 "lib/lexer.mll"
                       ( token lexbuf )
 # 1012 "lib/lexer.ml"
 
-  | <span data-count="104201">1</span> -&gt;
+  | <span data-count="105501">1</span> -&gt;
 # 7 "lib/lexer.mll"
             ( LET )
 # 1017 "lib/lexer.ml"
 
-  | <span data-count="52172">2</span> -&gt;
+  | <span data-count="52613">2</span> -&gt;
 # 8 "lib/lexer.mll"
             ( REC )
 # 1022 "lib/lexer.ml"
 
-  | <span data-count="104201">3</span> -&gt;
+  | <span data-count="105501">3</span> -&gt;
 # 9 "lib/lexer.mll"
            ( IN )
 # 1027 "lib/lexer.ml"
 
-  | <span data-count="52366">4</span> -&gt;
+  | <span data-count="52645">4</span> -&gt;
 # 10 "lib/lexer.mll"
            ( IF )
 # 1032 "lib/lexer.ml"
 
-  | <span data-count="52366">5</span> -&gt;
+  | <span data-count="52645">5</span> -&gt;
 # 11 "lib/lexer.mll"
              ( THEN )
 # 1037 "lib/lexer.ml"
 
-  | <span data-count="52366">6</span> -&gt;
+  | <span data-count="52645">6</span> -&gt;
 # 12 "lib/lexer.mll"
              ( ELSE )
 # 1042 "lib/lexer.ml"
 
-  | <span data-count="89879">7</span> -&gt;
+  | <span data-count="91154">7</span> -&gt;
 # 13 "lib/lexer.mll"
            ( UNIT )
 # 1047 "lib/lexer.ml"
 
-  | <span data-count="52351">8</span> -&gt;
+  | <span data-count="52861">8</span> -&gt;
 # 14 "lib/lexer.mll"
             ( FUN )
 # 1052 "lib/lexer.ml"
 
-  | <span data-count="52351">9</span> -&gt;
+  | <span data-count="52861">9</span> -&gt;
 # 15 "lib/lexer.mll"
            ( MAPSTO )
 # 1057 "lib/lexer.ml"
 
-  | <span data-count="45281">1</span>0 -&gt;
+  | <span data-count="45488">1</span>0 -&gt;
 # 16 "lib/lexer.mll"
              ( TRUE )
 # 1062 "lib/lexer.ml"
 
-  | <span data-count="45226">1</span>1 -&gt;
+  | <span data-count="45257">1</span>1 -&gt;
 # 17 "lib/lexer.mll"
               ( FALSE )
 # 1067 "lib/lexer.ml"
@@ -3472,24 +3468,24 @@ let
                           <span data-count="2">(</span> VAR op )
 # 1082 "lib/lexer.ml"
 
-  | <span data-count="90323">1</span>4 -&gt;
+  | <span data-count="91263">1</span>4 -&gt;
 let
 # 20 "lib/lexer.mll"
                     num
 # 1088 "lib/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
 # 20 "lib/lexer.mll"
-                        <span data-count="90323">(</span> INT (int_of_strin<span data-count="90323">g</span> num) )
+                        <span data-count="91263">(</span> INT (int_of_strin<span data-count="91263">g</span> num) )
 # 1092 "lib/lexer.ml"
 
-  | <span data-count="247264">1</span>5 -&gt;
+  | <span data-count="249249">1</span>5 -&gt;
 let
 # 21 "lib/lexer.mll"
                                                            name
 # 1098 "lib/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
 # 21 "lib/lexer.mll"
-                                                                <span data-count="247264">(</span> VAR name )
+                                                                <span data-count="249249">(</span> VAR name )
 # 1102 "lib/lexer.ml"
 
   | <span data-count="17">1</span>6 -&gt;
@@ -3512,37 +3508,37 @@ let
                  <span data-count="1">(</span> INFIXOP op )
 # 1122 "lib/lexer.ml"
 
-  | <span data-count="0">1</span>8 -&gt;
+  | <span data-count="1">1</span>8 -&gt;
 let
 # 24 "lib/lexer.mll"
               op
 # 1128 "lib/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos (lexbuf.Lexing.lex_start_pos + 2) in
 # 24 "lib/lexer.mll"
-                 <span data-count="0">(</span> INFIXOP op )
+                 <span data-count="1">(</span> INFIXOP op )
 # 1132 "lib/lexer.ml"
 
-  | <span data-count="0">1</span>9 -&gt;
+  | <span data-count="1">1</span>9 -&gt;
 let
 # 25 "lib/lexer.mll"
               op
 # 1138 "lib/lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos (lexbuf.Lexing.lex_start_pos + 2) in
 # 25 "lib/lexer.mll"
-                 <span data-count="0">(</span> INFIXOP op )
+                 <span data-count="1">(</span> INFIXOP op )
 # 1142 "lib/lexer.ml"
 
-  | <span data-count="104832">2</span>0 -&gt;
+  | <span data-count="105880">2</span>0 -&gt;
 # 26 "lib/lexer.mll"
           ( LEFT_BRACK )
 # 1147 "lib/lexer.ml"
 
-  | <span data-count="104832">2</span>1 -&gt;
+  | <span data-count="105880">2</span>1 -&gt;
 # 27 "lib/lexer.mll"
           ( RIGHT_BRACK )
 # 1152 "lib/lexer.ml"
 
-  | <span data-count="104201">2</span>2 -&gt;
+  | <span data-count="105501">2</span>2 -&gt;
 # 28 "lib/lexer.mll"
           ( EQ )
 # 1157 "lib/lexer.ml"
@@ -3557,7 +3553,7 @@ let
              <span data-count="0">(</span> raise (Failure (Printf.sprint<span data-count="0">f</span> "Unknown character %c at position %d" c (Lexing.lexeme_star<span data-count="0">t</span> lexbuf))) )
 # 1167 "lib/lexer.ml"
 
-  | <span data-count="100013">2</span>4 -&gt;
+  | <span data-count="100014">2</span>4 -&gt;
 # 30 "lib/lexer.mll"
           ( EOF )
 # 1172 "lib/lexer.ml"
