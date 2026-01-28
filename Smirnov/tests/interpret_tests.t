@@ -111,7 +111,7 @@ Booleans 1
   > EOF
   MardukML REPL
   
-  # (\x.(\y.x)) : bool
+  # true : bool
   # 
 
 Booleans 3
@@ -120,7 +120,7 @@ Booleans 3
   > EOF
   MardukML REPL
   
-  # (\x.(\y.y)) : bool
+  # false : bool
   # 
 
 Booleans 3
@@ -129,5 +129,14 @@ Booleans 3
   > EOF
   MardukML REPL
   
-  # (\x.(\y.x)) : bool
+  # true : bool
+  # 
+
+Booleans 4
+  $ ../bin/REPL.exe << EOF
+  > ((true && false) || true)
+  > EOF
+  MardukML REPL
+  
+  # true : bool
   # 

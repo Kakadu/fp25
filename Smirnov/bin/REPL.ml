@@ -16,7 +16,7 @@ let _ =
         let res, tp = Mardukml.interp s in
         Printf.printf
           "%s : %s\n%!"
-          (Lambda.lterm_to_string res)
+          (Lambda.lterm_to_string_typed res tp)
           (Typing.type_to_string tp))
     with
     | End_of_file ->
