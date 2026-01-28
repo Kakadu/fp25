@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>mardukml.ml &mdash; Coverage report</title>
-    <meta name="description" content="94.87% coverage in lib/mardukml.ml">
+    <meta name="description" content="97.78% coverage in lib/mardukml.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,11 +15,10 @@
           <span class="dirname">lib/</span>mardukml.ml
         </a>
       </h1>
-      <h2>94.87%</h2>
+      <h2>97.78%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="top:16.33%"></span>
-      <span class="unvisited" style="top:34.69%"></span>
+      <span class="unvisited" style="top:14.29%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -40,39 +39,46 @@
 <a id="L14"></a><span class="visited"> </span>
 <a id="L15"></a><span class="visited"> </span>
 <a id="L16"></a><span class="visited"> </span>
-<a id="L17"></a><span class="unvisited"> </span>
+<a id="L17"></a><span class="visited"> </span>
 <a id="L18"></a><span class="visited"> </span>
-<a id="L19"></a><span > </span>
+<a id="L19"></a><span class="visited"> </span>
 <a id="L20"></a><span class="visited"> </span>
-<a id="L21"></a><span class="visited"> </span>
+<a id="L21"></a><span > </span>
 <a id="L22"></a><span class="visited"> </span>
 <a id="L23"></a><span class="visited"> </span>
 <a id="L24"></a><span class="visited"> </span>
 <a id="L25"></a><span class="visited"> </span>
-<a id="L26"></a><span > </span>
+<a id="L26"></a><span class="visited"> </span>
 <a id="L27"></a><span class="visited"> </span>
-<a id="L28"></a><span class="visited"> </span>
+<a id="L28"></a><span > </span>
 <a id="L29"></a><span class="visited"> </span>
 <a id="L30"></a><span class="visited"> </span>
 <a id="L31"></a><span class="visited"> </span>
-<a id="L32"></a><span > </span>
-<a id="L33"></a><span > </span>
+<a id="L32"></a><span class="visited"> </span>
+<a id="L33"></a><span class="visited"> </span>
 <a id="L34"></a><span > </span>
-<a id="L35"></a><span class="visited"> </span>
-<a id="L36"></a><span class="visited"> </span>
-<a id="L37"></a><span > </span>
-<a id="L38"></a><span > </span>
-<a id="L39"></a><span > </span>
-<a id="L40"></a><span class="visited"> </span>
+<a id="L35"></a><span > </span>
+<a id="L36"></a><span > </span>
+<a id="L37"></a><span class="visited"> </span>
+<a id="L38"></a><span class="visited"> </span>
+<a id="L39"></a><span class="visited"> </span>
+<a id="L40"></a><span > </span>
 <a id="L41"></a><span class="visited"> </span>
-<a id="L42"></a><span > </span>
-<a id="L43"></a><span > </span>
+<a id="L42"></a><span class="visited"> </span>
+<a id="L43"></a><span class="visited"> </span>
 <a id="L44"></a><span > </span>
-<a id="L45"></a><span class="visited"> </span>
-<a id="L46"></a><span class="visited"> </span>
+<a id="L45"></a><span > </span>
+<a id="L46"></a><span > </span>
 <a id="L47"></a><span class="visited"> </span>
 <a id="L48"></a><span class="visited"> </span>
 <a id="L49"></a><span > </span>
+<a id="L50"></a><span > </span>
+<a id="L51"></a><span > </span>
+<a id="L52"></a><span class="visited"> </span>
+<a id="L53"></a><span class="visited"> </span>
+<a id="L54"></a><span class="visited"> </span>
+<a id="L55"></a><span class="visited"> </span>
+<a id="L56"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -126,6 +132,13 @@
 <a href="#L47">47</a>
 <a href="#L48">48</a>
 <a href="#L49">49</a>
+<a href="#L50">50</a>
+<a href="#L51">51</a>
+<a href="#L52">52</a>
+<a href="#L53">53</a>
+<a href="#L54">54</a>
+<a href="#L55">55</a>
+<a href="#L56">56</a>
 </pre>
 <pre><code class="ocaml">(** Copyright 2026, Kirill K. Smirnov *)
 
@@ -137,13 +150,15 @@ let rec compile_to_lambda_cbv : mlterm -&gt; Lambda.lterm = function
   | <span data-count="0">A</span>pp (Var "not", t) -&gt; compile_to_lambda_cbv (ITE (t, Bool false, Bool true))
   | <span data-count="1">V</span>ar "fst" -&gt; Abs ("p", App (Var "p", Lambda.ltrue))
   | <span data-count="1">V</span>ar "snd" -&gt; Abs ("p", App (Var "p", Lambda.lfalse))
+  | <span data-count="2">V</span>ar "inl" -&gt; Abs ("x", Abs ("f", Abs ("g", App (Var "f", Var "x"))))
+  | <span data-count="2">V</span>ar "inr" -&gt; Abs ("x", Abs ("f", Abs ("g", App (Var "g", Var "x"))))
   | <span data-count="1">A</span>pp (App (Var "&amp;&amp;", t1), t2) -&gt; compile_to_lambda_cbv (ITE (t1, t2, Bool false))
   | <span data-count="1">A</span>pp (App (Var "||", t1), t2) -&gt; compile_to_lambda_cbv (ITE (t1, Bool true, t2))
-  | <span data-count="57">V</span>ar x -&gt; Var x
-  | <span data-count="24">I</span>nt i -&gt; Int i
+  | <span data-count="61">V</span>ar x -&gt; Var x
+  | <span data-count="28">I</span>nt i -&gt; Int i
   | <span data-count="7">B</span>ool true -&gt; Lambda.ltrue
   | <span data-count="4">B</span>ool false -&gt; Lambda.lfalse
-  | <span data-count="0">U</span>nit -&gt; Unit
+  | <span data-count="2">U</span>nit -&gt; Unit
   | <span data-count="7">I</span>TE (c, th, e) -&gt;
     let cl = compile_to_lambda_cbv c in
     <span data-count="7">l</span>et thl = compile_to_lambda_cbv th in
@@ -155,7 +170,7 @@ let rec compile_to_lambda_cbv : mlterm -&gt; Lambda.lterm = function
     App
       ( Abs (v, compile_to_lambda_cb<span data-count="4">v</span> t2)
       , App (Lambda.fix_comb_cbv, Abs (v, compile_to_lambda_cb<span data-count="4">v</span> t1)) )
-  | <span data-count="55">A</span>pp (t1, t2) -&gt; App (compile_to_lambda_cb<span data-count="55">v</span> t1, compile_to_lambda_cb<span data-count="55">v</span> t2)
+  | <span data-count="61">A</span>pp (t1, t2) -&gt; App (compile_to_lambda_cb<span data-count="61">v</span> t1, compile_to_lambda_cb<span data-count="61">v</span> t2)
   | <span data-count="15">F</span>un (x, t) -&gt; Abs (x, compile_to_lambda_cb<span data-count="15">v</span> t)
   | <span data-count="3">P</span>air (t1, t2) -&gt;
     App
@@ -163,18 +178,23 @@ let rec compile_to_lambda_cbv : mlterm -&gt; Lambda.lterm = function
           ( Abs ("x", Abs ("y", Abs ("f", App (App (Var "f", Var "x"), Var "y"))))
           , compile_to_lambda_cb<span data-count="3">v</span> t1 )
       , compile_to_lambda_cb<span data-count="3">v</span> t2 )
+  | <span data-count="2">M</span>atch (t, v1, t1, v2, t2) -&gt;
+    let tl = compile_to_lambda_cbv t in
+    <span data-count="2">l</span>et t1l = compile_to_lambda_cbv t1 in
+    <span data-count="2">l</span>et t2l = compile_to_lambda_cbv t2 in
+    <span data-count="2">A</span>pp (App (tl, Abs (v1, t1l)), Abs (v2, t2l))
 ;;
 
 let parse str =
-  <span data-count="100017">l</span>et lexer = Lexing.from_string str in
-  <span data-count="100017">P</span>arser.prog Lexer.token lexer
+  <span data-count="100021">l</span>et lexer = Lexing.from_string str in
+  <span data-count="100021">P</span>arser.prog Lexer.token lexer
 ;;
 
 let interp str =
-  <span data-count="17">l</span>et ml_ast = parse str in
-  <span data-count="17">l</span>et tp, _, _ = Typing.hm_typechecker ml_ast in
-  <span data-count="13">l</span>et l_ast = compile_to_lambda_cbv ml_ast in
-  <span data-count="13">L</span>ambda.beta_reduc<span data-count="13">e</span> Lambda.beta_step_in_cbv l_ast, tp
+  <span data-count="21">l</span>et ml_ast = parse str in
+  <span data-count="21">l</span>et tp, _, _ = Typing.hm_typechecker ml_ast in
+  <span data-count="17">l</span>et l_ast = compile_to_lambda_cbv ml_ast in
+  <span data-count="17">L</span>ambda.beta_reduc<span data-count="17">e</span> Lambda.beta_step_in_cbv l_ast, tp
 ;;
 </code></pre>
       </div>

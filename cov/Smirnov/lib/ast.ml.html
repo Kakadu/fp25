@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>ast.ml &mdash; Coverage report</title>
-    <meta name="description" content="63.27% coverage in lib/ast.ml">
+    <meta name="description" content="63.64% coverage in lib/ast.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,21 +15,22 @@
           <span class="dirname">lib/</span>ast.ml
         </a>
       </h1>
-      <h2>63.27%</h2>
+      <h2>63.64%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="top:10.20%"></span>
-      <span class="some-visited" style="top:26.53%"></span>
-      <span class="unvisited" style="top:32.65%"></span>
-      <span class="unvisited" style="top:34.69%"></span>
-      <span class="unvisited" style="top:36.73%"></span>
-      <span class="unvisited" style="top:38.78%"></span>
-      <span class="unvisited" style="top:40.82%"></span>
-      <span class="unvisited" style="top:42.86%"></span>
-      <span class="unvisited" style="top:44.90%"></span>
-      <span class="unvisited" style="top:46.94%"></span>
-      <span class="unvisited" style="top:48.98%"></span>
-      <span class="unvisited" style="bottom:48.98%"></span>
+      <span class="unvisited" style="top:8.06%"></span>
+      <span class="some-visited" style="top:20.97%"></span>
+      <span class="unvisited" style="top:25.81%"></span>
+      <span class="unvisited" style="top:27.42%"></span>
+      <span class="unvisited" style="top:29.03%"></span>
+      <span class="unvisited" style="top:30.65%"></span>
+      <span class="unvisited" style="top:32.26%"></span>
+      <span class="unvisited" style="top:33.87%"></span>
+      <span class="unvisited" style="top:35.48%"></span>
+      <span class="unvisited" style="top:37.10%"></span>
+      <span class="unvisited" style="top:38.71%"></span>
+      <span class="unvisited" style="top:40.32%"></span>
+      <span class="unvisited" style="top:41.94%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -59,30 +60,43 @@
 <a id="L23"></a><span class="unvisited"> </span>
 <a id="L24"></a><span class="unvisited"> </span>
 <a id="L25"></a><span class="unvisited"> </span>
-<a id="L26"></a><span class="visited"> </span>
-<a id="L27"></a><span > </span>
+<a id="L26"></a><span class="unvisited"> </span>
+<a id="L27"></a><span class="visited"> </span>
 <a id="L28"></a><span > </span>
-<a id="L29"></a><span class="visited"> </span>
+<a id="L29"></a><span > </span>
 <a id="L30"></a><span class="visited"> </span>
 <a id="L31"></a><span class="visited"> </span>
 <a id="L32"></a><span class="visited"> </span>
 <a id="L33"></a><span class="visited"> </span>
 <a id="L34"></a><span class="visited"> </span>
-<a id="L35"></a><span > </span>
-<a id="L36"></a><span class="visited"> </span>
-<a id="L37"></a><span > </span>
-<a id="L38"></a><span class="visited"> </span>
-<a id="L39"></a><span > </span>
-<a id="L40"></a><span class="visited"> </span>
-<a id="L41"></a><span > </span>
-<a id="L42"></a><span class="visited"> </span>
+<a id="L35"></a><span class="visited"> </span>
+<a id="L36"></a><span > </span>
+<a id="L37"></a><span class="visited"> </span>
+<a id="L38"></a><span > </span>
+<a id="L39"></a><span class="visited"> </span>
+<a id="L40"></a><span > </span>
+<a id="L41"></a><span class="visited"> </span>
+<a id="L42"></a><span > </span>
 <a id="L43"></a><span class="visited"> </span>
 <a id="L44"></a><span class="visited"> </span>
 <a id="L45"></a><span class="visited"> </span>
 <a id="L46"></a><span class="visited"> </span>
 <a id="L47"></a><span class="visited"> </span>
 <a id="L48"></a><span class="visited"> </span>
-<a id="L49"></a><span > </span>
+<a id="L49"></a><span class="visited"> </span>
+<a id="L50"></a><span class="visited"> </span>
+<a id="L51"></a><span > </span>
+<a id="L52"></a><span class="visited"> </span>
+<a id="L53"></a><span > </span>
+<a id="L54"></a><span > </span>
+<a id="L55"></a><span > </span>
+<a id="L56"></a><span class="visited"> </span>
+<a id="L57"></a><span > </span>
+<a id="L58"></a><span > </span>
+<a id="L59"></a><span > </span>
+<a id="L60"></a><span class="visited"> </span>
+<a id="L61"></a><span > </span>
+<a id="L62"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -136,6 +150,19 @@
 <a href="#L47">47</a>
 <a href="#L48">48</a>
 <a href="#L49">49</a>
+<a href="#L50">50</a>
+<a href="#L51">51</a>
+<a href="#L52">52</a>
+<a href="#L53">53</a>
+<a href="#L54">54</a>
+<a href="#L55">55</a>
+<a href="#L56">56</a>
+<a href="#L57">57</a>
+<a href="#L58">58</a>
+<a href="#L59">59</a>
+<a href="#L60">60</a>
+<a href="#L61">61</a>
+<a href="#L62">62</a>
 </pre>
 <pre><code class="ocaml">(** Copyright 2026, Kirill K. Smirnov *)
 
@@ -151,7 +178,7 @@
 
 <span data-count="0">t</span>ype integer = (int[@gen QCheck.Gen.int_rang<span data-count="3">e</span> 0 1024]) [@@deriving eq, qcheck<span data-count="3">]</span>
 
-<span data-count="685327">t</span>ype mlterm =
+<span data-count="983989">t</span>ype mlterm =
   <span data-count="0">|</span> Var of identifier
   <span data-count="0">|</span> Int of integer
   <span data-count="0">|</span> Bool of bool
@@ -162,29 +189,42 @@
   <span data-count="0">|</span> App of mlterm * mlter<span data-count="0">m</span>
   <span data-count="0">|</span> Fun of identifier * mlter<span data-count="0">m</span>
   <span data-count="0">|</span> Pair of mlterm * mlter<span data-count="0">m</span>
-[@@deriving eq, qcheck<span data-count="135730">]</span>
+  <span data-count="0">|</span> Match of mlterm * identifier * mlterm * identifier * mlter<span data-count="0">m</span>
+[@@deriving eq, qcheck<span data-count="329066">]</span>
 
 let rec mlterm_to_string : mlterm -&gt; string = function
-  | <span data-count="105461">V</span>ar x -&gt; x
-  | <span data-count="105603">I</span>nt i -&gt; Printf.sprintf "%d" i
-  | <span data-count="52751">B</span>ool true -&gt; "true"
-  | <span data-count="53300">B</span>ool false -&gt; "false"
-  | <span data-count="105969">U</span>nit -&gt; "()"
-  | <span data-count="54099">I</span>TE (c, th, e) -&gt;
+  | <span data-count="147887">V</span>ar x -&gt; x
+  | <span data-count="148528">I</span>nt i -&gt; Printf.sprintf "%d" i
+  | <span data-count="73871">B</span>ool true -&gt; "true"
+  | <span data-count="74285">B</span>ool false -&gt; "false"
+  | <span data-count="147592">U</span>nit -&gt; "()"
+  | <span data-count="61605">I</span>TE (c, th, e) -&gt;
     "(if "
-    ^ mlterm_to_strin<span data-count="54099">g</span> c
+    ^ mlterm_to_strin<span data-count="61605">g</span> c
     ^ " then "
-    ^ mlterm_to_strin<span data-count="54099">g</span> th
+    ^ mlterm_to_strin<span data-count="61605">g</span> th
     ^ " else "
-    ^ mlterm_to_strin<span data-count="54099">g</span> e
+    ^ mlterm_to_strin<span data-count="61605">g</span> e
     ^ ")"
-  | <span data-count="53274">L</span>et (v, t1, t2) -&gt;
-    "let " ^ v ^ "=" ^ mlterm_to_strin<span data-count="53274">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="53274">g</span> t2
-  | <span data-count="53846">L</span>etRec (v, t1, t2) -&gt;
-    "let rec " ^ v ^ "=" ^ mlterm_to_strin<span data-count="53846">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="53846">g</span> t2
-  | <span data-count="53965">A</span>pp (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="53965">g</span> t1 ^ " " ^ mlterm_to_strin<span data-count="53965">g</span> t2 ^ ")"
-  | <span data-count="53985">F</span>un (x, t2) -&gt; "fun " ^ x ^ " -&gt; " ^ mlterm_to_strin<span data-count="53985">g</span> t2
-  | <span data-count="53801">P</span>air (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="53801">g</span> t1 ^ ", " ^ mlterm_to_strin<span data-count="53801">g</span> t2 ^ ")"
+  | <span data-count="61644">L</span>et (v, t1, t2) -&gt;
+    "let " ^ v ^ "=" ^ mlterm_to_strin<span data-count="61644">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="61644">g</span> t2
+  | <span data-count="61686">L</span>etRec (v, t1, t2) -&gt;
+    "let rec " ^ v ^ "=" ^ mlterm_to_strin<span data-count="61686">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="61686">g</span> t2
+  | <span data-count="61307">A</span>pp (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="61307">g</span> t1 ^ " " ^ mlterm_to_strin<span data-count="61307">g</span> t2 ^ ")"
+  | <span data-count="61536">F</span>un (x, t2) -&gt; "fun " ^ x ^ " -&gt; " ^ mlterm_to_strin<span data-count="61536">g</span> t2
+  | <span data-count="62000">P</span>air (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="62000">g</span> t1 ^ ", " ^ mlterm_to_strin<span data-count="62000">g</span> t2 ^ ")"
+  | <span data-count="61158">M</span>atch (t, v1, t1, v2, t2) -&gt;
+    "(match "
+    ^ mlterm_to_strin<span data-count="61158">g</span> t
+    ^ " with | inl "
+    ^ v1
+    ^ " -&gt; "
+    ^ mlterm_to_strin<span data-count="61158">g</span> t1
+    ^ "| inr "
+    ^ v2
+    ^ " -&gt; "
+    ^ mlterm_to_strin<span data-count="61158">g</span> t2
+    ^ ")"
 ;;
 </code></pre>
       </div>
