@@ -140,3 +140,31 @@ Booleans 4
   
   # true : bool
   # 
+
+Pairs 1
+  $ ../bin/REPL.exe << EOF
+  > (1, 2)
+  > EOF
+  MardukML REPL
+  
+  # (1, 2) : (int * int)
+  # 
+
+Pairs 2
+  $ ../bin/REPL.exe << EOF
+  > (fst (1, true))
+  > EOF
+  MardukML REPL
+  
+  # 1 : int
+  # 
+
+Pairs 3
+  $ ../bin/REPL.exe << EOF
+  > (snd (1, true))
+  > EOF
+  MardukML REPL
+  
+  # true : bool
+  # 
+

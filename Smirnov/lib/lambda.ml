@@ -55,12 +55,18 @@ let rec lterm_to_string = function
   | Abs (x, t2) -> "(\\" ^ x ^ "." ^ lterm_to_string t2 ^ ")"
 ;;
 
-let lterm_to_string_typed term tp =
+let rec lterm_to_string_typed term tp =
   assert (snd tp = []);
   match term, fst tp with
   | Var x, _ -> x
   | Int i, Typing.Basetype "int" -> Printf.sprintf "%d" i
   | Unit, Typing.Basetype "unit" -> "()"
+  | Abs (x, App (App (Var y, t1), t2)), Typing.Pair (tp1, tp2) when x = y ->
+    "("
+    ^ lterm_to_string_typed t1 (tp1, [])
+    ^ ", "
+    ^ lterm_to_string_typed t2 (tp2, [])
+    ^ ")"
   | Abs (x, Abs (_, Var z)), Typing.Basetype "bool" when z = x -> "true"
   | Abs (_, Abs (y, Var z)), Typing.Basetype "bool" when z = y -> "false"
   | Abs (_, _), _ -> "Fun"

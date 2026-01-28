@@ -8,6 +8,7 @@ type qf_mltype =
   | Basetype of string
   | Arrowtype of qf_mltype * qf_mltype
   | Vartype of int
+  | Pair of qf_mltype * qf_mltype
 
 type mltype = qf_mltype * int list
 
@@ -15,6 +16,7 @@ let type_to_string (t : mltype) =
   let rec helper = function
     | Basetype s -> s
     | Arrowtype (s1, s2) -> "(" ^ helper s1 ^ " -> " ^ helper s2 ^ ")"
+    | Pair (s1, s2) -> "(" ^ helper s1 ^ " * " ^ helper s2 ^ ")"
     | Vartype i -> "bv" ^ string_of_int i
   in
   helper (fst t)
@@ -30,12 +32,15 @@ let initial_context : (string * mltype) list =
   ; "&&", (Arrowtype (Basetype "bool", Arrowtype (Basetype "bool", Basetype "bool")), [])
   ; "||", (Arrowtype (Basetype "bool", Arrowtype (Basetype "bool", Basetype "bool")), [])
   ; "not", (Arrowtype (Basetype "bool", Basetype "bool"), [])
+  ; "fst", (Arrowtype (Pair (Vartype 1, Vartype 2), Vartype 1), [ 1; 2 ])
+  ; "snd", (Arrowtype (Pair (Vartype 1, Vartype 2), Vartype 2), [ 1; 2 ])
   ; "println_int", (Arrowtype (Basetype "int", Basetype "unit"), [])
   ]
 ;;
 
 let rec subst_var (v : int) (t : qf_mltype) = function
   | Arrowtype (t1, t2) -> Arrowtype (subst_var v t t1, subst_var v t t2)
+  | Pair (t1, t2) -> Pair (subst_var v t t1, subst_var v t t2)
   | Vartype u when u = v -> t
   | _ as qft -> qft
 ;;
@@ -54,6 +59,7 @@ let quantify (t : mltype) (ctx : (string * mltype) list) (cnt : int) =
     let rec helper = function
       | Vartype i -> [ i ]
       | Arrowtype (t1, t2) -> helper t1 @ helper t2
+      | Pair (t1, t2) -> helper t1 @ helper t2
       | _ -> []
     in
     List.filter
@@ -83,6 +89,7 @@ let apply_subst_ctx subst ctx = List.map (fun (v, t) -> v, apply_subst subst t) 
 let rec occurs i = function
   | Vartype j when i = j -> true
   | Arrowtype (t1, t2) -> occurs i t1 || occurs i t2
+  | Pair (t1, t2) -> occurs i t1 || occurs i t2
   | _ -> false
 ;;
 
@@ -100,6 +107,7 @@ let unify qft1 qft2 =
     | (t1, Vartype i) :: tail -> helper ((Vartype i, t1) :: tail) acc
     | (Arrowtype (t1, t2), Arrowtype (t3, t4)) :: tail ->
       helper ((t1, t3) :: (t2, t4) :: tail) acc
+    | (Pair (t1, t2), Pair (t3, t4)) :: tail -> helper ((t1, t3) :: (t2, t4) :: tail) acc
     | [] -> Some acc
     | _ -> None
   in
@@ -162,6 +170,10 @@ let hm_typechecker (term : mlterm) =
       in
       (*      let () = Printf.printf "Fun: v : %d, t : %s\n%!" cnt (type_to_string newtype) in *)
       (Arrowtype (fst newtype, fst t'), []), List.remove_assoc v ctx', cnt'
+    | Pair (t1, t2) ->
+      let tp1, ctx', cnt' = helper t1 ctx cnt in
+      let tp2, ctx'', cnt'' = helper t2 ctx' cnt' in
+      (Pair (fst tp1, fst tp2), []), ctx'', cnt''
   in
   helper term initial_context 0
 ;;

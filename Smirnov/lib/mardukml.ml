@@ -6,6 +6,8 @@ open Ast
 
 let rec compile_to_lambda_cbv : mlterm -> Lambda.lterm = function
   | App (Var "not", t) -> compile_to_lambda_cbv (ITE (t, Bool false, Bool true))
+  | Var "fst" -> Abs ("p", App (Var "p", Lambda.ltrue))
+  | Var "snd" -> Abs ("p", App (Var "p", Lambda.lfalse))
   | App (App (Var "&&", t1), t2) -> compile_to_lambda_cbv (ITE (t1, t2, Bool false))
   | App (App (Var "||", t1), t2) -> compile_to_lambda_cbv (ITE (t1, Bool true, t2))
   | Var x -> Var x
@@ -26,6 +28,12 @@ let rec compile_to_lambda_cbv : mlterm -> Lambda.lterm = function
       , App (Lambda.fix_comb_cbv, Abs (v, compile_to_lambda_cbv t1)) )
   | App (t1, t2) -> App (compile_to_lambda_cbv t1, compile_to_lambda_cbv t2)
   | Fun (x, t) -> Abs (x, compile_to_lambda_cbv t)
+  | Pair (t1, t2) ->
+    App
+      ( App
+          ( Abs ("x", Abs ("y", Abs ("f", App (App (Var "f", Var "x"), Var "y"))))
+          , compile_to_lambda_cbv t1 )
+      , compile_to_lambda_cbv t2 )
 ;;
 
 let parse str =

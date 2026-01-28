@@ -16,6 +16,7 @@ rule token = parse
     | "true" { TRUE }
     | "false" { FALSE }
     | "not" { NOT }
+    | "," { COMMA }
     | "println_int" as op { VAR op }
     | ['0'-'9']+ as num { INT (int_of_string num) }
     | ['a'-'z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']* as name { VAR name }
