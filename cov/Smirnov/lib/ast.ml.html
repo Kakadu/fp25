@@ -146,7 +146,7 @@
 
 <span data-count="0">t</span>ype integer = (int[@gen QCheck.Gen.int_rang<span data-count="3">e</span> 0 1024]) [@@deriving eq, qcheck<span data-count="3">]</span>
 
-<span data-count="554708">t</span>ype mlterm =
+<span data-count="554974">t</span>ype mlterm =
   <span data-count="0">|</span> Var of identifier
   <span data-count="0">|</span> Int of integer
   <span data-count="0">|</span> Bool of bool
@@ -159,25 +159,25 @@
 [@@deriving eq, qcheck<span data-count="66670">]</span>
 
 let rec mlterm_to_string : mlterm -&gt; string = function
-  | <span data-count="90489">V</span>ar x -&gt; x
-  | <span data-count="90404">I</span>nt i -&gt; Printf.sprintf "%d" i
-  | <span data-count="45231">B</span>ool true -&gt; "true"
-  | <span data-count="45140">B</span>ool false -&gt; "false"
-  | <span data-count="90204">U</span>nit -&gt; "()"
-  | <span data-count="52367">I</span>TE (c, th, e) -&gt;
+  | <span data-count="90644">V</span>ar x -&gt; x
+  | <span data-count="90299">I</span>nt i -&gt; Printf.sprintf "%d" i
+  | <span data-count="45279">B</span>ool true -&gt; "true"
+  | <span data-count="45224">B</span>ool false -&gt; "false"
+  | <span data-count="89879">U</span>nit -&gt; "()"
+  | <span data-count="52360">I</span>TE (c, th, e) -&gt;
     "(if "
-    ^ mlterm_to_strin<span data-count="52367">g</span> c
+    ^ mlterm_to_strin<span data-count="52360">g</span> c
     ^ " then "
-    ^ mlterm_to_strin<span data-count="52367">g</span> th
+    ^ mlterm_to_strin<span data-count="52360">g</span> th
     ^ " else "
-    ^ mlterm_to_strin<span data-count="52367">g</span> e
+    ^ mlterm_to_strin<span data-count="52360">g</span> e
     ^ ")"
-  | <span data-count="52591">L</span>et (v, t1, t2) -&gt;
-    "let " ^ v ^ "=" ^ mlterm_to_strin<span data-count="52591">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="52591">g</span> t2
-  | <span data-count="52038">L</span>etRec (v, t1, t2) -&gt;
-    "let rec " ^ v ^ "=" ^ mlterm_to_strin<span data-count="52038">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="52038">g</span> t2
-  | <span data-count="52105">A</span>pp (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="52105">g</span> t1 ^ " " ^ mlterm_to_strin<span data-count="52105">g</span> t2 ^ ")"
-  | <span data-count="52121">F</span>un (x, t2) -&gt; "fun " ^ x ^ " -&gt; " ^ mlterm_to_strin<span data-count="52121">g</span> t2
+  | <span data-count="52023">L</span>et (v, t1, t2) -&gt;
+    "let " ^ v ^ "=" ^ mlterm_to_strin<span data-count="52023">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="52023">g</span> t2
+  | <span data-count="52168">L</span>etRec (v, t1, t2) -&gt;
+    "let rec " ^ v ^ "=" ^ mlterm_to_strin<span data-count="52168">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="52168">g</span> t2
+  | <span data-count="52414">A</span>pp (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="52414">g</span> t1 ^ " " ^ mlterm_to_strin<span data-count="52414">g</span> t2 ^ ")"
+  | <span data-count="52341">F</span>un (x, t2) -&gt; "fun " ^ x ^ " -&gt; " ^ mlterm_to_strin<span data-count="52341">g</span> t2
 ;;
 </code></pre>
       </div>
