@@ -23,6 +23,7 @@ type mlterm =
   | App of mlterm * mlterm
   | Fun of identifier * mlterm
   | Pair of mlterm * mlterm
+  | Match of mlterm * identifier * mlterm * identifier * mlterm
 [@@deriving eq, qcheck]
 
 let rec mlterm_to_string : mlterm -> string = function
@@ -46,4 +47,16 @@ let rec mlterm_to_string : mlterm -> string = function
   | App (t1, t2) -> "(" ^ mlterm_to_string t1 ^ " " ^ mlterm_to_string t2 ^ ")"
   | Fun (x, t2) -> "fun " ^ x ^ " -> " ^ mlterm_to_string t2
   | Pair (t1, t2) -> "(" ^ mlterm_to_string t1 ^ ", " ^ mlterm_to_string t2 ^ ")"
+  | Match (t, v1, t1, v2, t2) ->
+    "(match "
+    ^ mlterm_to_string t
+    ^ " with | inl "
+    ^ v1
+    ^ " -> "
+    ^ mlterm_to_string t1
+    ^ "| inr "
+    ^ v2
+    ^ " -> "
+    ^ mlterm_to_string t2
+    ^ ")"
 ;;

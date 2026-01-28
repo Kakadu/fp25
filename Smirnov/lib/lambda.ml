@@ -61,7 +61,7 @@ let rec lterm_to_string_typed term tp =
   | Var x, _ -> x
   | Int i, Typing.Basetype "int" -> Printf.sprintf "%d" i
   | Unit, Typing.Basetype "unit" -> "()"
-  | Abs (x, App (App (Var y, t1), t2)), Typing.Pair (tp1, tp2) when x = y ->
+  | Abs (x, App (App (Var y, t1), t2)), Typing.Prod (tp1, tp2) when x = y ->
     "("
     ^ lterm_to_string_typed t1 (tp1, [])
     ^ ", "
@@ -69,6 +69,10 @@ let rec lterm_to_string_typed term tp =
     ^ ")"
   | Abs (x, Abs (_, Var z)), Typing.Basetype "bool" when z = x -> "true"
   | Abs (_, Abs (y, Var z)), Typing.Basetype "bool" when z = y -> "false"
+  | Abs ("f", Abs ("g", App (Var "f", t))), Typing.Sum (tp1, _) ->
+    "(inl " ^ lterm_to_string_typed t (tp1, []) ^ ")"
+  | Abs ("f", Abs ("g", App (Var "g", t))), Typing.Sum (_, tp2) ->
+    "(inr " ^ lterm_to_string_typed t (tp2, []) ^ ")"
   | Abs (_, _), _ -> "Fun"
   | _, _ -> raise (Failure "Should not happen!")
 ;;

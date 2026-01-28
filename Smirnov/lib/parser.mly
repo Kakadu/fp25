@@ -18,6 +18,11 @@
 %token FALSE
 %token NOT
 %token COMMA
+%token INL
+%token INR
+%token MATCH
+%token WITH
+%token CASE
 %token LEFT_BRACK
 %token RIGHT_BRACK
 %token EQ
@@ -46,3 +51,6 @@ term:
     | LEFT_BRACK; IF; c = term; THEN; t = term; ELSE; e = term; RIGHT_BRACK { ITE (c, t, e) }
     | LEFT_BRACK; NOT; t = term; RIGHT_BRACK; { App (Var "not", t) }
     | LEFT_BRACK; t1 = term; COMMA; t2 = term; RIGHT_BRACK; { Pair (t1, t2) }
+    | LEFT_BRACK; INL; t = term; RIGHT_BRACK { App (Var "inl", t) }
+    | LEFT_BRACK; INR; t = term; RIGHT_BRACK { App (Var "inr", t) }
+    | LEFT_BRACK; MATCH; t = term; WITH; CASE; INL v1 = VAR; MAPSTO; t1 = term; CASE; INR; v2 = VAR; MAPSTO; t2 = term; RIGHT_BRACK { Match (t, v1, t1, v2, t2) }

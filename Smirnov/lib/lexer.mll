@@ -17,6 +17,10 @@ rule token = parse
     | "false" { FALSE }
     | "not" { NOT }
     | "," { COMMA }
+    | "inr" { INR }
+    | "inl" { INL }
+    | "match" { MATCH }
+    | "with" { WITH }
     | "println_int" as op { VAR op }
     | ['0'-'9']+ as num { INT (int_of_string num) }
     | ['a'-'z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']* as name { VAR name }
@@ -27,5 +31,6 @@ rule token = parse
     | "(" { LEFT_BRACK }
     | ")" { RIGHT_BRACK }
     | "=" { EQ }
+    | "|" { CASE }
     | _ as c { raise (Failure (Printf.sprintf "Unknown character %c at position %d" c (Lexing.lexeme_start lexbuf))) }
     | eof { EOF }

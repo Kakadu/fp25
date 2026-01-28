@@ -8,6 +8,8 @@ let rec compile_to_lambda_cbv : mlterm -> Lambda.lterm = function
   | App (Var "not", t) -> compile_to_lambda_cbv (ITE (t, Bool false, Bool true))
   | Var "fst" -> Abs ("p", App (Var "p", Lambda.ltrue))
   | Var "snd" -> Abs ("p", App (Var "p", Lambda.lfalse))
+  | Var "inl" -> Abs ("x", Abs ("f", Abs ("g", App (Var "f", Var "x"))))
+  | Var "inr" -> Abs ("x", Abs ("f", Abs ("g", App (Var "g", Var "x"))))
   | App (App (Var "&&", t1), t2) -> compile_to_lambda_cbv (ITE (t1, t2, Bool false))
   | App (App (Var "||", t1), t2) -> compile_to_lambda_cbv (ITE (t1, Bool true, t2))
   | Var x -> Var x
@@ -34,6 +36,11 @@ let rec compile_to_lambda_cbv : mlterm -> Lambda.lterm = function
           ( Abs ("x", Abs ("y", Abs ("f", App (App (Var "f", Var "x"), Var "y"))))
           , compile_to_lambda_cbv t1 )
       , compile_to_lambda_cbv t2 )
+  | Match (t, v1, t1, v2, t2) ->
+    let tl = compile_to_lambda_cbv t in
+    let t1l = compile_to_lambda_cbv t1 in
+    let t2l = compile_to_lambda_cbv t2 in
+    App (App (tl, Abs (v1, t1l)), Abs (v2, t2l))
 ;;
 
 let parse str =

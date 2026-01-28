@@ -168,3 +168,41 @@ Pairs 3
   # true : bool
   # 
 
+Sum 1
+  $ ../bin/REPL.exe << EOF
+  > (inl 1)
+  > EOF
+  MardukML REPL
+  
+  # (inl 1) : (int + bv1)
+  # 
+
+Sum 2
+  $ ../bin/REPL.exe << EOF
+  > (inr 1)
+  > EOF
+  MardukML REPL
+  
+  # (inr 1) : (bv0 + int)
+  # 
+
+Sum 3
+  $ ../bin/REPL.exe << EOF
+  > (match (inl 1) with | inl v -> (println_int v) | inr v -> ())
+  > EOF
+  MardukML REPL
+  
+  # 1
+  () : unit
+  # 
+
+Sum 4
+  $ ../bin/REPL.exe << EOF
+  > (match (inr 1) with | inl v -> (println_int v) | inr v -> ())
+  > EOF
+  MardukML REPL
+  
+  # () : unit
+  # 
+
+
