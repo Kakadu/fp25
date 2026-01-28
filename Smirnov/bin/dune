@@ -1,0 +1,8 @@
+(executable
+ (name REPL)
+ (public_name REPL)
+ (modules REPL)
+ (libraries mardukml_lib))
+
+(cram
+ (deps ./REPL.exe %{bin:REPL}))
