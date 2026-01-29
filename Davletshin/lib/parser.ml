@@ -12,6 +12,7 @@ let is_space = function
 ;;
 
 let spaces = skip_while is_space
+let space1 = skip is_space
 
 let is_keyword = function
   | "let" | "rec" | "in" | "fun" | "if" | "then" | "else" -> true
@@ -24,7 +25,7 @@ let first_letter = function
 ;;
 
 let not_first_letter = function
-  | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' -> true
+  | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' -> true
   | _ -> false
 ;;
 
@@ -128,12 +129,12 @@ let parse_lam =
     chain_left
       (unary pack)
       (conde
-         [ spaces *> string "=" *> return Eq
-         ; spaces *> string "<>" *> return Neq
-         ; spaces *> string "<" *> return Lt
-         ; spaces *> string ">" *> return Gt
-         ; spaces *> string ">=" *> return Le
-         ; spaces *> string ">=" *> return Ge
+         [ spaces *> string "=" *> space1 *> return Eq
+         ; spaces *> string "<>" *> space1 *> return Neq
+         ; spaces *> string "<" *> space1 *> return Lt
+         ; spaces *> string ">" *> space1 *> return Gt
+         ; spaces *> string "<=" *> space1 *> return Le
+         ; spaces *> string ">=" *> space1 *> return Ge
          ])
   in
   { single; apps; multiplicative; additive; unary; comparison }

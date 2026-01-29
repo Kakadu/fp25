@@ -19,5 +19,5 @@ let () =
       "Read-Eval-Print-Loop for Utyped Lambda Calculus"
   in
   let text = In_channel.(input_all stdin) |> String.trim in
-  Interpret.parse_and_run text
+  Interpret.parse_and_run text 100000
 ;;

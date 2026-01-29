@@ -23,6 +23,7 @@ type error =
   | UnknownVariable of string
   | TypeError of string
   | DivisionByZero
+  | ProgramFreeze
 
 module type MONAD = sig
   type 'a t
