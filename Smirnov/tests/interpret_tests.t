@@ -60,7 +60,7 @@ Explicit fix factorial
   > EOF
   MardukML REPL
   
-  # function and args types mismatch
+  # let unification failed
   # 
 
 Simple factorial
@@ -205,4 +205,11 @@ Sum 4
   # () : unit
   # 
 
-
+Test from slides 1
+  $ ../bin/REPL.exe << EOF
+  > let double f z = (f (f z)) in (((double fun x -> (x+1)) 1), ((double fun x -> (not x)) false))
+  > EOF
+  MardukML REPL
+  
+  # (3, false) : (int * bool)
+  # 

@@ -50,7 +50,7 @@ let parse str =
 
 let interp str =
   let ml_ast = parse str in
-  let tp, _, _ = Typing.hm_typechecker ml_ast in
+  let tp = Typing.hm_typechecker ml_ast in
   let l_ast = compile_to_lambda_cbv ml_ast in
   Lambda.beta_reduce Lambda.beta_step_in_cbv l_ast, tp
 ;;

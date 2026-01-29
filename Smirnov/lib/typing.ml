@@ -50,11 +50,11 @@ let rec subst_var (v : int) (t : qf_mltype) = function
   | _ as qft -> qft
 ;;
 
-let instantiate (t : mltype) cnt =
+let instantiate (t : mltype) cnt : qf_mltype * int =
   let inst_var (t1, c) v = subst_var v (Vartype c) t1, c + 1 in
   let qftype, cnt = List.fold_left inst_var (fst t, cnt) (snd t) in
   (*   let () = Printf.printf "Inst: %s -> %s\n%!" (type_to_string t) (type_to_string (qftype, [])) in *)
-  (qftype, []), cnt
+  qftype, cnt
 ;;
 
 let quantify (t : mltype) (ctx : (string * mltype) list) (cnt : int) =
@@ -100,7 +100,7 @@ let rec occurs i = function
   | _ -> false
 ;;
 
-let unify qft1 qft2 =
+let unify pairs =
   let rec helper pairs acc =
     match pairs with
     | (t1, t2) :: tail when t1 = t2 -> helper tail acc
@@ -119,84 +119,91 @@ let unify qft1 qft2 =
     | [] -> Some acc
     | _ -> None
   in
-  helper [ qft1, qft2 ] []
+  helper pairs []
 ;;
 
 (* There are lots of HM inference algorithm. Wikipedia presents J and S variants. *)
 (* I failed to implement Kosarev's variant of HM, implemented Transpodis' algo instead. *)
 (* Its complexity is DEXPTIME but the algo is much easier to understand *)
-let hm_typechecker (term : mlterm) =
-  let rec helper (term : mlterm) (ctx : (string * mltype) list) (cnt : int) =
-    (*    let () = Printf.printf "%s\n%!" (mlterm_to_string term) in *)
+(* I failed in Transpodis' too :-( So implement a naive algo, also DEXPTIME *)
+let hm_typechecker (term : mlterm) : mltype =
+  let rec helper (term : mlterm) (ctx : (string * mltype) list) (cnt : int)
+    : int * (qf_mltype * qf_mltype) list * (string * mltype) list * int
+    =
     match term with
     | Var v ->
       (match List.assoc_opt v ctx with
        | Some tp ->
-         let t', cnt' = instantiate tp cnt in
-         t', ctx, cnt'
+         let t, cnt = instantiate tp cnt in
+         cnt, [ Vartype cnt, t ], ctx, cnt + 1
        | _ -> raise (Failure "unbound variable"))
-    | Int _ -> (Basetype "int", []), ctx, cnt
-    | Bool _ -> (Basetype "bool", []), ctx, cnt
-    | Unit -> (Basetype "unit", []), ctx, cnt
+    | Int _ -> cnt, [ Vartype cnt, Basetype "int" ], ctx, cnt + 1
+    | Bool _ -> cnt, [ Vartype cnt, Basetype "bool" ], ctx, cnt + 1
+    | Unit -> cnt, [ Vartype cnt, Basetype "unit" ], ctx, cnt + 1
     | ITE (t1, t2, t3) ->
-      let tp1, ctx', cnt' = helper t1 ctx cnt in
-      let tp2, ctx'', cnt'' = helper t2 ctx' cnt' in
-      let tp3, ctx''', cnt''' = helper t3 ctx'' cnt'' in
-      if tp1 <> (Basetype "bool", [])
-      then raise (Failure "condition is not bool")
-      else (
-        match unify (fst tp2) (fst tp3) with
-        | Some subst -> apply_subst subst tp2, apply_subst_ctx subst ctx''', cnt'''
-        | None -> raise (Failure "then and else diff types"))
+      let var1, eqs1, ctx, cnt = helper t1 ctx cnt in
+      let var2, eqs2, ctx, cnt = helper t2 ctx cnt in
+      let var3, eqs3, ctx, cnt = helper t3 ctx cnt in
+      ( var2
+      , ((Vartype var2, Vartype var3) :: (Vartype var1, Basetype "bool") :: eqs1)
+        @ eqs2
+        @ eqs3
+      , ctx
+      , cnt )
     | Let (v, t1, t2) ->
-      let tp1, (ctx' : (string * mltype) list), (cnt' : int) = helper t1 ctx cnt in
-      (*      let () = Printf.printf "let: %s : %s\n%!" (mlterm_to_string t1) (type_to_string tp1) in *)
-      let tp1', cnt'' = quantify tp1 ctx' cnt' in
-      let tp2, ctx'', cnt''' = helper t2 ((v, tp1') :: ctx') cnt'' in
-      tp2, List.remove_assoc v ctx'', cnt'''
-    | LetRec (v, t1, t2) ->
-      let tp1, ctx', cnt' = helper t1 ((v, (Vartype cnt, [])) :: ctx) (cnt + 1) in
-      (*      let _ = if occurs cnt (fst tp1) then raise (Failure "occurs check") else () in *)
-      (*      let () = Printf.printf "let rec: %s : %s\n%!" (mlterm_to_string t1) (type_to_string tp1) in *)
-      let tp1', cnt'' = quantify tp1 ctx' cnt' in
-      let tp2, ctx'', cnt''' = helper t2 ((v, tp1') :: List.remove_assoc v ctx') cnt'' in
-      tp2, List.remove_assoc v ctx'', cnt'''
-    | App (t1, t2) ->
-      let tp1, ctx', cnt' = helper t1 ctx cnt in
-      let tp2, ctx'', cnt'' = helper t2 ctx' cnt' in
-      (*      let () = Printf.printf "app: %s and %s\n%!" (type_to_string tp1) (type_to_string (Arrowtype (fst tp2, Vartype cnt''), [])) in *)
-      (match unify (fst tp1) (Arrowtype (fst tp2, Vartype cnt'')) with
+      let var1, eqs1, ctx, cnt = helper t1 ctx cnt in
+      (match unify eqs1 with
        | Some subst ->
-         apply_subst subst (Vartype cnt'', []), apply_subst_ctx subst ctx'', cnt'' + 1
-       | None -> raise (Failure "function and args types mismatch"))
+         let ctx = apply_subst_ctx subst ctx in
+         let tp1 = apply_subst subst (Vartype var1, []) in
+         let tp1, cnt = quantify tp1 ctx cnt in
+         let var2, eqs2, ctx, cnt = helper t2 ((v, tp1) :: ctx) cnt in
+         var2, eqs2, List.remove_assoc v ctx, cnt
+       | None -> raise (Failure "let unification failed"))
+    | LetRec (v, t1, t2) ->
+      let var1, eqs1, ctx, cnt' = helper t1 ((v, (Vartype cnt, [])) :: ctx) (cnt + 1) in
+      (match unify ((Vartype var1, Vartype cnt) :: eqs1) with
+       | Some subst ->
+         let ctx = apply_subst_ctx subst ctx in
+         let tp1 = apply_subst subst (Vartype var1, []) in
+         let tp1, cnt = quantify tp1 ctx cnt' in
+         let var2, eqs2, ctx, cnt = helper t2 ((v, tp1) :: ctx) cnt in
+         var2, eqs2, List.remove_assoc v ctx, cnt
+       | None -> raise (Failure "letrec unification failed"))
+    | App (t1, t2) ->
+      let var1, eqs1, ctx, cnt = helper t1 ctx cnt in
+      let var2, eqs2, ctx, cnt = helper t2 ctx cnt in
+      ( cnt
+      , ((Vartype var1, Arrowtype (Vartype var2, Vartype cnt)) :: eqs1) @ eqs2
+      , ctx
+      , cnt + 1 )
     | Fun (v, t) ->
-      let t', ctx', cnt' = helper t ((v, (Vartype cnt, [])) :: ctx) (cnt + 1) in
-      let newtype =
-        match List.assoc_opt v ctx' with
-        | Some value -> value
-        | None -> raise (Failure "should not happen")
-      in
-      (*      let () = Printf.printf "Fun: v : %d, t : %s\n%!" cnt (type_to_string newtype) in *)
-      (Arrowtype (fst newtype, fst t'), []), List.remove_assoc v ctx', cnt'
+      let var, eqs, ctx, cnt' = helper t ((v, (Vartype cnt, [])) :: ctx) (cnt + 1) in
+      ( cnt'
+      , (Vartype cnt', Arrowtype (Vartype cnt, Vartype var)) :: eqs
+      , List.remove_assoc v ctx
+      , cnt' + 1 )
     | Pair (t1, t2) ->
-      let tp1, ctx', cnt' = helper t1 ctx cnt in
-      let tp2, ctx'', cnt'' = helper t2 ctx' cnt' in
-      (Prod (fst tp1, fst tp2), []), ctx'', cnt''
+      let var1, eqs1, ctx, cnt = helper t1 ctx cnt in
+      let var2, eqs2, ctx, cnt = helper t2 ctx cnt in
+      cnt, ((Vartype cnt, Prod (Vartype var1, Vartype var2)) :: eqs1) @ eqs2, ctx, cnt + 1
     | Match (t, v1, t1, v2, t2) ->
-      let tp, ctx', cnt' = helper t ctx cnt in
-      (match fst tp with
-       | Sum (a, b) ->
-         let t1p, ctx'', cnt'' = helper t1 ((v1, (a, [])) :: ctx') cnt' in
-         let t2p, ctx''', cnt''' =
-           helper t2 ((v2, (b, [])) :: List.remove_assoc v1 ctx'') cnt''
-         in
-         (match unify (fst t1p) (fst t2p) with
-          | Some subst ->
-            ( apply_subst subst t1p
-            , apply_subst_ctx subst (List.remove_assoc v2 ctx''')
-            , cnt''' )
-          | None -> raise (Failure "cannot unify types of cases"))
-       | _ -> raise (Failure "matching non-sum type"))
+      let var, eqs, ctx, cnt = helper t ctx cnt in
+      let var1, eqs1, ctx, cnt1 = helper t1 ((v1, (Vartype cnt, [])) :: ctx) (cnt + 1) in
+      let var2, eqs2, ctx, cnt2 =
+        helper t2 ((v2, (Vartype cnt1, [])) :: List.remove_assoc v1 ctx) (cnt1 + 1)
+      in
+      ( var1
+      , ((Vartype var1, Vartype var2)
+         :: (Vartype var, Sum (Vartype cnt, Vartype cnt1))
+         :: eqs)
+        @ eqs1
+        @ eqs2
+      , ctx
+      , cnt2 )
   in
-  helper term initial_context 0
+  let var, eqs, _, _ = helper term initial_context 0 in
+  match unify eqs with
+  | Some subst -> apply_subst subst (Vartype var, [])
+  | None -> raise (Failure "final unification failed")
 ;;
