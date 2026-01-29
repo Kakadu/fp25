@@ -178,7 +178,7 @@
 
 <span data-count="0">t</span>ype integer = (int[@gen QCheck.Gen.int_rang<span data-count="3">e</span> 0 1024]) [@@deriving eq, qcheck<span data-count="3">]</span>
 
-<span data-count="983989">t</span>ype mlterm =
+<span data-count="981509">t</span>ype mlterm =
   <span data-count="0">|</span> Var of identifier
   <span data-count="0">|</span> Int of integer
   <span data-count="0">|</span> Bool of bool
@@ -193,37 +193,37 @@
 [@@deriving eq, qcheck<span data-count="329066">]</span>
 
 let rec mlterm_to_string : mlterm -&gt; string = function
-  | <span data-count="147887">V</span>ar x -&gt; x
-  | <span data-count="148528">I</span>nt i -&gt; Printf.sprintf "%d" i
-  | <span data-count="73871">B</span>ool true -&gt; "true"
-  | <span data-count="74285">B</span>ool false -&gt; "false"
-  | <span data-count="147592">U</span>nit -&gt; "()"
-  | <span data-count="61605">I</span>TE (c, th, e) -&gt;
+  | <span data-count="148248">V</span>ar x -&gt; x
+  | <span data-count="146747">I</span>nt i -&gt; Printf.sprintf "%d" i
+  | <span data-count="74146">B</span>ool true -&gt; "true"
+  | <span data-count="73990">B</span>ool false -&gt; "false"
+  | <span data-count="147541">U</span>nit -&gt; "()"
+  | <span data-count="61012">I</span>TE (c, th, e) -&gt;
     "(if "
-    ^ mlterm_to_strin<span data-count="61605">g</span> c
+    ^ mlterm_to_strin<span data-count="61012">g</span> c
     ^ " then "
-    ^ mlterm_to_strin<span data-count="61605">g</span> th
+    ^ mlterm_to_strin<span data-count="61012">g</span> th
     ^ " else "
-    ^ mlterm_to_strin<span data-count="61605">g</span> e
+    ^ mlterm_to_strin<span data-count="61012">g</span> e
     ^ ")"
-  | <span data-count="61644">L</span>et (v, t1, t2) -&gt;
-    "let " ^ v ^ "=" ^ mlterm_to_strin<span data-count="61644">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="61644">g</span> t2
-  | <span data-count="61686">L</span>etRec (v, t1, t2) -&gt;
-    "let rec " ^ v ^ "=" ^ mlterm_to_strin<span data-count="61686">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="61686">g</span> t2
-  | <span data-count="61307">A</span>pp (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="61307">g</span> t1 ^ " " ^ mlterm_to_strin<span data-count="61307">g</span> t2 ^ ")"
-  | <span data-count="61536">F</span>un (x, t2) -&gt; "fun " ^ x ^ " -&gt; " ^ mlterm_to_strin<span data-count="61536">g</span> t2
-  | <span data-count="62000">P</span>air (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="62000">g</span> t1 ^ ", " ^ mlterm_to_strin<span data-count="62000">g</span> t2 ^ ")"
-  | <span data-count="61158">M</span>atch (t, v1, t1, v2, t2) -&gt;
+  | <span data-count="61386">L</span>et (v, t1, t2) -&gt;
+    "let " ^ v ^ "=" ^ mlterm_to_strin<span data-count="61386">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="61386">g</span> t2
+  | <span data-count="61437">L</span>etRec (v, t1, t2) -&gt;
+    "let rec " ^ v ^ "=" ^ mlterm_to_strin<span data-count="61437">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="61437">g</span> t2
+  | <span data-count="61362">A</span>pp (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="61362">g</span> t1 ^ " " ^ mlterm_to_strin<span data-count="61362">g</span> t2 ^ ")"
+  | <span data-count="61575">F</span>un (x, t2) -&gt; "fun " ^ x ^ " -&gt; " ^ mlterm_to_strin<span data-count="61575">g</span> t2
+  | <span data-count="61785">P</span>air (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="61785">g</span> t1 ^ ", " ^ mlterm_to_strin<span data-count="61785">g</span> t2 ^ ")"
+  | <span data-count="61339">M</span>atch (t, v1, t1, v2, t2) -&gt;
     "(match "
-    ^ mlterm_to_strin<span data-count="61158">g</span> t
+    ^ mlterm_to_strin<span data-count="61339">g</span> t
     ^ " with | inl "
     ^ v1
     ^ " -&gt; "
-    ^ mlterm_to_strin<span data-count="61158">g</span> t1
+    ^ mlterm_to_strin<span data-count="61339">g</span> t1
     ^ "| inr "
     ^ v2
     ^ " -&gt; "
-    ^ mlterm_to_strin<span data-count="61158">g</span> t2
+    ^ mlterm_to_strin<span data-count="61339">g</span> t2
     ^ ")"
 ;;
 </code></pre>
