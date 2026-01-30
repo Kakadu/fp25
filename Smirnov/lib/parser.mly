@@ -4,6 +4,8 @@
 
 %token LET
 %token REC
+%token EXCEPTION
+%token TRY
 %token IN
 %token IF
 %token THEN
@@ -29,6 +31,7 @@
 %token EOF
 
 %type <mlterm> term prog
+%type <string * mlterm> tryblock
 
 %start prog
 
@@ -37,9 +40,13 @@
 prog:
     | t = term; EOF { t }
 
+tryblock:
+    | CASE; v = VAR; MAPSTO; t = term { (v, t) }
+
 term:
     | LET; v = VAR; args = list(VAR); EQ; t1 = term; IN; t2 = term { Let (v, List.fold_right (fun e acc -> Fun (e, acc)) args t1, t2) }
     | LET; REC; v = VAR; args = list(VAR); EQ; t1 = term; IN; t2 = term { LetRec (v, List.fold_right (fun e acc -> Fun (e, acc)) args t1, t2) }
+    | LET; EXCEPTION; v = VAR; IN; t = term { LetExc (v, t) }
     | v = VAR { Var v }
     | i = INT { Int i }
     | TRUE { Bool true }
@@ -54,3 +61,4 @@ term:
     | LEFT_BRACK; INL; t = term; RIGHT_BRACK { App (Var "inl", t) }
     | LEFT_BRACK; INR; t = term; RIGHT_BRACK { App (Var "inr", t) }
     | LEFT_BRACK; MATCH; t = term; WITH; CASE; INL v1 = VAR; MAPSTO; t1 = term; CASE; INR; v2 = VAR; MAPSTO; t2 = term; RIGHT_BRACK { Match (t, v1, t1, v2, t2) }
+    | LEFT_BRACK; TRY; t = term; WITH; l = list(tryblock); RIGHT_BRACK { Try (t, l) }

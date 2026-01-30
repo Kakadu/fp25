@@ -39,6 +39,7 @@ let initial_context : (string * mltype) list =
   ; "inl", (Arrowtype (Vartype 1, Sum (Vartype 1, Vartype 2)), [ 1; 2 ])
   ; "inr", (Arrowtype (Vartype 2, Sum (Vartype 1, Vartype 2)), [ 1; 2 ])
   ; "println_int", (Arrowtype (Basetype "int", Basetype "unit"), [])
+  ; "raise", (Arrowtype (Basetype "exc", Vartype 1), [ 1 ])
   ]
 ;;
 
@@ -170,6 +171,9 @@ let hm_typechecker (term : mlterm) : mltype =
          let var2, eqs2, ctx, cnt = helper t2 ((v, tp1) :: ctx) cnt in
          var2, eqs2, List.remove_assoc v ctx, cnt
        | None -> raise (Failure "letrec unification failed"))
+    | LetExc (e, t) ->
+      let var, eqs, ctx, cnt = helper t ((e, (Basetype "exc", [])) :: ctx) (cnt + 1) in
+      var, eqs, List.remove_assoc e ctx, cnt
     | App (t1, t2) ->
       let var1, eqs1, ctx, cnt = helper t1 ctx cnt in
       let var2, eqs2, ctx, cnt = helper t2 ctx cnt in
@@ -201,6 +205,18 @@ let hm_typechecker (term : mlterm) : mltype =
         @ eqs2
       , ctx
       , cnt2 )
+    | Try (t, l) ->
+      let (var : int), eqs, ctx, cnt = helper t ctx cnt in
+      let acc0 = [], eqs, ctx, cnt in
+      let (varl : int list), eqs1, ctx, cnt =
+        List.fold_left
+          (fun (varl, eqs, ctx, cnt) (_, t) ->
+            let (var : int), eqs1, ctx, cnt = helper t ctx cnt in
+            var :: varl, eqs @ eqs1, ctx, cnt)
+          acc0
+          l
+      in
+      var, List.map (fun v -> Vartype var, Vartype v) varl @ eqs @ eqs1, ctx, cnt
   in
   let var, eqs, _, _ = helper term initial_context 0 in
   match unify eqs with

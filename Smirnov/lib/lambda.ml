@@ -8,6 +8,8 @@ type lterm =
   | Unit
   | App of lterm * lterm
   | Abs of string * lterm
+  | Exc of string
+  | Try of lterm * (string * lterm) list
 
 let ltrue = Abs ("x", Abs ("y", Var "x"))
 let lfalse = Abs ("x", Abs ("y", Var "y"))
@@ -53,6 +55,12 @@ let rec lterm_to_string = function
   | Unit -> "()"
   | App (t1, t2) -> "(" ^ lterm_to_string t1 ^ " " ^ lterm_to_string t2 ^ ")"
   | Abs (x, t2) -> "(\\" ^ x ^ "." ^ lterm_to_string t2 ^ ")"
+  | Exc e -> "Exception " ^ e
+  | Try (t, l) ->
+    "try "
+    ^ lterm_to_string t
+    ^ "with "
+    ^ String.concat " " (List.map (fun (s, t) -> "| " ^ s ^ " -> " ^ lterm_to_string t) l)
 ;;
 
 let rec lterm_to_string_typed term tp =
@@ -74,6 +82,7 @@ let rec lterm_to_string_typed term tp =
   | Abs ("f", Abs ("g", App (Var "g", t))), Typing.Sum (_, tp2) ->
     "(inr " ^ lterm_to_string_typed t (tp2, []) ^ ")"
   | Abs (_, _), _ -> "Fun"
+  | Exc e, _ -> "Exception: " ^ e
   | _, _ -> raise (Failure "Should not happen!")
 ;;
 
@@ -82,6 +91,7 @@ let vars t =
     | Var x -> [ x ]
     | App (t1, t2) -> helper t1 @ helper t2
     | Abs (x, t2) -> [ x ] @ helper t2
+    | Try (t, l) -> helper t @ List.concat_map (fun (_, t) -> helper t) l
     | _ -> []
   in
   List.sort_uniq compare (helper t)
@@ -92,6 +102,7 @@ let fvars t =
     | Var x -> [ x ]
     | App (t1, t2) -> helper t1 @ helper t2
     | Abs (x, t2) -> List.filter (fun y -> x <> y) (helper t2)
+    | Try (t, l) -> helper t @ List.concat_map (fun (_, t) -> helper t) l
     | _ -> []
   in
   List.sort_uniq compare (helper t)
@@ -103,6 +114,8 @@ let rec rename_free_var term x y =
   | App (t1, t2) -> App (rename_free_var t1 x y, rename_free_var t2 x y)
   | Abs (u, _) when u = x -> term
   | Abs (u, t) -> Abs (u, rename_free_var t x y)
+  | Try (t, l) ->
+    Try (rename_free_var t x y, List.map (fun (s, t) -> s, rename_free_var t x y) l)
   | _ -> term
 ;;
 
@@ -112,11 +125,23 @@ let subst term x t =
     match term with
     | Var y -> if x = y then t, vars else term, vars
     | Int _ -> term, vars
+    | Exc _ -> term, vars
     | Unit -> term, vars
     | App (t1, t2) ->
       let r1 = helper t1 x t vars in
       let r2 = helper t2 x t (snd r1) in
       App (fst r1, fst r2), snd r2
+    | Try (t1, l) ->
+      let t1, vars = helper t1 x t vars in
+      let l1, vars =
+        List.fold_left
+          (fun acc (e1, t1) ->
+            let t2, vars = helper t1 x t (snd acc) in
+            fst acc @ [ e1, t2 ], vars)
+          ([], vars)
+          l
+      in
+      Try (t1, l1), vars
     | Abs (y, _) when y = x -> term, vars
     | Abs (y, t2) ->
       (match List.find_opt (( = ) y) (fvars t) with
@@ -136,7 +161,18 @@ let rec beta_step_in_cbv term =
   | Some t -> Some t
   | None ->
     (match term with
+     | Try (t, l) ->
+       (match beta_step_in_cbv t with
+        | Some t1 -> Some (Try (t1, l))
+        | None ->
+          (match t with
+           | Exc e ->
+             (match List.assoc_opt e l with
+              | Some t -> Some t
+              | None -> Some (Exc e))
+           | t1 -> Some t1))
      | Abs (_, _) -> None
+     | App (Abs (_, _), Exc e) -> Some (Exc e)
      | App (Abs (x, y), z) ->
        (match beta_step_in_cbv z with
         | Some t -> Some (App (Abs (x, y), t))
@@ -145,9 +181,15 @@ let rec beta_step_in_cbv term =
        (match beta_step_in_cbv t1 with
         | Some t -> Some (App (t, t2))
         | None ->
-          (match beta_step_in_cbv t2 with
-           | Some t -> Some (App (t1, t))
-           | None -> None))
+          (match t2 with
+           | Exc e -> Some (Exc e)
+           | _ ->
+             (match beta_step_in_cbv t2 with
+              | Some t -> Some (App (t1, t))
+              | None ->
+                (match t1 with
+                 | Exc e -> Some (Exc e)
+                 | _ -> None))))
      | _ -> None)
 ;;
 
