@@ -34,7 +34,8 @@
   ppx_deriving
   ppx_deriving_qcheck
   bisect_ppx
-  qcheck-core
+  (qcheck-core
+   (= "0.91"))
   (odoc :with-doc)
   (ocamlformat
    (and
