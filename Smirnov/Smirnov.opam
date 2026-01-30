@@ -22,7 +22,7 @@ depends: [
   "ppx_deriving_qcheck"
   "ppxlib" {= "0.35.0"}
   "bisect_ppx" {= "2.8.3"}
-  "qcheck-core" {= "0.91"}
+  "qcheck-core" {= "0.27"}
   "odoc" {with-doc}
   "ocamlformat" {build & = "0.26.2"}
 ]

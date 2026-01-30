@@ -30,7 +30,7 @@ let ident_gen =
 ;;
 
 type identifier = (string[@gen ident_gen]) [@@deriving eq, qcheck]
-type integer = (int[@gen QCheck.Gen.int_pos]) [@@deriving eq, qcheck]
+type integer = (int[@gen QCheck.Gen.small_nat]) [@@deriving eq, qcheck]
 
 type mlterm =
   | Var of identifier
