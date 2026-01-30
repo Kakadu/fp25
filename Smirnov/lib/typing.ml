@@ -145,12 +145,8 @@ let hm_typechecker (term : mlterm) : mltype =
       let var1, eqs1, ctx, cnt = helper t1 ctx cnt in
       let var2, eqs2, ctx, cnt = helper t2 ctx cnt in
       let var3, eqs3, ctx, cnt = helper t3 ctx cnt in
-      ( var2
-      , ((Vartype var2, Vartype var3) :: (Vartype var1, Basetype "bool") :: eqs1)
-        @ eqs2
-        @ eqs3
-      , ctx
-      , cnt )
+      let neweqs = [ Vartype var2, Vartype var3; Vartype var1, Basetype "bool" ] in
+      var2, neweqs @ eqs1 @ eqs2 @ eqs3, ctx, cnt
     | Let (v, t1, t2) ->
       let var1, eqs1, ctx, cnt = helper t1 ctx cnt in
       (match unify eqs1 with
@@ -177,16 +173,12 @@ let hm_typechecker (term : mlterm) : mltype =
     | App (t1, t2) ->
       let var1, eqs1, ctx, cnt = helper t1 ctx cnt in
       let var2, eqs2, ctx, cnt = helper t2 ctx cnt in
-      ( cnt
-      , ((Vartype var1, Arrowtype (Vartype var2, Vartype cnt)) :: eqs1) @ eqs2
-      , ctx
-      , cnt + 1 )
+      let neweqs = [ Vartype var1, Arrowtype (Vartype var2, Vartype cnt) ] in
+      cnt, neweqs @ eqs1 @ eqs2, ctx, cnt + 1
     | Fun (v, t) ->
       let var, eqs, ctx, cnt' = helper t ((v, (Vartype cnt, [])) :: ctx) (cnt + 1) in
-      ( cnt'
-      , (Vartype cnt', Arrowtype (Vartype cnt, Vartype var)) :: eqs
-      , List.remove_assoc v ctx
-      , cnt' + 1 )
+      let neweqs = [ Vartype cnt', Arrowtype (Vartype cnt, Vartype var) ] in
+      cnt', neweqs @ eqs, List.remove_assoc v ctx, cnt' + 1
     | Pair (t1, t2) ->
       let var1, eqs1, ctx, cnt = helper t1 ctx cnt in
       let var2, eqs2, ctx, cnt = helper t2 ctx cnt in
@@ -197,14 +189,10 @@ let hm_typechecker (term : mlterm) : mltype =
       let var2, eqs2, ctx, cnt2 =
         helper t2 ((v2, (Vartype cnt1, [])) :: List.remove_assoc v1 ctx) (cnt1 + 1)
       in
-      ( var1
-      , ((Vartype var1, Vartype var2)
-         :: (Vartype var, Sum (Vartype cnt, Vartype cnt1))
-         :: eqs)
-        @ eqs1
-        @ eqs2
-      , ctx
-      , cnt2 )
+      let neweqs =
+        [ Vartype var1, Vartype var2; Vartype var, Sum (Vartype cnt, Vartype cnt1) ]
+      in
+      var1, neweqs @ eqs @ eqs1 @ eqs2, ctx, cnt2
     | Try (t, l) ->
       let (var : int), eqs, ctx, cnt = helper t ctx cnt in
       let acc0 = [], eqs, ctx, cnt in
