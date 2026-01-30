@@ -33,7 +33,10 @@
   ppx_expect
   ppx_deriving
   ppx_deriving_qcheck
-  bisect_ppx
+  (ppxlib
+   (= "0.35.0"))
+  (bisect_ppx
+   (= "2.8.3"))
   (qcheck-core
    (= "0.91"))
   (odoc :with-doc)
