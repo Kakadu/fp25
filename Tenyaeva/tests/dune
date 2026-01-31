@@ -1,0 +1,13 @@
+(library
+ (name qcheck_lib)
+ (libraries tenyaeva_lib qcheck-core qcheck-core.runner)
+ (modules generators qcheck)
+ (inline_tests)
+ (preprocess
+  (pps ppx_expect ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx)))
+
+(cram
+ (applies_to *)
+ (deps ../bin/REPL.exe))
