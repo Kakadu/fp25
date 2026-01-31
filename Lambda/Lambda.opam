@@ -14,7 +14,7 @@ homepage: "https://github.com/Kakadu/fp25"
 doc: "https://kakadu.github.io/fp25/docs/Lambda"
 bug-reports: "https://github.com/Kakadu/fp25"
 depends: [
-  "dune" {>= "3.7" & = "3.19.1"}
+  "dune" {>= "3.7" & = "3.21.0"}
   "angstrom" {= "0.16.0"}
   "base"
   "ppx_inline_test" {with-test}
