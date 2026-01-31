@@ -272,14 +272,14 @@ let reserved =
 
 let ident_gen =
   QCheck.Gen.ma<span data-count="3">p</span>
-    (fun x -&gt; <span data-count="79764">i</span>f List.mem x reserved then <span data-count="6272">"</span>reserved" else <span data-count="73492">x</span>)
+    (fun x -&gt; <span data-count="77911">i</span>f List.mem x reserved then <span data-count="6069">"</span>reserved" else <span data-count="71842">x</span>)
     (QCheck.Gen.string_small_o<span data-count="3">f</span> (QCheck.Gen.char_rang<span data-count="3">e</span> 'a' 'z'))
 ;;
 
 <span data-count="0">t</span>ype identifier = (string[@gen ident_gen]) [@@deriving eq, qcheck<span data-count="3">]</span>
 <span data-count="0">t</span>ype integer = (int[@gen QCheck.Gen.small_nat]) [@@deriving eq, qcheck<span data-count="3">]</span>
 
-<span data-count="342923">t</span>ype mlterm =
+<span data-count="341165">t</span>ype mlterm =
   <span data-count="0">|</span> Var of identifier
   <span data-count="0">|</span> Int of integer
   <span data-count="0">|</span> Bool of bool
@@ -299,51 +299,51 @@ let ident_gen =
           QCheck.Gen.list_siz<span data-count="6175">e</span>
             (QCheck.Gen.int_rang<span data-count="6175">e</span> 1 5)
             (QCheck.Gen.ma<span data-count="6175">p</span>
-               (fun (gen0, gen1) -&gt; <span data-count="19424">g</span>en0, gen1)
+               (fun (gen0, gen1) -&gt; <span data-count="18934">g</span>en0, gen1)
                (QCheck.Gen.pai<span data-count="6175">r</span> gen_identifier (gen_mlterm_size<span data-count="6175">d</span> (n / 2))))]<span data-count="0">)</span>
 [@@deriving eq, qcheck<span data-count="673085">]</span>
 
 let rec mlterm_to_string : mlterm -&gt; string = function
-  | <span data-count="20657">V</span>ar x -&gt; x
-  | <span data-count="20314">I</span>nt i -&gt; Printf.sprintf "%d" i
-  | <span data-count="10259">B</span>ool true -&gt; "true"
-  | <span data-count="10238">B</span>ool false -&gt; "false"
-  | <span data-count="20479">U</span>nit -&gt; "()"
-  | <span data-count="6455">I</span>TE (c, th, e) -&gt;
+  | <span data-count="20168">V</span>ar x -&gt; x
+  | <span data-count="20207">I</span>nt i -&gt; Printf.sprintf "%d" i
+  | <span data-count="10184">B</span>ool true -&gt; "true"
+  | <span data-count="10103">B</span>ool false -&gt; "false"
+  | <span data-count="20358">U</span>nit -&gt; "()"
+  | <span data-count="6495">I</span>TE (c, th, e) -&gt;
     "(if "
-    ^ mlterm_to_strin<span data-count="6455">g</span> c
+    ^ mlterm_to_strin<span data-count="6495">g</span> c
     ^ " then "
-    ^ mlterm_to_strin<span data-count="6455">g</span> th
+    ^ mlterm_to_strin<span data-count="6495">g</span> th
     ^ " else "
-    ^ mlterm_to_strin<span data-count="6455">g</span> e
+    ^ mlterm_to_strin<span data-count="6495">g</span> e
     ^ ")"
-  | <span data-count="6510">L</span>et (v, t1, t2) -&gt;
-    "let " ^ v ^ "=" ^ mlterm_to_strin<span data-count="6510">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="6510">g</span> t2
-  | <span data-count="6614">L</span>etRec (v, t1, t2) -&gt;
-    "let rec " ^ v ^ "=" ^ mlterm_to_strin<span data-count="6614">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="6614">g</span> t2
-  | <span data-count="6610">L</span>etExc (v, t) -&gt; "let exception " ^ v ^ " in " ^ mlterm_to_strin<span data-count="6610">g</span> t
-  | <span data-count="6518">A</span>pp (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="6518">g</span> t1 ^ " " ^ mlterm_to_strin<span data-count="6518">g</span> t2 ^ ")"
-  | <span data-count="6641">F</span>un (x, t2) -&gt; "fun " ^ x ^ " -&gt; " ^ mlterm_to_strin<span data-count="6641">g</span> t2
-  | <span data-count="6663">P</span>air (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="6663">g</span> t1 ^ ", " ^ mlterm_to_strin<span data-count="6663">g</span> t2 ^ ")"
-  | <span data-count="6654">M</span>atch (t, v1, t1, v2, t2) -&gt;
+  | <span data-count="6474">L</span>et (v, t1, t2) -&gt;
+    "let " ^ v ^ "=" ^ mlterm_to_strin<span data-count="6474">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="6474">g</span> t2
+  | <span data-count="6478">L</span>etRec (v, t1, t2) -&gt;
+    "let rec " ^ v ^ "=" ^ mlterm_to_strin<span data-count="6478">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="6478">g</span> t2
+  | <span data-count="6383">L</span>etExc (v, t) -&gt; "let exception " ^ v ^ " in " ^ mlterm_to_strin<span data-count="6383">g</span> t
+  | <span data-count="6496">A</span>pp (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="6496">g</span> t1 ^ " " ^ mlterm_to_strin<span data-count="6496">g</span> t2 ^ ")"
+  | <span data-count="6436">F</span>un (x, t2) -&gt; "fun " ^ x ^ " -&gt; " ^ mlterm_to_strin<span data-count="6436">g</span> t2
+  | <span data-count="6610">P</span>air (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="6610">g</span> t1 ^ ", " ^ mlterm_to_strin<span data-count="6610">g</span> t2 ^ ")"
+  | <span data-count="6519">M</span>atch (t, v1, t1, v2, t2) -&gt;
     "(match "
-    ^ mlterm_to_strin<span data-count="6654">g</span> t
+    ^ mlterm_to_strin<span data-count="6519">g</span> t
     ^ " with | inl "
     ^ v1
     ^ " -&gt; "
-    ^ mlterm_to_strin<span data-count="6654">g</span> t1
+    ^ mlterm_to_strin<span data-count="6519">g</span> t1
     ^ "| inr "
     ^ v2
     ^ " -&gt; "
-    ^ mlterm_to_strin<span data-count="6654">g</span> t2
+    ^ mlterm_to_strin<span data-count="6519">g</span> t2
     ^ ")"
-  | <span data-count="6488">T</span>ry (t, l) -&gt;
+  | <span data-count="6310">T</span>ry (t, l) -&gt;
     "(try "
-    ^ mlterm_to_strin<span data-count="6488">g</span> t
+    ^ mlterm_to_strin<span data-count="6310">g</span> t
     ^ " with "
-    ^ String.conca<span data-count="6488">t</span>
+    ^ String.conca<span data-count="6310">t</span>
         " "
-        (List.ma<span data-count="6488">p</span> (fun (s, t) -&gt; <span data-count="19424">"</span>| " ^ s ^ " -&gt; " ^ mlterm_to_strin<span data-count="19424">g</span> t) l)
+        (List.ma<span data-count="6310">p</span> (fun (s, t) -&gt; <span data-count="18934">"</span>| " ^ s ^ " -&gt; " ^ mlterm_to_strin<span data-count="18934">g</span> t) l)
     ^ ")"
 ;;
 </code></pre>
