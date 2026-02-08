@@ -75,78 +75,70 @@ let chain_left term op =
 
 let desugar_abs args body = List.fold_right (fun arg acc -> Abs (arg, acc)) args body
 
-let parse_lam =
-  let single pack =
-    fix (fun _ ->
+let parser =
+  fix (fun parser ->
+    let single =
       conde
-        [ char '(' *> pack.comparison pack <* char ')' <?> "Parentheses expected"
+        [ (varname <* spaces >>= fun var -> return (Var var))
+        ; (number <* spaces >>= fun n -> return (Int n))
+        ; char '(' *> parser <* char ')'
+        ; (string "if" *> parser
+           >>= fun c ->
+           spaces *> string "then" *> parser
+           >>= fun t -> spaces *> string "else" *> parser >>| fun e -> If (c, t, e))
         ; (string "fun" *> spaces *> many1 (varname <* spaces)
            <* spaces
            <* string "->"
-           >>= fun args ->
-           pack.comparison pack >>= fun body -> return (desugar_abs args body))
-        ; (varname <* spaces >>= fun var -> return (Var var))
-        ; (number <* spaces >>= fun n -> return (Int n))
-        ; (string "if" *> pack.comparison pack
-           >>= fun c ->
-           spaces *> string "then" *> pack.comparison pack
-           >>= fun t ->
-           spaces *> string "else" *> pack.comparison pack >>| fun e -> If (c, t, e))
+           >>= fun args -> parser >>= fun body -> return (desugar_abs args body))
         ; (string "let" *> option Nonrec (spaces *> string "rec" *> return Rec)
            >>= fun flag ->
            spaces *> varname
            >>= fun name ->
            many (spaces *> varname)
            >>= fun args ->
-           spaces *> char '=' *> pack.comparison pack
+           spaces *> char '=' *> parser
            >>= fun bind ->
-           spaces *> string "in" *> pack.comparison pack
+           spaces *> string "in" *> parser
            >>| fun body -> Let (flag, name, desugar_abs args bind, body))
-        ])
-  in
-  let apps pack =
-    many1 (spaces *> pack.single pack <* spaces)
-    >>= function
-    | [] -> fail "bad syntax"
-    | x :: xs -> return @@ List.fold_left (fun l r -> App (l, r)) x xs
-  in
-  let multiplicative pack =
-    chain_left
-      (apps pack)
-      (conde [ spaces *> char '*' *> return Times; spaces *> char '/' *> return Divide ])
-  in
-  let additive pack =
-    chain_left
-      (multiplicative pack)
-      (conde [ spaces *> char '+' *> return Plus; spaces *> char '-' *> return Minus ])
-  in
-  let unary pack =
-    spaces *> char '-' *> spaces *> pack.additive pack
-    >>| (fun e -> Unop (Neg, e))
-    <|> pack.additive pack
-  in
-  let comparison pack =
-    chain_left
-      (unary pack)
-      (conde
-         [ spaces *> string "=" *> space1 *> return Eq
-         ; spaces *> string "<>" *> space1 *> return Neq
-         ; spaces *> string "<" *> space1 *> return Lt
-         ; spaces *> string ">" *> space1 *> return Gt
-         ; spaces *> string "<=" *> space1 *> return Le
-         ; spaces *> string ">=" *> space1 *> return Ge
-         ])
-  in
-  { single; apps; multiplicative; additive; unary; comparison }
+        ]
+    in
+    let apps =
+      many1 (spaces *> single)
+      >>= function
+      | [] -> fail "bad syntax"
+      | x :: xs -> return @@ List.fold_left (fun l r -> App (l, r)) x xs
+    in
+    let unary =
+      spaces *> (char '-' *> spaces *> apps >>| fun e -> Unop (Neg, e)) <|> apps
+    in
+    let multiplicative =
+      chain_left
+        unary
+        (conde
+           [ spaces *> char '*' *> return Times; spaces *> char '/' *> return Divide ])
+    in
+    let additive =
+      chain_left
+        multiplicative
+        (conde [ spaces *> char '+' *> return Plus; spaces *> char '-' *> return Minus ])
+    in
+    let comparison =
+      chain_left
+        additive
+        (conde
+           [ spaces *> string "=" *> space1 *> return Eq
+           ; spaces *> string "<>" *> space1 *> return Neq
+           ; spaces *> string "<" *> space1 *> return Lt
+           ; spaces *> string ">" *> space1 *> return Gt
+           ; spaces *> string "<=" *> space1 *> return Le
+           ; spaces *> string ">=" *> space1 *> return Ge
+           ])
+    in
+    comparison)
 ;;
 
 let parse str =
-  match
-    Angstrom.parse_string
-      (parse_lam.comparison parse_lam)
-      ~consume:Angstrom.Consume.All
-      str
-  with
+  match Angstrom.parse_string parser ~consume:Angstrom.Consume.All str with
   | Result.Ok x -> Result.Ok x
   | Error er -> Result.Error (`Parsing_error er)
 ;;
