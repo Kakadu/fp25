@@ -480,80 +480,80 @@ let initial_context : (string * mltype) list =
 ;;
 
 let rec subst_var (v : int) (t : qf_mltype) = function
-  | <span data-count="10426">A</span>rrowtype (t1, t2) -&gt; Arrowtype (subst_va<span data-count="10426">r</span> v t t1, subst_va<span data-count="10426">r</span> v t t2)
-  | <span data-count="440">P</span>rod (t1, t2) -&gt; Prod (subst_va<span data-count="440">r</span> v t t1, subst_va<span data-count="440">r</span> v t t2)
-  | <span data-count="446">S</span>um (t1, t2) -&gt; Sum (subst_va<span data-count="446">r</span> v t t1, subst_va<span data-count="446">r</span> v t t2)
-  | <span data-count="13074">V</span>artype u when u = v -&gt; <span data-count="1098">t</span>
-  | <span data-count="24893">_</span> as qft -&gt; qft
+  | <span data-count="10671">A</span>rrowtype (t1, t2) -&gt; Arrowtype (subst_va<span data-count="10671">r</span> v t t1, subst_va<span data-count="10671">r</span> v t t2)
+  | <span data-count="471">P</span>rod (t1, t2) -&gt; Prod (subst_va<span data-count="471">r</span> v t t1, subst_va<span data-count="471">r</span> v t t2)
+  | <span data-count="462">S</span>um (t1, t2) -&gt; Sum (subst_va<span data-count="462">r</span> v t t1, subst_va<span data-count="462">r</span> v t t2)
+  | <span data-count="13301">V</span>artype u when u = v -&gt; <span data-count="1121">t</span>
+  | <span data-count="25441">_</span> as qft -&gt; qft
 ;;
 
 let instantiate (t : mltype) cnt : qf_mltype * int =
-  <span data-count="127">l</span>et inst_var (t1, c) v = <span data-count="23">s</span>ubst_va<span data-count="23">r</span> v (Vartype c) t1, c + 1 in
-  let qftype, cnt = List.fold_left inst_var (fs<span data-count="127">t</span> t, cnt) (sn<span data-count="127">d</span> t) in
+  <span data-count="130">l</span>et inst_var (t1, c) v = <span data-count="26">s</span>ubst_va<span data-count="26">r</span> v (Vartype c) t1, c + 1 in
+  let qftype, cnt = List.fold_left inst_var (fs<span data-count="130">t</span> t, cnt) (sn<span data-count="130">d</span> t) in
   (*   let () = Printf.printf "Inst: %s -&gt; %s\n%!" (type_to_string t) (type_to_string (qftype, [])) in *)
-  <span data-count="127">q</span>ftype, cnt
+  <span data-count="130">q</span>ftype, cnt
 ;;
 
 let quantify (t : mltype) (ctx : (string * mltype) list) (cnt : int) =
   (*  let () = Printf.printf "Quantify %s\n%!" (type_to_string t) in *)
-  <span data-count="11">a</span>ssert <span data-count="11">(</span>sn<span data-count="11">d</span> t = []);
+  <span data-count="12">a</span>ssert <span data-count="12">(</span>sn<span data-count="12">d</span> t = []);
   let collect_vars t =
-    <span data-count="102">l</span>et rec helper = function
-      | <span data-count="83">V</span>artype i -&gt; [ i ]
-      | <span data-count="152">A</span>rrowtype (t1, t2) -&gt; helpe<span data-count="152">r</span> t1 @ helpe<span data-count="152">r</span> t2
-      | <span data-count="10">P</span>rod (t1, t2) -&gt; helpe<span data-count="10">r</span> t1 @ helpe<span data-count="10">r</span> t2
-      | <span data-count="10">S</span>um (t1, t2) -&gt; helpe<span data-count="10">r</span> t1 @ helpe<span data-count="10">r</span> t2
-      | <span data-count="191">_</span> -&gt; []
+    <span data-count="139">l</span>et rec helper = function
+      | <span data-count="111">V</span>artype i -&gt; [ i ]
+      | <span data-count="205">A</span>rrowtype (t1, t2) -&gt; helpe<span data-count="205">r</span> t1 @ helpe<span data-count="205">r</span> t2
+      | <span data-count="14">P</span>rod (t1, t2) -&gt; helpe<span data-count="14">r</span> t1 @ helpe<span data-count="14">r</span> t2
+      | <span data-count="14">S</span>um (t1, t2) -&gt; helpe<span data-count="14">r</span> t1 @ helpe<span data-count="14">r</span> t2
+      | <span data-count="261">_</span> -&gt; []
     in
     List.filter
-      (fun x -&gt; <span data-count="55">n</span>ot (List.me<span data-count="55">m</span> x (sn<span data-count="55">d</span> t)))
-      (List.sort_uni<span data-count="102">q</span> compare (helpe<span data-count="102">r</span> (fs<span data-count="102">t</span> t)))
+      (fun x -&gt; <span data-count="75">n</span>ot (List.me<span data-count="75">m</span> x (sn<span data-count="75">d</span> t)))
+      (List.sort_uni<span data-count="139">q</span> compare (helpe<span data-count="139">r</span> (fs<span data-count="139">t</span> t)))
   in
   let collect_vars_ctx ctx =
-    <span data-count="5">c</span>tx |&gt; List.concat_map (fun x -&gt; <span data-count="91">c</span>ollect_vars (sn<span data-count="91">d</span> x)) |&gt; <span data-count="5">L</span>ist.sort_uniq compare
+    <span data-count="7">c</span>tx |&gt; List.concat_map (fun x -&gt; <span data-count="127">c</span>ollect_vars (sn<span data-count="127">d</span> x)) |&gt; <span data-count="7">L</span>ist.sort_uniq compare
   in
   let bound_vars =
-    List.filter (fun x -&gt; <span data-count="5">n</span>ot (List.me<span data-count="5">m</span> x (collect_vars_ct<span data-count="5">x</span> ctx))) (collect_var<span data-count="11">s</span> t)
+    List.filter (fun x -&gt; <span data-count="7">n</span>ot (List.me<span data-count="7">m</span> x (collect_vars_ct<span data-count="7">x</span> ctx))) (collect_var<span data-count="12">s</span> t)
   in
-  <span data-count="11">L</span>ist.fold_left
-    (fun ((t, vs), c) v -&gt; <span data-count="2">(</span>subst_va<span data-count="2">r</span> v (Vartype c) t, c :: vs), c + 1)
-    ((fs<span data-count="11">t</span> t, []), cnt)
+  <span data-count="12">L</span>ist.fold_left
+    (fun ((t, vs), c) v -&gt; <span data-count="4">(</span>subst_va<span data-count="4">r</span> v (Vartype c) t, c :: vs), c + 1)
+    ((fs<span data-count="12">t</span> t, []), cnt)
     bound_vars
 ;;
 
 let apply_subst subst ((t, bound) : mltype) =
-  <span data-count="236">l</span>et subst' = List.filter (fun (v, _) -&gt; <span data-count="4198">n</span>ot (List.me<span data-count="4198">m</span> v bound)) subst in
-  <span data-count="236">l</span>et helper acc (v, t1) = <span data-count="4122">s</span>ubst_var v t1 acc in
-  List.fold_lef<span data-count="236">t</span> helper t subst', bound
+  <span data-count="256">l</span>et subst' = List.filter (fun (v, _) -&gt; <span data-count="4354">n</span>ot (List.me<span data-count="4354">m</span> v bound)) subst in
+  <span data-count="256">l</span>et helper acc (v, t1) = <span data-count="4278">s</span>ubst_var v t1 acc in
+  List.fold_lef<span data-count="256">t</span> helper t subst', bound
 ;;
 
-let apply_subst_ctx subst ctx = <span data-count="11">L</span>ist.map (fun (v, t) -&gt; <span data-count="199">v</span>, apply_subs<span data-count="199">t</span> subst t) ctx
+let apply_subst_ctx subst ctx = <span data-count="12">L</span>ist.map (fun (v, t) -&gt; <span data-count="217">v</span>, apply_subs<span data-count="217">t</span> subst t) ctx
 
 let rec occurs i = function
-  | <span data-count="372">V</span>artype j when i = j -&gt; <span data-count="1">t</span>rue
-  | <span data-count="184">A</span>rrowtype (t1, t2) -&gt; occur<span data-count="184">s</span> i t<span data-count="1">1</span> || occurs i t2
-  | <span data-count="4">P</span>rod (t1, t2) -&gt; occur<span data-count="4">s</span> i t<span data-count="0">1</span> || occurs i t2
+  | <span data-count="382">V</span>artype j when i = j -&gt; <span data-count="1">t</span>rue
+  | <span data-count="188">A</span>rrowtype (t1, t2) -&gt; occur<span data-count="188">s</span> i t<span data-count="1">1</span> || occurs i t2
+  | <span data-count="5">P</span>rod (t1, t2) -&gt; occur<span data-count="5">s</span> i t<span data-count="0">1</span> || occurs i t2
   | <span data-count="6">S</span>um (t1, t2) -&gt; occur<span data-count="6">s</span> i t<span data-count="0">1</span> || occurs i t2
-  | <span data-count="571">_</span> -&gt; false
+  | <span data-count="588">_</span> -&gt; false
 ;;
 
 let unify pairs =
-  <span data-count="38">l</span>et rec helper pairs acc =
-    <span data-count="680">m</span>atch pairs with
-    | <span data-count="643">(</span>t1, t2) :: tail when t1 = t2 -&gt; <span data-count="125">h</span>elper tail acc
-    | <span data-count="379">(</span>Vartype i, t2) :: tail -&gt;
+  <span data-count="40">l</span>et rec helper pairs acc =
+    <span data-count="703">m</span>atch pairs with
+    | <span data-count="664">(</span>t1, t2) :: tail when t1 = t2 -&gt; <span data-count="128">h</span>elper tail acc
+    | <span data-count="391">(</span>Vartype i, t2) :: tail -&gt;
       if occurs i t2
       then <span data-count="1">N</span>one
       else
-        <span data-count="378">h</span>elper
-          (List.ma<span data-count="378">p</span> (fun (u1, u2) -&gt; <span data-count="3677">s</span>ubst_va<span data-count="3677">r</span> i t2 u1, subst_va<span data-count="3677">r</span> i t2 u2) tail)
-          ((i, t2) :: List.ma<span data-count="378">p</span> (fun (j, t) -&gt; <span data-count="3178">j</span>, subst_va<span data-count="3178">r</span> i t2 t) acc)
-    | <span data-count="16">(</span>t1, Vartype i) :: tail -&gt; helper ((Vartype i, t1) :: tail) acc
-    | <span data-count="119">(</span>Arrowtype (t1, t2), Arrowtype (t3, t4)) :: tail -&gt;
+        <span data-count="390">h</span>elper
+          (List.ma<span data-count="390">p</span> (fun (u1, u2) -&gt; <span data-count="3719">s</span>ubst_va<span data-count="3719">r</span> i t2 u1, subst_va<span data-count="3719">r</span> i t2 u2) tail)
+          ((i, t2) :: List.ma<span data-count="390">p</span> (fun (j, t) -&gt; <span data-count="3212">j</span>, subst_va<span data-count="3212">r</span> i t2 t) acc)
+    | <span data-count="18">(</span>t1, Vartype i) :: tail -&gt; helper ((Vartype i, t1) :: tail) acc
+    | <span data-count="122">(</span>Arrowtype (t1, t2), Arrowtype (t3, t4)) :: tail -&gt;
       helper ((t1, t3) :: (t2, t4) :: tail) acc
-    | <span data-count="2">(</span>Prod (t1, t2), Prod (t3, t4)) :: tail -&gt; helper ((t1, t3) :: (t2, t4) :: tail) acc
+    | <span data-count="3">(</span>Prod (t1, t2), Prod (t3, t4)) :: tail -&gt; helper ((t1, t3) :: (t2, t4) :: tail) acc
     | <span data-count="2">(</span>Sum (t1, t2), Sum (t3, t4)) :: tail -&gt; helper ((t1, t3) :: (t2, t4) :: tail) acc
-    | <span data-count="37">[</span>] -&gt; Some acc
+    | <span data-count="39">[</span>] -&gt; Some acc
     | <span data-count="0">_</span> -&gt; None
   in
   helper pairs []
@@ -564,23 +564,23 @@ let unify pairs =
 (* Its complexity is DEXPTIME but the algo is much easier to understand *)
 (* I failed in Transpodis' too :-( So implement a naive algo, also DEXPTIME *)
 let hm_typechecker (term : mlterm) : mltype =
-  <span data-count="31">l</span>et rec helper (term : mlterm) (ctx : (string * mltype) list) (cnt : int)
+  <span data-count="32">l</span>et rec helper (term : mlterm) (ctx : (string * mltype) list) (cnt : int)
     : int * (qf_mltype * qf_mltype) list * (string * mltype) list * int
     =
-    <span data-count="384">m</span>atch term with
-    | <span data-count="122">V</span>ar v -&gt;
+    <span data-count="398">m</span>atch term with
+    | <span data-count="124">V</span>ar v -&gt;
       (match List.assoc_opt v ctx with
-       | <span data-count="119">S</span>ome tp -&gt;
+       | <span data-count="121">S</span>ome tp -&gt;
          let t, cnt = instantiate tp cnt in
-         <span data-count="119">c</span>nt, [ Vartype cnt, t ], ctx, cnt + 1
+         <span data-count="121">c</span>nt, [ Vartype cnt, t ], ctx, cnt + 1
        | <span data-count="3">_</span> -&gt; raise (Failure "unbound variable"))
-    | <span data-count="9">C</span>onstr v -&gt;
+    | <span data-count="10">C</span>onstr v -&gt;
       (match List.assoc_opt v ctx with
-       | <span data-count="8">S</span>ome tp -&gt;
+       | <span data-count="9">S</span>ome tp -&gt;
          let t, cnt = instantiate tp cnt in
-         <span data-count="8">c</span>nt, [ Vartype cnt, t ], ctx, cnt + 1
+         <span data-count="9">c</span>nt, [ Vartype cnt, t ], ctx, cnt + 1
        | <span data-count="1">_</span> -&gt; raise (Failure "unbound variable"))
-    | <span data-count="47">I</span>nt _ -&gt; cnt, [ Vartype cnt, Basetype "int" ], ctx, cnt + 1
+    | <span data-count="50">I</span>nt _ -&gt; cnt, [ Vartype cnt, Basetype "int" ], ctx, cnt + 1
     | <span data-count="10">B</span>ool _ -&gt; cnt, [ Vartype cnt, Basetype "bool" ], ctx, cnt + 1
     | <span data-count="5">U</span>nit -&gt; cnt, [ Vartype cnt, Basetype "unit" ], ctx, cnt + 1
     | <span data-count="8">I</span>TE (t1, t2, t3) -&gt;
@@ -589,15 +589,15 @@ let hm_typechecker (term : mlterm) : mltype =
       <span data-count="8">l</span>et var3, eqs3, ctx, cnt = helper t3 ctx cnt in
       <span data-count="8">l</span>et neweqs = [ Vartype var2, Vartype var3; Vartype var1, Basetype "bool" ] in
       var2, neweqs @ eqs1 @ eqs2 @ eqs3, ctx, cnt
-    | <span data-count="8">L</span>et (v, t1, t2) -&gt;
+    | <span data-count="9">L</span>et (v, t1, t2) -&gt;
       let var1, eqs1, ctx, cnt = helper t1 ctx cnt in
-      <span data-count="7">(</span>match unify eqs1 with
-       | <span data-count="6">S</span>ome subst -&gt;
+      <span data-count="8">(</span>match unify eqs1 with
+       | <span data-count="7">S</span>ome subst -&gt;
          let ctx = apply_subst_ctx subst ctx in
-         <span data-count="6">l</span>et tp1 = apply_subst subst (Vartype var1, []) in
-         <span data-count="6">l</span>et tp1, cnt = quantify tp1 ctx cnt in
-         <span data-count="6">l</span>et var2, eqs2, ctx, cnt = helper t2 ((v, tp1) :: ctx) cnt in
-         <span data-count="6">v</span>ar2, eqs2, List.remove_asso<span data-count="6">c</span> v ctx, cnt
+         <span data-count="7">l</span>et tp1 = apply_subst subst (Vartype var1, []) in
+         <span data-count="7">l</span>et tp1, cnt = quantify tp1 ctx cnt in
+         <span data-count="7">l</span>et var2, eqs2, ctx, cnt = helper t2 ((v, tp1) :: ctx) cnt in
+         <span data-count="7">v</span>ar2, eqs2, List.remove_asso<span data-count="7">c</span> v ctx, cnt
        | <span data-count="1">N</span>one -&gt; raise (Failure "let unification failed"))
     | <span data-count="5">L</span>etRec (v, t1, t2) -&gt;
       let var1, eqs1, ctx, cnt' = helper t1 ((v, (Vartype cnt, [])) :: ctx) (cnt + 1) in
@@ -609,24 +609,24 @@ let hm_typechecker (term : mlterm) : mltype =
          <span data-count="5">l</span>et var2, eqs2, ctx, cnt = helper t2 ((v, tp1) :: ctx) cnt in
          <span data-count="5">v</span>ar2, eqs2, List.remove_asso<span data-count="5">c</span> v ctx, cnt
        | <span data-count="0">N</span>one -&gt; raise (Failure "letrec unification failed"))
-    | <span data-count="9">L</span>etExc (e, tp, t) -&gt;
+    | <span data-count="11">L</span>etExc (e, tp, t) -&gt;
       let var, eqs, ctx, cnt =
         helper t ((e, (Arrowtype (tp, Basetype "exc"), [])) :: ctx) (cnt + 1)
       in
-      <span data-count="8">v</span>ar, eqs, List.remove_asso<span data-count="8">c</span> e ctx, cnt
-    | <span data-count="123">A</span>pp (t1, t2) -&gt;
+      <span data-count="10">v</span>ar, eqs, List.remove_asso<span data-count="10">c</span> e ctx, cnt
+    | <span data-count="126">A</span>pp (t1, t2) -&gt;
       let var1, eqs1, ctx, cnt = helper t1 ctx cnt in
-      <span data-count="123">l</span>et var2, eqs2, ctx, cnt = helper t2 ctx cnt in
-      <span data-count="121">l</span>et neweqs = [ Vartype var1, Arrowtype (Vartype var2, Vartype cnt) ] in
+      <span data-count="126">l</span>et var2, eqs2, ctx, cnt = helper t2 ctx cnt in
+      <span data-count="124">l</span>et neweqs = [ Vartype var1, Arrowtype (Vartype var2, Vartype cnt) ] in
       cnt, neweqs @ eqs1 @ eqs2, ctx, cnt + 1
-    | <span data-count="28">F</span>un (v, t) -&gt;
+    | <span data-count="29">F</span>un (v, t) -&gt;
       let var, eqs, ctx, cnt' = helper t ((v, (Vartype cnt, [])) :: ctx) (cnt + 1) in
-      <span data-count="28">l</span>et neweqs = [ Vartype cnt', Arrowtype (Vartype cnt, Vartype var) ] in
-      cnt', neweqs @ eqs, List.remove_asso<span data-count="28">c</span> v ctx, cnt' + 1
-    | <span data-count="4">P</span>air (t1, t2) -&gt;
+      <span data-count="29">l</span>et neweqs = [ Vartype cnt', Arrowtype (Vartype cnt, Vartype var) ] in
+      cnt', neweqs @ eqs, List.remove_asso<span data-count="29">c</span> v ctx, cnt' + 1
+    | <span data-count="5">P</span>air (t1, t2) -&gt;
       let var1, eqs1, ctx, cnt = helper t1 ctx cnt in
-      <span data-count="4">l</span>et var2, eqs2, ctx, cnt = helper t2 ctx cnt in
-      <span data-count="4">c</span>nt, ((Vartype cnt, Prod (Vartype var1, Vartype var2)) :: eqs1) @ eqs2, ctx, cnt + 1
+      <span data-count="5">l</span>et var2, eqs2, ctx, cnt = helper t2 ctx cnt in
+      <span data-count="5">c</span>nt, ((Vartype cnt, Prod (Vartype var1, Vartype var2)) :: eqs1) @ eqs2, ctx, cnt + 1
     | <span data-count="2">M</span>atch (t, v1, t1, v2, t2) -&gt;
       let var, eqs, ctx, cnt = helper t ctx cnt in
       <span data-count="2">l</span>et var1, eqs1, ctx, cnt1 = helper t1 ((v1, (Vartype cnt, [])) :: ctx) (cnt + 1) in
@@ -657,8 +657,8 @@ let hm_typechecker (term : mlterm) : mltype =
       <span data-count="4">v</span>ar, List.ma<span data-count="4">p</span> (fun v -&gt; <span data-count="4">V</span>artype var, Vartype v) varl @ eqs @ eqs1, ctx, cnt
   in
   let var, eqs, _, _ = helper term initial_context 0 in
-  <span data-count="26">m</span>atch unify eqs with
-  | <span data-count="26">S</span>ome subst -&gt; apply_subst subst (Vartype var, [])
+  <span data-count="27">m</span>atch unify eqs with
+  | <span data-count="27">S</span>ome subst -&gt; apply_subst subst (Vartype var, [])
   | <span data-count="0">N</span>one -&gt; raise (Failure "final unification failed")
 ;;
 </code></pre>
