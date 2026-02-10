@@ -2,9 +2,11 @@
     open Ast
 %}
 
+%token <string> BASETYPE
 %token LET
 %token REC
 %token EXCEPTION
+%token OF
 %token TRY
 %token IN
 %token IF
@@ -14,6 +16,7 @@
 %token MAPSTO
 %token <int> INT
 %token <string> VAR
+%token <string> CONSTR
 %token <string> INFIXOP
 %token UNIT
 %token TRUE
@@ -31,7 +34,8 @@
 %token EOF
 
 %type <mlterm> term prog
-%type <string * mlterm> tryblock
+%type <constructor * identifier * mlterm> tryblock
+%type <qf_mltype> qf_type
 
 %start prog
 
@@ -41,14 +45,20 @@ prog:
     | t = term; EOF { t }
 
 tryblock:
-    | CASE; v = VAR; MAPSTO; t = term { (v, t) }
+    | CASE; c = CONSTR;  v = VAR; MAPSTO; t = term { (c, v, t) }
+
+qf_type:
+    | t = BASETYPE; { Basetype t }
+    | LEFT_BRACK; t1 = qf_type; MAPSTO; t2 = qf_type; RIGHT_BRACK { Arrowtype (t1, t2) }
+    | LEFT_BRACK; t1 = qf_type; op = INFIXOP; t2 = qf_type; RIGHT_BRACK { if op = "*" then Prod (t1, t2) else raise (Failure "Invalid type") }
 
 term:
     | LET; v = VAR; args = list(VAR); EQ; t1 = term; IN; t2 = term { Let (v, List.fold_right (fun e acc -> Fun (e, acc)) args t1, t2) }
     | LET; REC; v = VAR; args = list(VAR); EQ; t1 = term; IN; t2 = term { LetRec (v, List.fold_right (fun e acc -> Fun (e, acc)) args t1, t2) }
-    | LET; EXCEPTION; v = VAR; IN; t = term { LetExc (v, t) }
+    | LET; EXCEPTION; v = CONSTR; OF; tp = qf_type; IN; t = term { LetExc (v, tp, t) }
     | v = VAR { Var v }
     | i = INT { Int i }
+    | c = CONSTR { Constr c }
     | TRUE { Bool true }
     | FALSE { Bool false }
     | UNIT { Unit }
@@ -62,3 +72,4 @@ term:
     | LEFT_BRACK; INR; t = term; RIGHT_BRACK { App (Var "inr", t) }
     | LEFT_BRACK; MATCH; t = term; WITH; CASE; INL v1 = VAR; MAPSTO; t1 = term; CASE; INR; v2 = VAR; MAPSTO; t2 = term; RIGHT_BRACK { Match (t, v1, t1, v2, t2) }
     | LEFT_BRACK; TRY; t = term; WITH; l = list(tryblock); RIGHT_BRACK { Try (t, l) }
+    | LEFT_BRACK; t = term; RIGHT_BRACK { t }

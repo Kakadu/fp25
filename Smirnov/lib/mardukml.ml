@@ -12,7 +12,7 @@ let rec compile_to_lambda_cbv : mlterm -> Lambda.lterm = function
   | Var "inr" -> Abs ("x", Abs ("f", Abs ("g", App (Var "g", Var "x"))))
   | App (App (Var "&&", t1), t2) -> compile_to_lambda_cbv (ITE (t1, t2, Bool false))
   | App (App (Var "||", t1), t2) -> compile_to_lambda_cbv (ITE (t1, Bool true, t2))
-  | App (Var "raise", Var e) -> Exc e
+  | Constr e -> Var e
   | Var x -> Var x
   | Int i -> Int i
   | Bool true -> Lambda.ltrue
@@ -29,7 +29,7 @@ let rec compile_to_lambda_cbv : mlterm -> Lambda.lterm = function
     App
       ( Abs (v, compile_to_lambda_cbv t2)
       , App (Lambda.fix_comb_cbv, Abs (v, compile_to_lambda_cbv t1)) )
-  | LetExc (_, t) -> compile_to_lambda_cbv t
+  | LetExc (_, _, t) -> compile_to_lambda_cbv t
   | App (t1, t2) -> App (compile_to_lambda_cbv t1, compile_to_lambda_cbv t2)
   | Fun (x, t) -> Abs (x, compile_to_lambda_cbv t)
   | Pair (t1, t2) ->
@@ -44,7 +44,9 @@ let rec compile_to_lambda_cbv : mlterm -> Lambda.lterm = function
     let t2l = compile_to_lambda_cbv t2 in
     App (App (tl, Abs (v1, t1l)), Abs (v2, t2l))
   | Try (t, l) ->
-    Try (compile_to_lambda_cbv t, List.map (fun (s, t) -> s, compile_to_lambda_cbv t) l)
+    Lambda.Try
+      ( compile_to_lambda_cbv t
+      , List.map (fun (s, v, t) -> s, Lambda.Abs (v, compile_to_lambda_cbv t)) l )
 ;;
 
 let parse str =

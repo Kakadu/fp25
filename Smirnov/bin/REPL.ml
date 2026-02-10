@@ -17,7 +17,7 @@ let _ =
         Printf.printf
           "%s : %s\n%!"
           (Lambda.lterm_to_string_typed res tp)
-          (Typing.type_to_string tp))
+          (Ast.mltype_to_string tp))
     with
     | End_of_file ->
       let () = Printf.printf "\n" in

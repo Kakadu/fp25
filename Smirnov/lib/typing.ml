@@ -4,26 +4,6 @@
 
 open Ast
 
-type qf_mltype =
-  | Basetype of string
-  | Arrowtype of qf_mltype * qf_mltype
-  | Vartype of int
-  | Prod of qf_mltype * qf_mltype
-  | Sum of qf_mltype * qf_mltype
-
-type mltype = qf_mltype * int list
-
-let type_to_string (t : mltype) =
-  let rec helper = function
-    | Basetype s -> s
-    | Arrowtype (s1, s2) -> "(" ^ helper s1 ^ " -> " ^ helper s2 ^ ")"
-    | Prod (s1, s2) -> "(" ^ helper s1 ^ " * " ^ helper s2 ^ ")"
-    | Sum (s1, s2) -> "(" ^ helper s1 ^ " + " ^ helper s2 ^ ")"
-    | Vartype i -> "bv" ^ string_of_int i
-  in
-  helper (fst t)
-;;
-
 let initial_context : (string * mltype) list =
   [ "+", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "int")), [])
   ; "-", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "int")), [])
@@ -138,6 +118,12 @@ let hm_typechecker (term : mlterm) : mltype =
          let t, cnt = instantiate tp cnt in
          cnt, [ Vartype cnt, t ], ctx, cnt + 1
        | _ -> raise (Failure "unbound variable"))
+    | Constr v ->
+      (match List.assoc_opt v ctx with
+       | Some tp ->
+         let t, cnt = instantiate tp cnt in
+         cnt, [ Vartype cnt, t ], ctx, cnt + 1
+       | _ -> raise (Failure "unbound variable"))
     | Int _ -> cnt, [ Vartype cnt, Basetype "int" ], ctx, cnt + 1
     | Bool _ -> cnt, [ Vartype cnt, Basetype "bool" ], ctx, cnt + 1
     | Unit -> cnt, [ Vartype cnt, Basetype "unit" ], ctx, cnt + 1
@@ -167,8 +153,10 @@ let hm_typechecker (term : mlterm) : mltype =
          let var2, eqs2, ctx, cnt = helper t2 ((v, tp1) :: ctx) cnt in
          var2, eqs2, List.remove_assoc v ctx, cnt
        | None -> raise (Failure "letrec unification failed"))
-    | LetExc (e, t) ->
-      let var, eqs, ctx, cnt = helper t ((e, (Basetype "exc", [])) :: ctx) (cnt + 1) in
+    | LetExc (e, tp, t) ->
+      let var, eqs, ctx, cnt =
+        helper t ((e, (Arrowtype (tp, Basetype "exc"), [])) :: ctx) (cnt + 1)
+      in
       var, eqs, List.remove_assoc e ctx, cnt
     | App (t1, t2) ->
       let var1, eqs1, ctx, cnt = helper t1 ctx cnt in
@@ -198,9 +186,15 @@ let hm_typechecker (term : mlterm) : mltype =
       let acc0 = [], eqs, ctx, cnt in
       let (varl : int list), eqs1, ctx, cnt =
         List.fold_left
-          (fun (varl, eqs, ctx, cnt) (_, t) ->
-            let (var : int), eqs1, ctx, cnt = helper t ctx cnt in
-            var :: varl, eqs @ eqs1, ctx, cnt)
+          (fun (varl, eqs, ctx, cnt) (c, v, t) ->
+            let exctype =
+              match List.assoc_opt c ctx with
+              | Some (Arrowtype (tp, Basetype "exc"), []) -> tp
+              | None -> raise (Failure "try: unbound exception constructor")
+              | _ -> raise (Failure "try: should not happen")
+            in
+            let (var : int), eqs1, ctx, cnt = helper t ((v, (exctype, [])) :: ctx) cnt in
+            var :: varl, eqs @ eqs1, List.remove_assoc v ctx, cnt)
           acc0
           l
       in

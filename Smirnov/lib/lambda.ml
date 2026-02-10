@@ -8,7 +8,7 @@ type lterm =
   | Unit
   | App of lterm * lterm
   | Abs of string * lterm
-  | Exc of string
+  | Exc of lterm
   | Try of lterm * (string * lterm) list
 
 let ltrue = Abs ("x", Abs ("y", Var "x"))
@@ -46,7 +46,7 @@ let fresh_var vars =
   let res = List.filter (fun x -> not (List.mem x vars)) cands in
   match res with
   | h :: _ -> h
-  | [] -> raise (Failure "Should not happen!")
+  | [] -> raise (Failure "fresh: should not happen!")
 ;;
 
 let rec lterm_to_string = function
@@ -55,11 +55,11 @@ let rec lterm_to_string = function
   | Unit -> "()"
   | App (t1, t2) -> "(" ^ lterm_to_string t1 ^ " " ^ lterm_to_string t2 ^ ")"
   | Abs (x, t2) -> "(\\" ^ x ^ "." ^ lterm_to_string t2 ^ ")"
-  | Exc e -> "Exception " ^ e
+  | Exc t -> "Exception " ^ lterm_to_string t
   | Try (t, l) ->
     "try "
     ^ lterm_to_string t
-    ^ "with "
+    ^ " with "
     ^ String.concat " " (List.map (fun (s, t) -> "| " ^ s ^ " -> " ^ lterm_to_string t) l)
 ;;
 
@@ -67,23 +67,23 @@ let rec lterm_to_string_typed term tp =
   assert (snd tp = []);
   match term, fst tp with
   | Var x, _ -> x
-  | Int i, Typing.Basetype "int" -> Printf.sprintf "%d" i
-  | Unit, Typing.Basetype "unit" -> "()"
-  | Abs (x, App (App (Var y, t1), t2)), Typing.Prod (tp1, tp2) when x = y ->
+  | Int i, Ast.Basetype "int" -> Printf.sprintf "%d" i
+  | Unit, Ast.Basetype "unit" -> "()"
+  | Abs (x, App (App (Var y, t1), t2)), Ast.Prod (tp1, tp2) when x = y ->
     "("
     ^ lterm_to_string_typed t1 (tp1, [])
     ^ ", "
     ^ lterm_to_string_typed t2 (tp2, [])
     ^ ")"
-  | Abs (x, Abs (_, Var z)), Typing.Basetype "bool" when z = x -> "true"
-  | Abs (_, Abs (y, Var z)), Typing.Basetype "bool" when z = y -> "false"
-  | Abs ("f", Abs ("g", App (Var "f", t))), Typing.Sum (tp1, _) ->
+  | Abs (x, Abs (_, Var z)), Ast.Basetype "bool" when z = x -> "true"
+  | Abs (_, Abs (y, Var z)), Ast.Basetype "bool" when z = y -> "false"
+  | Abs ("f", Abs ("g", App (Var "f", t))), Ast.Sum (tp1, _) ->
     "(inl " ^ lterm_to_string_typed t (tp1, []) ^ ")"
-  | Abs ("f", Abs ("g", App (Var "g", t))), Typing.Sum (_, tp2) ->
+  | Abs ("f", Abs ("g", App (Var "g", t))), Ast.Sum (_, tp2) ->
     "(inr " ^ lterm_to_string_typed t (tp2, []) ^ ")"
   | Abs (_, _), _ -> "Fun"
-  | Exc e, _ -> "Exception: " ^ e
-  | _, _ -> raise (Failure "Should not happen!")
+  | Exc t, _ -> "Exception: " ^ lterm_to_string t
+  | t, _ -> lterm_to_string t
 ;;
 
 let vars t =
@@ -125,7 +125,9 @@ let subst term x t =
     match term with
     | Var y -> if x = y then t, vars else term, vars
     | Int _ -> term, vars
-    | Exc _ -> term, vars
+    | Exc t1 ->
+      let t2, vars = helper t1 x t vars in
+      Exc t2, vars
     | Unit -> term, vars
     | App (t1, t2) ->
       let r1 = helper t1 x t vars in
@@ -166,12 +168,20 @@ let rec beta_step_in_cbv term =
         | Some t1 -> Some (Try (t1, l))
         | None ->
           (match t with
-           | Exc e ->
-             (match List.assoc_opt e l with
-              | Some t -> Some t
-              | None -> Some (Exc e))
-           | t1 -> Some t1))
+           | Exc (App (Var c, t1)) ->
+             (match List.assoc_opt c l with
+              | Some t -> Some (App (t, t1))
+              | None -> Some t)
+           | Exc tt -> raise (Failure ("Try: should not happen " ^ lterm_to_string tt))
+           | _ -> Some t))
      | Abs (_, _) -> None
+     | App (Var "raise", e) ->
+       (match beta_step_in_cbv e with
+        | Some e -> Some (App (Var "raise", e))
+        | None ->
+          (match e with
+           | Exc t -> Some (Exc t)
+           | _ -> Some (Exc e)))
      | App (Abs (_, _), Exc e) -> Some (Exc e)
      | App (Abs (x, y), z) ->
        (match beta_step_in_cbv z with
