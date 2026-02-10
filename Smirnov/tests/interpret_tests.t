@@ -276,3 +276,15 @@ Test for exception as a value
   
   # (MyExc 1) : exc
   # 
+
+Exceptions as return value for factorial
+  $ ../bin/REPL.exe << EOF
+  > let exception QuickRet of int in \
+  > (try \
+  > let rec fact n acc = (if (n > 1) then ((fact (n-1)) (acc*n)) else (raise (QuickRet acc))) in ((fact 5) 1) \
+  > with | QuickRet val -> val)
+  > EOF
+  MardukML REPL
+  
+  # 120 : int
+  # 
