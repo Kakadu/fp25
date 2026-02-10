@@ -354,16 +354,16 @@
 [@@deriving eq]
 
 let qf_mltype_gen =
-  QCheck.Gen.oneof<span data-count="34">l</span>
+  QCheck.Gen.oneof<span data-count="35">l</span>
     [ Basetype "int"; Basetype "bool"; Arrowtype (Basetype "int", Basetype "bool") ]
 ;;
 
 type mltype = qf_mltype * int list
 
 let qf_mltype_to_string (t : qf_mltype) =
-  <span data-count="5291">l</span>et rec helper = function
-    | <span data-count="7058">B</span>asetype s -&gt; s
-    | <span data-count="1766">A</span>rrowtype (s1, s2) -&gt; "(" ^ helpe<span data-count="1766">r</span> s1 ^ " -&gt; " ^ helpe<span data-count="1766">r</span> s2 ^ ")"
+  <span data-count="5510">l</span>et rec helper = function
+    | <span data-count="7257">B</span>asetype s -&gt; s
+    | <span data-count="1746">A</span>rrowtype (s1, s2) -&gt; "(" ^ helpe<span data-count="1746">r</span> s1 ^ " -&gt; " ^ helpe<span data-count="1746">r</span> s2 ^ ")"
     | <span data-count="2">P</span>rod (s1, s2) -&gt; "(" ^ helpe<span data-count="2">r</span> s1 ^ " * " ^ helpe<span data-count="2">r</span> s2 ^ ")"
     | <span data-count="2">S</span>um (s1, s2) -&gt; "(" ^ helpe<span data-count="2">r</span> s1 ^ " + " ^ helpe<span data-count="2">r</span> s2 ^ ")"
     | <span data-count="3">V</span>artype i -&gt; "bv" ^ string_of_in<span data-count="3">t</span> i
@@ -371,7 +371,7 @@ let qf_mltype_to_string (t : qf_mltype) =
   helper t
 ;;
 
-let mltype_to_string (t : mltype) = <span data-count="25">q</span>f_mltype_to_string (fs<span data-count="25">t</span> t)
+let mltype_to_string (t : mltype) = <span data-count="26">q</span>f_mltype_to_string (fs<span data-count="26">t</span> t)
 
 let reserved =
   [ "let"
@@ -398,22 +398,22 @@ let reserved =
 ;;
 
 let ident_gen =
-  QCheck.Gen.ma<span data-count="34">p</span>
-    (fun x -&gt; <span data-count="55481">i</span>f List.mem x reserved then <span data-count="4376">"</span>reserved" else <span data-count="51105">x</span>)
-    (QCheck.Gen.string_small_o<span data-count="34">f</span> (QCheck.Gen.char_rang<span data-count="34">e</span> 'a' 'z'))
+  QCheck.Gen.ma<span data-count="35">p</span>
+    (fun x -&gt; <span data-count="55633">i</span>f List.mem x reserved then <span data-count="4379">"</span>reserved" else <span data-count="51254">x</span>)
+    (QCheck.Gen.string_small_o<span data-count="35">f</span> (QCheck.Gen.char_rang<span data-count="35">e</span> 'a' 'z'))
 ;;
 
 let constr_gen =
-  QCheck.Gen.ma<span data-count="34">p</span>
-    (fun x -&gt; <span data-count="34893">"</span>A" ^ x)
-    (QCheck.Gen.string_small_o<span data-count="34">f</span> (QCheck.Gen.char_rang<span data-count="34">e</span> 'a' 'z'))
+  QCheck.Gen.ma<span data-count="35">p</span>
+    (fun x -&gt; <span data-count="35335">"</span>A" ^ x)
+    (QCheck.Gen.string_small_o<span data-count="35">f</span> (QCheck.Gen.char_rang<span data-count="35">e</span> 'a' 'z'))
 ;;
 
-<span data-count="0">t</span>ype identifier = (string[@gen ident_gen]) [@@deriving eq, qcheck<span data-count="34">]</span>
-<span data-count="0">t</span>ype constructor = (string[@gen constr_gen]) [@@deriving eq, qcheck<span data-count="34">]</span>
-<span data-count="0">t</span>ype integer = (int[@gen QCheck.Gen.small_nat]) [@@deriving eq, qcheck<span data-count="34">]</span>
+<span data-count="0">t</span>ype identifier = (string[@gen ident_gen]) [@@deriving eq, qcheck<span data-count="35">]</span>
+<span data-count="0">t</span>ype constructor = (string[@gen constr_gen]) [@@deriving eq, qcheck<span data-count="35">]</span>
+<span data-count="0">t</span>ype integer = (int[@gen QCheck.Gen.small_nat]) [@@deriving eq, qcheck<span data-count="35">]</span>
 
-<span data-count="323485">t</span>ype mlterm =
+<span data-count="323944">t</span>ype mlterm =
   <span data-count="0">|</span> Var of identifier
   <span data-count="0">|</span> Constr of constructor
   <span data-count="0">|</span> Int of integer
@@ -434,56 +434,56 @@ let constr_gen =
           QCheck.Gen.list_siz<span data-count="6175">e</span>
             (QCheck.Gen.int_rang<span data-count="6175">e</span> 1 5)
             (QCheck.Gen.ma<span data-count="6175">p</span>
-               (fun (gen0, gen1, gen2) -&gt; <span data-count="16124">g</span>en0, gen1, gen2)
+               (fun (gen0, gen1, gen2) -&gt; <span data-count="16172">g</span>en0, gen1, gen2)
                (QCheck.Gen.tripl<span data-count="6175">e</span>
                   gen_constructor
                   gen_identifier
                   (gen_mlterm_size<span data-count="6175">d</span> (n / 2))))]<span data-count="0">)</span>
-[@@deriving eq, qcheck<span data-count="784298">]</span>
+[@@deriving eq, qcheck<span data-count="784300">]</span>
 
 let rec mlterm_to_string : mlterm -&gt; string = function
-  | <span data-count="13498">V</span>ar x -&gt; x
-  | <span data-count="13503">C</span>onstr c -&gt; c
-  | <span data-count="13622">I</span>nt i -&gt; Printf.sprintf "%d" i
-  | <span data-count="6760">B</span>ool true -&gt; "true"
-  | <span data-count="6671">B</span>ool false -&gt; "false"
-  | <span data-count="13611">U</span>nit -&gt; "()"
-  | <span data-count="5286">I</span>TE (c, th, e) -&gt;
+  | <span data-count="13508">V</span>ar x -&gt; x
+  | <span data-count="13679">C</span>onstr c -&gt; c
+  | <span data-count="13579">I</span>nt i -&gt; Printf.sprintf "%d" i
+  | <span data-count="6870">B</span>ool true -&gt; "true"
+  | <span data-count="6682">B</span>ool false -&gt; "false"
+  | <span data-count="13462">U</span>nit -&gt; "()"
+  | <span data-count="5204">I</span>TE (c, th, e) -&gt;
     "(if "
-    ^ mlterm_to_strin<span data-count="5286">g</span> c
+    ^ mlterm_to_strin<span data-count="5204">g</span> c
     ^ " then "
-    ^ mlterm_to_strin<span data-count="5286">g</span> th
+    ^ mlterm_to_strin<span data-count="5204">g</span> th
     ^ " else "
-    ^ mlterm_to_strin<span data-count="5286">g</span> e
+    ^ mlterm_to_strin<span data-count="5204">g</span> e
     ^ ")"
-  | <span data-count="5264">L</span>et (v, t1, t2) -&gt;
-    "let " ^ v ^ "=" ^ mlterm_to_strin<span data-count="5264">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="5264">g</span> t2
-  | <span data-count="5209">L</span>etRec (v, t1, t2) -&gt;
-    "let rec " ^ v ^ "=" ^ mlterm_to_strin<span data-count="5209">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="5209">g</span> t2
-  | <span data-count="5266">L</span>etExc (v, tp, t) -&gt;
-    "let exception " ^ v ^ " of " ^ qf_mltype_to_strin<span data-count="5266">g</span> tp ^ " in " ^ mlterm_to_strin<span data-count="5266">g</span> t
-  | <span data-count="5190">A</span>pp (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="5190">g</span> t1 ^ " " ^ mlterm_to_strin<span data-count="5190">g</span> t2 ^ ")"
-  | <span data-count="5310">F</span>un (x, t2) -&gt; "fun " ^ x ^ " -&gt; " ^ mlterm_to_strin<span data-count="5310">g</span> t2
-  | <span data-count="5230">P</span>air (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="5230">g</span> t1 ^ ", " ^ mlterm_to_strin<span data-count="5230">g</span> t2 ^ ")"
-  | <span data-count="5038">M</span>atch (t, v1, t1, v2, t2) -&gt;
+  | <span data-count="5208">L</span>et (v, t1, t2) -&gt;
+    "let " ^ v ^ "=" ^ mlterm_to_strin<span data-count="5208">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="5208">g</span> t2
+  | <span data-count="5222">L</span>etRec (v, t1, t2) -&gt;
+    "let rec " ^ v ^ "=" ^ mlterm_to_strin<span data-count="5222">g</span> t1 ^ " in " ^ mlterm_to_strin<span data-count="5222">g</span> t2
+  | <span data-count="5484">L</span>etExc (v, tp, t) -&gt;
+    "let exception " ^ v ^ " of " ^ qf_mltype_to_strin<span data-count="5484">g</span> tp ^ " in " ^ mlterm_to_strin<span data-count="5484">g</span> t
+  | <span data-count="5140">A</span>pp (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="5140">g</span> t1 ^ " " ^ mlterm_to_strin<span data-count="5140">g</span> t2 ^ ")"
+  | <span data-count="5217">F</span>un (x, t2) -&gt; "fun " ^ x ^ " -&gt; " ^ mlterm_to_strin<span data-count="5217">g</span> t2
+  | <span data-count="5324">P</span>air (t1, t2) -&gt; "(" ^ mlterm_to_strin<span data-count="5324">g</span> t1 ^ ", " ^ mlterm_to_strin<span data-count="5324">g</span> t2 ^ ")"
+  | <span data-count="5153">M</span>atch (t, v1, t1, v2, t2) -&gt;
     "(match "
-    ^ mlterm_to_strin<span data-count="5038">g</span> t
+    ^ mlterm_to_strin<span data-count="5153">g</span> t
     ^ " with | inl "
     ^ v1
     ^ " -&gt; "
-    ^ mlterm_to_strin<span data-count="5038">g</span> t1
+    ^ mlterm_to_strin<span data-count="5153">g</span> t1
     ^ "| inr "
     ^ v2
     ^ " -&gt; "
-    ^ mlterm_to_strin<span data-count="5038">g</span> t2
+    ^ mlterm_to_strin<span data-count="5153">g</span> t2
     ^ ")"
-  | <span data-count="5336">T</span>ry (t, l) -&gt;
+  | <span data-count="5372">T</span>ry (t, l) -&gt;
     "(try "
-    ^ mlterm_to_strin<span data-count="5336">g</span> t
+    ^ mlterm_to_strin<span data-count="5372">g</span> t
     ^ " with "
-    ^ String.conca<span data-count="5336">t</span>
+    ^ String.conca<span data-count="5372">t</span>
         " "
-        (List.ma<span data-count="5336">p</span> (fun (s, v, t) -&gt; <span data-count="16124">"</span>| " ^ s ^ " " ^ v ^ " -&gt; " ^ mlterm_to_strin<span data-count="16124">g</span> t) l)
+        (List.ma<span data-count="5372">p</span> (fun (s, v, t) -&gt; <span data-count="16172">"</span>| " ^ s ^ " " ^ v ^ " -&gt; " ^ mlterm_to_strin<span data-count="16172">g</span> t) l)
     ^ ")"
 ;;
 </code></pre>

@@ -180,8 +180,8 @@ let rec compile_to_lambda_cbv : mlterm -&gt; Lambda.lterm = function
   | <span data-count="1">A</span>pp (App (Var "&amp;&amp;", t1), t2) -&gt; compile_to_lambda_cbv (ITE (t1, t2, Bool false))
   | <span data-count="1">A</span>pp (App (Var "||", t1), t2) -&gt; compile_to_lambda_cbv (ITE (t1, Bool true, t2))
   | <span data-count="8">C</span>onstr e -&gt; Var e
-  | <span data-count="101">V</span>ar x -&gt; Var x
-  | <span data-count="45">I</span>nt i -&gt; Int i
+  | <span data-count="102">V</span>ar x -&gt; Var x
+  | <span data-count="47">I</span>nt i -&gt; Int i
   | <span data-count="8">B</span>ool true -&gt; Lambda.ltrue
   | <span data-count="6">B</span>ool false -&gt; Lambda.lfalse
   | <span data-count="5">U</span>nit -&gt; Unit
@@ -197,7 +197,7 @@ let rec compile_to_lambda_cbv : mlterm -&gt; Lambda.lterm = function
       ( Abs (v, compile_to_lambda_cb<span data-count="5">v</span> t2)
       , App (Lambda.fix_comb_cbv, Abs (v, compile_to_lambda_cb<span data-count="5">v</span> t1)) )
   | <span data-count="8">L</span>etExc (_, _, t) -&gt; compile_to_lambda_cbv t
-  | <span data-count="107">A</span>pp (t1, t2) -&gt; App (compile_to_lambda_cb<span data-count="107">v</span> t1, compile_to_lambda_cb<span data-count="107">v</span> t2)
+  | <span data-count="109">A</span>pp (t1, t2) -&gt; App (compile_to_lambda_cb<span data-count="109">v</span> t1, compile_to_lambda_cb<span data-count="109">v</span> t2)
   | <span data-count="24">F</span>un (x, t) -&gt; Abs (x, compile_to_lambda_cb<span data-count="24">v</span> t)
   | <span data-count="4">P</span>air (t1, t2) -&gt;
     App
@@ -217,8 +217,8 @@ let rec compile_to_lambda_cbv : mlterm -&gt; Lambda.lterm = function
 ;;
 
 let parse str =
-  <span data-count="10030">l</span>et lexer = Lexing.from_string str in
-  <span data-count="10030">t</span>ry Parser.pro<span data-count="10030">g</span> Lexer.token lexer with
+  <span data-count="10031">l</span>et lexer = Lexing.from_string str in
+  <span data-count="10031">t</span>ry Parser.pro<span data-count="10031">g</span> Lexer.token lexer with
   | <span data-count="0">P</span>arser.Error -&gt;
     let pos = lexer.Lexing.lex_curr_p in
     let line = pos.Lexing.pos_lnum in
@@ -228,10 +228,10 @@ let parse str =
 ;;
 
 let interp str =
-  <span data-count="30">l</span>et ml_ast = parse str in
-  <span data-count="30">l</span>et tp = Typing.hm_typechecker ml_ast in
-  <span data-count="25">l</span>et l_ast = compile_to_lambda_cbv ml_ast in
-  <span data-count="25">L</span>ambda.beta_reduc<span data-count="25">e</span> Lambda.beta_step_in_cbv l_ast, tp
+  <span data-count="31">l</span>et ml_ast = parse str in
+  <span data-count="31">l</span>et tp = Typing.hm_typechecker ml_ast in
+  <span data-count="26">l</span>et l_ast = compile_to_lambda_cbv ml_ast in
+  <span data-count="26">L</span>ambda.beta_reduc<span data-count="26">e</span> Lambda.beta_step_in_cbv l_ast, tp
 ;;
 </code></pre>
       </div>
