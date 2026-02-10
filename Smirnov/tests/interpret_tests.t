@@ -288,3 +288,12 @@ Exceptions as return value for factorial
   
   # 120 : int
   # 
+
+Division by zero
+  $ ../bin/REPL.exe << EOF
+  > (1/0)
+  > EOF
+  MardukML REPL
+  
+  # Exception: DivisionByZero : int
+  # 

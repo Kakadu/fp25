@@ -8,6 +8,7 @@ let initial_context : (string * mltype) list =
   [ "+", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "int")), [])
   ; "-", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "int")), [])
   ; "*", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "int")), [])
+  ; "/", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "int")), [])
   ; "=", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "bool")), [])
   ; "<", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "bool")), [])
   ; ">", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "bool")), [])
@@ -20,6 +21,7 @@ let initial_context : (string * mltype) list =
   ; "inr", (Arrowtype (Vartype 2, Sum (Vartype 1, Vartype 2)), [ 1; 2 ])
   ; "println_int", (Arrowtype (Basetype "int", Basetype "unit"), [])
   ; "raise", (Arrowtype (Basetype "exc", Vartype 1), [ 1 ])
+  ; "DivisionByZero", (Basetype "exc", [])
   ]
 ;;
 
