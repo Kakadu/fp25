@@ -35,7 +35,7 @@ let try_stdlib = function
   | App (App (Var "+", Int x), Int y) -> Some (Int (x + y))
   | App (App (Var "-", Int x), Int y) -> Some (Int (x - y))
   | App (App (Var "*", Int x), Int y) -> Some (Int (x * y))
-  | App (App (Var "==", Int x), Int y) -> Some (if x = y then ltrue else lfalse)
+  | App (App (Var "=", Int x), Int y) -> Some (if x = y then ltrue else lfalse)
   | App (App (Var ">", Int x), Int y) -> Some (if x > y then ltrue else lfalse)
   | App (App (Var "<", Int x), Int y) -> Some (if x < y then ltrue else lfalse)
   | _ -> None

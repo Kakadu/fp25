@@ -65,6 +65,7 @@ term:
     | FUN; l = nonempty_list(VAR); MAPSTO; t = term { List.fold_right (fun e acc -> Fun (e, acc)) l t }
     | LEFT_BRACK; t1 = term; t2 = term; RIGHT_BRACK { App (t1, t2) }
     | LEFT_BRACK; t1 = term; op = INFIXOP; t2 = term; RIGHT_BRACK { App (App ((Var op), t1), t2) }
+    | LEFT_BRACK; t1 = term; EQ; t2 = term; RIGHT_BRACK { App (App ((Var "="), t1), t2) }
     | LEFT_BRACK; IF; c = term; THEN; t = term; ELSE; e = term; RIGHT_BRACK { ITE (c, t, e) }
     | LEFT_BRACK; NOT; t = term; RIGHT_BRACK; { App (Var "not", t) }
     | LEFT_BRACK; t1 = term; COMMA; t2 = term; RIGHT_BRACK; { Pair (t1, t2) }

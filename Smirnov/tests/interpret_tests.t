@@ -125,7 +125,7 @@ Booleans 3
 
 Booleans 3
   $ ../bin/REPL.exe << EOF
-  > (if (1 == 2) then false else true)
+  > (if (1 = 2) then false else true)
   > EOF
   MardukML REPL
   
@@ -234,7 +234,7 @@ Test for exceptions: nonexistent exception
 
 Test for exception something sane 1:
   $ ../bin/REPL.exe << EOF
-  > let exception Mulzero of unit in let mul5 x = (if (x == 0) then (raise (Mulzero ())) else (5 * x)) in (mul5 0)
+  > let exception Mulzero of unit in let mul5 x = (if (x = 0) then (raise (Mulzero ())) else (5 * x)) in (mul5 0)
   > EOF
   MardukML REPL
   
@@ -243,7 +243,7 @@ Test for exception something sane 1:
 
 Test for exception something sane 2:
   $ ../bin/REPL.exe << EOF
-  > let exception Mulzero of unit in (try let mul5 x = (if (x == 0) then (raise (Mulzero ())) else (5 * x)) in (mul5 0) with | Mulzero v -> (0-1))
+  > let exception Mulzero of unit in (try let mul5 x = (if (x = 0) then (raise (Mulzero ())) else (5 * x)) in (mul5 0) with | Mulzero v -> (0-1))
   > EOF
   MardukML REPL
   

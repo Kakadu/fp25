@@ -8,7 +8,7 @@ let initial_context : (string * mltype) list =
   [ "+", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "int")), [])
   ; "-", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "int")), [])
   ; "*", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "int")), [])
-  ; "==", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "bool")), [])
+  ; "=", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "bool")), [])
   ; "<", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "bool")), [])
   ; ">", (Arrowtype (Basetype "int", Arrowtype (Basetype "int", Basetype "bool")), [])
   ; "&&", (Arrowtype (Basetype "bool", Arrowtype (Basetype "bool", Basetype "bool")), [])

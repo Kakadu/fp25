@@ -32,7 +32,6 @@ rule token = parse
     | ['a'-'z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']* as name { VAR name }
     | ['A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']* as name { CONSTR name }
     | ['+' '*' '<' '>' '-'] as op { INFIXOP (String.make 1 op) }
-    | "==" as op { INFIXOP op }
     | "||" as op { INFIXOP op }
     | "&&" as op { INFIXOP op }
     | "(" { LEFT_BRACK }
