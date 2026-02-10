@@ -510,19 +510,19 @@ let try_stdlib = function
     let () = Printf.printf "%d\n%!" i in
     <span data-count="2">S</span>ome Unit
   | <span data-count="68">A</span>pp (App (Var "+", Int x), Int y) -&gt; Some (Int (x + y))
-  | <span data-count="146">A</span>pp (App (Var "-", Int x), Int y) -&gt; Some (Int (x - y))
-  | <span data-count="13">A</span>pp (App (Var "*", Int x), Int y) -&gt; Some (Int (x * y))
+  | <span data-count="150">A</span>pp (App (Var "-", Int x), Int y) -&gt; Some (Int (x - y))
+  | <span data-count="17">A</span>pp (App (Var "*", Int x), Int y) -&gt; Some (Int (x * y))
   | <span data-count="3">A</span>pp (App (Var "=", Int x), Int y) -&gt; Some (if x = y then <span data-count="2">l</span>true else <span data-count="1">l</span>false)
-  | <span data-count="149">A</span>pp (App (Var "&gt;", Int x), Int y) -&gt; Some (if x &gt; y then <span data-count="79">l</span>true else <span data-count="70">l</span>false)
+  | <span data-count="154">A</span>pp (App (Var "&gt;", Int x), Int y) -&gt; Some (if x &gt; y then <span data-count="83">l</span>true else <span data-count="71">l</span>false)
   | <span data-count="0">A</span>pp (App (Var "&lt;", Int x), Int y) -&gt; Some (if x &lt; y then <span data-count="0">l</span>true else <span data-count="0">l</span>false)
-  | <span data-count="14184">_</span> -&gt; None
+  | <span data-count="14400">_</span> -&gt; None
 ;;
 
 let fresh_var vars =
-  <span data-count="11">l</span>et cands = List.init (List.lengt<span data-count="11">h</span> vars + 1) (fun i -&gt; <span data-count="83">"</span>fv" ^ string_of_in<span data-count="83">t</span> i) in
-  <span data-count="11">l</span>et res = List.filter (fun x -&gt; <span data-count="83">n</span>ot (List.me<span data-count="83">m</span> x vars)) cands in
-  <span data-count="11">m</span>atch res with
-  | <span data-count="11">h</span> :: _ -&gt; h
+  <span data-count="12">l</span>et cands = List.init (List.lengt<span data-count="12">h</span> vars + 1) (fun i -&gt; <span data-count="94">"</span>fv" ^ string_of_in<span data-count="94">t</span> i) in
+  <span data-count="12">l</span>et res = List.filter (fun x -&gt; <span data-count="94">n</span>ot (List.me<span data-count="94">m</span> x vars)) cands in
+  <span data-count="12">m</span>atch res with
+  | <span data-count="12">h</span> :: _ -&gt; h
   | <span data-count="0">[</span>] -&gt; raise (Failure "fresh: should not happen!")
 ;;
 
@@ -541,10 +541,10 @@ let rec lterm_to_string = function
 ;;
 
 let rec lterm_to_string_typed term tp =
-  <span data-count="30">a</span>ssert <span data-count="30">(</span>sn<span data-count="30">d</span> tp = []);
-  match term, fs<span data-count="30">t</span> tp with
+  <span data-count="31">a</span>ssert <span data-count="31">(</span>sn<span data-count="31">d</span> tp = []);
+  match term, fs<span data-count="31">t</span> tp with
   | <span data-count="0">V</span>ar x, _ -&gt; x
-  | <span data-count="14">I</span>nt i, Ast.Basetype "int" -&gt; Printf.sprintf "%d" i
+  | <span data-count="15">I</span>nt i, Ast.Basetype "int" -&gt; Printf.sprintf "%d" i
   | <span data-count="3">U</span>nit, Ast.Basetype "unit" -&gt; "()"
   | <span data-count="2">A</span>bs (x, App (App (Var y, t1), t2)), Ast.Prod (tp1, tp2) when x = y -&gt;
     <span data-count="2">"</span>("
@@ -564,25 +564,25 @@ let rec lterm_to_string_typed term tp =
 ;;
 
 let vars t =
-  <span data-count="2574">l</span>et rec helper = function
-    | <span data-count="91284">V</span>ar x -&gt; [ x ]
-    | <span data-count="114978">A</span>pp (t1, t2) -&gt; helpe<span data-count="114978">r</span> t1 @ helpe<span data-count="114978">r</span> t2
-    | <span data-count="47857">A</span>bs (x, t2) -&gt; [ x ] @ helpe<span data-count="47857">r</span> t2
+  <span data-count="2661">l</span>et rec helper = function
+    | <span data-count="92607">V</span>ar x -&gt; [ x ]
+    | <span data-count="116590">A</span>pp (t1, t2) -&gt; helpe<span data-count="116590">r</span> t1 @ helpe<span data-count="116590">r</span> t2
+    | <span data-count="48490">A</span>bs (x, t2) -&gt; [ x ] @ helpe<span data-count="48490">r</span> t2
     | <span data-count="0">T</span>ry (t, l) -&gt; helpe<span data-count="0">r</span> t @ List.concat_ma<span data-count="0">p</span> (fun (_, t) -&gt; <span data-count="0">h</span>elper t) l
-    | <span data-count="26268">_</span> -&gt; []
+    | <span data-count="26644">_</span> -&gt; []
   in
-  List.sort_uniq compare (helpe<span data-count="2574">r</span> t)
+  List.sort_uniq compare (helpe<span data-count="2661">r</span> t)
 ;;
 
 let fvars t =
-  <span data-count="17100">l</span>et rec helper = function
-    | <span data-count="560060">V</span>ar x -&gt; [ x ]
-    | <span data-count="702811">A</span>pp (t1, t2) -&gt; helpe<span data-count="702811">r</span> t1 @ helpe<span data-count="702811">r</span> t2
-    | <span data-count="306925">A</span>bs (x, t2) -&gt; List.filter (fun y -&gt; <span data-count="2421634">x</span> &lt;&gt; y) (helpe<span data-count="306925">r</span> t2)
+  <span data-count="17420">l</span>et rec helper = function
+    | <span data-count="561387">V</span>ar x -&gt; [ x ]
+    | <span data-count="704351">A</span>pp (t1, t2) -&gt; helpe<span data-count="704351">r</span> t1 @ helpe<span data-count="704351">r</span> t2
+    | <span data-count="307599">A</span>bs (x, t2) -&gt; List.filter (fun y -&gt; <span data-count="2425837">x</span> &lt;&gt; y) (helpe<span data-count="307599">r</span> t2)
     | <span data-count="0">T</span>ry (t, l) -&gt; helpe<span data-count="0">r</span> t @ List.concat_ma<span data-count="0">p</span> (fun (_, t) -&gt; <span data-count="0">h</span>elper t) l
-    | <span data-count="159851">_</span> -&gt; []
+    | <span data-count="160384">_</span> -&gt; []
   in
-  List.sort_uniq compare (helpe<span data-count="17100">r</span> t)
+  List.sort_uniq compare (helpe<span data-count="17420">r</span> t)
 ;;
 
 let rec rename_free_var term x y =
@@ -598,18 +598,18 @@ let rec rename_free_var term x y =
 
 (* term[x |-&gt; t] *)
 let subst term x t =
-  <span data-count="1272">l</span>et rec helper term x t vars =
-    <span data-count="92936">m</span>atch term with
-    | <span data-count="27297">V</span>ar y -&gt; if x = y then <span data-count="1753">t</span>, vars else <span data-count="25544">t</span>erm, vars
-    | <span data-count="6577">I</span>nt _ -&gt; term, vars
+  <span data-count="1314">l</span>et rec helper term x t vars =
+    <span data-count="94782">m</span>atch term with
+    | <span data-count="27863">V</span>ar y -&gt; if x = y then <span data-count="1806">t</span>, vars else <span data-count="26057">t</span>erm, vars
+    | <span data-count="6707">I</span>nt _ -&gt; term, vars
     | <span data-count="0">E</span>xc t1 -&gt;
       let t2, vars = helper t1 x t vars in
       <span data-count="0">E</span>xc t2, vars
-    | <span data-count="2035">U</span>nit -&gt; term, vars
-    | <span data-count="37283">A</span>pp (t1, t2) -&gt;
+    | <span data-count="2079">U</span>nit -&gt; term, vars
+    | <span data-count="38025">A</span>pp (t1, t2) -&gt;
       let r1 = helper t1 x t vars in
-      <span data-count="37283">l</span>et r2 = helper t2 x t (sn<span data-count="37283">d</span> r1) in
-      <span data-count="37283">A</span>pp (fs<span data-count="37283">t</span> r1, fs<span data-count="37283">t</span> r2), sn<span data-count="37283">d</span> r2
+      <span data-count="38025">l</span>et r2 = helper t2 x t (sn<span data-count="38025">d</span> r1) in
+      <span data-count="38025">A</span>pp (fs<span data-count="38025">t</span> r1, fs<span data-count="38025">t</span> r2), sn<span data-count="38025">d</span> r2
     | <span data-count="0">T</span>ry (t1, l) -&gt;
       let t1, vars = helper t1 x t vars in
       <span data-count="0">l</span>et l1, vars =
@@ -621,70 +621,70 @@ let subst term x t =
           l
       in
       <span data-count="0">T</span>ry (t1, l1), vars
-    | <span data-count="19744">A</span>bs (y, _) when y = x -&gt; <span data-count="2646">t</span>erm, vars
-    | <span data-count="17098">A</span>bs (y, t2) -&gt;
-      (match List.find_opt (( = ) y) (fvar<span data-count="17098">s</span> t) with
+    | <span data-count="20108">A</span>bs (y, _) when y = x -&gt; <span data-count="2690">t</span>erm, vars
+    | <span data-count="17418">A</span>bs (y, t2) -&gt;
+      (match List.find_opt (( = ) y) (fvar<span data-count="17418">s</span> t) with
        | <span data-count="1">S</span>ome _ -&gt;
          let u = fresh_var vars in
          <span data-count="1">l</span>et r = helper (rename_free_va<span data-count="1">r</span> t2 y u) x t ([ u ] @ vars) in
          <span data-count="1">A</span>bs (u, fs<span data-count="1">t</span> r), sn<span data-count="1">d</span> r
-       | <span data-count="17097">N</span>one -&gt;
+       | <span data-count="17417">N</span>one -&gt;
          let r = helper t2 x t vars in
-         <span data-count="17097">A</span>bs (y, fs<span data-count="17097">t</span> r), sn<span data-count="17097">d</span> r)
+         <span data-count="17417">A</span>bs (y, fs<span data-count="17417">t</span> r), sn<span data-count="17417">d</span> r)
   in
-  fst (helpe<span data-count="1272">r</span> term x t ([ x ] @ var<span data-count="1272">s</span> term @ var<span data-count="1272">s</span> t))
+  fst (helpe<span data-count="1314">r</span> term x t ([ x ] @ var<span data-count="1314">s</span> term @ var<span data-count="1314">s</span> t))
 ;;
 
 let rec beta_step_in_cbv term =
-  <span data-count="14565">m</span>atch try_stdlib term with
-  | <span data-count="381">S</span>ome t -&gt; Some t
-  | <span data-count="14184">N</span>one -&gt;
+  <span data-count="14794">m</span>atch try_stdlib term with
+  | <span data-count="394">S</span>ome t -&gt; Some t
+  | <span data-count="14400">N</span>one -&gt;
     (match term with
-     | <span data-count="14">T</span>ry (t, l) -&gt;
+     | <span data-count="70">T</span>ry (t, l) -&gt;
        (match beta_step_in_cbv t with
-        | <span data-count="11">S</span>ome t1 -&gt; Some (Try (t1, l))
-        | <span data-count="3">N</span>one -&gt;
+        | <span data-count="66">S</span>ome t1 -&gt; Some (Try (t1, l))
+        | <span data-count="4">N</span>one -&gt;
           (match t with
-           | <span data-count="3">E</span>xc (App (Var c, t1)) -&gt;
+           | <span data-count="4">E</span>xc (App (Var c, t1)) -&gt;
              (match List.assoc_opt c l with
-              | <span data-count="3">S</span>ome t -&gt; Some (App (t, t1))
+              | <span data-count="4">S</span>ome t -&gt; Some (App (t, t1))
               | <span data-count="0">N</span>one -&gt; Some t)
            | <span data-count="0">E</span>xc tt -&gt; raise (Failure ("Try: should not happen " ^ lterm_to_strin<span data-count="0">g</span> tt))
            | <span data-count="0">_</span> -&gt; Some t))
-     | <span data-count="727">A</span>bs (_, _) -&gt; None
-     | <span data-count="8">A</span>pp (Var "raise", e) -&gt;
+     | <span data-count="749">A</span>bs (_, _) -&gt; None
+     | <span data-count="9">A</span>pp (Var "raise", e) -&gt;
        (match beta_step_in_cbv e with
         | <span data-count="2">S</span>ome e -&gt; Some (App (Var "raise", e))
-        | <span data-count="6">N</span>one -&gt;
+        | <span data-count="7">N</span>one -&gt;
           (match e with
            | <span data-count="1">E</span>xc t -&gt; Some (Exc t)
-           | <span data-count="5">_</span> -&gt; Some (Exc e)))
+           | <span data-count="6">_</span> -&gt; Some (Exc e)))
      | <span data-count="0">A</span>pp (Abs (_, _), Exc e) -&gt; Some (Exc e)
-     | <span data-count="1493">A</span>pp (Abs (x, y), z) -&gt;
+     | <span data-count="1546">A</span>pp (Abs (x, y), z) -&gt;
        (match beta_step_in_cbv z with
-        | <span data-count="224">S</span>ome t -&gt; Some (App (Abs (x, y), t))
-        | <span data-count="1269">N</span>one -&gt; Some (subs<span data-count="1269">t</span> y x z))
-     | <span data-count="7434">A</span>pp (t1, t2) -&gt;
+        | <span data-count="235">S</span>ome t -&gt; Some (App (Abs (x, y), t))
+        | <span data-count="1311">N</span>one -&gt; Some (subs<span data-count="1311">t</span> y x z))
+     | <span data-count="7494">A</span>pp (t1, t2) -&gt;
        (match beta_step_in_cbv t1 with
-        | <span data-count="3501">S</span>ome t -&gt; Some (App (t, t2))
-        | <span data-count="3933">N</span>one -&gt;
+        | <span data-count="3560">S</span>ome t -&gt; Some (App (t, t2))
+        | <span data-count="3934">N</span>one -&gt;
           (match t2 with
            | <span data-count="1">E</span>xc e -&gt; Some (Exc e)
-           | <span data-count="3932">_</span> -&gt;
+           | <span data-count="3933">_</span> -&gt;
              (match beta_step_in_cbv t2 with
               | <span data-count="2906">S</span>ome t -&gt; Some (App (t1, t))
-              | <span data-count="1026">N</span>one -&gt;
+              | <span data-count="1027">N</span>one -&gt;
                 (match t1 with
                  | <span data-count="0">E</span>xc e -&gt; Some (Exc e)
-                 | <span data-count="1026">_</span> -&gt; None))))
-     | <span data-count="4508">_</span> -&gt; None)
+                 | <span data-count="1027">_</span> -&gt; None))))
+     | <span data-count="4532">_</span> -&gt; None)
 ;;
 
 let rec beta_reduce strategy x =
   (* let () = Printf.printf "%s\n" (lterm_to_string x) in *)
-  <span data-count="1684">m</span>atch strategy x with
-  | <span data-count="1660">S</span>ome y -&gt; beta_reduce strategy y
-  | <span data-count="24">N</span>one -&gt; x
+  <span data-count="1742">m</span>atch strategy x with
+  | <span data-count="1717">S</span>ome y -&gt; beta_reduce strategy y
+  | <span data-count="25">N</span>one -&gt; x
 ;;
 </code></pre>
       </div>

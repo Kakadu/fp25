@@ -179,26 +179,26 @@ let rec compile_to_lambda_cbv : mlterm -&gt; Lambda.lterm = function
   | <span data-count="2">V</span>ar "inr" -&gt; Abs ("x", Abs ("f", Abs ("g", App (Var "g", Var "x"))))
   | <span data-count="1">A</span>pp (App (Var "&amp;&amp;", t1), t2) -&gt; compile_to_lambda_cbv (ITE (t1, t2, Bool false))
   | <span data-count="1">A</span>pp (App (Var "||", t1), t2) -&gt; compile_to_lambda_cbv (ITE (t1, Bool true, t2))
-  | <span data-count="7">C</span>onstr e -&gt; Var e
-  | <span data-count="89">V</span>ar x -&gt; Var x
-  | <span data-count="41">I</span>nt i -&gt; Int i
+  | <span data-count="8">C</span>onstr e -&gt; Var e
+  | <span data-count="101">V</span>ar x -&gt; Var x
+  | <span data-count="45">I</span>nt i -&gt; Int i
   | <span data-count="8">B</span>ool true -&gt; Lambda.ltrue
   | <span data-count="6">B</span>ool false -&gt; Lambda.lfalse
   | <span data-count="5">U</span>nit -&gt; Unit
-  | <span data-count="10">I</span>TE (c, th, e) -&gt;
+  | <span data-count="11">I</span>TE (c, th, e) -&gt;
     let cl = compile_to_lambda_cbv c in
-    <span data-count="10">l</span>et thl = compile_to_lambda_cbv th in
-    <span data-count="10">l</span>et el = compile_to_lambda_cbv e in
-    <span data-count="10">l</span>et u = Lambda.fresh_var (Lambda.var<span data-count="10">s</span> cl @ Lambda.var<span data-count="10">s</span> thl @ Lambda.var<span data-count="10">s</span> el) in
-    <span data-count="10">A</span>pp (App (App (cl, Abs (u, thl)), Abs (u, el)), Unit)
+    <span data-count="11">l</span>et thl = compile_to_lambda_cbv th in
+    <span data-count="11">l</span>et el = compile_to_lambda_cbv e in
+    <span data-count="11">l</span>et u = Lambda.fresh_var (Lambda.var<span data-count="11">s</span> cl @ Lambda.var<span data-count="11">s</span> thl @ Lambda.var<span data-count="11">s</span> el) in
+    <span data-count="11">A</span>pp (App (App (cl, Abs (u, thl)), Abs (u, el)), Unit)
   | <span data-count="6">L</span>et (v, t1, t2) -&gt; App (Abs (v, compile_to_lambda_cb<span data-count="6">v</span> t2), compile_to_lambda_cb<span data-count="6">v</span> t1)
-  | <span data-count="4">L</span>etRec (v, t1, t2) -&gt;
+  | <span data-count="5">L</span>etRec (v, t1, t2) -&gt;
     App
-      ( Abs (v, compile_to_lambda_cb<span data-count="4">v</span> t2)
-      , App (Lambda.fix_comb_cbv, Abs (v, compile_to_lambda_cb<span data-count="4">v</span> t1)) )
-  | <span data-count="7">L</span>etExc (_, _, t) -&gt; compile_to_lambda_cbv t
-  | <span data-count="95">A</span>pp (t1, t2) -&gt; App (compile_to_lambda_cb<span data-count="95">v</span> t1, compile_to_lambda_cb<span data-count="95">v</span> t2)
-  | <span data-count="22">F</span>un (x, t) -&gt; Abs (x, compile_to_lambda_cb<span data-count="22">v</span> t)
+      ( Abs (v, compile_to_lambda_cb<span data-count="5">v</span> t2)
+      , App (Lambda.fix_comb_cbv, Abs (v, compile_to_lambda_cb<span data-count="5">v</span> t1)) )
+  | <span data-count="8">L</span>etExc (_, _, t) -&gt; compile_to_lambda_cbv t
+  | <span data-count="107">A</span>pp (t1, t2) -&gt; App (compile_to_lambda_cb<span data-count="107">v</span> t1, compile_to_lambda_cb<span data-count="107">v</span> t2)
+  | <span data-count="24">F</span>un (x, t) -&gt; Abs (x, compile_to_lambda_cb<span data-count="24">v</span> t)
   | <span data-count="4">P</span>air (t1, t2) -&gt;
     App
       ( App
@@ -210,15 +210,15 @@ let rec compile_to_lambda_cbv : mlterm -&gt; Lambda.lterm = function
     <span data-count="2">l</span>et t1l = compile_to_lambda_cbv t1 in
     <span data-count="2">l</span>et t2l = compile_to_lambda_cbv t2 in
     <span data-count="2">A</span>pp (App (tl, Abs (v1, t1l)), Abs (v2, t2l))
-  | <span data-count="3">T</span>ry (t, l) -&gt;
+  | <span data-count="4">T</span>ry (t, l) -&gt;
     Lambda.Try
-      ( compile_to_lambda_cb<span data-count="3">v</span> t
-      , List.ma<span data-count="3">p</span> (fun (s, v, t) -&gt; <span data-count="3">s</span>, Lambda.Abs (v, compile_to_lambda_cb<span data-count="3">v</span> t)) l )
+      ( compile_to_lambda_cb<span data-count="4">v</span> t
+      , List.ma<span data-count="4">p</span> (fun (s, v, t) -&gt; <span data-count="4">s</span>, Lambda.Abs (v, compile_to_lambda_cb<span data-count="4">v</span> t)) l )
 ;;
 
 let parse str =
-  <span data-count="10029">l</span>et lexer = Lexing.from_string str in
-  <span data-count="10029">t</span>ry Parser.pro<span data-count="10029">g</span> Lexer.token lexer with
+  <span data-count="10030">l</span>et lexer = Lexing.from_string str in
+  <span data-count="10030">t</span>ry Parser.pro<span data-count="10030">g</span> Lexer.token lexer with
   | <span data-count="0">P</span>arser.Error -&gt;
     let pos = lexer.Lexing.lex_curr_p in
     let line = pos.Lexing.pos_lnum in
@@ -228,10 +228,10 @@ let parse str =
 ;;
 
 let interp str =
-  <span data-count="29">l</span>et ml_ast = parse str in
-  <span data-count="29">l</span>et tp = Typing.hm_typechecker ml_ast in
-  <span data-count="24">l</span>et l_ast = compile_to_lambda_cbv ml_ast in
-  <span data-count="24">L</span>ambda.beta_reduc<span data-count="24">e</span> Lambda.beta_step_in_cbv l_ast, tp
+  <span data-count="30">l</span>et ml_ast = parse str in
+  <span data-count="30">l</span>et tp = Typing.hm_typechecker ml_ast in
+  <span data-count="25">l</span>et l_ast = compile_to_lambda_cbv ml_ast in
+  <span data-count="25">L</span>ambda.beta_reduc<span data-count="25">e</span> Lambda.beta_step_in_cbv l_ast, tp
 ;;
 </code></pre>
       </div>
