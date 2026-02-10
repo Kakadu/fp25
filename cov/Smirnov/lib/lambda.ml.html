@@ -512,7 +512,7 @@ let try_stdlib = function
   | <span data-count="68">A</span>pp (App (Var "+", Int x), Int y) -&gt; Some (Int (x + y))
   | <span data-count="146">A</span>pp (App (Var "-", Int x), Int y) -&gt; Some (Int (x - y))
   | <span data-count="13">A</span>pp (App (Var "*", Int x), Int y) -&gt; Some (Int (x * y))
-  | <span data-count="3">A</span>pp (App (Var "==", Int x), Int y) -&gt; Some (if x = y then <span data-count="2">l</span>true else <span data-count="1">l</span>false)
+  | <span data-count="3">A</span>pp (App (Var "=", Int x), Int y) -&gt; Some (if x = y then <span data-count="2">l</span>true else <span data-count="1">l</span>false)
   | <span data-count="149">A</span>pp (App (Var "&gt;", Int x), Int y) -&gt; Some (if x &gt; y then <span data-count="79">l</span>true else <span data-count="70">l</span>false)
   | <span data-count="0">A</span>pp (App (Var "&lt;", Int x), Int y) -&gt; Some (if x &lt; y then <span data-count="0">l</span>true else <span data-count="0">l</span>false)
   | <span data-count="14184">_</span> -&gt; None
