@@ -297,3 +297,21 @@ Division by zero
   
   # Exception: DivisionByZero : int
   # 
+
+
+
+TODO: tuples should be printed as tuples
+TODO: What is bv14?
+  $ ../bin/REPL.exe << EOF
+  > let exception Q of int in \
+  > let fib n = \
+  >   let exception Q of (int * int)  in \
+  >   (raise (Q (1, 2))) \
+  > in \
+  > (fib 8)
+  > EOF
+  MardukML REPL
+  
+  # Exception: (Q (\f.((f 1) 2))) : bv14
+  # 
+
