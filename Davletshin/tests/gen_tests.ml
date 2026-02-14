@@ -8,63 +8,133 @@
 
 open Miniml_lib
 open Ast
-open Utils
+open QCheck2
 
-let a = var "a"
-let x = var "x"
-let y = var "y"
-let z = var "z"
-let f = var "f"
-let g = var "g"
-let h = var "h"
-let m = var "m"
-let n = var "n"
-let p = var "p"
-let zero = abs "g" @@ abs "y" @@ Var "y"
-let one = abs "f" @@ abs "x" @@ app f (Var "x")
-let two = abs "f" @@ abs "x" @@ app f (app f x)
-let three = abs "f" @@ abs "x" @@ app f (app f (app f x))
-let plus = abs "m" @@ abs "n" @@ abs "f" @@ abs "x" @@ app m @@ app f @@ app n @@ app f x
-let mul = abs "x" @@ abs "y" @@ abs "z" @@ app x (app y z)
-let true_ = abs "x" @@ abs "y" @@ Var "x"
-let false_ = abs "x" @@ abs "y" @@ Var "y"
-let isZero = abs "n" @@ app (app n (abs "x" false_)) true_
-
-(* TODO: write the right if-then-else
-   by adding thunk around then and else branches to delay the evaluation *)
-let pred =
-  let xxx = abs "g" @@ abs "h" @@ app h (app g f) in
-  abs "n" @@ abs "f" @@ abs "x" @@ app (app (app n xxx) (abs "u" x)) (abs "u" (Var "u"))
+let is_first_letter = function
+  | 'a' .. 'z' -> true
+  | _ -> false
 ;;
 
-let pp = Pprintast.pp
-
-let out_term file lam =
-  Out_channel.with_open_text file (fun ch ->
-    Format.fprintf (Format.formatter_of_out_channel ch) "%a%!" pp lam;
-    flush ch)
+let is_valid_char = function
+  | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' -> true
+  | _ -> false
 ;;
 
-let () = out_term "lam_zero.txt" zero
-let () = out_term "lam_one.txt" one
-let () = out_term "lam_1+1.txt" (app plus @@ app one one)
-let () = out_term "lam_2x1.txt" (app (app mul two) one)
-let () = out_term "lam_3x2.txt" (app (app mul three) two)
+let is_varname str =
+  String.length str > 0 && is_first_letter str.[0] && String.for_all is_valid_char str
+;;
 
-(** Definition for normal order *)
-module _ = struct
-  let ite cond th el = app (app (app isZero cond) th) el
+let gen_varname =
+  let open Gen in
+  let first_char = char_range 'a' 'z' in
+  let other_char =
+    oneof [ char_range 'a' 'z'; char_range 'A' 'Z'; char_range '0' '9'; return '_' ]
+  in
+  let size = int_range 1 20 in
+  map
+    (fun (c, rest) -> String.of_seq (List.to_seq (c :: rest)))
+    (pair first_char (list_size size other_char))
+;;
 
-  let fact =
-    abs "s"
-    @@ abs "n"
-    @@ ite (Var "n") one (app (app mul (app (var "s") (app pred (var "n")))) (var "n"))
-  ;;
+let gen_binop = Gen.(oneofl [ Plus; Minus; Times; Divide; Eq; Neq; Lt; Gt; Le; Ge ])
 
-  let ygrek =
-    let hack = abs "x" (app f (app x x)) in
-    abs "f" (app hack hack)
-  ;;
+let rec gen_ast depth =
+  let open Gen in
+  let base = [ map (fun v -> Var v) gen_varname; map (fun i -> Int i) nat ] in
+  if depth = 0
+  then oneof base
+  else
+    oneof
+      (base
+       @ [ map2 (fun x t -> Abs (x, t)) gen_varname (gen_ast (depth - 1))
+         ; map2 (fun f g -> App (f, g)) (gen_ast (depth - 1)) (gen_ast (depth - 1))
+         ; map3
+             (fun op a b -> Binop (op, a, b))
+             gen_binop
+             (gen_ast (depth - 1))
+             (gen_ast (depth - 1))
+         ; map (fun e -> Unop (Neg, e)) (gen_ast (depth - 1))
+         ; map3
+             (fun c t e -> If (c, t, e))
+             (gen_ast (depth - 1))
+             (gen_ast (depth - 1))
+             (gen_ast (depth - 1))
+         ; map3
+             (fun p e1 e2 -> Let (Nonrec, p, e1, e2))
+             gen_varname
+             (gen_ast (depth - 1))
+             (gen_ast (depth - 1))
+         ; map4
+             (fun n x b e2 -> Let (Rec, n, Abs (x, b), e2))
+             gen_varname
+             gen_varname
+             (gen_ast (depth - 1))
+             (gen_ast (depth - 1))
+         ])
+;;
 
-  let () = out_term "lam_fac3.txt" @@ app (app ygrek fact) three
-end
+let rec lol = function
+  | Int n -> string_of_int n
+  | Var s -> s
+  | App (l, r) -> "(" ^ lol l ^ " " ^ lol r ^ ")"
+  | Abs (x, t) -> "(fun " ^ x ^ " -> " ^ lol t ^ ")"
+  | Binop (op, l, r) ->
+    let bop =
+      match op with
+      | Plus -> "+"
+      | Minus -> "-"
+      | Times -> "*"
+      | Divide -> "/"
+      | Eq -> "="
+      | Neq -> "<>"
+      | Lt -> "<"
+      | Gt -> ">"
+      | Le -> "<="
+      | Ge -> ">="
+    in
+    "(" ^ lol l ^ " " ^ bop ^ " " ^ lol r ^ ")"
+  | Unop (op, e) ->
+    let uop =
+      match op with
+      | Pos -> "+"
+      | Neg -> "-"
+    in
+    "(" ^ uop ^ lol e ^ ")"
+  | If (c, t, e) -> "(if " ^ lol c ^ " then " ^ lol t ^ " else " ^ lol e ^ ")"
+  | Let (Nonrec, n, e1, e2) -> "(let " ^ n ^ " = " ^ lol e1 ^ " in " ^ lol e2 ^ ")"
+  | Let (Rec, n, e1, e2) -> "(let rec " ^ n ^ " = " ^ lol e1 ^ " in " ^ lol e2 ^ ")"
+;;
+
+let rec equal e1 e2 =
+  match e1, e2 with
+  | Int x1, Int x2 -> x1 = x2
+  | Var x1, Var x2 -> String.equal x1 x2
+  | Abs (x1, t1), Abs (x2, t2) -> String.equal x1 x2 && equal t1 t2
+  | App (f1, g1), App (f2, g2) -> equal f1 f2 && equal g1 g2
+  | Binop (op1, a1, b1), Binop (op2, a2, b2) -> op1 = op2 && equal a1 a2 && equal b1 b2
+  | Unop (op1, a1), Unop (op2, a2) -> op1 = op2 && equal a1 a2
+  | If (c1, t1, e1), If (c2, t2, e2) -> equal c1 c2 && equal t1 t2 && equal e1 e2
+  | Let (f1, p1, b1, e1), Let (f2, p2, b2, e2) ->
+    f1 = f2 && String.equal p1 p2 && equal b1 b2 && equal e1 e2
+  | _ -> false
+;;
+
+let pprint ast = Format.asprintf "%a" Pprintast.pp ast
+let gen_ast_sized = Gen.sized (fun s -> gen_ast (3 + (s mod 3)))
+
+let parse_test =
+  Test.make ~count:200 ~name:"parser test" ~print:lol gen_ast_sized (fun ast ->
+    match Parser.parse (lol ast) with
+    | Result.Ok ast' -> equal ast ast'
+    | Result.Error _ -> false)
+;;
+
+let pprint_test =
+  Test.make ~count:200 ~name:"pprint test" ~print:pprint gen_ast_sized (fun ast ->
+    match Parser.parse (pprint ast) with
+    | Result.Ok ast' -> equal ast ast'
+    | Result.Error _ -> false)
+;;
+
+(*TODO: gen_varname can generate a keyword*)
+let _ = QCheck_runner.run_tests [ parse_test; pprint_test ]

@@ -12,12 +12,11 @@ open Ast
 
 let pp =
   let open Format in
-  let mangle fmt x = fprintf fmt "%s" x in
   let rec pp fmt = function
-    | Int n -> Format.fprintf fmt "%d" n
-    | Var s -> Format.fprintf fmt "%s" s
-    | App (l, r) -> Format.fprintf fmt "(%a %a)" pp l pp r
-    | Abs (x, t) -> Format.fprintf fmt "(fun %a -> %a)" mangle x pp t
+    | Int n -> fprintf fmt "%d" n
+    | Var s -> fprintf fmt "%s" s
+    | App (l, r) -> fprintf fmt "(%a %a)" pp l pp r
+    | Abs (x, t) -> fprintf fmt "(fun %s -> %a)" x pp t
     | Binop (op, l, r) ->
       let bop =
         match op with
@@ -32,17 +31,17 @@ let pp =
         | Le -> "<="
         | Ge -> ">="
       in
-      Format.fprintf fmt "(%a %s %a)" pp l bop pp r
+      fprintf fmt "(%a %s %a)" pp l bop pp r
     | Unop (op, e) ->
       let uop =
         match op with
         | Pos -> "+"
         | Neg -> "-"
       in
-      Format.fprintf fmt "(%s%a)" uop pp e
-    | If (c, t, e) -> Format.fprintf fmt "if %a then %a else %a" pp c pp t pp e
-    | Let (Nonrec, n, e1, e2) -> Format.fprintf fmt "let %s = %a in %a" n pp e1 pp e2
-    | Let (Rec, n, e1, e2) -> Format.fprintf fmt "let rec %s = %a in %a" n pp e1 pp e2
+      fprintf fmt "(%s%a)" uop pp e
+    | If (c, t, e) -> fprintf fmt "(if %a then %a else %a)" pp c pp t pp e
+    | Let (Nonrec, n, e1, e2) -> fprintf fmt "(let %s = %a in %a)" n pp e1 pp e2
+    | Let (Rec, n, e1, e2) -> fprintf fmt "(let rec %s = %a in %a)" n pp e1 pp e2
   in
   pp
 ;;

@@ -119,7 +119,7 @@ let parse_and_run str steps =
         | UnknownVariable x -> Format.eprintf "UnknownVariable: %s\n" x
         | TypeError msg -> Format.eprintf "TypeError: %s\n" msg
         | DivisionByZero -> Format.eprintf "Division by zero\n"
-        | ProgramFreeze -> Format.eprintf "ProgramFreeze"))
+        | ProgramFreeze -> Format.eprintf "ProgramFreeze\n"))
   | Error _ ->
     Format.eprintf "Parsing error\n%!";
     exit 1

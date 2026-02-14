@@ -126,12 +126,12 @@ let parser =
       chain_left
         additive
         (conde
-           [ spaces *> string "=" *> space1 *> return Eq
-           ; spaces *> string "<>" *> space1 *> return Neq
-           ; spaces *> string "<" *> space1 *> return Lt
-           ; spaces *> string ">" *> space1 *> return Gt
-           ; spaces *> string "<=" *> space1 *> return Le
-           ; spaces *> string ">=" *> space1 *> return Ge
+           [ spaces *> string "=" *> return Eq
+           ; spaces *> string "<>" *> return Neq
+           ; spaces *> string "<=" *> return Le
+           ; spaces *> string ">=" *> return Ge
+           ; spaces *> string "<" *> return Lt
+           ; spaces *> string ">" *> return Gt
            ])
     in
     comparison)
