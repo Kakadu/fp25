@@ -69,15 +69,18 @@ let ident : string t =
 
 (** парсим число *)
 let integer : Ast.name Ast.t t =
-  let* sign = option 1 (char '-' *> return (-1)) in
+  let* has_minus = option false (char '-' *> return true) in
   let* digits =
     take_while1 (function
-      | '0' .. '9' -> true
-      | _ -> false)
+        | '0' .. '9' -> true
+        | _ -> false)
   in
-  let n = int_of_string digits in
-  let value = sign * n in
-  lexeme (return (Ast.Int value))
+  (* Важно: собираем строку целиком (с минусом), чтобы корректно парсился min_int
+     и чтобы переполнение превращалось в ошибку парсинга, а не в exception. *)
+  let s = if has_minus then "-" ^ digits else digits in
+  match int_of_string s with
+  | n -> lexeme (return (Ast.Int n))
+  | exception _ -> fail "int overflow"
 ;;
 
 (** бинарные операции (комбинатор),
