@@ -43,14 +43,28 @@ let is_ident_char = function
   | _ -> false
 ;;
 
+let keyword (k : string) : unit t =
+  let* _ = spaces *> string k in
+  let* next = peek_char in
+  (match next with
+   | Some c when is_ident_char c -> fail ("keyword " ^ k)
+   | _ -> return ())
+  <* spaces
+;;
+
 (** парсим идентификатор, первая буква (берем 1 символ, если он удовлетворяет предикату)
     , потом берем строку из 0 и более символ подходящих под предикат, потом собираем строку (первая буква + хвост) *)
+
+let is_keyword = function
+  | "let" | "in" | "rec" | "if" | "then" | "else" | "fun" | "fix" -> true
+  | _ -> false
+;;
 
 let ident : string t =
   let* first = satisfy is_ident_start in
   let* rest = take_while is_ident_char in
   let name = String.make 1 first ^ rest in
-  lexeme (return name)
+  if is_keyword name then fail ("keyword: " ^ name) else lexeme (return name)
 ;;
 
 (** парсим число *)
@@ -93,126 +107,114 @@ let chainl1
     на этапе построения парсеров. *)
 let expr : Ast.name Ast.t t =
   fix (fun expr ->
-      (** let-выражение:
-          - let x = e1 in e2
-          - let rec f x = body in in_e
-            Здесь let rec поддерживаем в форме "функция с одним аргументом",
-            как в большинстве эталонных решений. *)
-      let let_expr : Ast.name Ast.t t =
-        let* _ = symbol "let" in
-        (* опциональное "rec" *)
-        let* is_rec = (symbol "rec" *> return true) <|> return false in
-        (* имя после let: либо x, либо f *)
-        let* name = ident in
-        if is_rec
-        then (
-          (* let rec f x = body in in_e *)
-          let* param = ident in
-          let* _ = symbol "=" in
-          let* body = expr in
-          let* _ = symbol "in" in
-          let* in_e = expr in
-          return (Ast.Let_rec (name, param, body, in_e))
-        )
-        else (
-          (* let x = e1 in e2 *)
-          let* _ = symbol "=" in
-          let* e1 = expr in
-          let* _ = symbol "in" in
-          let* e2 = expr in
-          return (Ast.Let (name, e1, e2))
-        )
-      in
-
-      (** if-выражение:
-          if cond then e1 else e2 *)
-      let if_expr : Ast.name Ast.t t =
-        let* _ = symbol "if" in
-        let* c = expr in
-        let* _ = symbol "then" in
-        let* t_branch = expr in
-        let* _ = symbol "else" in
-        let* e_branch = expr in
-        return (Ast.If (c, t_branch, e_branch))
-      in
-
-      (** fun-выражение:
-          fun x y z -> body
-          Список параметров сворачиваем вправо:
-          fun x y -> body  ==  Abs(x, Abs(y, body)) *)
-      let fun_expr : Ast.name Ast.t t =
-        let* _ = symbol "fun" in
-        let* params = many1 ident in
-        let* _ = symbol "->" in
+    (* let-выражение:
+       - let x = e1 in e2
+       - let rec f x = body in in_e
+         Здесь let rec поддерживаем в форме "функция с одним аргументом",
+         как в большинстве эталонных решений. *)
+    let let_expr : Ast.name Ast.t t =
+      let* () = keyword "let" in
+      (* опциональное "rec" *)
+      let* is_rec = keyword "rec" *> return true <|> return false in
+      (* имя после let: либо x, либо f *)
+      let* name = ident in
+      if is_rec
+      then
+        (* let rec f x = body in in_e *)
+        let* param = ident in
+        let* _ = symbol "=" in
         let* body = expr in
-        let lam = List.fold_right (fun p acc -> Ast.Abs (p, acc)) params body in
-        return lam
+        let* _ = keyword "in" in
+        let* in_e = expr in
+        return (Ast.Let_rec (name, param, body, in_e))
+      else
+        (* let x = e1 in e2 *)
+        let* _ = symbol "=" in
+        let* e1 = expr in
+        let* _ = keyword "in" in
+        let* e2 = expr in
+        return (Ast.Let (name, e1, e2))
+    in
+    (* if-выражение:
+       if cond then e1 else e2 *)
+    let if_expr : Ast.name Ast.t t =
+      let* _ = keyword "if" in
+      let* c = expr in
+      let* _ = keyword "then" in
+      let* t_branch = expr in
+      let* _ = keyword "else" in
+      let* e_branch = expr in
+      return (Ast.If (c, t_branch, e_branch))
+    in
+    (* fun-выражение:
+       fun x y z -> body
+       Список параметров сворачиваем вправо:
+       fun x y -> body  ==  Abs(x, Abs(y, body)) *)
+    let fun_expr : Ast.name Ast.t t =
+      let* _ = keyword "fun" in
+      let* params = many1 ident in
+      let* _ = symbol "->" in
+      let* body = expr in
+      let lam = List.fold_right (fun p acc -> Ast.Abs (p, acc)) params body in
+      return lam
+    in
+    (* atom — самый низкий уровень грамматики.
+       Делается через Angstrom.fix, чтобы рекурсивная ссылка (fix atom)
+       не вызывала немедленного вызова atom при построении парсера. *)
+    let atom : Ast.name Ast.t t =
+      fix (fun atom ->
+        choice
+          [ (* (expr) *)
+            parens expr
+          ; (* fix e *)
+            (keyword "fix" *> atom >>= fun e -> return (Ast.Fix e))
+          ; (* число *)
+            integer
+          ; (* переменная *)
+            (ident >>= fun x -> return (Ast.Var x))
+          ])
+    in
+    (* app — применение функций: f x y -> ((f x) y) *)
+    let app : Ast.name Ast.t t =
+      let* first = atom in
+      let* rest = many atom in
+      return (List.fold_left (fun acc arg -> Ast.App (acc, arg)) first rest)
+    in
+    (* unary — префиксный минус:
+       -x  ==>  0 - x
+       Это нужно для (n - 1) внутри скобок и для -1. *)
+    let unary : Ast.name Ast.t t =
+      symbol "-" *> (app >>= fun e -> return (Ast.Binop (Ast.Sub, Ast.Int 0, e))) <|> app
+    in
+    (* mul_div — уровень * и / *)
+    let mul_div : Ast.name Ast.t t =
+      let op_mul = symbol "*" *> return (fun e1 e2 -> Ast.Binop (Ast.Mul, e1, e2)) in
+      let op_div = symbol "/" *> return (fun e1 e2 -> Ast.Binop (Ast.Div, e1, e2)) in
+      chainl1 unary (op_mul <|> op_div)
+    in
+    (* add_sub — уровень + и - *)
+    let add_sub : Ast.name Ast.t t =
+      let op_add = symbol "+" *> return (fun e1 e2 -> Ast.Binop (Ast.Add, e1, e2)) in
+      let op_sub = symbol "-" *> return (fun e1 e2 -> Ast.Binop (Ast.Sub, e1, e2)) in
+      chainl1 mul_div (op_add <|> op_sub)
+    in
+    (* cmp — сравнения (=, <, >). Если оператора нет — возвращаем left. *)
+    let cmp : Ast.name Ast.t t =
+      let* left = add_sub in
+      let parse_op =
+        symbol "=" *> return Ast.Eq
+        <|> symbol "<" *> return Ast.Lt
+        <|> symbol ">" *> return Ast.Gt
       in
-
-      (** atom — самый низкий уровень грамматики.
-              Делается через Angstrom.fix, чтобы рекурсивная ссылка (fix atom)
-              не вызывала немедленного вызова atom при построении парсера. *)
-      let atom : Ast.name Ast.t t =
-        fix (fun atom ->
-            choice
-              [ (** (expr) *)
-                parens expr
-                ; (** fix e *)
-                (symbol "fix" *> atom >>= fun e -> return (Ast.Fix e))
-                ; (** число *)
-                integer
-                ; (** переменная *)
-                (ident >>= fun x -> return (Ast.Var x))
-              ])
-      in
-
-      (** app — применение функций: f x y -> ((f x) y) *)
-      let app : Ast.name Ast.t t =
-        let* first = atom in
-        let* rest = many atom in
-        return (List.fold_left (fun acc arg -> Ast.App (acc, arg)) first rest)
-      in
-
-      (** unary — префиксный минус:
-          -x  ==>  0 - x
-          Это нужно для (n - 1) внутри скобок и для -1. *)
-      let unary : Ast.name Ast.t t =
-        (symbol "-" *> (app >>= fun e -> return (Ast.Binop (Ast.Sub, Ast.Int 0, e))))
-        <|> app
-      in
-
-      (** mul_div — уровень * и / *)
-      let mul_div : Ast.name Ast.t t =
-        let op_mul = symbol "*" *> return (fun e1 e2 -> Ast.Binop (Ast.Mul, e1, e2)) in
-        let op_div = symbol "/" *> return (fun e1 e2 -> Ast.Binop (Ast.Div, e1, e2)) in
-        chainl1 unary (op_mul <|> op_div)
-      in
-
-      (** add_sub — уровень + и - *)
-      let add_sub : Ast.name Ast.t t =
-        let op_add = symbol "+" *> return (fun e1 e2 -> Ast.Binop (Ast.Add, e1, e2)) in
-        let op_sub = symbol "-" *> return (fun e1 e2 -> Ast.Binop (Ast.Sub, e1, e2)) in
-        chainl1 mul_div (op_add <|> op_sub)
-      in
-
-      (** cmp — сравнения (=, <, >). Если оператора нет — возвращаем left. *)
-      let cmp : Ast.name Ast.t t =
-        let* left = add_sub in
-        let parse_op =
-          (symbol "=" *> return Ast.Eq)
-          <|> (symbol "<" *> return Ast.Lt)
-          <|> (symbol ">" *> return Ast.Gt)
-        in
-        (let* op = parse_op in
-         let* right = add_sub in
-         return (Ast.Binop (op, left, right)))
-        <|> return left
-      in
-      (** Верхний уровень выражения:
-              сначала ключевые слова (let/if/fun),
-              иначе — обычное выражение с операторами. *)
-      let_expr <|> if_expr <|> fun_expr <|> cmp
-    )
+      (let* op = parse_op in
+       let* right = add_sub in
+       return (Ast.Binop (op, left, right)))
+      <|> return left
+    in
+    (* Верхний уровень выражения:
+       сначала ключевые слова (let/if/fun),
+       иначе — обычное выражение с операторами. *)
+    let_expr <|> if_expr <|> fun_expr <|> cmp)
 ;;
 
 let parse (str : string) : (Ast.name Ast.t, [> error ]) result =
