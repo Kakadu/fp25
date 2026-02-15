@@ -26,7 +26,7 @@ let spaces : unit t = skip_while is_space
 let lexeme (p : 'a t) : 'a t = p <* spaces
 
 (** парсим конкретную строку потом пробелы*)
-let symbol (s : string) : string t = lexeme (string s)
+let symbol (s : string) : string t = spaces *> string s <* spaces
 
 let parens (p : 'a t) : 'a t = symbol "(" *> p <* symbol ")"
 
@@ -86,116 +86,140 @@ let chainl1
   go first
 ;;
 
-(** парсер выражений с приоритетами*)
-let rec expr () : Ast.name Ast.t t =
-  (* сначала конструкции с ключевыми словами let/if/fun, а потом бинарные операции*)
-  let_expr () <|> if_expr () <|> fun_expr () <|> cmp ()
+(** Парсер выражений с приоритетами.
+    Важно: используем [Angstrom.fix], чтобы рекурсивный парсер [expr]
+    можно было безопасно использовать внутри [atom] (для скобок).
+    Это убирает stack overflow, который возникает при взаимных вызовах expr()/atom()
+    на этапе построения парсеров. *)
+let expr : Ast.name Ast.t t =
+  fix (fun expr ->
+      (** let-выражение:
+          - let x = e1 in e2
+          - let rec f x = body in in_e
+            Здесь let rec поддерживаем в форме "функция с одним аргументом",
+            как в большинстве эталонных решений. *)
+      let let_expr : Ast.name Ast.t t =
+        let* _ = symbol "let" in
+        (* опциональное "rec" *)
+        let* is_rec = (symbol "rec" *> return true) <|> return false in
+        (* имя после let: либо x, либо f *)
+        let* name = ident in
+        if is_rec
+        then (
+          (* let rec f x = body in in_e *)
+          let* param = ident in
+          let* _ = symbol "=" in
+          let* body = expr in
+          let* _ = symbol "in" in
+          let* in_e = expr in
+          return (Ast.Let_rec (name, param, body, in_e))
+        )
+        else (
+          (* let x = e1 in e2 *)
+          let* _ = symbol "=" in
+          let* e1 = expr in
+          let* _ = symbol "in" in
+          let* e2 = expr in
+          return (Ast.Let (name, e1, e2))
+        )
+      in
 
-(** парсер let / let rec*)
-and let_expr () : Ast.name Ast.t t =
-  let* _ = symbol "let" in
-  let* is_rec = symbol "rec" *> return true <|> return false in
-  (* let rec*)
-  let* name = ident in
-  if is_rec
-  then
-    let* param = ident in
-    let* _ = symbol "=" in
-    let* body = expr () in
-    let* _ = symbol "in" in
-    let* in_e = expr () in
-    return (Ast.Let_rec (name, param, body, in_e))
-  else
-    (* let *)
-    let* _ = symbol "=" in
-    let* e1 = expr () in
-    let* _ = symbol "in" in
-    let* e2 = expr () in
-    return (Ast.Let (name, e1, e2))
+      (** if-выражение:
+          if cond then e1 else e2 *)
+      let if_expr : Ast.name Ast.t t =
+        let* _ = symbol "if" in
+        let* c = expr in
+        let* _ = symbol "then" in
+        let* t_branch = expr in
+        let* _ = symbol "else" in
+        let* e_branch = expr in
+        return (Ast.If (c, t_branch, e_branch))
+      in
 
-(* if_expr *)
-and if_expr () : Ast.name Ast.t t =
-  let* _ = symbol "if" in
-  let* c = expr () in
-  let* _ = symbol "then" in
-  let* t_branch = expr () in
-  let* _ = symbol "else" in
-  let* e_branch = expr () in
-  return (Ast.If (c, t_branch, e_branch))
+      (** fun-выражение:
+          fun x y z -> body
+          Список параметров сворачиваем вправо:
+          fun x y -> body  ==  Abs(x, Abs(y, body)) *)
+      let fun_expr : Ast.name Ast.t t =
+        let* _ = symbol "fun" in
+        let* params = many1 ident in
+        let* _ = symbol "->" in
+        let* body = expr in
+        let lam = List.fold_right (fun p acc -> Ast.Abs (p, acc)) params body in
+        return lam
+      in
 
-(* парсер функции с сахаром fun x y - body *)
-and fun_expr () : Ast.name Ast.t t =
-  let* _ = symbol "fun" in
-  (* many1 p парсим p 1 или больше раз и возвращаем список рез*)
-  let* params = many1 ident in
-  let* _ = symbol "->" in
-  let* body = expr () in
-  (* делаем каррирование для функции *)
-  let lam = List.fold_right (fun p acc -> Ast.Abs (p, acc)) params body in
-  return lam
+      (** atom — самый низкий уровень грамматики.
+              Делается через Angstrom.fix, чтобы рекурсивная ссылка (fix atom)
+              не вызывала немедленного вызова atom при построении парсера. *)
+      let atom : Ast.name Ast.t t =
+        fix (fun atom ->
+            choice
+              [ (** (expr) *)
+                parens expr
+                ; (** fix e *)
+                (symbol "fix" *> atom >>= fun e -> return (Ast.Fix e))
+                ; (** число *)
+                integer
+                ; (** переменная *)
+                (ident >>= fun x -> return (Ast.Var x))
+              ])
+      in
 
-(* =, <, > *)
-and cmp () : Ast.name Ast.t t =
-  let* left = add_sub () in
-  let parse_op =
-    symbol "=" *> return Ast.Eq
-    <|> symbol "<" *> return Ast.Lt
-    <|> symbol ">" *> return Ast.Gt
-  in
-  (let* op = parse_op in
-   let* right = add_sub () in
-   return (Ast.Binop (op, left, right)))
-  <|> return left
+      (** app — применение функций: f x y -> ((f x) y) *)
+      let app : Ast.name Ast.t t =
+        let* first = atom in
+        let* rest = many atom in
+        return (List.fold_left (fun acc arg -> Ast.App (acc, arg)) first rest)
+      in
 
-(* +, - *)
-and add_sub () : Ast.name Ast.t t =
-  let op_add = symbol "+" *> return (fun e1 e2 -> Ast.Binop (Ast.Add, e1, e2)) in
-  let op_sub = symbol "-" *> return (fun e1 e2 -> Ast.Binop (Ast.Sub, e1, e2)) in
-  chainl1 (mul_div ()) (op_add <|> op_sub)
+      (** unary — префиксный минус:
+          -x  ==>  0 - x
+          Это нужно для (n - 1) внутри скобок и для -1. *)
+      let unary : Ast.name Ast.t t =
+        (symbol "-" *> (app >>= fun e -> return (Ast.Binop (Ast.Sub, Ast.Int 0, e))))
+        <|> app
+      in
 
-(* *, / *)
-and mul_div () : Ast.name Ast.t t =
-  let op_mul = symbol "*" *> return (fun e1 e2 -> Ast.Binop (Ast.Mul, e1, e2)) in
-  let op_div = symbol "/" *> return (fun e1 e2 -> Ast.Binop (Ast.Div, e1, e2)) in
-  chainl1 (app ()) (op_mul <|> op_div)
+      (** mul_div — уровень * и / *)
+      let mul_div : Ast.name Ast.t t =
+        let op_mul = symbol "*" *> return (fun e1 e2 -> Ast.Binop (Ast.Mul, e1, e2)) in
+        let op_div = symbol "/" *> return (fun e1 e2 -> Ast.Binop (Ast.Div, e1, e2)) in
+        chainl1 unary (op_mul <|> op_div)
+      in
 
-and app () : Ast.name Ast.t t =
-  let* first = atom () in
-  let* rest = many (atom ()) in
-  return (List.fold_left (fun acc arg -> Ast.App (acc, arg)) first rest)
+      (** add_sub — уровень + и - *)
+      let add_sub : Ast.name Ast.t t =
+        let op_add = symbol "+" *> return (fun e1 e2 -> Ast.Binop (Ast.Add, e1, e2)) in
+        let op_sub = symbol "-" *> return (fun e1 e2 -> Ast.Binop (Ast.Sub, e1, e2)) in
+        chainl1 mul_div (op_add <|> op_sub)
+      in
 
-(* atom : числа, перем, выражение и fix expr *)
-and atom () : Ast.name Ast.t t =
-  (* пробуем по очереди, пока не сработает что то *)
-  choice
-    [ (* скобки *)
-      parens (expr ())
-    ; (* fix e *)
-      (symbol "fix" *> atom () >>= fun e -> return (Ast.Fix e))
-    ; (* число *)
-      integer
-    ; (* переменная *)
-      (ident >>= fun x -> return (Ast.Var x))
-    ]
-;;
-
-(** связка с типом*)
-type dispatch =
-  { apps : dispatch -> Ast.name Ast.t Angstrom.t
-  ; single : dispatch -> Ast.name Ast.t Angstrom.t
-  }
-
-let parse_lam : dispatch =
-  let single (_pack : dispatch) : Ast.name Ast.t Angstrom.t = expr () in
-  let apps (_pack : dispatch) : Ast.name Ast.t Angstrom.t = expr () in
-  { single; apps }
+      (** cmp — сравнения (=, <, >). Если оператора нет — возвращаем left. *)
+      let cmp : Ast.name Ast.t t =
+        let* left = add_sub in
+        let parse_op =
+          (symbol "=" *> return Ast.Eq)
+          <|> (symbol "<" *> return Ast.Lt)
+          <|> (symbol ">" *> return Ast.Gt)
+        in
+        (let* op = parse_op in
+         let* right = add_sub in
+         return (Ast.Binop (op, left, right)))
+        <|> return left
+      in
+      (** Верхний уровень выражения:
+              сначала ключевые слова (let/if/fun),
+              иначе — обычное выражение с операторами. *)
+      let_expr <|> if_expr <|> fun_expr <|> cmp
+    )
 ;;
 
 let parse (str : string) : (Ast.name Ast.t, [> error ]) result =
   match
     Angstrom.parse_string
       ~consume:Angstrom.Consume.All
-      (spaces *> parse_lam.apps parse_lam <* end_of_input)
+      (spaces *> expr <* spaces <* end_of_input)
       str
   with
   | Result.Ok x -> Result.Ok x
