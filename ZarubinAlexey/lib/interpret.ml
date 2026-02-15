@@ -166,31 +166,9 @@ end = struct
   ;;
 end
 
-(** Парсит строку, запускает интерпретатор и печатает результат. *)
-let parse_and_run str =
+(** Чистый запуск без печати.
+    Возвращает либо (число, лог print), либо ошибку парсера/интерпретатора. *)
+let run_string (str : string) : (int * string list, [> Parser.error | error ]) result =
   let module I = Interpret (Base.Result) in
-  let rez = Base.Result.(Parser.parse str >>= I.run) in
-  match rez with
-  | Result.Ok (n, out) ->
-    (* печатаем всё, что накопила встроенная функция print *)
-    List.iter out ~f:Stdlib.print_endline;
-    (* затем печатаем итоговое значение (строго одной строкой) *)
-    Stdlib.print_endline (Int.to_string n)
-  | Result.Error #Parser.error ->
-    (* максимально простая и стабильная строка *)
-    Stdlib.print_endline "Parsing error";
-    exit 1
-  | Result.Error (#error as e) ->
-    (match e with
-     | `UnknownVariable x -> Format.eprintf "Interpreter error: unknown variable %s\n%!" x
-     | `IfConditionNotInt ->
-       Format.eprintf "Interpreter error: if condition is not int\n%!"
-     | `BinopOnNonInt -> Format.eprintf "Interpreter error: binop on non-int\n%!"
-     | `NotAFunction -> Format.eprintf "Interpreter error: not a function\n%!"
-     | `DivisionByZero -> Format.eprintf "Interpreter error: division by zero\n%!"
-     | `ResultNotInt -> Format.eprintf "Interpreter error: result is not int\n%!"
-     | `FixOnNonFunction -> Format.eprintf "Interpreter error: fix on non-function\n%!"
-     | `PrintArgumentNotInt ->
-       Format.eprintf "Interpreter error: print argument not int\n%!");
-    exit 1
+  Base.Result.(Parser.parse str >>= I.run)
 ;;

@@ -6,4 +6,18 @@
 
 [@@@ocaml.text "/*"]
 
-val parse_and_run : string -> unit
+(** Ошибки интерпретатора (полиморфные варианты). *)
+type error =
+  [ `UnknownVariable of string
+  | `IfConditionNotInt
+  | `BinopOnNonInt
+  | `NotAFunction
+  | `DivisionByZero
+  | `ResultNotInt
+  | `FixOnNonFunction
+  | `PrintArgumentNotInt
+  ]
+
+(** Чистый запуск: парсит строку и возвращает либо (результат, stdout-лог),
+    либо ошибку парсера, либо ошибку интерпретатора. *)
+val run_string : string -> (int * string list, [> Parser.error | error ]) result
