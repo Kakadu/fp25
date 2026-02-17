@@ -23,11 +23,13 @@ let is_space = function
 (** пропускаем сколько угодно пробельных символов*)
 let spaces : unit t = skip_while is_space
 
+(** распарсим p, а потом пропустим пробелы*)
 let lexeme (p : 'a t) : 'a t = p <* spaces
 
 (** парсим конкретную строку потом пробелы*)
 let symbol (s : string) : string t = spaces *> string s <* spaces
 
+(** чтобы можно было работать со скобками ( 1 + 2 )*)
 let parens (p : 'a t) : 'a t = symbol "(" *> p <* symbol ")"
 
 (** символы которые можно использовать в начале идентификатора*)
@@ -36,13 +38,13 @@ let is_ident_start = function
   | _ -> false
 ;;
 
-(**символ которые можно использовать внутри идентификатора*)
-
+(** символ которые можно использовать внутри идентификатора*)
 let is_ident_char = function
   | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '\'' -> true
   | _ -> false
 ;;
 
+(** проверка ключевого слова с границей*)
 let keyword (k : string) : unit t =
   let* _ = spaces *> string k in
   let* next = peek_char in
@@ -54,12 +56,12 @@ let keyword (k : string) : unit t =
 
 (** парсим идентификатор, первая буква (берем 1 символ, если он удовлетворяет предикату)
     , потом берем строку из 0 и более символ подходящих под предикат, потом собираем строку (первая буква + хвост) *)
-
 let is_keyword = function
   | "let" | "in" | "rec" | "if" | "then" | "else" | "fun" | "fix" -> true
   | _ -> false
 ;;
 
+(** помогает собрать строку и отбросить ключевые слова*)
 let ident : string t =
   let* first = satisfy is_ident_start in
   let* rest = take_while is_ident_char in
@@ -72,8 +74,8 @@ let integer : Ast.name Ast.t t =
   let* has_minus = option false (char '-' *> return true) in
   let* digits =
     take_while1 (function
-        | '0' .. '9' -> true
-        | _ -> false)
+      | '0' .. '9' -> true
+      | _ -> false)
   in
   (* Важно: собираем строку целиком (с минусом), чтобы корректно парсился min_int
      и чтобы переполнение превращалось в ошибку парсинга, а не в exception. *)
@@ -86,10 +88,10 @@ let integer : Ast.name Ast.t t =
 (** бинарные операции (комбинатор),
     парсер операндов,
     парсер бaнарной операции*)
-
 let chainl1
-  (p : Ast.name Ast.t t)
+  (p : Ast.name Ast.t t) (* Парсим число (Int 2) ... *)
   (op : (Ast.name Ast.t -> Ast.name Ast.t -> Ast.name Ast.t) t)
+    (* Парсим знак fun a b -> Binop (Sub,a,b)*)
   : Ast.name Ast.t t
   =
   let rec go acc =
@@ -111,10 +113,9 @@ let chainl1
 let expr : Ast.name Ast.t t =
   fix (fun expr ->
     (* let-выражение:
-       - let x = e1 in e2
-       - let rec f x = body in in_e
-         Здесь let rec поддерживаем в форме "функция с одним аргументом",
-         как в большинстве эталонных решений. *)
+         let x = e1 in e2
+         let rec f x = body in in_e
+         Здесь let rec поддерживаем в форме функция с одним аргументом *)
     let let_expr : Ast.name Ast.t t =
       let* () = keyword "let" in
       (* опциональное "rec" *)
@@ -138,7 +139,7 @@ let expr : Ast.name Ast.t t =
         let* e2 = expr in
         return (Ast.Let (name, e1, e2))
     in
-    (* if-выражение:
+    (* if выражение:
        if cond then e1 else e2 *)
     let if_expr : Ast.name Ast.t t =
       let* _ = keyword "if" in
@@ -161,7 +162,7 @@ let expr : Ast.name Ast.t t =
       let lam = List.fold_right (fun p acc -> Ast.Abs (p, acc)) params body in
       return lam
     in
-    (* atom — самый низкий уровень грамматики.
+    (* atom самый низкий уровень грамматики.
        Делается через Angstrom.fix, чтобы рекурсивная ссылка (fix atom)
        не вызывала немедленного вызова atom при построении парсера. *)
     let atom : Ast.name Ast.t t =
@@ -177,31 +178,31 @@ let expr : Ast.name Ast.t t =
             (ident >>= fun x -> return (Ast.Var x))
           ])
     in
-    (* app — применение функций: f x y -> ((f x) y) *)
+    (* app применение функций: f x y -> ((f x) y) *)
     let app : Ast.name Ast.t t =
       let* first = atom in
       let* rest = many atom in
       return (List.fold_left (fun acc arg -> Ast.App (acc, arg)) first rest)
     in
-    (* unary — префиксный минус:
-       -x  ==>  0 - x
+    (* unary префиксный минус:
+       -x  ->  0 - x
        Это нужно для (n - 1) внутри скобок и для -1. *)
     let unary : Ast.name Ast.t t =
       symbol "-" *> (app >>= fun e -> return (Ast.Binop (Ast.Sub, Ast.Int 0, e))) <|> app
     in
-    (* mul_div — уровень * и / *)
+    (* mul_div уровень * и / *)
     let mul_div : Ast.name Ast.t t =
       let op_mul = symbol "*" *> return (fun e1 e2 -> Ast.Binop (Ast.Mul, e1, e2)) in
       let op_div = symbol "/" *> return (fun e1 e2 -> Ast.Binop (Ast.Div, e1, e2)) in
       chainl1 unary (op_mul <|> op_div)
     in
-    (* add_sub — уровень + и - *)
+    (* add_sub уровень + и - *)
     let add_sub : Ast.name Ast.t t =
       let op_add = symbol "+" *> return (fun e1 e2 -> Ast.Binop (Ast.Add, e1, e2)) in
       let op_sub = symbol "-" *> return (fun e1 e2 -> Ast.Binop (Ast.Sub, e1, e2)) in
       chainl1 mul_div (op_add <|> op_sub)
     in
-    (* cmp — сравнения (=, <, >). Если оператора нет — возвращаем left. *)
+    (* cmp сравнения (=, <, >). Если оператора нет возвращаем left. *)
     let cmp : Ast.name Ast.t t =
       let* left = add_sub in
       let parse_op =
@@ -216,7 +217,7 @@ let expr : Ast.name Ast.t t =
     in
     (* Верхний уровень выражения:
        сначала ключевые слова (let/if/fun),
-       иначе — обычное выражение с операторами. *)
+       иначе обычное выражение с операторами. *)
     let_expr <|> if_expr <|> fun_expr <|> cmp)
 ;;
 

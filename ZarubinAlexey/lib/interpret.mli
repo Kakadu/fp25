@@ -8,7 +8,8 @@
 
 (** Ошибки интерпретатора (полиморфные варианты). *)
 type error =
-  [ `UnknownVariable of string
+  [ `Parsing_error of string
+  | `UnknownVariable of string (** Переменная не найдена в окружении *)
   | `IfConditionNotInt
   | `BinopOnNonInt
   | `NotAFunction
@@ -16,8 +17,12 @@ type error =
   | `ResultNotInt
   | `FixOnNonFunction
   | `PrintArgumentNotInt
+  | `StepLimitExceeded
   ]
 
 (** Чистый запуск: парсит строку и возвращает либо (результат, stdout-лог),
     либо ошибку парсера, либо ошибку интерпретатора. *)
-val run_string : string -> (int * string list, [> Parser.error | error ]) result
+val run_string : string -> (int * string list, error) result
+
+(** Чистый запуск с явным лимитом шагов. *)
+val run_string_with_steps : steps:int -> string -> (int * string list, error) result
