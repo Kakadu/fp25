@@ -1,35 +1,55 @@
 (** Copyright 2021-2025, Kakadu and contributors *)
+
 (** SPDX-License-Identifier: CC0-1.0 *)
 
 open Base
 
 (* Печатаем результат так же, как делает REPL:
-   - сначала строки, накопленные через print
-   - потом итоговое число
-   - при ошибке печатаем стабильное сообщение *)
+   сначала строки, накопленные через print
+   потом итоговое число
+   при ошибке печатаем стабильное сообщение *)
 let print_run (s : string) =
   match Lambda_lib.Interpret.run_string s with
   | Ok (n, out) ->
     List.iter out ~f:Stdlib.print_endline;
     Stdlib.print_endline (Int.to_string n)
-  | Error (`Parsing_error _) ->
-    Stdlib.print_endline "Parsing error"
+  | Error (`Parsing_error _) -> Stdlib.print_endline "Parsing error"
   | Error (`UnknownVariable x) ->
     Stdlib.print_endline ("Interpreter error: unknown variable " ^ x)
   | Error `IfConditionNotInt ->
     Stdlib.print_endline "Interpreter error: if condition is not int"
-  | Error `BinopOnNonInt ->
-    Stdlib.print_endline "Interpreter error: binop on non-int"
-  | Error `NotAFunction ->
-    Stdlib.print_endline "Interpreter error: not a function"
-  | Error `DivisionByZero ->
-    Stdlib.print_endline "Interpreter error: division by zero"
-  | Error `ResultNotInt ->
-    Stdlib.print_endline "Interpreter error: result is not int"
+  | Error `BinopOnNonInt -> Stdlib.print_endline "Interpreter error: binop on non-int"
+  | Error `NotAFunction -> Stdlib.print_endline "Interpreter error: not a function"
+  | Error `DivisionByZero -> Stdlib.print_endline "Interpreter error: division by zero"
+  | Error `ResultNotInt -> Stdlib.print_endline "Interpreter error: result is not int"
   | Error `FixOnNonFunction ->
     Stdlib.print_endline "Interpreter error: fix on non-function"
   | Error `PrintArgumentNotInt ->
     Stdlib.print_endline "Interpreter error: print argument not int"
+  | Error `StepLimitExceeded ->
+    Stdlib.print_endline "Interpreter error: step limit exceeded"
+;;
+
+let print_run_steps ~(steps : int) (s : string) =
+  match Lambda_lib.Interpret.run_string_with_steps ~steps s with
+  | Ok (n, out) ->
+    List.iter out ~f:Stdlib.print_endline;
+    Stdlib.print_endline (Int.to_string n)
+  | Error (`Parsing_error _) -> Stdlib.print_endline "Parsing error"
+  | Error (`UnknownVariable x) ->
+    Stdlib.print_endline ("Interpreter error: unknown variable " ^ x)
+  | Error `IfConditionNotInt ->
+    Stdlib.print_endline "Interpreter error: if condition is not int"
+  | Error `BinopOnNonInt -> Stdlib.print_endline "Interpreter error: binop on non-int"
+  | Error `NotAFunction -> Stdlib.print_endline "Interpreter error: not a function"
+  | Error `DivisionByZero -> Stdlib.print_endline "Interpreter error: division by zero"
+  | Error `ResultNotInt -> Stdlib.print_endline "Interpreter error: result is not int"
+  | Error `FixOnNonFunction ->
+    Stdlib.print_endline "Interpreter error: fix on non-function"
+  | Error `PrintArgumentNotInt ->
+    Stdlib.print_endline "Interpreter error: print argument not int"
+  | Error `StepLimitExceeded ->
+    Stdlib.print_endline "Interpreter error: step limit exceeded"
 ;;
 
 let%expect_test "basic/int" =
@@ -152,4 +172,33 @@ let%expect_test "bad if condition" =
 let%expect_test "print arg not int" =
   print_run "print (fun x -> x)";
   [%expect {| Interpreter error: print argument not int |}]
+;;
+
+(* Шаги *)
+
+let%expect_test "steps: infinite recursion hits limit" =
+  print_run_steps ~steps:50 "let rec f x = f x in f 1";
+  [%expect {| Interpreter error: step limit exceeded |}]
+;;
+
+let%expect_test "steps: factorial fails with too small limit" =
+  print_run_steps
+    ~steps:20
+    "let rec fact n = if n = 0 then 1 else n * fact (n - 1) in fact 10";
+  [%expect {| Interpreter error: step limit exceeded |}]
+;;
+
+let%expect_test "steps: factorial succeeds with enough limit" =
+  print_run_steps
+    ~steps:5000
+    "let rec fact n = if n = 0 then 1 else n * fact (n - 1) in fact 10";
+  [%expect {| 3628800 |}]
+;;
+
+let%expect_test "steps: print and computation still consume steps" =
+  print_run_steps ~steps:50 "let _ = print 1 in let _ = print 2 in 3";
+  [%expect {|
+    1
+    2
+    3 |}]
 ;;

@@ -22,7 +22,8 @@ end
 
 (** Тип ошибок интерпретатора. *)
 type error =
-  [ `UnknownVariable of string (** Переменная не найдена в окружении *)
+  [ `Parsing_error of string
+  | `UnknownVariable of string (** Переменная не найдена в окружении *)
   | `IfConditionNotInt (** Условие if не является целым числом *)
   | `BinopOnNonInt (** Бинарная операция применена не к двум int *)
   | `NotAFunction (** Попытка вызвать не функцию *)
@@ -30,6 +31,7 @@ type error =
   | `ResultNotInt (** В конце получили не int *)
   | `FixOnNonFunction (** fix применен к не функции *)
   | `PrintArgumentNotInt (** print получил не int *)
+  | `StepLimitExceeded (** Превышен лимит шагов интерпретатора *)
   ]
 
 (** Функтор интерпретатора.
@@ -41,41 +43,60 @@ module Interpret (M : MONAD_FAIL) : sig
       пару [(n, out)], где [n] — итоговое целое значение программы,
       а [out] — список строк, напечатанных встроенной функцией [print]
       в порядке их появления. *)
-  val run : Ast.name Ast.t -> (int * string list, [> error ]) M.t
+  val run : steps:int -> Ast.name Ast.t -> (int * string list, error) M.t
 end = struct
   (** Результаты вычисления выражений. *)
   type value =
     | VInt of int (** Целое число времени исполнения. *)
     | VClosure of name * name Ast.t * env
-    (** Замыкание функции: имя параметра, тело и окружение
-        определения. *)
+    (** Замыкание функции: имя параметра, тело и окружение определения. *)
     | VBuiltinPrint (** Встроенная функция [print]. *)
 
   (** Окружение в виде списка пар [(имя переменной, значение)]. *)
   and env = (name * value) list
 
-  (** Обертка над базовой монадай M, которая добавляет лог строк stdout.
-      Каждое вычисление возвращает значение и список строк (вывод программы). *)
+  (** Обертка над базовой монадай M, которая добавляет лог строк stdout
+      И лимит шагов (fuel).
+      Каждое вычисление получает [steps] и возвращает:
+      значение,
+      оставшиеся steps,
+      и список строк (вывод программы). *)
 
-  let return (x : 'a) : ('a * string list, [> error ]) M.t = M.return (x, [])
+  (** Функция, которая по лимиту шагов возвращает монадическое вычисление,
+      которое либо выдаст результат 'a + (инфо про шаги) + список напечатанных строк, либо ошибку *)
+  type 'a eval = int -> (('a * int) * string list, error) M.t
 
-  let ( let* )
-    (m : ('a * string list, [> error ]) M.t)
-    (f : 'a -> ('b * string list, [> error ]) M.t)
-    : ('b * string list, [> error ]) M.t
-    =
-    M.bind m ~f:(fun (v, out1) ->
-      M.bind (f v) ~f:(fun (res, out2) -> M.return (res, out1 @ out2)))
+  let return (x : 'a) : 'a eval = fun steps -> M.return ((x, steps), [])
+
+  (* Связывание (bind) для нашего типа вычислений ['a eval].
+     Объединяет два вычисления в одно:
+     запускает [m] с текущим лимитом шагов [steps0];
+     берёт результат [v] и обновлённый лимит [steps1], затем запускает [f v] уже с [steps1];
+     склеивает накопленный вывод в правильном порядке: [out1 @ out2];
+     автоматически прокидывает ошибки через [M.bind]: если падает [m] или [f v], падает всё вычисление. *)
+  let ( let* ) (m : 'a eval) (f : 'a -> 'b eval) : 'b eval =
+    fun steps0 ->
+    M.bind (m steps0) ~f:(fun ((v, steps1), out1) ->
+      M.bind (f v steps1) ~f:(fun ((res, steps2), out2) ->
+        M.return ((res, steps2), out1 @ out2)))
   ;;
 
-  let fail (e : [> error ]) : ('a * string list, [> error ]) M.t = M.fail e
+  (* Создаёт вычисление интерпретатора, которое всегда завершается ошибкой [e].
+     Лимит шагов не используется, вывод не добавляется ошибка сразу поднимается в монаду [M]. *)
+  let fail (e : [> error ]) : 'a eval = fun _steps -> M.fail e
 
   (** Добавить строку в лог "stdout". *)
-  let tell (s : string) : (unit * string list, [> error ]) M.t = M.return ((), [ s ])
+  let tell (s : string) : unit eval = fun steps -> M.return (((), steps), [ s ])
+
+  (** Списать один шаг. Если шагов не осталось прекращаем вычисление. *)
+  let tick : unit eval =
+    fun steps ->
+    if steps <= 0 then M.fail `StepLimitExceeded else M.return (((), steps - 1), [])
+  ;;
 
   (** Поиск переменной в окружении.
-      Если переменная найдена — возвращаем её значение,
-      иначе — ошибку [`UnknownVariable]. *)
+      Если переменная найдена возвращаем её значение,
+      иначе ошибку [`UnknownVariable]. *)
   let rec lookup (env : env) (x : name) =
     match env with
     | [] -> fail (`UnknownVariable x)
@@ -96,8 +117,7 @@ end = struct
 
   (** Разворачивание [fix e] через [let rec].
       В простейшем варианте:
-      [fix e] ~~> [let rec f x = e f x in f]
-      В данном мини-языке нас не волнуют коллизии имён. *)
+      [fix e] --> [let rec f x = e f x in f]*)
   let desugar_fix (e : name Ast.t) : name Ast.t =
     let f = "_fix_f" in
     let x = "_fix_x" in
@@ -109,7 +129,8 @@ end = struct
   let initial_env : env = [ "print", VBuiltinPrint ]
 
   (** Основная функция интерпретации. *)
-  let rec eval (env : env) (expr : name Ast.t) =
+  let rec eval (env : env) (expr : name Ast.t) : value eval =
+    let* () = tick in
     match expr with
     | Var x -> lookup env x
     | Int n -> return (VInt n)
@@ -157,18 +178,29 @@ end = struct
       eval env (desugar_fix e1)
   ;;
 
-  (** Запуск интерпретатора в исходном окружении. *)
-  let run (expr : name Ast.t) =
-    let* v = eval initial_env expr in
-    match v with
-    | VInt n -> return n
-    | VClosure _ | VBuiltinPrint -> fail `ResultNotInt
+  (** Запуск интерпретатора в исходном окружении:
+      вычисляем выражение [expr] в начальном окружении [initial_env] с лимитом шагов [steps],
+      собираем накопленный вывод (например, от [print]) и проверяем, что итоговое значение целое.
+      Если результат не [VInt], возвращаем ошибку [`ResultNotInt]. *)
+  let run ~steps (expr : name Ast.t) : (int * string list, [> error ]) M.t =
+    M.bind (eval initial_env expr steps) ~f:(fun ((v, _steps_left), out) ->
+      match v with
+      | VInt n -> M.return (n, out)
+      | VClosure _ | VBuiltinPrint -> M.fail `ResultNotInt)
   ;;
 end
 
 (** Чистый запуск без печати.
     Возвращает либо (число, лог print), либо ошибку парсера/интерпретатора. *)
-let run_string (str : string) : (int * string list, [> Parser.error | error ]) result =
+let run_string_with_steps ~(steps : int) (str : string)
+  : (int * string list, error) result
+  =
   let module I = Interpret (Base.Result) in
-  Base.Result.(Parser.parse str >>= I.run)
+  match Parser.parse str with
+  | Ok ast -> I.run ~steps ast
+  | Error (`Parsing_error msg) -> Error (`Parsing_error msg)
+;;
+
+let run_string (str : string) : (int * string list, error) result =
+  run_string_with_steps ~steps:10_000 str
 ;;

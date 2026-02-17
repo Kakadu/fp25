@@ -22,5 +22,5 @@ type 'name t = 'name Ast.t =
 
 let pp_named = pp Format.pp_print_string
 
-let print_ast (e : Ast.name Ast.t) : string =
-  Format.asprintf "%a" pp_named e
+(* Печать AST по именованным переменным *)
+let print_ast (e : Ast.name Ast.t) : string = Format.asprintf "%a" pp_named e
