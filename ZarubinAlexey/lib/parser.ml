@@ -113,9 +113,9 @@ let chainl1
 let expr : Ast.name Ast.t t =
   fix (fun expr ->
     (* let-выражение:
-         let x = e1 in e2
-         let rec f x = body in in_e
-         Здесь let rec поддерживаем в форме функция с одним аргументом *)
+       let x = e1 in e2
+       let rec f x = body in in_e
+       Здесь let rec поддерживаем в форме функция с одним аргументом *)
     let let_expr : Ast.name Ast.t t =
       let* () = keyword "let" in
       (* опциональное "rec" *)
