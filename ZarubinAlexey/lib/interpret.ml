@@ -193,7 +193,7 @@ end
 (** Чистый запуск без печати.
     Возвращает либо (число, лог print), либо ошибку парсера/интерпретатора. *)
 let run_string_with_steps ~(steps : int) (str : string)
-  : (int * string list, error) result
+  : (int * string list, error) Result.t
   =
   let module I = Interpret (Base.Result) in
   match Parser.parse str with
@@ -201,6 +201,6 @@ let run_string_with_steps ~(steps : int) (str : string)
   | Error (`Parsing_error msg) -> Error (`Parsing_error msg)
 ;;
 
-let run_string (str : string) : (int * string list, error) result =
+let run_string (str : string) : (int * string list, error) Result.t =
   run_string_with_steps ~steps:10_000 str
 ;;

@@ -18,9 +18,9 @@ let default_steps = 10_000
 
 (** Пытаемся прочитать лимит шагов из argv.
     Поддерживаем два режима запуска:
-     REPL.exe            -> используем default_steps
-     REPL.exe 50000      -> используем steps = 50000
-      Если аргумент не число или число <= 0, возвращаем default_steps. *)
+    REPL.exe            -> используем default_steps
+    REPL.exe 50000      -> используем steps = 50000
+    Если аргумент не число или число <= 0, возвращаем default_steps. *)
 let read_steps_from_argv () : int =
   match Stdlib.Sys.argv with
   | [| _ |] ->
@@ -58,20 +58,22 @@ let () =
     (* Ошибки интерпретации печатаем в stderr,
        и завершаем процесс с ненулевым кодом. *)
     (match e with
-     | `Parsing_error _ -> Stdlib.print_endline "Parsing error"
-     | `UnknownVariable x -> Format.eprintf "Interpreter error: unknown variable %s\n%!" x
+     | `Parsing_error _ -> Stdlib.Format.eprintf "Parsing error"
+     | `UnknownVariable x ->
+       Stdlib.Format.eprintf "Interpreter error: unknown variable %s\n%!" x
      | `IfConditionNotInt ->
-       Format.eprintf "Interpreter error: if condition is not int\n%!"
-     | `BinopOnNonInt -> Format.eprintf "Interpreter error: binop on non-int\n%!"
-     | `NotAFunction -> Format.eprintf "Interpreter error: not a function\n%!"
-     | `DivisionByZero -> Format.eprintf "Interpreter error: division by zero\n%!"
-     | `ResultNotInt -> Format.eprintf "Interpreter error: result is not int\n%!"
-     | `FixOnNonFunction -> Format.eprintf "Interpreter error: fix on non-function\n%!"
+       Stdlib.Format.eprintf "Interpreter error: if condition is not int\n%!"
+     | `BinopOnNonInt -> Stdlib.Format.eprintf "Interpreter error: binop on non-int\n%!"
+     | `NotAFunction -> Stdlib.Format.eprintf "Interpreter error: not a function\n%!"
+     | `DivisionByZero -> Stdlib.Format.eprintf "Interpreter error: division by zero\n%!"
+     | `ResultNotInt -> Stdlib.Format.eprintf "Interpreter error: result is not int\n%!"
+     | `FixOnNonFunction ->
+       Stdlib.Format.eprintf "Interpreter error: fix on non-function\n%!"
      | `PrintArgumentNotInt ->
-       Format.eprintf "Interpreter error: print argument not int\n%!"
+       Stdlib.Format.eprintf "Interpreter error: print argument not int\n%!"
      | `StepLimitExceeded ->
        (* Ошибка fuel: это не логическая ошибка программы,
           а защита от зависаний. *)
-       Format.eprintf "Interpreter error: step limit exceeded\n%!");
+       Stdlib.Format.eprintf "Interpreter error: step limit exceeded\n%!");
     Stdlib.exit 1
 ;;
