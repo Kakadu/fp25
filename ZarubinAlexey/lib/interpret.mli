@@ -22,7 +22,7 @@ type error =
 
 (** Чистый запуск: парсит строку и возвращает либо (результат, stdout-лог),
     либо ошибку парсера, либо ошибку интерпретатора. *)
-val run_string : string -> (int * string list, error) result
+val run_string : string -> (int * string list, error) Result.t
 
 (** Чистый запуск с явным лимитом шагов. *)
-val run_string_with_steps : steps:int -> string -> (int * string list, error) result
+val run_string_with_steps : steps:int -> string -> (int * string list, error) Result.t
