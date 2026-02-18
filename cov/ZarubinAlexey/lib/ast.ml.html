@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>ast.ml &mdash; Coverage report</title>
+    <meta name="description" content="0.00% coverage in lib/ast.ml">
+    <link rel="stylesheet" href="../coverage.css"/>
+    <script src="../highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </head>
+  <body>
+    <div id="header">
+      <h1>
+        <a href="../index.html">
+          <span class="dirname">lib/</span>ast.ml
+        </a>
+      </h1>
+      <h2>0.00%</h2>
+    </div>
+    <div id="navbar">
+      <span class="unvisited" style="top:30.00%"></span>
+    </div>
+    <div id="report">
+      <div id="lines-layer">
+        <pre>
+<a id="L1"></a><span > </span>
+<a id="L2"></a><span > </span>
+<a id="L3"></a><span > </span>
+<a id="L4"></a><span > </span>
+<a id="L5"></a><span > </span>
+<a id="L6"></a><span > </span>
+<a id="L7"></a><span > </span>
+<a id="L8"></a><span > </span>
+<a id="L9"></a><span > </span>
+<a id="L10"></a><span > </span>
+<a id="L11"></a><span > </span>
+<a id="L12"></a><span class="unvisited"> </span>
+<a id="L13"></a><span > </span>
+<a id="L14"></a><span > </span>
+<a id="L15"></a><span > </span>
+<a id="L16"></a><span > </span>
+<a id="L17"></a><span > </span>
+<a id="L18"></a><span > </span>
+<a id="L19"></a><span > </span>
+<a id="L20"></a><span > </span>
+<a id="L21"></a><span > </span>
+<a id="L22"></a><span > </span>
+<a id="L23"></a><span > </span>
+<a id="L24"></a><span > </span>
+<a id="L25"></a><span > </span>
+<a id="L26"></a><span > </span>
+<a id="L27"></a><span > </span>
+<a id="L28"></a><span > </span>
+<a id="L29"></a><span > </span>
+<a id="L30"></a><span > </span>
+<a id="L31"></a><span > </span>
+<a id="L32"></a><span > </span>
+<a id="L33"></a><span > </span>
+<a id="L34"></a><span > </span>
+<a id="L35"></a><span > </span>
+<a id="L36"></a><span > </span>
+<a id="L37"></a><span > </span>
+<a id="L38"></a><span > </span>
+<a id="L39"></a><span > </span>
+<a id="L40"></a><span > </span>
+</pre>
+      </div>
+      <div id="text-layer">
+        <pre id="line-numbers">
+<a href="#L1"> 1</a>
+<a href="#L2"> 2</a>
+<a href="#L3"> 3</a>
+<a href="#L4"> 4</a>
+<a href="#L5"> 5</a>
+<a href="#L6"> 6</a>
+<a href="#L7"> 7</a>
+<a href="#L8"> 8</a>
+<a href="#L9"> 9</a>
+<a href="#L10">10</a>
+<a href="#L11">11</a>
+<a href="#L12">12</a>
+<a href="#L13">13</a>
+<a href="#L14">14</a>
+<a href="#L15">15</a>
+<a href="#L16">16</a>
+<a href="#L17">17</a>
+<a href="#L18">18</a>
+<a href="#L19">19</a>
+<a href="#L20">20</a>
+<a href="#L21">21</a>
+<a href="#L22">22</a>
+<a href="#L23">23</a>
+<a href="#L24">24</a>
+<a href="#L25">25</a>
+<a href="#L26">26</a>
+<a href="#L27">27</a>
+<a href="#L28">28</a>
+<a href="#L29">29</a>
+<a href="#L30">30</a>
+<a href="#L31">31</a>
+<a href="#L32">32</a>
+<a href="#L33">33</a>
+<a href="#L34">34</a>
+<a href="#L35">35</a>
+<a href="#L36">36</a>
+<a href="#L37">37</a>
+<a href="#L38">38</a>
+<a href="#L39">39</a>
+<a href="#L40">40</a>
+</pre>
+<pre><code class="ocaml">[@@@ocaml.text "/*"]
+
+(** Copyright 2021-2024, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+[@@@ocaml.text "/*"]
+
+type name = string
+
+(** Бинарные операции miniML*)
+<span data-count="0">t</span>ype binop =
+  | Add (** [e1 + e2] сложение целых *)
+  | Sub (** [e1 - e2] вычитание *)
+  | Mul (** [e1 * e2] умножение *)
+  | Div (** [e1 / e2] целочисленное деление, ошибка при делении на 0 *)
+  | Eq (** [e1 = e2] равно: результат 1, если равны, иначе 0 *)
+  | Lt (** [e1 &lt; e2] меньше: результат 1, если [e1 &lt; e2], иначе 0 *)
+  | Gt (** [e1 &gt; e2] больше: результат 1, если [e1 &gt; e2], иначе 0 *)
+[@@deriving show { with_path = false }]
+
+(* Главное дерево абстрактного синтаксиса *)
+type 'name t =
+  | Var of 'name (** Переменная [x]. Примеры: [x], [n], [fact]. *)
+  | Abs of 'name * 'name t (** Анонимная функция [fun x -&gt; body]*)
+  | App of 'name t * 'name t (** Применение функции [f a]*)
+  | Int of int (** Целое число. Примеры: [0], [1], [42], [-5]. *)
+  | Let of 'name * 'name t * 'name t
+  (** Нерекурсивное определение:
+      [let x = e1 in e2]
+      Сначала вычисляем [e1] , результат связываем с именем [x],
+      потом вычисляем [e2] в окружении *)
+  | Let_rec of 'name * 'name * 'name t * 'name t
+  (** Рекурсивное определение функции:
+      [let rec f x = body in e] *)
+  | If of 'name t * 'name t * 'name t
+  (** [If (cond, e1, e2)] условное выражение: если [cond] не равно нулю вычислить [e1], иначе [e2] *)
+  | Binop of binop * 'name t * 'name t
+  (** [Binop (add, sub, div)] бинарная операция над двумя выражениями *)
+  | Fix of 'name t (** Оператор фиксированной точки [fix f] *)
+</code></pre>
+      </div>
+    </div>
+    <script src="../coverage.js"></script>
+  </body>
+</html>
