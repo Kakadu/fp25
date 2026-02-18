@@ -8,7 +8,7 @@ open Ast
 (* Генератор имён переменных для QCheck:
    случайно выбирает одно имя из фиксированного списка (x, y, z, n, m),
    чтобы удобно и предсказуемо генерировать Var-узлы в случайных AST. *)
-let gen_var_name : string G.t = G.oneofl [ "x"; "y"; "z"; "n"; "m" ]
+let gen_var_name : string G.t = G.oneof_list [ "x"; "y"; "z"; "n"; "m" ]
 
 (* Для size>0 генерируем более сложные выражения:
    smaller() генерирует подвыражения с уменьшенным размером (size-1), чтобы рекурсия была конечной;
@@ -19,16 +19,16 @@ let gen_var_name : string G.t = G.oneofl [ "x"; "y"; "z"; "n"; "m" ]
 let rec gen_expr_sized (size : int) : Ast.name Ast.t G.t =
   let size = if size < 0 then 0 else size in
   if size = 0
-  then G.oneof [ G.map (fun n -> Int n) G.small_int; G.map (fun v -> Var v) gen_var_name ]
+  then G.oneof [ G.map (fun n -> Int n) G.nat_small; G.map (fun v -> Var v) gen_var_name ]
   else (
     let smaller () = gen_expr_sized (size - 1) in
-    let gen_int = G.map (fun n -> Int n) G.small_int in
+    let gen_int = G.map (fun n -> Int n) G.nat_small in
     let gen_var = G.map (fun v -> Var v) gen_var_name in
-    let gen_op = G.oneofl [ Add; Sub; Mul; Div; Eq; Lt; Gt ] in
+    let gen_op = G.oneof_list [ Add; Sub; Mul; Div; Eq; Lt; Gt ] in
     let gen_binop =
       G.map3 (fun op l r -> Binop (op, l, r)) gen_op (smaller ()) (smaller ())
     in
-    G.frequency [ 3, gen_int; 3, gen_var; 4, gen_binop ])
+    G.oneof_weighted [ 3, gen_int; 3, gen_var; 4, gen_binop ])
 ;;
 
 (* Главный генератор выражений: QCheck сам подаёт параметр размера [n],
