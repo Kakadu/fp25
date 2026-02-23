@@ -7,17 +7,17 @@ open Ast
 
 let gen_name =
   let open QCheck.Gen in
-  oneofl [ "x"; "y"; "z"; "a"; "b"; "c"; "x1"; "y_2"; "n'"; "fact"; "fib" ]
+  oneof_list [ "x"; "y"; "z"; "a"; "b"; "c"; "x1"; "y_2"; "n'"; "fact"; "fib" ]
 ;;
 
 let gen_binop =
   let open QCheck.Gen in
-  oneofl [ Add; Sub; Mul; Div ]
+  oneof_list [ Add; Sub; Mul; Div ]
 ;;
 
 let gen_cmpop =
   let open QCheck.Gen in
-  oneofl [ Eq; Neq; Lt; Le; Gt; Ge ]
+  oneof_list [ Eq; Neq; Lt; Le; Gt; Ge ]
 ;;
 
 let gen_expr =
@@ -28,7 +28,7 @@ let gen_expr =
       oneof [ map (fun i -> Int i) (int_range (-100) 100); map (fun s -> Var s) gen_name ]
     else (
       let new_depth = depth - 1 in
-      frequency
+      oneof_weighted
         [ 3, map (fun i -> Int i) (int_range (-100) 100)
         ; 3, map (fun s -> Var s) gen_name
         ; ( 1
@@ -96,7 +96,7 @@ let test_parser_negative =
   let invalid_inputs =
     [ ""; "let x ="; "1 +"; "if true then"; "fun -> x"; "let rec 1 = x" ]
   in
-  let gen_invalid = QCheck.Gen.oneofl invalid_inputs in
+  let gen_invalid = QCheck.Gen.oneof_list invalid_inputs in
   QCheck.Test.make
     ~count:(List.length invalid_inputs)
     ~name:"Negative Parser Tests"
