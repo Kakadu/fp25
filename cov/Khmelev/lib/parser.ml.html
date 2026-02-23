@@ -403,26 +403,26 @@
 open Angstrom
 
 let is_space = function
-  | <span data-count="76851">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\n' | <span data-count="0">'</span>\r' -&gt; true
-  | <span data-count="642631">_</span> -&gt; false
+  | <span data-count="87700">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\n' | <span data-count="0">'</span>\r' -&gt; true
+  | <span data-count="732172">_</span> -&gt; false
 ;;
 
 let spaces = skip_whil<span data-count="18">e</span> is_space
 let spaces1 = take_while<span data-count="18">1</span> is_space *<span data-count="18">&gt;</span> retur<span data-count="18">n</span> ()
 
 let is_digit = function
-  | <span data-count="23867">'</span>0' .. '9' -&gt; true
-  | <span data-count="74256">_</span> -&gt; false
+  | <span data-count="27003">'</span>0' .. '9' -&gt; true
+  | <span data-count="84377">_</span> -&gt; false
 ;;
 
 let is_lower = function
-  | <span data-count="30571">'</span>a' .. 'z' -&gt; true
-  | <span data-count="45081">_</span> -&gt; false
+  | <span data-count="34752">'</span>a' .. 'z' -&gt; true
+  | <span data-count="51574">_</span> -&gt; false
 ;;
 
 let is_ident_char = function
-  | <span data-count="44720">'</span>a' .. 'z' | <span data-count="0">'</span>A' .. 'Z' | <span data-count="10010">'</span>0' .. '9' | <span data-count="4">'</span>_' -&gt; true
-  | <span data-count="55124">_</span> -&gt; false
+  | <span data-count="50369">'</span>a' .. 'z' | <span data-count="0">'</span>A' .. 'Z' | <span data-count="11104">'</span>0' .. '9' | <span data-count="4">'</span>_' -&gt; true
+  | <span data-count="62598">_</span> -&gt; false
 ;;
 
 let keywords = [ "if"; "then"; "else"; "let"; "rec"; "in"; "fix" ]
@@ -430,30 +430,30 @@ let keywords = [ "if"; "then"; "else"; "let"; "rec"; "in"; "fix" ]
 (* Парсер идентификаторов (имён переменных) *)
 let identifier =
   lift<span data-count="18">2</span>
-    (fun first rest -&gt; <span data-count="30571">S</span>tring.mak<span data-count="30571">e</span> 1 first ^ rest) (* Склеиваем первый символ и остаток *)
+    (fun first rest -&gt; <span data-count="34752">S</span>tring.mak<span data-count="34752">e</span> 1 first ^ rest) (* Склеиваем первый символ и остаток *)
     (satisf<span data-count="18">y</span> is_lower)
     (take_whil<span data-count="18">e</span> is_ident_char)
   &gt;&gt;<span data-count="18">=</span> fun s -&gt;
-  <span data-count="30571">i</span>f List.mem s keywords
-  then <span data-count="10598">f</span>ail "keyword"
-  else <span data-count="19973">r</span>eturn s (* Проверка на ключевое слово *)
+  <span data-count="34752">i</span>f List.mem s keywords
+  then <span data-count="11964">f</span>ail "keyword"
+  else <span data-count="22788">r</span>eturn s (* Проверка на ключевое слово *)
 ;;
 
 let integer =
   lift<span data-count="18">2</span>
     (fun sign digits -&gt;
-      <span data-count="12564">l</span>et n = int_of_string digits in
-      <span data-count="12564">i</span>f sign then <span data-count="6166">-</span>n else <span data-count="6398">n</span>) (* Применяем знак, если есть минус *)
+      <span data-count="14180">l</span>et n = int_of_string digits in
+      <span data-count="14180">i</span>f sign then <span data-count="7043">-</span>n else <span data-count="7137">n</span>) (* Применяем знак, если есть минус *)
     (optio<span data-count="18">n</span> false (cha<span data-count="18">r</span> '-' *<span data-count="18">&gt;</span> retur<span data-count="18">n</span> true))
     (take_while<span data-count="18">1</span> is_digit)
 ;;
 
 (* Парсер ключевых слов с границей, после слова не идёт символ идентификатора*)
 let keyword s =
-  <span data-count="14199">s</span>paces *<span data-count="14199">&gt;</span> strin<span data-count="14199">g</span> s *<span data-count="14199">&gt;</span> peek_char
+  <span data-count="16067">s</span>paces *<span data-count="16067">&gt;</span> strin<span data-count="16067">g</span> s *<span data-count="16067">&gt;</span> peek_char
   &gt;&gt;= function
-  | <span data-count="24718">S</span>ome c when is_ident_cha<span data-count="24718">r</span> c -&gt; <span data-count="0">f</span>ail "keyword followed by identifier char"
-  | <span data-count="24719">_</span> -&gt; spaces
+  | <span data-count="28022">S</span>ome c when is_ident_cha<span data-count="28022">r</span> c -&gt; <span data-count="0">f</span>ail "keyword followed by identifier char"
+  | <span data-count="28023">_</span> -&gt; spaces
 ;;
 
 type error = [ `Parsing_error of string ]
@@ -467,10 +467,10 @@ let pp_error ppf = function
 let chainl1 p op =
   <span data-count="45">p</span>
   &gt;&gt;= fun x -&gt;
-  <span data-count="133606">m</span>an<span data-count="133606">y</span> (lift<span data-count="133606">2</span> (fun f y -&gt; <span data-count="3530">f</span>, y) op p)
+  <span data-count="151616">m</span>an<span data-count="151616">y</span> (lift<span data-count="151616">2</span> (fun f y -&gt; <span data-count="4042">f</span>, y) op p)
   &gt;&gt;| fun rest -&gt;
-  <span data-count="133606">L</span>ist.fold_left
-    (fun acc (f, y) -&gt; <span data-count="3530">f</span> acc y)
+  <span data-count="151616">L</span>ist.fold_left
+    (fun acc (f, y) -&gt; <span data-count="4042">f</span> acc y)
     x
     rest (* Применяем операторы слева направо *)
 ;;
@@ -482,11 +482,11 @@ let parser_impl =
       *<span data-count="15">&gt;</span> choic<span data-count="15">e</span>
            (* choice - пробует каждый парсер по порядку, возвращает первый успешный *)
            [ cha<span data-count="15">r</span> '(' *<span data-count="15">&gt;</span> spaces *<span data-count="15">&gt;</span> expr &lt;<span data-count="15">*</span> spaces &lt;<span data-count="15">*</span> cha<span data-count="15">r</span> ')'
-           ; (integer &gt;&gt;<span data-count="15">|</span> fun n -&gt; <span data-count="12564">A</span>st.Const n)
+           ; (integer &gt;&gt;<span data-count="15">|</span> fun n -&gt; <span data-count="14180">A</span>st.Const n)
            ; (keywor<span data-count="15">d</span> "if" *<span data-count="15">&gt;</span> expr
               &gt;&gt;<span data-count="15">=</span> fun cond -&gt;
-              <span data-count="3527">k</span>eywor<span data-count="3527">d</span> "then" *<span data-count="3527">&gt;</span> expr
-              &gt;&gt;= fun t1 -&gt; <span data-count="3526">k</span>eywor<span data-count="3526">d</span> "else" *<span data-count="3526">&gt;</span> expr &gt;&gt;| fun t2 -&gt; <span data-count="3525">A</span>st.If (cond, t1, t2))
+              <span data-count="3959">k</span>eywor<span data-count="3959">d</span> "then" *<span data-count="3959">&gt;</span> expr
+              &gt;&gt;= fun t1 -&gt; <span data-count="3958">k</span>eywor<span data-count="3958">d</span> "else" *<span data-count="3958">&gt;</span> expr &gt;&gt;| fun t2 -&gt; <span data-count="3957">A</span>st.If (cond, t1, t2))
              (* Let rec: рекурсивное связывание функции *)
            ; (keywor<span data-count="15">d</span> "let" *<span data-count="15">&gt;</span> keywor<span data-count="15">d</span> "rec" *<span data-count="15">&gt;</span> identifier
               &gt;&gt;<span data-count="15">=</span> fun fname -&gt;
@@ -504,17 +504,17 @@ let parser_impl =
                 <span data-count="9">A</span>st.LetRec (fname, param, full_body, in_expr))
            ; (keywor<span data-count="15">d</span> "let" *<span data-count="15">&gt;</span> identifier
               &gt;&gt;<span data-count="15">=</span> fun name -&gt;
-              <span data-count="3527">m</span>an<span data-count="3527">y</span> (spaces1 *<span data-count="3527">&gt;</span> identifier)
+              <span data-count="4029">m</span>an<span data-count="4029">y</span> (spaces1 *<span data-count="4029">&gt;</span> identifier)
               &gt;&gt;= fun params -&gt;
-              <span data-count="3527">k</span>eywor<span data-count="3527">d</span> "=" *<span data-count="3527">&gt;</span> expr
+              <span data-count="4029">k</span>eywor<span data-count="4029">d</span> "=" *<span data-count="4029">&gt;</span> expr
               &gt;&gt;= fun e1 -&gt;
-              <span data-count="3526">k</span>eywor<span data-count="3526">d</span> "in" *<span data-count="3526">&gt;</span> expr
+              <span data-count="4028">k</span>eywor<span data-count="4028">d</span> "in" *<span data-count="4028">&gt;</span> expr
               &gt;&gt;| fun e2 -&gt;
               (* Если есть параметры, превращаем в лямбду: let f x y = body → let f = fun x -&gt; fun y -&gt; body *)
-              <span data-count="3524">l</span>et full_body = List.fold_right (fun p b -&gt; <span data-count="9">A</span>st.Abs (p, b)) params e1 in
-              <span data-count="3524">A</span>st.Let (name, full_body, e2))
+              <span data-count="4026">l</span>et full_body = List.fold_right (fun p b -&gt; <span data-count="9">A</span>st.Abs (p, b)) params e1 in
+              <span data-count="4026">A</span>st.Let (name, full_body, e2))
            ; (keywor<span data-count="15">d</span> "fix" *<span data-count="15">&gt;</span> expr &gt;&gt;<span data-count="15">|</span> fun e -&gt; <span data-count="0">A</span>st.Fix e)
-           ; (identifier &gt;&gt;<span data-count="15">|</span> fun v -&gt; <span data-count="9546">A</span>st.Var v)
+           ; (identifier &gt;&gt;<span data-count="15">|</span> fun v -&gt; <span data-count="10809">A</span>st.Var v)
            ]
       &lt;* spaces
     in
@@ -523,8 +523,8 @@ let parser_impl =
     <span data-count="15">l</span>et mult_op =
       spaces
       *<span data-count="15">&gt;</span> choic<span data-count="15">e</span>
-           [ strin<span data-count="15">g</span> "*" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="376">A</span>st.BinOp (Ast.Mul, l, r))
-           ; strin<span data-count="15">g</span> "/" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="412">A</span>st.BinOp (Ast.Div, l, r))
+           [ strin<span data-count="15">g</span> "*" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="485">A</span>st.BinOp (Ast.Mul, l, r))
+           ; strin<span data-count="15">g</span> "/" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="443">A</span>st.BinOp (Ast.Div, l, r))
            ]
       &lt;* spaces
     in
@@ -532,8 +532,8 @@ let parser_impl =
     <span data-count="15">l</span>et add_op =
       spaces
       *<span data-count="15">&gt;</span> choic<span data-count="15">e</span>
-           [ strin<span data-count="15">g</span> "+" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="410">A</span>st.BinOp (Ast.Add, l, r))
-           ; strin<span data-count="15">g</span> "-" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="393">A</span>st.BinOp (Ast.Sub, l, r))
+           [ strin<span data-count="15">g</span> "+" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="492">A</span>st.BinOp (Ast.Add, l, r))
+           ; strin<span data-count="15">g</span> "-" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="433">A</span>st.BinOp (Ast.Sub, l, r))
            ]
       &lt;* spaces
     in
@@ -541,11 +541,11 @@ let parser_impl =
     <span data-count="15">l</span>et cmp_op =
       spaces
       *<span data-count="15">&gt;</span> choic<span data-count="15">e</span>
-           [ strin<span data-count="15">g</span> "&lt;=" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="376">A</span>st.BinOp (Ast.Le, l, r))
-           ; strin<span data-count="15">g</span> "&gt;=" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="395">A</span>st.BinOp (Ast.Ge, l, r))
-           ; strin<span data-count="15">g</span> "=" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="379">A</span>st.BinOp (Ast.Eq, l, r))
-           ; strin<span data-count="15">g</span> "&lt;" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="393">A</span>st.BinOp (Ast.Lt, l, r))
-           ; strin<span data-count="15">g</span> "&gt;" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="396">A</span>st.BinOp (Ast.Gt, l, r))
+           [ strin<span data-count="15">g</span> "&lt;=" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="453">A</span>st.BinOp (Ast.Le, l, r))
+           ; strin<span data-count="15">g</span> "&gt;=" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="448">A</span>st.BinOp (Ast.Ge, l, r))
+           ; strin<span data-count="15">g</span> "=" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="420">A</span>st.BinOp (Ast.Eq, l, r))
+           ; strin<span data-count="15">g</span> "&lt;" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="403">A</span>st.BinOp (Ast.Lt, l, r))
+           ; strin<span data-count="15">g</span> "&gt;" *<span data-count="15">&gt;</span> retur<span data-count="15">n</span> (fun l r -&gt; <span data-count="465">A</span>st.BinOp (Ast.Gt, l, r))
            ]
       &lt;* spaces
     in
@@ -554,8 +554,8 @@ let parser_impl =
       many<span data-count="15">1</span> atom (* Парсим одну или более атомарных выражений *)
       &gt;&gt;| function
       | <span data-count="0">[</span>] -&gt; failwith "empty app"
-      | <span data-count="39729">[</span> x ] -&gt; x
-      | <span data-count="6776">x</span> :: xs -&gt; List.fold_left (fun l r -&gt; <span data-count="6787">A</span>st.App (l, r)) x xs
+      | <span data-count="45036">[</span> x ] -&gt; x
+      | <span data-count="7777">x</span> :: xs -&gt; List.fold_left (fun l r -&gt; <span data-count="7788">A</span>st.App (l, r)) x xs
     in
     <span data-count="15">l</span>et mult = chainl1 app mult_op in
     <span data-count="15">l</span>et add = chainl1 mult add_op in
@@ -565,8 +565,8 @@ let parser_impl =
          *<span data-count="15">&gt;</span> spaces
          *<span data-count="15">&gt;</span> many<span data-count="15">1</span> (spaces *<span data-count="15">&gt;</span> identifier &lt;<span data-count="15">*</span> spaces)
          &gt;&gt;<span data-count="15">=</span> fun vars -&gt;
-         <span data-count="6868">(</span>strin<span data-count="6868">g</span> "-&gt;" &lt;|<span data-count="6868">&gt;</span> cha<span data-count="6868">r</span> '.' *<span data-count="6868">&gt;</span> retur<span data-count="6868">n</span> "") *<span data-count="6868">&gt;</span> cmp
-         &gt;&gt;| fun body -&gt; <span data-count="6868">L</span>ist.fold_right (fun v b -&gt; <span data-count="6871">A</span>st.Abs (v, b)) vars body)
+         <span data-count="7918">(</span>strin<span data-count="7918">g</span> "-&gt;" &lt;|<span data-count="7918">&gt;</span> cha<span data-count="7918">r</span> '.' *<span data-count="7918">&gt;</span> retur<span data-count="7918">n</span> "") *<span data-count="7918">&gt;</span> cmp
+         &gt;&gt;| fun body -&gt; <span data-count="7918">L</span>ist.fold_right (fun v b -&gt; <span data-count="7921">A</span>st.Abs (v, b)) vars body)
       ; cmp
       ])
 ;;
