@@ -1,0 +1,1 @@
+let rec fact n = if (n > 0) then ((fact (n - 1)) * n) else 1 in (println_int (fact 5))
