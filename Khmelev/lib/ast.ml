@@ -27,7 +27,6 @@ type expr =
   | App of expr * expr (** Применение функции, например: `f 5` *)
   | Const of int (** Целочисленная константа, например: `0`, `15`, `-7` *)
   | BinOp of binop * expr * expr (** Бинарная операция, например: `2 + 3`, `x * y` *)
-    (** Условное выражение: `if условие then ветка1 else ветка2` *)
   | If of expr * expr * expr
   | Let of name * expr * expr (** Let-связывание: `let x = значение in тело` *)
   | LetRec of name * name * expr * expr

@@ -11,10 +11,7 @@ let gen_identifier =
 ;;
 
 let gen_small_int = QCheck.Gen.(int_range (-100) 100)
-
-let gen_binop =
-  QCheck.Gen.oneofl Ast.[ Add; Sub; Mul; Div; Eq; Lt; Gt; Le; Ge ]
-;;
+let gen_binop = QCheck.Gen.oneofl Ast.[ Add; Sub; Mul; Div; Eq; Lt; Gt; Le; Ge ]
 
 let gen_expr =
   QCheck.Gen.(
@@ -31,11 +28,7 @@ let gen_expr =
           [ 1, map (fun i -> Ast.Const i) gen_small_int
           ; 1, map (fun v -> Ast.Var v) gen_identifier
           ; 2, map2 (fun v e -> Ast.Abs (v, e)) gen_identifier (self (n / 2))
-          ; ( 2
-            , map2
-                (fun e1 e2 -> Ast.App (e1, e2))
-                (self (n / 2))
-                (self (n / 2)) )
+          ; 2, map2 (fun e1 e2 -> Ast.App (e1, e2)) (self (n / 2)) (self (n / 2))
           ; ( 1
             , map3
                 (fun op e1 e2 -> Ast.BinOp (op, e1, e2))
@@ -127,9 +120,7 @@ let test_pp_verbose =
 let test_show_compact =
   QCheck.Test.make ~count:50 ~name:"show compact" (QCheck.make gen_small_int) (fun i ->
     let expr = Ast.Const i in
-    String.equal
-      (Printast.show expr)
-      (Printast.show ~compact:true expr))
+    String.equal (Printast.show expr) (Printast.show ~compact:true expr))
 ;;
 
 let test_binop_print =
@@ -149,9 +140,7 @@ let test_binop_print =
     in
     List.for_all
       (fun (op, sym) ->
-        let printed =
-          Printast.show (Ast.BinOp (op, Const 1, Const 2))
-        in
+        let printed = Printast.show (Ast.BinOp (op, Const 1, Const 2)) in
         String.contains printed (String.get sym 0))
       ops)
 ;;
@@ -207,9 +196,7 @@ let test_nested_if =
 
 let test_nested_let =
   QCheck.Test.make ~count:15 ~name:"nested let" (QCheck.make gen_identifier) (fun x ->
-    let expr =
-      Ast.Let (x, Const 1, Let ("y", Var x, Let ("z", Var "y", Var "z")))
-    in
+    let expr = Ast.Let (x, Const 1, Let ("y", Var x, Let ("z", Var "y", Var "z"))) in
     String.contains (Printast.show expr) 'l')
 ;;
 
@@ -224,9 +211,7 @@ let test_church_encodings =
       ; Abs ("f", Abs ("x", App (Var "f", App (Var "f", Var "x")))) (* two *)
       ]
     in
-    List.for_all
-      (fun t -> String.length (Printast.show ~compact:true t) > 0)
-      terms)
+    List.for_all (fun t -> String.length (Printast.show ~compact:true t) > 0) terms)
 ;;
 
 let test_comparison_ops =
@@ -250,9 +235,7 @@ let test_all_binops =
     QCheck.(pair (make gen_expr) (make gen_expr))
     (fun (e1, e2) ->
       let ops = Ast.[ Add; Sub; Mul; Div; Eq; Lt; Gt; Le; Ge ] in
-      List.for_all
-        (fun op -> String.length (Printast.show (BinOp (op, e1, e2))) > 0)
-        ops)
+      List.for_all (fun op -> String.length (Printast.show (BinOp (op, e1, e2))) > 0) ops)
 ;;
 
 let test_multi_abs =
@@ -263,9 +246,7 @@ let test_multi_abs =
       ; Abs ("a", Abs ("b", Abs ("c", Abs ("d", Var "a"))))
       ]
     in
-    List.for_all
-      (fun t -> String.length (Printast.show ~compact:true t) > 0)
-      terms)
+    List.for_all (fun t -> String.length (Printast.show ~compact:true t) > 0) terms)
 ;;
 
 let test_prim_multiple =
@@ -278,8 +259,7 @@ let test_prim_multiple =
         ]
     in
     List.for_all
-      (fun (name, args) ->
-        String.length (Printast.show (Prim (name, args))) > 0)
+      (fun (name, args) -> String.length (Printast.show (Prim (name, args))) > 0)
       prims)
 ;;
 

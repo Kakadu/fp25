@@ -16,12 +16,10 @@ let list_remove x = List.filter ~f:(fun a -> not (String.equal a x))
 let free_vars =
   let rec helper acc = function
     | Var s -> s :: acc
-    | Abs (s, l) ->
-      acc @ list_remove s (helper [] l)
+    | Abs (s, l) -> acc @ list_remove s (helper [] l)
     | App (l, r) -> helper (helper acc r) l
     | Const _ -> acc
-    | If (c, t, e) ->
-      helper (helper (helper acc c) t) e
+    | If (c, t, e) -> helper (helper (helper acc c) t) e
     | Let (x, e1, e2) -> helper (acc @ list_remove x (helper [] e2)) e1
     | LetRec (f, x, body, e) ->
       acc @ list_remove f (list_remove x (helper (helper [] body) e))
@@ -43,8 +41,7 @@ let pp ?(compact = false) =
   in
   let rec pp_impl fmt = function
     | Var s -> Format.fprintf fmt "%s" s
-    | App (l, r) ->
-      Format.fprintf fmt "(%a %a)" pp_impl l pp_impl r
+    | App (l, r) -> Format.fprintf fmt "(%a %a)" pp_impl l pp_impl r
     (* True: λx.λy.x *)
     | Abs (x, Abs (y, Var z)) when String.equal x z && (not (String.equal y z)) && compact
       -> if compact then Format.fprintf fmt "⊤"
@@ -132,7 +129,6 @@ let pp ?(compact = false) =
 ;;
 
 let pp_hum = pp ~compact:true
-
 let pp_verbose = pp ~compact:false
 
 let show ?(compact = false) term =
