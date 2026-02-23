@@ -13,7 +13,6 @@ let gen_identifier =
 let gen_small_int = QCheck.Gen.(int_range (-100) 100)
 let gen_binop = QCheck.Gen.oneof_list Ast.[ Add; Sub; Mul; Div; Eq; Lt; Gt; Le; Ge ]
 
-
 let gen_expr =
   QCheck.Gen.(
     sized
