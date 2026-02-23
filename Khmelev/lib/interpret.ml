@@ -17,10 +17,10 @@ type error =
   ]
 
 let pp_error ppf = function
-  | `UnknownVariable s -> Format.fprintf ppf "Unknown variable: %s" s
-  | `TypeError s -> Format.fprintf ppf "Type error: %s" s
-  | `DivisionByZero -> Format.fprintf ppf "Division by zero"
-  | `StepLimitReached -> Format.fprintf ppf "Step limit reached"
+  | `UnknownVariable s -> Stdlib.Format.fprintf ppf "Unknown variable: %s" s
+  | `TypeError s -> Stdlib.Format.fprintf ppf "Type error: %s" s
+  | `DivisionByZero -> Stdlib.Format.fprintf ppf "Division by zero"
+  | `StepLimitReached -> Stdlib.Format.fprintf ppf "Step limit reached"
 ;;
 
 type value =
@@ -30,7 +30,7 @@ type value =
 
 and env = (name * value ref) list
 
-type 'a result = ('a, error) Result.t
+[@@@ocamlformat "disable"]
 
 let return x = Result.Ok x
 
@@ -152,4 +152,3 @@ let parse_and_run ?(step_limit = 100000) str =
   match Parser.parse str with
   | Result.Error (`Parsing_error msg) -> fail (`TypeError ("Parse error: " ^ msg))
   | Result.Ok expr -> eval ~step_limit () expr >>| fun v -> string_of_value v
-;;

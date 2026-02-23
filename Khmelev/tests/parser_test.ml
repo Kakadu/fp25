@@ -6,6 +6,8 @@
 
 [@@@ocaml.text "/*"]
 
+[@@@warning "-33"]
+
 open Ast
 
 let test_parse input expected =
