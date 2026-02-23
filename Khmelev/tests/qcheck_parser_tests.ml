@@ -6,12 +6,13 @@ let gen_identifier =
   QCheck.Gen.(
     map2
       (fun c cs -> String.make 1 c ^ String.concat "" (List.map (String.make 1) cs))
-      (oneofl [ 'a'; 'b'; 'c'; 'f'; 'g'; 'x'; 'y'; 'z' ])
-      (list_size (0 -- 3) (oneofl [ 'a'; 'x'; 'y'; 'z'; '0'; '1' ])))
+      (oneof_list [ 'a'; 'b'; 'c'; 'f'; 'g'; 'x'; 'y'; 'z' ])
+      (list_size (0 -- 3) (oneof_list [ 'a'; 'x'; 'y'; 'z'; '0'; '1' ])))
 ;;
 
 let gen_small_int = QCheck.Gen.(int_range (-100) 100)
-let gen_binop = QCheck.Gen.oneofl Ast.[ Add; Sub; Mul; Div; Eq; Lt; Gt; Le; Ge ]
+let gen_binop = QCheck.Gen.oneof_list Ast.[ Add; Sub; Mul; Div; Eq; Lt; Gt; Le; Ge ]
+
 
 let gen_expr =
   QCheck.Gen.(
@@ -19,12 +20,12 @@ let gen_expr =
     @@ fix (fun self n ->
       if n <= 0
       then
-        frequency
+        oneof_weighted
           [ 3, map (fun i -> Ast.Const i) gen_small_int
           ; 2, map (fun v -> Ast.Var v) gen_identifier
           ]
       else
-        frequency
+        oneof_weighted
           [ 1, map (fun i -> Ast.Const i) gen_small_int
           ; 1, map (fun v -> Ast.Var v) gen_identifier
           ; 2, map2 (fun v e -> Ast.Abs (v, e)) gen_identifier (self (n / 2))
@@ -66,7 +67,7 @@ let test_parse_valid =
   QCheck.Test.make
     ~count:1
     ~name:"parse valid"
-    (QCheck.Gen.oneofl
+    (QCheck.Gen.oneof_list
        [ "42"; "(1 + 2)"; "x"; "(fun x -> x)"; "let x = 5 in x"; "if 1 then 2 else 3" ]
      |> QCheck.make)
     (fun s ->
@@ -97,7 +98,7 @@ let test_roundtrip =
   QCheck.Test.make
     ~count:1
     ~name:"roundtrip"
-    (QCheck.Gen.oneofl cases |> QCheck.make)
+    (QCheck.Gen.oneof_list cases |> QCheck.make)
     (fun (expr, exp) ->
       String.equal (Printast.show expr) exp
       &&
