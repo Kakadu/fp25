@@ -26,5 +26,5 @@ struct
   let get st = st, Ok st
   let put new_st _st = new_st, Ok ()
   let fail e st = st, Error e
-  let run m st = m st
+  let run st = st
 end
