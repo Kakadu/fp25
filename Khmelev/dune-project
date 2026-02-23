@@ -30,6 +30,8 @@
   ppx_expect
   ppx_deriving
   bisect_ppx
+  ppx_deriving_qcheck
+   qcheck
   (odoc :with-doc)
   (ocamlformat
    (and
