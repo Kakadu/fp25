@@ -15,7 +15,7 @@ depends: [
   "angstrom" {= "0.16.0"}
   "base"
   "ppx_inline_test" {with-test}
-  "ppx_expectd"
+  "ppx_expect"
   "ppx_deriving"
   "bisect_ppx"
   "odoc" {with-doc}
