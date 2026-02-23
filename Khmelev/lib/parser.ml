@@ -155,9 +155,9 @@ let parser_impl =
     let app =
       many1 atom (* Парсим одну или более атомарных выражений *)
       >>| function
-      | [] -> failwith "empty app"
       | [ x ] -> x
       | x :: xs -> List.fold_left (fun l r -> Ast.App (l, r)) x xs
+      | [] -> assert false (* Недостижимо: many1 гарантирует >= 1 элемент *)
     in
     let mult = chainl1 app mult_op in
     let add = chainl1 mult add_op in
