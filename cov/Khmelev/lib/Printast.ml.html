@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Printast.ml &mdash; Coverage report</title>
+    <meta name="description" content="72.65% coverage in lib/Printast.ml">
+    <link rel="stylesheet" href="../coverage.css"/>
+    <script src="../highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </head>
+  <body>
+    <div id="header">
+      <h1>
+        <a href="../index.html">
+          <span class="dirname">lib/</span>Printast.ml
+        </a>
+      </h1>
+      <h2>72.65%</h2>
+    </div>
+    <div id="navbar">
+      <span class="unvisited" style="top:10.40%"></span>
+      <span class="unvisited" style="top:15.20%"></span>
+      <span class="unvisited" style="top:16.00%"></span>
+      <span class="unvisited" style="top:16.80%"></span>
+      <span class="unvisited" style="top:17.60%"></span>
+      <span class="unvisited" style="top:18.40%"></span>
+      <span class="unvisited" style="top:19.20%"></span>
+      <span class="unvisited" style="top:20.00%"></span>
+      <span class="unvisited" style="top:20.80%"></span>
+      <span class="unvisited" style="top:21.60%"></span>
+      <span class="unvisited" style="top:22.40%"></span>
+      <span class="unvisited" style="top:28.80%"></span>
+      <span class="some-visited" style="top:32.00%"></span>
+      <span class="unvisited" style="top:42.40%"></span>
+      <span class="unvisited" style="bottom:32.00%"></span>
+      <span class="some-visited" style="bottom:31.20%"></span>
+    </div>
+    <div id="report">
+      <div id="lines-layer">
+        <pre>
+<a id="L1"></a><span > </span>
+<a id="L2"></a><span > </span>
+<a id="L3"></a><span > </span>
+<a id="L4"></a><span > </span>
+<a id="L5"></a><span > </span>
+<a id="L6"></a><span > </span>
+<a id="L7"></a><span > </span>
+<a id="L8"></a><span > </span>
+<a id="L9"></a><span > </span>
+<a id="L10"></a><span > </span>
+<a id="L11"></a><span > </span>
+<a id="L12"></a><span > </span>
+<a id="L13"></a><span class="unvisited"> </span>
+<a id="L14"></a><span > </span>
+<a id="L15"></a><span > </span>
+<a id="L16"></a><span > </span>
+<a id="L17"></a><span > </span>
+<a id="L18"></a><span class="visited"> </span>
+<a id="L19"></a><span class="unvisited"> </span>
+<a id="L20"></a><span class="unvisited"> </span>
+<a id="L21"></a><span class="unvisited"> </span>
+<a id="L22"></a><span class="unvisited"> </span>
+<a id="L23"></a><span class="unvisited"> </span>
+<a id="L24"></a><span class="unvisited"> </span>
+<a id="L25"></a><span class="unvisited"> </span>
+<a id="L26"></a><span class="unvisited"> </span>
+<a id="L27"></a><span class="unvisited"> </span>
+<a id="L28"></a><span class="unvisited"> </span>
+<a id="L29"></a><span > </span>
+<a id="L30"></a><span class="visited"> </span>
+<a id="L31"></a><span > </span>
+<a id="L32"></a><span > </span>
+<a id="L33"></a><span class="visited"> </span>
+<a id="L34"></a><span > </span>
+<a id="L35"></a><span > </span>
+<a id="L36"></a><span class="unvisited"> </span>
+<a id="L37"></a><span class="visited"> </span>
+<a id="L38"></a><span > </span>
+<a id="L39"></a><span > </span>
+<a id="L40"></a><span class="some-visited"> </span>
+<a id="L41"></a><span > </span>
+<a id="L42"></a><span > </span>
+<a id="L43"></a><span class="visited"> </span>
+<a id="L44"></a><span class="visited"> </span>
+<a id="L45"></a><span > </span>
+<a id="L46"></a><span class="visited"> </span>
+<a id="L47"></a><span class="visited"> </span>
+<a id="L48"></a><span > </span>
+<a id="L49"></a><span class="visited"> </span>
+<a id="L50"></a><span class="visited"> </span>
+<a id="L51"></a><span > </span>
+<a id="L52"></a><span class="visited"> </span>
+<a id="L53"></a><span class="unvisited"> </span>
+<a id="L54"></a><span > </span>
+<a id="L55"></a><span class="visited"> </span>
+<a id="L56"></a><span class="visited"> </span>
+<a id="L57"></a><span class="visited"> </span>
+<a id="L58"></a><span > </span>
+<a id="L59"></a><span class="visited"> </span>
+<a id="L60"></a><span class="visited"> </span>
+<a id="L61"></a><span class="visited"> </span>
+<a id="L62"></a><span class="visited"> </span>
+<a id="L63"></a><span class="visited"> </span>
+<a id="L64"></a><span class="visited"> </span>
+<a id="L65"></a><span > </span>
+<a id="L66"></a><span class="visited"> </span>
+<a id="L67"></a><span class="visited"> </span>
+<a id="L68"></a><span > </span>
+<a id="L69"></a><span > </span>
+<a id="L70"></a><span class="visited"> </span>
+<a id="L71"></a><span > </span>
+<a id="L72"></a><span class="visited"> </span>
+<a id="L73"></a><span > </span>
+<a id="L74"></a><span class="visited"> </span>
+<a id="L75"></a><span > </span>
+<a id="L76"></a><span class="visited"> </span>
+<a id="L77"></a><span > </span>
+<a id="L78"></a><span > </span>
+<a id="L79"></a><span > </span>
+<a id="L80"></a><span > </span>
+<a id="L81"></a><span class="visited"> </span>
+<a id="L82"></a><span class="visited"> </span>
+<a id="L83"></a><span > </span>
+<a id="L84"></a><span class="visited"> </span>
+<a id="L85"></a><span class="unvisited"> </span>
+<a id="L86"></a><span class="some-visited"> </span>
+<a id="L87"></a><span > </span>
+<a id="L88"></a><span class="visited"> </span>
+<a id="L89"></a><span class="visited"> </span>
+<a id="L90"></a><span class="visited"> </span>
+<a id="L91"></a><span > </span>
+<a id="L92"></a><span class="visited"> </span>
+<a id="L93"></a><span class="visited"> </span>
+<a id="L94"></a><span > </span>
+<a id="L95"></a><span class="visited"> </span>
+<a id="L96"></a><span class="visited"> </span>
+<a id="L97"></a><span > </span>
+<a id="L98"></a><span > </span>
+<a id="L99"></a><span class="visited"> </span>
+<a id="L100"></a><span class="visited"> </span>
+<a id="L101"></a><span class="visited"> </span>
+<a id="L102"></a><span class="visited"> </span>
+<a id="L103"></a><span class="visited"> </span>
+<a id="L104"></a><span class="visited"> </span>
+<a id="L105"></a><span class="visited"> </span>
+<a id="L106"></a><span class="visited"> </span>
+<a id="L107"></a><span class="visited"> </span>
+<a id="L108"></a><span > </span>
+<a id="L109"></a><span > </span>
+<a id="L110"></a><span class="visited"> </span>
+<a id="L111"></a><span class="visited"> </span>
+<a id="L112"></a><span > </span>
+<a id="L113"></a><span > </span>
+<a id="L114"></a><span > </span>
+<a id="L115"></a><span > </span>
+<a id="L116"></a><span > </span>
+<a id="L117"></a><span > </span>
+<a id="L118"></a><span > </span>
+<a id="L119"></a><span class="visited"> </span>
+<a id="L120"></a><span class="visited"> </span>
+<a id="L121"></a><span class="visited"> </span>
+<a id="L122"></a><span class="visited"> </span>
+<a id="L123"></a><span class="visited"> </span>
+<a id="L124"></a><span class="visited"> </span>
+<a id="L125"></a><span > </span>
+</pre>
+      </div>
+      <div id="text-layer">
+        <pre id="line-numbers">
+<a href="#L1">  1</a>
+<a href="#L2">  2</a>
+<a href="#L3">  3</a>
+<a href="#L4">  4</a>
+<a href="#L5">  5</a>
+<a href="#L6">  6</a>
+<a href="#L7">  7</a>
+<a href="#L8">  8</a>
+<a href="#L9">  9</a>
+<a href="#L10"> 10</a>
+<a href="#L11"> 11</a>
+<a href="#L12"> 12</a>
+<a href="#L13"> 13</a>
+<a href="#L14"> 14</a>
+<a href="#L15"> 15</a>
+<a href="#L16"> 16</a>
+<a href="#L17"> 17</a>
+<a href="#L18"> 18</a>
+<a href="#L19"> 19</a>
+<a href="#L20"> 20</a>
+<a href="#L21"> 21</a>
+<a href="#L22"> 22</a>
+<a href="#L23"> 23</a>
+<a href="#L24"> 24</a>
+<a href="#L25"> 25</a>
+<a href="#L26"> 26</a>
+<a href="#L27"> 27</a>
+<a href="#L28"> 28</a>
+<a href="#L29"> 29</a>
+<a href="#L30"> 30</a>
+<a href="#L31"> 31</a>
+<a href="#L32"> 32</a>
+<a href="#L33"> 33</a>
+<a href="#L34"> 34</a>
+<a href="#L35"> 35</a>
+<a href="#L36"> 36</a>
+<a href="#L37"> 37</a>
+<a href="#L38"> 38</a>
+<a href="#L39"> 39</a>
+<a href="#L40"> 40</a>
+<a href="#L41"> 41</a>
+<a href="#L42"> 42</a>
+<a href="#L43"> 43</a>
+<a href="#L44"> 44</a>
+<a href="#L45"> 45</a>
+<a href="#L46"> 46</a>
+<a href="#L47"> 47</a>
+<a href="#L48"> 48</a>
+<a href="#L49"> 49</a>
+<a href="#L50"> 50</a>
+<a href="#L51"> 51</a>
+<a href="#L52"> 52</a>
+<a href="#L53"> 53</a>
+<a href="#L54"> 54</a>
+<a href="#L55"> 55</a>
+<a href="#L56"> 56</a>
+<a href="#L57"> 57</a>
+<a href="#L58"> 58</a>
+<a href="#L59"> 59</a>
+<a href="#L60"> 60</a>
+<a href="#L61"> 61</a>
+<a href="#L62"> 62</a>
+<a href="#L63"> 63</a>
+<a href="#L64"> 64</a>
+<a href="#L65"> 65</a>
+<a href="#L66"> 66</a>
+<a href="#L67"> 67</a>
+<a href="#L68"> 68</a>
+<a href="#L69"> 69</a>
+<a href="#L70"> 70</a>
+<a href="#L71"> 71</a>
+<a href="#L72"> 72</a>
+<a href="#L73"> 73</a>
+<a href="#L74"> 74</a>
+<a href="#L75"> 75</a>
+<a href="#L76"> 76</a>
+<a href="#L77"> 77</a>
+<a href="#L78"> 78</a>
+<a href="#L79"> 79</a>
+<a href="#L80"> 80</a>
+<a href="#L81"> 81</a>
+<a href="#L82"> 82</a>
+<a href="#L83"> 83</a>
+<a href="#L84"> 84</a>
+<a href="#L85"> 85</a>
+<a href="#L86"> 86</a>
+<a href="#L87"> 87</a>
+<a href="#L88"> 88</a>
+<a href="#L89"> 89</a>
+<a href="#L90"> 90</a>
+<a href="#L91"> 91</a>
+<a href="#L92"> 92</a>
+<a href="#L93"> 93</a>
+<a href="#L94"> 94</a>
+<a href="#L95"> 95</a>
+<a href="#L96"> 96</a>
+<a href="#L97"> 97</a>
+<a href="#L98"> 98</a>
+<a href="#L99"> 99</a>
+<a href="#L100">100</a>
+<a href="#L101">101</a>
+<a href="#L102">102</a>
+<a href="#L103">103</a>
+<a href="#L104">104</a>
+<a href="#L105">105</a>
+<a href="#L106">106</a>
+<a href="#L107">107</a>
+<a href="#L108">108</a>
+<a href="#L109">109</a>
+<a href="#L110">110</a>
+<a href="#L111">111</a>
+<a href="#L112">112</a>
+<a href="#L113">113</a>
+<a href="#L114">114</a>
+<a href="#L115">115</a>
+<a href="#L116">116</a>
+<a href="#L117">117</a>
+<a href="#L118">118</a>
+<a href="#L119">119</a>
+<a href="#L120">120</a>
+<a href="#L121">121</a>
+<a href="#L122">122</a>
+<a href="#L123">123</a>
+<a href="#L124">124</a>
+<a href="#L125">125</a>
+</pre>
+<pre><code class="ocaml">[@@@ocaml.text "/*"]
+
+(** Copyright 2021-2024, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+[@@@ocaml.text "/*"]
+
+open Ast
+open Base
+
+(* Удаляет все вхождения переменной x из списка *)
+let list_remove x = <span data-count="0">L</span>ist.filter ~f:(fun a -&gt; <span data-count="0">n</span>ot (String.equa<span data-count="0">l</span> a x))
+
+(* Находит все свободные переменные в выражении *)
+let free_vars =
+  let rec helper acc = function
+    | <span data-count="105">V</span>ar s -&gt; s :: acc
+    | <span data-count="0">A</span>bs (s, l) -&gt; acc @ list_remov<span data-count="0">e</span> s (helpe<span data-count="0">r</span> [] l)
+    | <span data-count="0">A</span>pp (l, r) -&gt; helper (helpe<span data-count="0">r</span> acc r) l
+    | <span data-count="0">C</span>onst _ -&gt; acc
+    | <span data-count="0">I</span>f (c, t, e) -&gt; helper (helpe<span data-count="0">r</span> (helpe<span data-count="0">r</span> acc c) t) e
+    | <span data-count="0">L</span>et (x, e1, e2) -&gt; helper (acc @ list_remov<span data-count="0">e</span> x (helpe<span data-count="0">r</span> [] e2)) e1
+    | <span data-count="0">L</span>etRec (f, x, body, e) -&gt;
+      acc @ list_remov<span data-count="0">e</span> f (list_remov<span data-count="0">e</span> x (helpe<span data-count="0">r</span> (helpe<span data-count="0">r</span> [] body) e))
+    | <span data-count="0">F</span>ix t -&gt; helper acc t
+    | <span data-count="0">B</span>inOp (_, l, r) -&gt; helper (helpe<span data-count="0">r</span> acc l) r
+    | <span data-count="0">P</span>rim (_, args) -&gt; List.fold_left ~f:helper ~init:acc args
+  in
+  helpe<span data-count="18">r</span> []
+;;
+
+let is_free_in x term = <span data-count="105">L</span>ist.mem (free_var<span data-count="105">s</span> term) x ~equal:String.equal
+
+(* Pretty printer с опцией компактного вывода *)
+let pp ?(compact = <span data-count="0">f</span>alse) =
+  <span data-count="3131">l</span>et open Stdlib.Format in
+  (* Если переменная не используется (не свободна) - заменяет её на "_" *)
+  let mangle t fmt x =
+    <span data-count="105">i</span>f is_free_i<span data-count="105">n</span> x <span data-count="30">t</span> || not compac<span data-count="0">t</span> then <span data-count="30">f</span>printf fmt "%s" x else <span data-count="75">f</span>printf fmt "_"
+  in
+  let rec pp_impl fmt = function
+    | <span data-count="24623">V</span>ar s -&gt; fprintf fmt "%s" s
+    | <span data-count="17460">A</span>pp (l, r) -&gt; fprintf fmt "(%a %a)" pp_impl l pp_impl r
+    (* True: λx.λy.x *)
+    | <span data-count="501">A</span>bs (x, Abs (y, Var z)) when String.equa<span data-count="501">l</span> x z &amp;&amp; <span data-count="9">(</span>not (String.equa<span data-count="9">l</span> y z)) &amp;&amp; <span data-count="9">c</span>ompact
+      -&gt; <span data-count="1">i</span>f compact then <span data-count="1">f</span>printf fmt "⊤"
+    (* False: λx.λy.y *)
+    | <span data-count="500">A</span>bs (x, Abs (y, Var z)) when String.equa<span data-count="500">l</span> y z &amp;&amp; <span data-count="4">(</span>not (String.equa<span data-count="4">l</span> x z)) &amp;&amp; <span data-count="4">c</span>ompact
+      -&gt; <span data-count="2">f</span>printf fmt "⊥"
+    (* Zero: λf.λx.x *)
+    | <span data-count="498">A</span>bs (f, Abs (x, Var z)) when String.equa<span data-count="498">l</span> x z &amp;&amp; <span data-count="2">(</span>not (String.equa<span data-count="2">l</span> x f)) &amp;&amp; <span data-count="2">c</span>ompact
+      -&gt; <span data-count="0">f</span>printf fmt "0"
+    (* One: λf.λx.f x *)
+    | <span data-count="17">A</span>bs (f, Abs (x, App (Var g, Var z)))
+      when String.equa<span data-count="17">l</span> x z &amp;&amp; <span data-count="1">(</span>not (String.equa<span data-count="1">l</span> x f)) &amp;&amp; <span data-count="1">S</span>tring.equa<span data-count="1">l</span> g f &amp;&amp; <span data-count="1">c</span>ompact -&gt;
+      <span data-count="1">f</span>printf fmt "1"
+    (* Two: λf.λx.f (f x) *)
+    | <span data-count="1">A</span>bs (f, Abs (x, App (Var g, App (Var h, Var z))))
+      when String.equa<span data-count="1">l</span> x z
+           &amp;&amp; <span data-count="1">(</span>not (String.equa<span data-count="1">l</span> x f))
+           &amp;&amp; <span data-count="1">S</span>tring.equa<span data-count="1">l</span> g f
+           &amp;&amp; <span data-count="1">S</span>tring.equa<span data-count="1">l</span> h g
+           &amp;&amp; <span data-count="1">c</span>ompact -&gt; <span data-count="1">f</span>printf fmt "2"
+    (* Лямбда с 4 параметрами в компактном режиме *)
+    | <span data-count="85">A</span>bs (v1, Abs (v2, Abs (v3, Abs (v4, t)))) when compact -&gt;
+      <span data-count="15">f</span>printf
+        fmt
+        "(λ %a %a %a %a -&gt; %a)"
+        (mangl<span data-count="15">e</span> t)
+        v1
+        (mangl<span data-count="15">e</span> t)
+        v2
+        (mangl<span data-count="15">e</span> t)
+        v3
+        (mangl<span data-count="15">e</span> t)
+        v4
+        pp_impl
+        t
+    (* Лямбда с 3 параметрами в компактном режиме *)
+    | <span data-count="387">A</span>bs (v1, Abs (v2, Abs (v3, t))) when compact -&gt;
+      <span data-count="15">f</span>printf fmt "(λ %a %a %a -&gt; %a)" (mangl<span data-count="15">e</span> t) v1 (mangl<span data-count="15">e</span> t) v2 (mangl<span data-count="15">e</span> t) v3 pp_impl t
+    (* Лямбда с 2 параметрами в компактном режиме *)
+    | <span data-count="2630">A</span>bs (v1, Abs (v2, t)) when compact -&gt;
+      <span data-count="0">f</span>printf fmt "(λ %a %a -&gt; %a)" (mangl<span data-count="0">e</span> t) v1 (mangl<span data-count="0">e</span> t) v2 pp_impl t
+    | <span data-count="17484">A</span>bs (x, t) when compact -&gt; <span data-count="0">f</span>printf fmt "(λ %a . %a)" (mangl<span data-count="0">e</span> t) x pp_impl t
+    (* Обычная лямбда (не компактный режим) *)
+    | <span data-count="17484">A</span>bs (x, body) -&gt; fprintf fmt "(fun %s -&gt; %a)" x pp_impl body
+    | <span data-count="33227">C</span>onst n -&gt; fprintf fmt "%d" n
+    | <span data-count="9240">I</span>f (c, t1, t2) -&gt;
+      fprintf fmt "(if %a then %a else %a)" pp_impl c pp_impl t1 pp_impl t2
+    | <span data-count="9131">L</span>et (n, e1, e2) -&gt; fprintf fmt "(let %s = %a in %a)" n pp_impl e1 pp_impl e2
+    | <span data-count="20">L</span>etRec (f, p, b, inb) -&gt;
+      fprintf fmt "(let rec %s %s = %a in %a)" f p pp_impl b pp_impl inb
+    | <span data-count="10">F</span>ix t -&gt; fprintf fmt "(fix %a)" pp_impl t
+    | <span data-count="9509">B</span>inOp (op, l, r) -&gt;
+      let s =
+        match op with
+        | <span data-count="1011">A</span>dd -&gt; "+"
+        | <span data-count="1037">S</span>ub -&gt; "-"
+        | <span data-count="949">M</span>ul -&gt; "*"
+        | <span data-count="1089">D</span>iv -&gt; "/"
+        | <span data-count="1085">E</span>q -&gt; "="
+        | <span data-count="1065">L</span>t -&gt; "&lt;"
+        | <span data-count="1103">G</span>t -&gt; "&gt;"
+        | <span data-count="1007">L</span>e -&gt; "&lt;="
+        | <span data-count="1163">G</span>e -&gt; "&gt;="
+      in
+      fprintf fmt "(%a %s %a)" pp_impl l s pp_impl r
+    | <span data-count="70">P</span>rim (name, args) -&gt;
+      fprintf fmt "%s(%a)" name (pp_print_lis<span data-count="70">t</span> ~pp_sep:pp_print_space pp_impl) args
+  in
+  pp_impl
+;;
+
+let pp_hum = pp ~compact:true
+let pp_verbose = pp ~compact:false
+
+let show ?(compact = <span data-count="3010">f</span>alse) term =
+  <span data-count="3095">l</span>et buf = Buffer.create 256 in
+  <span data-count="3095">l</span>et fmt = Stdlib.Format.formatter_of_buffer buf in
+  <span data-count="3095">p</span>p ~compact fmt term;
+  <span data-count="3095">S</span>tdlib.Format.pp_print_flush fmt ();
+  <span data-count="3095">B</span>uffer.contents buf
+;;
+</code></pre>
+      </div>
+    </div>
+    <script src="../coverage.js"></script>
+  </body>
+</html>
