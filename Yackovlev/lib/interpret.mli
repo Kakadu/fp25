@@ -29,7 +29,7 @@ and env = (name * value) list
 type error =
   | Unknown_variable of name
   | Not_a_function of value
-  | Division_by_zero
+  | Div_by_zero
   | Type_error of string
   | Out_of_fuel
 

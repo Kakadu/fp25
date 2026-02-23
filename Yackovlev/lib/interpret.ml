@@ -29,7 +29,7 @@ and env = (name * value) list
 type error =
   | Unknown_variable of name
   | Not_a_function of value
-  | Division_by_zero
+  | Div_by_zero
   | Type_error of string
   | Out_of_fuel
 
@@ -63,7 +63,7 @@ let string_of_value = function
 let string_of_error : error -> string = function
   | Unknown_variable x -> "Unknown variable: " ^ x
   | Not_a_function v -> "Not a function: " ^ string_of_value v
-  | Division_by_zero -> "Division by zero"
+  | Div_by_zero -> "Division by zero"
   | Type_error msg -> "Type error: " ^ msg
   | Out_of_fuel -> "Out of fuel"
 ;;
@@ -131,7 +131,7 @@ and eval (env : env) (fuel : fuel) (e : expr) : (value * fuel, error) result =
          | Add -> ok (n1 + n2)
          | Sub -> ok (n1 - n2)
          | Mul -> ok (n1 * n2)
-         | Div -> if n2 = 0 then error Division_by_zero else ok (n1 / n2)
+         | Div -> if n2 = 0 then error Div_by_zero else ok (n1 / n2)
        in
        ok (VInt n, fuel2)
      | _ -> error (Type_error "integer operands expected in arithmetic"))
