@@ -9,10 +9,8 @@
 open Ast
 open Base
 
-(* Удаляет все вхождения переменной x из списка *)
 let list_remove x = List.filter ~f:(fun a -> not (String.equal a x))
 
-(* Находит все свободные переменные в выражении *)
 let free_vars =
   let rec helper acc = function
     | Var s -> s :: acc
@@ -32,10 +30,8 @@ let free_vars =
 
 let is_free_in x term = List.mem (free_vars term) x ~equal:String.equal
 
-(* Pretty printer с опцией компактного вывода *)
 let pp ?(compact = false) =
   let open Stdlib.Format in
-  (* Если переменная не используется (не свободна) - заменяет её на "_" *)
   let mangle t fmt x =
     if is_free_in x t || not compact then fprintf fmt "%s" x else fprintf fmt "_"
   in

@@ -23,7 +23,10 @@ let is_lower = function
 ;;
 
 let is_ident_char = function
-  | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' -> true
+  | 'a' .. 'z' -> true
+  | 'A' .. 'Z' -> true
+  | '0' .. '9' -> true
+  | '_' -> true
   | _ -> false
 ;;
 
@@ -92,16 +95,15 @@ let parser_impl =
              (* Let rec: рекурсивное связывание функции *)
            ; (keyword "let" *> keyword "rec" *> identifier
               >>= fun fname ->
-              many (spaces1 *> identifier) (* Парсим параметры функции *)
+              many (spaces1 *> identifier)
               >>= fun params ->
               keyword "=" *> expr
               >>= fun body ->
               keyword "in" *> expr
               >>| fun in_expr ->
               match params with
-              | [] -> Ast.Let (fname, body, in_expr) (* Без параметров - обычный let *)
+              | [] -> Ast.Let (fname, body, in_expr)
               | param :: rest ->
-                (* С параметрами - создаём вложенные лямбды: fun x y -> body становится fun x -> (fun y -> body) *)
                 let full_body = List.fold_right (fun p b -> Ast.Abs (p, b)) rest body in
                 Ast.LetRec (fname, param, full_body, in_expr))
            ; (keyword "let" *> identifier
@@ -112,7 +114,6 @@ let parser_impl =
               >>= fun e1 ->
               keyword "in" *> expr
               >>| fun e2 ->
-              (* Если есть параметры, превращаем в лямбду: let f x y = body → let f = fun x -> fun y -> body *)
               let full_body = List.fold_right (fun p b -> Ast.Abs (p, b)) params e1 in
               Ast.Let (name, full_body, e2))
            ; (keyword "fix" *> expr >>| fun e -> Ast.Fix e)
@@ -154,10 +155,7 @@ let parser_impl =
     (* Применение функции (f x y парсится как (f x) y) *)
     let app =
       many1 atom (* Парсим одну или более атомарных выражений *)
-      >>| function
-      | [ x ] -> x
-      | x :: xs -> List.fold_left (fun l r -> Ast.App (l, r)) x xs
-      | [] -> assert false (* Недостижимо: many1 гарантирует >= 1 элемент *)
+      >>| Base.List.reduce_exn ~f:(fun l r -> Ast.App (l, r))
     in
     let mult = chainl1 app mult_op in
     let add = chainl1 mult add_op in

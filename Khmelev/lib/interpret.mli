@@ -16,9 +16,10 @@ type error =
 type value =
   | VInt of int
   | VClosure of Ast.name * Ast.expr * env
+  | VRecClosure of Ast.name * Ast.name * Ast.expr * env
   | VBuiltin of (value -> (value, error) Result.t)
 
-and env = (Ast.name * value ref) list
+and env = (Ast.name * value) list
 
 val pp_error : Format.formatter -> error -> unit
 val string_of_value : value -> string

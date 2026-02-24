@@ -23,8 +23,7 @@ let run_single opts input_text =
 ;;
 
 let parse_args () =
-  let rec loop opts input_file args =
-    match args with
+  let rec loop opts input_file = function
     | [] -> opts, input_file
     | "--ast" :: rest -> loop { opts with show_ast = true } input_file rest
     | "--maxSteps" :: n :: rest ->
