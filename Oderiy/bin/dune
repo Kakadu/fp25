@@ -1,0 +1,11 @@
+(executable
+ (name REPL)
+ (public_name REPL)
+ (modules REPL)
+ (libraries mml)
+ (modes byte exe)
+ (instrumentation
+  (backend bisect_ppx)))
+
+(cram
+ (deps ./REPL.exe %{bin:REPL}))

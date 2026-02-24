@@ -1,0 +1,2 @@
+let fact = fix (fun f -> fun n -> if n > 0 then f (n - 1) * n else 1)
+in fact 10
