@@ -1,4 +1,4 @@
-Copyright 2021-2024, Kakadu and contributors
+Copyright 2021-2026, Kakadu and contributors
 SPDX-License-Identifier: CC0-1.0
 
 Cram tests here. They run and compare program output to the expected output
