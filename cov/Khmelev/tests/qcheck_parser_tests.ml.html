@@ -622,7 +622,7 @@
 let gen_identifier =
   QCheck.Gen.(
     map<span data-count="1">2</span>
-      (fun c cs -&gt; <span data-count="23546">S</span>tring.mak<span data-count="23546">e</span> 1 c ^ String.conca<span data-count="23546">t</span> "" (List.ma<span data-count="23546">p</span> (String.mak<span data-count="23546">e</span> 1) cs))
+      (fun c cs -&gt; <span data-count="23810">S</span>tring.mak<span data-count="23810">e</span> 1 c ^ String.conca<span data-count="23810">t</span> "" (List.ma<span data-count="23810">p</span> (String.mak<span data-count="23810">e</span> 1) cs))
       (oneof_lis<span data-count="1">t</span> [ 'a'; 'b'; 'c'; 'f'; 'g'; 'x'; 'y'; 'z' ])
       (list_siz<span data-count="1">e</span> (0 -<span data-count="1">-</span> 3) (oneof_lis<span data-count="1">t</span> [ 'a'; 'x'; 'y'; 'z'; '0'; '1' ])))
 ;;
@@ -634,36 +634,36 @@ let gen_expr =
   QCheck.Gen.(
     size<span data-count="1">d</span>
     @@ fi<span data-count="1">x</span> (fun self n -&gt;
-      <span data-count="53984">i</span>f n &lt;= 0
+      <span data-count="55017">i</span>f n &lt;= 0
       then
-        <span data-count="17456">o</span>neof_weighted
-          [ 3, ma<span data-count="17456">p</span> (fun i -&gt; <span data-count="10398">A</span>st.Const i) gen_small_int
-          ; 2, ma<span data-count="17456">p</span> (fun v -&gt; <span data-count="7058">A</span>st.Var v) gen_identifier
+        <span data-count="18093">o</span>neof_weighted
+          [ 3, ma<span data-count="18093">p</span> (fun i -&gt; <span data-count="10790">A</span>st.Const i) gen_small_int
+          ; 2, ma<span data-count="18093">p</span> (fun v -&gt; <span data-count="7303">A</span>st.Var v) gen_identifier
           ]
       else
-        <span data-count="36528">o</span>neof_weighted
-          [ 1, ma<span data-count="36528">p</span> (fun i -&gt; <span data-count="4007">A</span>st.Const i) gen_small_int
-          ; 1, ma<span data-count="36528">p</span> (fun v -&gt; <span data-count="3974">A</span>st.Var v) gen_identifier
-          ; 2, map<span data-count="36528">2</span> (fun v e -&gt; <span data-count="8266">A</span>st.Abs (v, e)) gen_identifier (sel<span data-count="36528">f</span> (n / 2))
-          ; 2, map<span data-count="36528">2</span> (fun e1 e2 -&gt; <span data-count="8166">A</span>st.App (e1, e2)) (sel<span data-count="36528">f</span> (n / 2)) (sel<span data-count="36528">f</span> (n / 2))
+        <span data-count="36924">o</span>neof_weighted
+          [ 1, ma<span data-count="36924">p</span> (fun i -&gt; <span data-count="3942">A</span>st.Const i) gen_small_int
+          ; 1, ma<span data-count="36924">p</span> (fun v -&gt; <span data-count="4061">A</span>st.Var v) gen_identifier
+          ; 2, map<span data-count="36924">2</span> (fun v e -&gt; <span data-count="8159">A</span>st.Abs (v, e)) gen_identifier (sel<span data-count="36924">f</span> (n / 2))
+          ; 2, map<span data-count="36924">2</span> (fun e1 e2 -&gt; <span data-count="8257">A</span>st.App (e1, e2)) (sel<span data-count="36924">f</span> (n / 2)) (sel<span data-count="36924">f</span> (n / 2))
           ; ( 1
-            , map<span data-count="36528">3</span>
-                (fun op e1 e2 -&gt; <span data-count="4046">A</span>st.BinOp (op, e1, e2))
+            , map<span data-count="36924">3</span>
+                (fun op e1 e2 -&gt; <span data-count="4219">A</span>st.BinOp (op, e1, e2))
                 gen_binop
-                (sel<span data-count="36528">f</span> (n / 2))
-                (sel<span data-count="36528">f</span> (n / 2)) )
+                (sel<span data-count="36924">f</span> (n / 2))
+                (sel<span data-count="36924">f</span> (n / 2)) )
           ; ( 1
-            , map<span data-count="36528">3</span>
-                (fun c t e -&gt; <span data-count="3956">A</span>st.If (c, t, e))
-                (sel<span data-count="36528">f</span> (n / 2))
-                (sel<span data-count="36528">f</span> (n / 2))
-                (sel<span data-count="36528">f</span> (n / 2)) )
+            , map<span data-count="36924">3</span>
+                (fun c t e -&gt; <span data-count="4134">A</span>st.If (c, t, e))
+                (sel<span data-count="36924">f</span> (n / 2))
+                (sel<span data-count="36924">f</span> (n / 2))
+                (sel<span data-count="36924">f</span> (n / 2)) )
           ; ( 1
-            , map<span data-count="36528">3</span>
-                (fun v e1 e2 -&gt; <span data-count="4113">A</span>st.Let (v, e1, e2))
+            , map<span data-count="36924">3</span>
+                (fun v e1 e2 -&gt; <span data-count="4152">A</span>st.Let (v, e1, e2))
                 gen_identifier
-                (sel<span data-count="36528">f</span> (n / 2))
-                (sel<span data-count="36528">f</span> (n / 2)) )
+                (sel<span data-count="36924">f</span> (n / 2))
+                (sel<span data-count="36924">f</span> (n / 2)) )
           ]))
 ;;
 

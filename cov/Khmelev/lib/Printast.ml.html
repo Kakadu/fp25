@@ -323,20 +323,20 @@ let pp ?(compact = <span data-count="0">f</span>alse) =
     <span data-count="105">i</span>f is_free_i<span data-count="105">n</span> x <span data-count="30">t</span> || not compac<span data-count="0">t</span> then <span data-count="30">f</span>printf fmt "%s" x else <span data-count="75">f</span>printf fmt "_"
   in
   let rec pp_impl fmt = function
-    | <span data-count="26413">V</span>ar s -&gt; fprintf fmt "%s" s
-    | <span data-count="19260">A</span>pp (l, r) -&gt; fprintf fmt "(%a %a)" pp_impl l pp_impl r
+    | <span data-count="28799">V</span>ar s -&gt; fprintf fmt "%s" s
+    | <span data-count="20546">A</span>pp (l, r) -&gt; fprintf fmt "(%a %a)" pp_impl l pp_impl r
     (* True: λx.λy.x *)
-    | <span data-count="595">A</span>bs (x, Abs (y, Var z)) when String.equa<span data-count="595">l</span> x z &amp;&amp; <span data-count="1">(</span>not (String.equa<span data-count="1">l</span> y z)) &amp;&amp; <span data-count="1">c</span>ompact
+    | <span data-count="623">A</span>bs (x, Abs (y, Var z)) when String.equa<span data-count="623">l</span> x z &amp;&amp; <span data-count="13">(</span>not (String.equa<span data-count="13">l</span> y z)) &amp;&amp; <span data-count="13">c</span>ompact
       -&gt; <span data-count="1">f</span>printf fmt "⊤"
     (* False: λx.λy.y *)
-    | <span data-count="594">A</span>bs (x, Abs (y, Var z)) when String.equa<span data-count="594">l</span> y z &amp;&amp; <span data-count="8">(</span>not (String.equa<span data-count="8">l</span> x z)) &amp;&amp; <span data-count="8">c</span>ompact
+    | <span data-count="622">A</span>bs (x, Abs (y, Var z)) when String.equa<span data-count="622">l</span> y z &amp;&amp; <span data-count="6">(</span>not (String.equa<span data-count="6">l</span> x z)) &amp;&amp; <span data-count="6">c</span>ompact
       -&gt; <span data-count="2">f</span>printf fmt "⊥"
     (* Zero: λf.λx.x *)
-    | <span data-count="592">A</span>bs (f, Abs (x, Var z)) when String.equa<span data-count="592">l</span> x z &amp;&amp; <span data-count="6">(</span>not (String.equa<span data-count="6">l</span> x f)) &amp;&amp; <span data-count="6">c</span>ompact
+    | <span data-count="620">A</span>bs (f, Abs (x, Var z)) when String.equa<span data-count="620">l</span> x z &amp;&amp; <span data-count="4">(</span>not (String.equa<span data-count="4">l</span> x f)) &amp;&amp; <span data-count="4">c</span>ompact
       -&gt; <span data-count="0">f</span>printf fmt "0"
     (* One: λf.λx.f x *)
-    | <span data-count="13">A</span>bs (f, Abs (x, App (Var g, Var z)))
-      when String.equa<span data-count="13">l</span> x z &amp;&amp; <span data-count="1">(</span>not (String.equa<span data-count="1">l</span> x f)) &amp;&amp; <span data-count="1">S</span>tring.equa<span data-count="1">l</span> g f &amp;&amp; <span data-count="1">c</span>ompact -&gt;
+    | <span data-count="23">A</span>bs (f, Abs (x, App (Var g, Var z)))
+      when String.equa<span data-count="23">l</span> x z &amp;&amp; <span data-count="1">(</span>not (String.equa<span data-count="1">l</span> x f)) &amp;&amp; <span data-count="1">S</span>tring.equa<span data-count="1">l</span> g f &amp;&amp; <span data-count="1">c</span>ompact -&gt;
       <span data-count="1">f</span>printf fmt "1"
     (* Two: λf.λx.f (f x) *)
     | <span data-count="1">A</span>bs (f, Abs (x, App (Var g, App (Var h, Var z))))
@@ -346,7 +346,7 @@ let pp ?(compact = <span data-count="0">f</span>alse) =
            &amp;&amp; <span data-count="1">S</span>tring.equa<span data-count="1">l</span> h g
            &amp;&amp; <span data-count="1">c</span>ompact -&gt; <span data-count="1">f</span>printf fmt "2"
     (* Лямбда с 4 параметрами в компактном режиме *)
-    | <span data-count="55">A</span>bs (v1, Abs (v2, Abs (v3, Abs (v4, t)))) when compact -&gt;
+    | <span data-count="67">A</span>bs (v1, Abs (v2, Abs (v3, Abs (v4, t)))) when compact -&gt;
       <span data-count="15">f</span>printf
         fmt
         "(λ %a %a %a %a -&gt; %a)"
@@ -361,33 +361,33 @@ let pp ?(compact = <span data-count="0">f</span>alse) =
         pp_impl
         t
     (* Лямбда с 3 параметрами в компактном режиме *)
-    | <span data-count="403">A</span>bs (v1, Abs (v2, Abs (v3, t))) when compact -&gt;
+    | <span data-count="399">A</span>bs (v1, Abs (v2, Abs (v3, t))) when compact -&gt;
       <span data-count="15">f</span>printf fmt "(λ %a %a %a -&gt; %a)" (mangl<span data-count="15">e</span> t) v1 (mangl<span data-count="15">e</span> t) v2 (mangl<span data-count="15">e</span> t) v3 pp_impl t
     (* Лямбда с 2 параметрами в компактном режиме *)
-    | <span data-count="2700">A</span>bs (v1, Abs (v2, t)) when compact -&gt;
+    | <span data-count="2802">A</span>bs (v1, Abs (v2, t)) when compact -&gt;
       <span data-count="0">f</span>printf fmt "(λ %a %a -&gt; %a)" (mangl<span data-count="0">e</span> t) v1 (mangl<span data-count="0">e</span> t) v2 pp_impl t
-    | <span data-count="19566">A</span>bs (x, t) when compact -&gt; <span data-count="0">f</span>printf fmt "(λ %a . %a)" (mangl<span data-count="0">e</span> t) x pp_impl t
+    | <span data-count="20192">A</span>bs (x, t) when compact -&gt; <span data-count="0">f</span>printf fmt "(λ %a . %a)" (mangl<span data-count="0">e</span> t) x pp_impl t
     (* Обычная лямбда (не компактный режим) *)
-    | <span data-count="19566">A</span>bs (x, body) -&gt; fprintf fmt "(fun %s -&gt; %a)" x pp_impl body
-    | <span data-count="34716">C</span>onst n -&gt; fprintf fmt "%d" n
-    | <span data-count="9284">I</span>f (c, t1, t2) -&gt;
+    | <span data-count="20192">A</span>bs (x, body) -&gt; fprintf fmt "(fun %s -&gt; %a)" x pp_impl body
+    | <span data-count="37403">C</span>onst n -&gt; fprintf fmt "%d" n
+    | <span data-count="10348">I</span>f (c, t1, t2) -&gt;
       fprintf fmt "(if %a then %a else %a)" pp_impl c pp_impl t1 pp_impl t2
-    | <span data-count="9769">L</span>et (n, e1, e2) -&gt; fprintf fmt "(let %s = %a in %a)" n pp_impl e1 pp_impl e2
+    | <span data-count="10411">L</span>et (n, e1, e2) -&gt; fprintf fmt "(let %s = %a in %a)" n pp_impl e1 pp_impl e2
     | <span data-count="20">L</span>etRec (f, p, b, inb) -&gt;
       fprintf fmt "(let rec %s %s = %a in %a)" f p pp_impl b pp_impl inb
     | <span data-count="10">F</span>ix t -&gt; fprintf fmt "(fix %a)" pp_impl t
-    | <span data-count="10262">B</span>inOp (op, l, r) -&gt;
+    | <span data-count="11279">B</span>inOp (op, l, r) -&gt;
       let s =
         match op with
-        | <span data-count="1076">A</span>dd -&gt; "+"
-        | <span data-count="1119">S</span>ub -&gt; "-"
-        | <span data-count="1051">M</span>ul -&gt; "*"
-        | <span data-count="1067">D</span>iv -&gt; "/"
-        | <span data-count="1223">E</span>q -&gt; "="
-        | <span data-count="1181">L</span>t -&gt; "&lt;"
-        | <span data-count="1069">G</span>t -&gt; "&gt;"
-        | <span data-count="1391">L</span>e -&gt; "&lt;="
-        | <span data-count="1085">G</span>e -&gt; "&gt;="
+        | <span data-count="1339">A</span>dd -&gt; "+"
+        | <span data-count="1157">S</span>ub -&gt; "-"
+        | <span data-count="1247">M</span>ul -&gt; "*"
+        | <span data-count="1339">D</span>iv -&gt; "/"
+        | <span data-count="1133">E</span>q -&gt; "="
+        | <span data-count="1169">L</span>t -&gt; "&lt;"
+        | <span data-count="1313">G</span>t -&gt; "&gt;"
+        | <span data-count="1301">L</span>e -&gt; "&lt;="
+        | <span data-count="1281">G</span>e -&gt; "&gt;="
       in
       fprintf fmt "(%a %s %a)" pp_impl l s pp_impl r
     | <span data-count="70">P</span>rim (name, args) -&gt;
