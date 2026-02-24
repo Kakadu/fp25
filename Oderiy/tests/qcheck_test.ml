@@ -86,17 +86,6 @@ let test_roundtrip_letrec () =
   | Error _ -> false
 ;;
 
-(* Test that parser rejects malformed input *)
-let test_parse_invalid () =
-  let invalid_inputs = [ "123abc"; "***"; "fun ->"; "if then" ] in
-  List.for_all
-    (fun input ->
-      match parse input with
-      | Error _ -> true
-      | Ok _ -> false)
-    invalid_inputs
-;;
-
 let test_print_valid () =
   let exprs =
     [ Int 42

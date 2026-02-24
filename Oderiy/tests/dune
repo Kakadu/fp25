@@ -16,4 +16,9 @@
 
 (cram
  (applies_to miniml_tests)
- (deps ../bin/REPL.exe factorial.miniml fibonacci.miniml builtin_fix.miniml fix_factorial.miniml))
+ (deps
+  ../bin/REPL.exe
+  factorial.miniml
+  fibonacci.miniml
+  builtin_fix.miniml
+  fix_factorial.miniml))

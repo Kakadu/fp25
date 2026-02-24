@@ -16,29 +16,30 @@ type error =
   ]
 
 let pp_error ppf = function
-  | `UnknownVariable s -> Format.fprintf ppf "Unbound variable: %s" s
-  | `Type_error s -> Format.fprintf ppf "%s" s
-  | `Division_by_zero -> Format.fprintf ppf "Division by zero"
-  | `Steps_exceeded -> Format.fprintf ppf "Steps limit exceeded"
+  | `UnknownVariable s -> Stdlib.Format.fprintf ppf "Unbound variable: %s" s
+  | `Type_error s -> Stdlib.Format.fprintf ppf "%s" s
+  | `Division_by_zero -> Stdlib.Format.fprintf ppf "Division by zero"
+  | `Steps_exceeded -> Stdlib.Format.fprintf ppf "Steps limit exceeded"
 ;;
 
 module StateResult = struct
   type ('a, 'e) t = int -> (('a * int, 'e) result[@warning "-3"])
 
-  let return x steps = Ok (x, steps)
-  let fail e _steps = Error e
+  let return x : ('a, 'e) t = fun steps -> Ok (x, steps)
+  let fail e : ('a, 'e) t = fun _steps -> Error e
 
-  let bind m f steps =
+  let bind (m : ('a, 'e) t) (f : 'a -> ('b, 'e) t) : ('b, 'e) t =
+    fun steps ->
     match m steps with
     | Error e -> Error e
     | Ok (x, s') -> f x s'
   ;;
 
   let ( >>= ) = bind
-  let get_state steps = Ok (steps, steps)
-  let put_state new_steps _old_steps = Ok ((), new_steps)
+  let get_state : (int, 'e) t = fun steps -> Ok (steps, steps)
+  let put_state new_steps : (unit, 'e) t = fun _old_steps -> Ok ((), new_steps)
 
-  let run_computation m initial_steps =
+  let run_computation (m : ('a, 'e) t) initial_steps =
     match m initial_steps with
     | Ok (x, _) -> Ok x
     | Error e -> Error e
@@ -111,9 +112,9 @@ let run limit expr =
     | If (cond, yes, no) ->
       interp limit bindings cond
       >>= (function
-        | VNum 0 -> interp limit bindings no
-        | VNum _ -> interp limit bindings yes
-        | _ -> fail (`Type_error "condition must be number"))
+       | VNum 0 -> interp limit bindings no
+       | VNum _ -> interp limit bindings yes
+       | _ -> fail (`Type_error "condition must be number"))
     | Fix ->
       let fix_body =
         Fun ("__x", App (App (Var "__f", App (Fix, Var "__f")), Var "__x"))
@@ -143,12 +144,12 @@ let run limit expr =
 let parse_and_run ?(max_steps = 10000) input =
   match Parser.parse input with
   | Error parse_err ->
-    Format.eprintf "%a\n%!" Parser.pp_error parse_err;
+    Stdlib.Format.eprintf "%a\n%!" Parser.pp_error parse_err;
     Stdlib.exit 1
   | Ok program ->
     (match run max_steps program with
      | Ok result -> Stdlib.Printf.printf "Success: %d\n" result
      | Error (#error as eval_err) ->
-       Format.eprintf "Error: %a\n%!" pp_error eval_err;
+       Stdlib.Format.eprintf "Error: %a\n%!" pp_error eval_err;
        Stdlib.exit 1)
 ;;
