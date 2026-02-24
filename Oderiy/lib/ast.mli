@@ -16,7 +16,7 @@ type binop =
   | Div (** Division: [/] *)
   | Leq (** Less than or equal: [<=] *)
   | Lt (** Less than: [<] *)
-  | Eq (** Equality: [=] *)
+  | Eq (** Equal: [=] *)
   | Geq (** Greater than or equal: [>=] *)
   | Gt (** Greater than: [>] *)
 [@@deriving show { with_path = false }]
