@@ -26,8 +26,7 @@ let pp_error ppf = function
 type value =
   | VInt of int
   | VClosure of name * expr * env
-  | VRecClosure of
-      name * name * expr * env
+  | VRecClosure of name * name * expr * env
   | VBuiltin of (value -> (value, error) Result.t)
 
 and env = (name * value) list
