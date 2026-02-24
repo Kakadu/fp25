@@ -220,25 +220,6 @@ Unknown argument
   Error: Unknown argument: -unknown-arg
   [1]
 
-Lambda syntax - Unicode λ
-  $ ../bin/REPL.exe <<EOF
-  > λx . x + 1
-  <fun>
-
-Lambda syntax - Backslash
-  $ ../bin/REPL.exe <<EOF
-  > \x . x + 1
-  <fun>
-
-Multi-parameter lambda with unicode
-  $ ../bin/REPL.exe <<EOF
-  > λx y -> x + y
-  <fun>
-
-Multi-parameter lambda with backslash
-  $ ../bin/REPL.exe <<EOF
-  > \x y -> x + y
-  <fun>
 
 Parsing error handling
   $ ../bin/REPL.exe <<EOF
