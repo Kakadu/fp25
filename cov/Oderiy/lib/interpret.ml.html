@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>interpret.ml &mdash; Coverage report</title>
+    <meta name="description" content="87.38% coverage in lib/interpret.ml">
+    <link rel="stylesheet" href="../coverage.css"/>
+    <script src="../highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </head>
+  <body>
+    <div id="header">
+      <h1>
+        <a href="../index.html">
+          <span class="dirname">lib/</span>interpret.ml
+        </a>
+      </h1>
+      <h2>87.38%</h2>
+    </div>
+    <div id="navbar">
+      <span class="unvisited" style="top:12.26%"></span>
+      <span class="unvisited" style="top:12.90%"></span>
+      <span class="unvisited" style="top:13.55%"></span>
+      <span class="unvisited" style="top:14.19%"></span>
+      <span class="unvisited" style="bottom:38.06%"></span>
+      <span class="unvisited" style="bottom:32.90%"></span>
+      <span class="unvisited" style="bottom:28.39%"></span>
+      <span class="unvisited" style="bottom:24.52%"></span>
+      <span class="unvisited" style="bottom:9.68%"></span>
+      <span class="unvisited" style="bottom:5.81%"></span>
+      <span class="unvisited" style="bottom:4.52%"></span>
+      <span class="unvisited" style="bottom:1.94%"></span>
+      <span class="unvisited" style="bottom:0.65%"></span>
+    </div>
+    <div id="report">
+      <div id="lines-layer">
+        <pre>
+<a id="L1"></a><span > </span>
+<a id="L2"></a><span > </span>
+<a id="L3"></a><span > </span>
+<a id="L4"></a><span > </span>
+<a id="L5"></a><span > </span>
+<a id="L6"></a><span > </span>
+<a id="L7"></a><span > </span>
+<a id="L8"></a><span > </span>
+<a id="L9"></a><span > </span>
+<a id="L10"></a><span > </span>
+<a id="L11"></a><span > </span>
+<a id="L12"></a><span > </span>
+<a id="L13"></a><span > </span>
+<a id="L14"></a><span > </span>
+<a id="L15"></a><span > </span>
+<a id="L16"></a><span > </span>
+<a id="L17"></a><span > </span>
+<a id="L18"></a><span > </span>
+<a id="L19"></a><span class="unvisited"> </span>
+<a id="L20"></a><span class="unvisited"> </span>
+<a id="L21"></a><span class="unvisited"> </span>
+<a id="L22"></a><span class="unvisited"> </span>
+<a id="L23"></a><span > </span>
+<a id="L24"></a><span > </span>
+<a id="L25"></a><span > </span>
+<a id="L26"></a><span > </span>
+<a id="L27"></a><span > </span>
+<a id="L28"></a><span class="visited"> </span>
+<a id="L29"></a><span class="visited"> </span>
+<a id="L30"></a><span > </span>
+<a id="L31"></a><span > </span>
+<a id="L32"></a><span class="visited"> </span>
+<a id="L33"></a><span class="visited"> </span>
+<a id="L34"></a><span class="visited"> </span>
+<a id="L35"></a><span class="visited"> </span>
+<a id="L36"></a><span > </span>
+<a id="L37"></a><span > </span>
+<a id="L38"></a><span > </span>
+<a id="L39"></a><span class="visited"> </span>
+<a id="L40"></a><span class="visited"> </span>
+<a id="L41"></a><span > </span>
+<a id="L42"></a><span > </span>
+<a id="L43"></a><span class="visited"> </span>
+<a id="L44"></a><span class="visited"> </span>
+<a id="L45"></a><span class="visited"> </span>
+<a id="L46"></a><span > </span>
+<a id="L47"></a><span > </span>
+<a id="L48"></a><span > </span>
+<a id="L49"></a><span > </span>
+<a id="L50"></a><span > </span>
+<a id="L51"></a><span > </span>
+<a id="L52"></a><span > </span>
+<a id="L53"></a><span > </span>
+<a id="L54"></a><span > </span>
+<a id="L55"></a><span > </span>
+<a id="L56"></a><span > </span>
+<a id="L57"></a><span > </span>
+<a id="L58"></a><span class="visited"> </span>
+<a id="L59"></a><span class="visited"> </span>
+<a id="L60"></a><span class="visited"> </span>
+<a id="L61"></a><span > </span>
+<a id="L62"></a><span > </span>
+<a id="L63"></a><span > </span>
+<a id="L64"></a><span class="visited"> </span>
+<a id="L65"></a><span class="visited"> </span>
+<a id="L66"></a><span > </span>
+<a id="L67"></a><span > </span>
+<a id="L68"></a><span class="visited"> </span>
+<a id="L69"></a><span > </span>
+<a id="L70"></a><span class="visited"> </span>
+<a id="L71"></a><span class="visited"> </span>
+<a id="L72"></a><span > </span>
+<a id="L73"></a><span > </span>
+<a id="L74"></a><span class="visited"> </span>
+<a id="L75"></a><span class="visited"> </span>
+<a id="L76"></a><span > </span>
+<a id="L77"></a><span class="visited"> </span>
+<a id="L78"></a><span class="visited"> </span>
+<a id="L79"></a><span class="visited"> </span>
+<a id="L80"></a><span > </span>
+<a id="L81"></a><span class="visited"> </span>
+<a id="L82"></a><span class="visited"> </span>
+<a id="L83"></a><span class="visited"> </span>
+<a id="L84"></a><span class="visited"> </span>
+<a id="L85"></a><span class="visited"> </span>
+<a id="L86"></a><span > </span>
+<a id="L87"></a><span class="visited"> </span>
+<a id="L88"></a><span > </span>
+<a id="L89"></a><span class="visited"> </span>
+<a id="L90"></a><span class="visited"> </span>
+<a id="L91"></a><span class="visited"> </span>
+<a id="L92"></a><span class="visited"> </span>
+<a id="L93"></a><span class="visited"> </span>
+<a id="L94"></a><span > </span>
+<a id="L95"></a><span class="visited"> </span>
+<a id="L96"></a><span class="unvisited"> </span>
+<a id="L97"></a><span class="visited"> </span>
+<a id="L98"></a><span class="visited"> </span>
+<a id="L99"></a><span > </span>
+<a id="L100"></a><span class="visited"> </span>
+<a id="L101"></a><span > </span>
+<a id="L102"></a><span class="visited"> </span>
+<a id="L103"></a><span class="visited"> </span>
+<a id="L104"></a><span class="unvisited"> </span>
+<a id="L105"></a><span class="visited"> </span>
+<a id="L106"></a><span class="visited"> </span>
+<a id="L107"></a><span class="visited"> </span>
+<a id="L108"></a><span class="visited"> </span>
+<a id="L109"></a><span > </span>
+<a id="L110"></a><span > </span>
+<a id="L111"></a><span class="unvisited"> </span>
+<a id="L112"></a><span class="visited"> </span>
+<a id="L113"></a><span class="visited"> </span>
+<a id="L114"></a><span > </span>
+<a id="L115"></a><span class="visited"> </span>
+<a id="L116"></a><span class="visited"> </span>
+<a id="L117"></a><span class="unvisited"> </span>
+<a id="L118"></a><span class="visited"> </span>
+<a id="L119"></a><span > </span>
+<a id="L120"></a><span > </span>
+<a id="L121"></a><span > </span>
+<a id="L122"></a><span > </span>
+<a id="L123"></a><span > </span>
+<a id="L124"></a><span class="visited"> </span>
+<a id="L125"></a><span > </span>
+<a id="L126"></a><span class="visited"> </span>
+<a id="L127"></a><span class="visited"> </span>
+<a id="L128"></a><span class="visited"> </span>
+<a id="L129"></a><span class="visited"> </span>
+<a id="L130"></a><span class="visited"> </span>
+<a id="L131"></a><span class="visited"> </span>
+<a id="L132"></a><span class="visited"> </span>
+<a id="L133"></a><span class="visited"> </span>
+<a id="L134"></a><span class="visited"> </span>
+<a id="L135"></a><span > </span>
+<a id="L136"></a><span > </span>
+<a id="L137"></a><span class="visited"> </span>
+<a id="L138"></a><span > </span>
+<a id="L139"></a><span class="visited"> </span>
+<a id="L140"></a><span class="unvisited"> </span>
+<a id="L141"></a><span class="visited"> </span>
+<a id="L142"></a><span > </span>
+<a id="L143"></a><span > </span>
+<a id="L144"></a><span class="visited"> </span>
+<a id="L145"></a><span class="visited"> </span>
+<a id="L146"></a><span class="unvisited"> </span>
+<a id="L147"></a><span > </span>
+<a id="L148"></a><span class="unvisited"> </span>
+<a id="L149"></a><span class="visited"> </span>
+<a id="L150"></a><span > </span>
+<a id="L151"></a><span class="visited"> </span>
+<a id="L152"></a><span class="unvisited"> </span>
+<a id="L153"></a><span > </span>
+<a id="L154"></a><span class="unvisited"> </span>
+<a id="L155"></a><span > </span>
+</pre>
+      </div>
+      <div id="text-layer">
+        <pre id="line-numbers">
+<a href="#L1">  1</a>
+<a href="#L2">  2</a>
+<a href="#L3">  3</a>
+<a href="#L4">  4</a>
+<a href="#L5">  5</a>
+<a href="#L6">  6</a>
+<a href="#L7">  7</a>
+<a href="#L8">  8</a>
+<a href="#L9">  9</a>
+<a href="#L10"> 10</a>
+<a href="#L11"> 11</a>
+<a href="#L12"> 12</a>
+<a href="#L13"> 13</a>
+<a href="#L14"> 14</a>
+<a href="#L15"> 15</a>
+<a href="#L16"> 16</a>
+<a href="#L17"> 17</a>
+<a href="#L18"> 18</a>
+<a href="#L19"> 19</a>
+<a href="#L20"> 20</a>
+<a href="#L21"> 21</a>
+<a href="#L22"> 22</a>
+<a href="#L23"> 23</a>
+<a href="#L24"> 24</a>
+<a href="#L25"> 25</a>
+<a href="#L26"> 26</a>
+<a href="#L27"> 27</a>
+<a href="#L28"> 28</a>
+<a href="#L29"> 29</a>
+<a href="#L30"> 30</a>
+<a href="#L31"> 31</a>
+<a href="#L32"> 32</a>
+<a href="#L33"> 33</a>
+<a href="#L34"> 34</a>
+<a href="#L35"> 35</a>
+<a href="#L36"> 36</a>
+<a href="#L37"> 37</a>
+<a href="#L38"> 38</a>
+<a href="#L39"> 39</a>
+<a href="#L40"> 40</a>
+<a href="#L41"> 41</a>
+<a href="#L42"> 42</a>
+<a href="#L43"> 43</a>
+<a href="#L44"> 44</a>
+<a href="#L45"> 45</a>
+<a href="#L46"> 46</a>
+<a href="#L47"> 47</a>
+<a href="#L48"> 48</a>
+<a href="#L49"> 49</a>
+<a href="#L50"> 50</a>
+<a href="#L51"> 51</a>
+<a href="#L52"> 52</a>
+<a href="#L53"> 53</a>
+<a href="#L54"> 54</a>
+<a href="#L55"> 55</a>
+<a href="#L56"> 56</a>
+<a href="#L57"> 57</a>
+<a href="#L58"> 58</a>
+<a href="#L59"> 59</a>
+<a href="#L60"> 60</a>
+<a href="#L61"> 61</a>
+<a href="#L62"> 62</a>
+<a href="#L63"> 63</a>
+<a href="#L64"> 64</a>
+<a href="#L65"> 65</a>
+<a href="#L66"> 66</a>
+<a href="#L67"> 67</a>
+<a href="#L68"> 68</a>
+<a href="#L69"> 69</a>
+<a href="#L70"> 70</a>
+<a href="#L71"> 71</a>
+<a href="#L72"> 72</a>
+<a href="#L73"> 73</a>
+<a href="#L74"> 74</a>
+<a href="#L75"> 75</a>
+<a href="#L76"> 76</a>
+<a href="#L77"> 77</a>
+<a href="#L78"> 78</a>
+<a href="#L79"> 79</a>
+<a href="#L80"> 80</a>
+<a href="#L81"> 81</a>
+<a href="#L82"> 82</a>
+<a href="#L83"> 83</a>
+<a href="#L84"> 84</a>
+<a href="#L85"> 85</a>
+<a href="#L86"> 86</a>
+<a href="#L87"> 87</a>
+<a href="#L88"> 88</a>
+<a href="#L89"> 89</a>
+<a href="#L90"> 90</a>
+<a href="#L91"> 91</a>
+<a href="#L92"> 92</a>
+<a href="#L93"> 93</a>
+<a href="#L94"> 94</a>
+<a href="#L95"> 95</a>
+<a href="#L96"> 96</a>
+<a href="#L97"> 97</a>
+<a href="#L98"> 98</a>
+<a href="#L99"> 99</a>
+<a href="#L100">100</a>
+<a href="#L101">101</a>
+<a href="#L102">102</a>
+<a href="#L103">103</a>
+<a href="#L104">104</a>
+<a href="#L105">105</a>
+<a href="#L106">106</a>
+<a href="#L107">107</a>
+<a href="#L108">108</a>
+<a href="#L109">109</a>
+<a href="#L110">110</a>
+<a href="#L111">111</a>
+<a href="#L112">112</a>
+<a href="#L113">113</a>
+<a href="#L114">114</a>
+<a href="#L115">115</a>
+<a href="#L116">116</a>
+<a href="#L117">117</a>
+<a href="#L118">118</a>
+<a href="#L119">119</a>
+<a href="#L120">120</a>
+<a href="#L121">121</a>
+<a href="#L122">122</a>
+<a href="#L123">123</a>
+<a href="#L124">124</a>
+<a href="#L125">125</a>
+<a href="#L126">126</a>
+<a href="#L127">127</a>
+<a href="#L128">128</a>
+<a href="#L129">129</a>
+<a href="#L130">130</a>
+<a href="#L131">131</a>
+<a href="#L132">132</a>
+<a href="#L133">133</a>
+<a href="#L134">134</a>
+<a href="#L135">135</a>
+<a href="#L136">136</a>
+<a href="#L137">137</a>
+<a href="#L138">138</a>
+<a href="#L139">139</a>
+<a href="#L140">140</a>
+<a href="#L141">141</a>
+<a href="#L142">142</a>
+<a href="#L143">143</a>
+<a href="#L144">144</a>
+<a href="#L145">145</a>
+<a href="#L146">146</a>
+<a href="#L147">147</a>
+<a href="#L148">148</a>
+<a href="#L149">149</a>
+<a href="#L150">150</a>
+<a href="#L151">151</a>
+<a href="#L152">152</a>
+<a href="#L153">153</a>
+<a href="#L154">154</a>
+<a href="#L155">155</a>
+</pre>
+<pre><code class="ocaml">[@@@ocaml.text "/*"]
+
+(** Copyright 2021-2024, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+[@@@ocaml.text "/*"]
+
+open Base
+
+type error =
+  [ `UnknownVariable of string
+  | `Type_error of string
+  | `Division_by_zero
+  | `Steps_exceeded
+  ]
+
+let pp_error ppf = function
+  | <span data-count="0">`</span>UnknownVariable s -&gt; Stdlib.Format.fprintf ppf "Unbound variable: %s" s
+  | <span data-count="0">`</span>Type_error s -&gt; Stdlib.Format.fprintf ppf "%s" s
+  | <span data-count="0">`</span>Division_by_zero -&gt; Stdlib.Format.fprintf ppf "Division by zero"
+  | <span data-count="0">`</span>Steps_exceeded -&gt; Stdlib.Format.fprintf ppf "Steps limit exceeded"
+;;
+
+module StateResult = struct
+  type ('a, 'e) t = int -&gt; (('a * int, 'e) result[@warning "-3"])
+
+  let return x : ('a, 'e) t = <span data-count="7087">f</span>un steps -&gt; <span data-count="7087">O</span>k (x, steps)
+  let fail e : ('a, 'e) t = <span data-count="5">f</span>un _steps -&gt; <span data-count="5">E</span>rror e
+
+  let bind (m : ('a, 'e) t) (f : 'a -&gt; ('b, 'e) t) : ('b, 'e) t =
+    <span data-count="14943">f</span>un steps -&gt;
+    <span data-count="14943">m</span>atch m steps with
+    | <span data-count="28">E</span>rror e -&gt; Error e
+    | <span data-count="14915">O</span>k (x, s') -&gt; f x s'
+  ;;
+
+  let ( &gt;&gt;= ) = bind
+  let get_state : (int, 'e) t = fun steps -&gt; <span data-count="3937">O</span>k (steps, steps)
+  let put_state new_steps : (unit, 'e) t = <span data-count="3935">f</span>un _old_steps -&gt; <span data-count="3935">O</span>k ((), new_steps)
+
+  let run_computation (m : ('a, 'e) t) initial_steps =
+    <span data-count="49">m</span>atch m initial_steps with
+    | <span data-count="44">O</span>k (x, _) -&gt; Ok x
+    | <span data-count="5">E</span>rror e -&gt; Error e
+  ;;
+end
+
+open Ast
+
+type value =
+  | VNum of int
+  | VFun of string * string Ast.t * env
+
+and env = (string * value) list
+
+let rec find_var name = function
+  | <span data-count="1">[</span>] -&gt; None
+  | <span data-count="1675">(</span>n, v) :: _ when String.equa<span data-count="1675">l</span> n name -&gt; <span data-count="1277">S</span>ome v
+  | <span data-count="398">_</span> :: rest -&gt; find_var name rest
+;;
+
+let run limit expr =
+  <span data-count="49">l</span>et tick limit =
+    <span data-count="3937">l</span>et open StateResult in
+    get_state
+    &gt;&gt;= fun steps -&gt;
+    <span data-count="3937">l</span>et new_steps = steps + 1 in
+    if new_steps &gt; limit
+    then <span data-count="2">f</span>ail `Steps_exceeded
+    else <span data-count="3935">p</span>ut_stat<span data-count="3935">e</span> new_steps &gt;&gt;= fun () -&gt; <span data-count="3935">r</span>eturn ()
+  in
+  let rec interp limit bindings term =
+    <span data-count="3937">l</span>et open StateResult in
+    tic<span data-count="3937">k</span> limit
+    &gt;&gt;= fun () -&gt;
+    <span data-count="3935">m</span>atch term with
+    | <span data-count="849">I</span>nt n -&gt; return (VNum n)
+    | <span data-count="1278">V</span>ar name -&gt;
+      (match find_var name bindings with
+       | <span data-count="1277">S</span>ome v -&gt; return v
+       | <span data-count="1">N</span>one -&gt; fail (`UnknownVariable name))
+    | <span data-count="45">F</span>un (arg, body) -&gt; return (VFun (arg, body, bindings))
+    | <span data-count="430">A</span>pp (fn, arg) -&gt;
+      inter<span data-count="430">p</span> limit bindings fn
+      &gt;&gt;= fun fn_val -&gt;
+      <span data-count="428">i</span>nter<span data-count="428">p</span> limit bindings arg
+      &gt;&gt;= fun arg_val -&gt;
+      <span data-count="428">(</span>match fn_val with
+       | <span data-count="427">V</span>Fun (param, body, closure) -&gt; interp limit ((param, arg_val) :: closure) body
+       | <span data-count="1">_</span> -&gt; fail (`Type_error "applying non-function"))
+    | <span data-count="1">N</span>eg expr -&gt;
+      inter<span data-count="1">p</span> limit bindings expr
+      &gt;&gt;= (function
+       | <span data-count="1">V</span>Num n -&gt; return (VNum (<span data-count="1">-</span>n))
+       | <span data-count="0">_</span> -&gt; fail (`Type_error "negating non-number"))
+    | <span data-count="937">B</span>in (op, e1, e2) -&gt;
+      inter<span data-count="937">p</span> limit bindings e1
+      &gt;&gt;= fun v1 -&gt;
+      <span data-count="921">i</span>nter<span data-count="921">p</span> limit bindings e2
+      &gt;&gt;= fun v2 -&gt;
+      <span data-count="918">(</span>match v1, v2 with
+       | <span data-count="918">V</span>Num a, VNum b -&gt; apply_binop op a b
+       | <span data-count="0">_</span> -&gt; fail (`Type_error "binary op on non-numbers"))
+    | <span data-count="14">L</span>et (name, rhs, body) -&gt;
+      inter<span data-count="14">p</span> limit bindings rhs
+      &gt;&gt;= fun rhs_val -&gt; <span data-count="14">i</span>nterp limit ((name, rhs_val) :: bindings) body
+    | <span data-count="8">L</span>etRec (fn_name, Fun (param, fn_body), expr) -&gt;
+      let rec rec_bindings = (fn_name, VFun (param, fn_body, rec_bindings)) :: bindings in
+      interp limit rec_bindings expr
+    | <span data-count="0">L</span>etRec _ -&gt; fail (`Type_error "letrec body must be a function")
+    | <span data-count="354">I</span>f (cond, yes, no) -&gt;
+      inter<span data-count="354">p</span> limit bindings cond
+      &gt;&gt;= (function
+       | <span data-count="180">V</span>Num 0 -&gt; interp limit bindings no
+       | <span data-count="174">V</span>Num _ -&gt; interp limit bindings yes
+       | <span data-count="0">_</span> -&gt; fail (`Type_error "condition must be number"))
+    | <span data-count="19">F</span>ix -&gt;
+      let fix_body =
+        Fun ("__x", App (App (Var "__f", App (Fix, Var "__f")), Var "__x"))
+      in
+      return (VFun ("__f", fix_body, bindings))
+  and apply_binop op x y =
+    <span data-count="918">l</span>et open StateResult in
+    match op with
+    | <span data-count="178">A</span>dd -&gt; return (VNum (x + y))
+    | <span data-count="342">S</span>ub -&gt; return (VNum (x - y))
+    | <span data-count="36">M</span>ul -&gt; return (VNum (x * y))
+    | <span data-count="3">D</span>iv -&gt; if y = 0 then <span data-count="1">f</span>ail `Division_by_zero else <span data-count="2">r</span>eturn (VNum (x / y))
+    | <span data-count="3">L</span>t -&gt; return (VNum (if x &lt; y then <span data-count="1">1</span> else <span data-count="2">0</span>))
+    | <span data-count="332">L</span>eq -&gt; return (VNum (if x &lt;= y then <span data-count="157">1</span> else <span data-count="175">0</span>))
+    | <span data-count="2">E</span>q -&gt; return (VNum (if x = y then <span data-count="1">1</span> else <span data-count="1">0</span>))
+    | <span data-count="2">G</span>eq -&gt; return (VNum (if x &gt;= y then <span data-count="1">1</span> else <span data-count="1">0</span>))
+    | <span data-count="20">G</span>t -&gt; return (VNum (if x &gt; y then <span data-count="17">1</span> else <span data-count="3">0</span>))
+  in
+  let open StateResult in
+  inter<span data-count="49">p</span> limit [] expr
+  &gt;&gt;= (function
+         | <span data-count="44">V</span>Num n -&gt; return n
+         | <span data-count="0">V</span>Fun _ -&gt; fail (`Type_error "result is function, not number"))
+  |&gt; <span data-count="49">f</span>un computation -&gt; <span data-count="49">r</span>un_computation computation 0
+;;
+
+let parse_and_run ?(max_steps = <span data-count="11">1</span>0000) input =
+  <span data-count="11">m</span>atch Parser.parse input with
+  | <span data-count="0">E</span>rror parse_err -&gt;
+    Stdlib.Format.eprintf "%a\n%!" Parser.pp_error parse_err;
+    <span data-count="0">S</span>tdlib.exit 1
+  | <span data-count="11">O</span>k program -&gt;
+    (match run max_steps program with
+     | <span data-count="11">O</span>k result -&gt; Stdlib.Printf.printf "Success: %d\n" result
+     | <span data-count="0">E</span>rror (#error as eval_err) -&gt;
+       Stdlib.Format.eprintf "Error: %a\n%!" pp_error eval_err;
+       <span data-count="0">S</span>tdlib.exit 1)
+;;
+</code></pre>
+      </div>
+    </div>
+    <script src="../coverage.js"></script>
+  </body>
+</html>
