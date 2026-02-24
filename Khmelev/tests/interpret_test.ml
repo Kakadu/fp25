@@ -6,6 +6,7 @@
 
 [@@@ocaml.text "/*"]
 
+[@@@warning "-32"]
 [@@@warning "-33"]
 
 open Ast

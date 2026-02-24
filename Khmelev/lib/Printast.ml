@@ -44,7 +44,7 @@ let pp ?(compact = false) =
     | App (l, r) -> fprintf fmt "(%a %a)" pp_impl l pp_impl r
     (* True: λx.λy.x *)
     | Abs (x, Abs (y, Var z)) when String.equal x z && (not (String.equal y z)) && compact
-      -> if compact then fprintf fmt "⊤"
+      -> fprintf fmt "⊤"
     (* False: λx.λy.y *)
     | Abs (x, Abs (y, Var z)) when String.equal y z && (not (String.equal x z)) && compact
       -> fprintf fmt "⊥"
