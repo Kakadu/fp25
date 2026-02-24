@@ -43,10 +43,10 @@ let identifier =
   else return ident
 ;;
 
-type error = [ `Parsing_error of string ]
+type error = Parsing_error of string
 
 let pp_error ppf = function
-  | `Parsing_error s -> Format.fprintf ppf "%s" s
+  | Parsing_error s -> Format.fprintf ppf "%s" s
 ;;
 
 (* Integer literal parser *)
@@ -178,5 +178,5 @@ let pexpr =
 let parse str =
   match Angstrom.parse_string ~consume:Angstrom.Consume.All pexpr str with
   | Result.Ok x -> Result.Ok x
-  | Error er -> Result.Error (`Parsing_error er)
+  | Error er -> Result.Error (Parsing_error er)
 ;;

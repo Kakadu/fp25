@@ -6,9 +6,9 @@
 
 [@@@ocaml.text "/*"]
 
-type error = [ `Parsing_error of string ]
+type error = Parsing_error of string
 
-val pp_error : Format.formatter -> [< `Parsing_error of string ] -> unit
+val pp_error : Format.formatter -> error -> unit
 
 (** Main entry of parser *)
-val parse : string -> (Ast.name Ast.t, [> error ]) result
+val parse : string -> (Ast.name Ast.t, error) result
