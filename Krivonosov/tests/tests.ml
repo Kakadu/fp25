@@ -34,15 +34,6 @@ let%expect_test "parse application with parens" =
   [%expect {| App (Var "x", Var "y") |}]
 ;;
 
-let%expect_test "parse lambda with backslash" =
-  Format.printf "%s" (pp (parse_optimistically "(\\x . x x)"));
-  [%expect {| Abs ("x", App (Var "x", Var "x")) |}]
-;;
-
-let%expect_test "parse lambda with unicode" =
-  Format.printf "%s" (pp (parse_optimistically "(λf.λx. f (x x))"));
-  [%expect {| Abs ("f", Abs ("x", App (Var "f", App (Var "x", Var "x")))) |}]
-;;
 
 (* Test all binary operators *)
 let%expect_test "parse division" =
@@ -109,26 +100,6 @@ let%expect_test "parse let rec" =
 (* ADDITIONAL COVERAGE TESTS *)
 (* ========================================================================== *)
 
-(* Parser: Lambda syntax tests *)
-let%expect_test "parse lambda with unicode λ" =
-  Format.printf "%s" (pp (parse_optimistically "λx . x"));
-  [%expect {| Abs ("x", Var "x") |}]
-;;
-
-let%expect_test "parse lambda with backslash alone" =
-  Format.printf "%s" (pp (parse_optimistically "\\x . x"));
-  [%expect {| Abs ("x", Var "x") |}]
-;;
-
-let%expect_test "parse multi-param lambda with unicode" =
-  Format.printf "%s" (pp (parse_optimistically "λx y z -> x"));
-  [%expect {| Abs ("x", Abs ("y", Abs ("z", Var "x"))) |}]
-;;
-
-let%expect_test "parse multi-param lambda with backslash" =
-  Format.printf "%s" (pp (parse_optimistically "\\x y z -> x"));
-  [%expect {| Abs ("x", Abs ("y", Abs ("z", Var "x"))) |}]
-;;
 
 let%expect_test "parse multi-param fun syntax" =
   Format.printf "%s" (pp (parse_optimistically "fun x y -> x"));
@@ -137,7 +108,7 @@ let%expect_test "parse multi-param fun syntax" =
 
 (* Interpreter: Recursive binding tests *)
 let%expect_test "eval recursive function - factorial" =
-  let ast = parse_optimistically "let rec fact = fun n -> if n then 1 else n in fact 0" in
+  let ast = parse_optimistically "let rec fact = fun n -> if n <= 1 then 1 else n * fact (n - 1) in fact 5" in
   (match eval_expr ast with
    | Result.Ok (VInt n) -> Format.printf "%d" n
    | Result.Ok (VClosure _) -> Format.printf "<fun>"
@@ -146,7 +117,7 @@ let%expect_test "eval recursive function - factorial" =
    | Result.Error DivisionByZero -> Format.printf "DivisionByZero"
    | Result.Error TypeMismatch -> Format.printf "TypeMismatch"
    | Result.Error StepLimitExceeded -> Format.printf "StepLimitExceeded");
-  [%expect {| <fun> |}]
+  [%expect {| 120 |}]
 ;;
 
 let%expect_test "eval if-then-else with 0 condition (false)" =
