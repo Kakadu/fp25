@@ -108,7 +108,7 @@ let rec pp_expression ppf = function
     fprintf ppf "match (%a) with\n" pp_expression e;
     List.iter
       (fun { case_pat; case_expr } ->
-        fprintf ppf "| %a -> %a\n" pp_pattern case_pat pp_expression case_expr)
+        fprintf ppf "| %a -> (%a)\n" pp_pattern case_pat pp_expression case_expr)
       (case :: casel)
   | Expr_option x ->
     (match x with
