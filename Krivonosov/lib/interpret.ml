@@ -98,7 +98,7 @@ let rec eval steps_remaining env expr =
          let new_env = (param, varg) :: closure_env in
          eval steps new_env body
        | VBuiltin (_, builtin_fn) ->
-         eval steps env arg >>= fun varg -> builtin_fn varg
+         eval steps env arg >>= builtin_fn
        | _ -> Error TypeMismatch))
 ;;
 
