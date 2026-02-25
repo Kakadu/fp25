@@ -50,7 +50,7 @@ let eval_binop op v1 v2 =
   | _ -> Error TypeMismatch
 ;;
 
-(** Основная функция вычисления со счётчиком шагов *)
+(** Main evaluation function with step counter *)
 let rec eval steps_remaining env expr =
   if steps_remaining <= 0
   then Error StepLimitExceeded
@@ -76,7 +76,7 @@ let rec eval steps_remaining env expr =
       then (
         match binding with
         | Ast.Abs (param, func_body) ->
-          (* Рекурсивное окружение: функция ссылается сама на себя *)
+          (* Recursive environment: function references itself *)
           let rec new_env = (name, VClosure (param, func_body, new_env)) :: env in
           eval steps new_env body
         | _ ->
@@ -102,7 +102,7 @@ let rec eval steps_remaining env expr =
        | _ -> Error TypeMismatch))
 ;;
 
-(** Начальное окружение со встроенными функциями *)
+(** Create initial environment with built-in functions *)
 let initial_env () =
   let print_builtin =
     VBuiltin
@@ -118,6 +118,6 @@ let initial_env () =
   [ "print", print_builtin ]
 ;;
 
-(** Публичная функция для вычисления AST-выражения *)
+(** Public function to evaluate an AST expression *)
 let eval_expr ?(max_steps = 10000) ast = eval max_steps (initial_env ()) ast
 ;;
