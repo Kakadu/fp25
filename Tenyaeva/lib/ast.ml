@@ -42,7 +42,7 @@ let gen_ident =
 ;;
 
 type constant =
-  | Const_int of (int[@gen small_int]) (** integer, e.g. 122 *)
+  | Const_int of (int[@gen nat_small]) (** integer, e.g. 122 *)
   | Const_bool of bool (** boolean, e.g. true *)
   | Const_unit (** [()] *)
 [@@deriving show { with_path = false }, qcheck]

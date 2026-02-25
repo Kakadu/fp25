@@ -17,7 +17,7 @@ let rec gen_expression n =
   else (
     let gen_under_expr = gen_expression (n / 5) in
     let gen_some f = oneof [ return None; map (fun x -> Some x) f ] in
-    frequency
+    oneof_weighted
       [ 5, gen_atom
       ; 4, map (fun e -> Expr_option e) (gen_some gen_atom)
       ; 4, map2 (fun t e -> Expr_constraint (t, e)) gen_type_annot gen_atom
@@ -30,7 +30,6 @@ let rec gen_expression n =
       ; 3, map2 (fun op e -> Expr_unop (op, e)) gen_unary_op gen_under_expr
       ; 3, map2 (fun p e -> Expr_fun (p, e)) (gen_pattern_sized (n / 20)) gen_under_expr
       ; 3, map2 (fun e1 e2 -> Expr_apply (e1, e2)) gen_under_expr gen_under_expr
-      ; 5, gen_under_expr
       ; ( 1
         , map3
             (fun c t e -> Expr_if (c, t, e))
@@ -74,11 +73,11 @@ let gen_structure =
   list_size
     (1 -- 3)
     (oneof
-       [ map (fun e -> Str_eval e) (gen_expression 5)
+       [ map (fun e -> Str_eval e) (gen_expression 20)
        ; map3
            (fun rf vb vb_l -> Str_value (rf, vb, vb_l))
            gen_rec_flag
-           (gen_value_binding 5)
-           (list_size (0 -- 1) (gen_value_binding 3))
+           (gen_value_binding 10)
+           (list_size (0 -- 1) (gen_value_binding 5))
        ])
 ;;
