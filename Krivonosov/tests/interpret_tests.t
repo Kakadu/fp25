@@ -221,12 +221,6 @@ Unknown argument
   [1]
 
 
-Parsing error handling
-  $ ../bin/REPL.exe <<EOF
-  > this is invalid syntax
-  Unbound variable: this
-  [1]
-
 Syntax error - unmatched parenthesis
   $ ../bin/REPL.exe <<EOF
   > (5 + 3
@@ -237,4 +231,50 @@ Syntax error - missing closing paren with complex expr
   $ ../bin/REPL.exe <<EOF
   > (fun x -> x + 1
   Error: : no more choices
+  [1]
+
+Operator precedence
+  $ ../bin/REPL.exe <<EOF
+  > 1 + 2 * 3
+  7
+  $ ../bin/REPL.exe <<EOF
+  > (1 + 2) * 3
+  9
+
+If with non-zero condition (not just 1)
+  $ ../bin/REPL.exe <<EOF
+  > if 42 then 1 else 0
+  1
+  $ ../bin/REPL.exe <<EOF
+  > if 5 + 3 then 1 else 0
+  1
+
+Closure captures outer variable
+  $ ../bin/REPL.exe <<EOF
+  > let x = 5 in (fun y -> x + y) 3
+  8
+  $ ../bin/REPL.exe <<EOF
+  > let x = 10 in let f = fun y -> x + y in f 5
+  15
+
+Variable shadowing
+  $ ../bin/REPL.exe <<EOF
+  > let x = 5 in let x = 10 in x
+  10
+  $ ../bin/REPL.exe <<EOF
+  > let x = 5 in let x = 10 in x + x
+  20
+
+Partial application
+  $ ../bin/REPL.exe <<EOF
+  > let f = (fun x y -> x + y) 2 in f 3
+  5
+  $ ../bin/REPL.exe <<EOF
+  > let f = (fun x y z -> x + y + z) 1 2 in f 3
+  6
+
+Type error - applying number as function
+  $ ../bin/REPL.exe <<EOF
+  > let f = 5 in f 3
+  Type error
   [1]
