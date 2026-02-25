@@ -149,6 +149,11 @@ Print function
   > print print
   <builtin:print>
   ()
+  $ ../bin/REPL.exe <<EOF
+  > print (print 42)
+  42
+  ()
+  ()
 
 Returning closures and builtins
   $ ../bin/REPL.exe <<EOF
