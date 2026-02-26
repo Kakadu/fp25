@@ -1,0 +1,10 @@
+(library
+ (name interpret_lib)
+ (public_name Kharisov.Lib)
+ (modules)
+ (modules_without_implementation)
+ (libraries base angstrom)
+ (preprocess
+  (pps ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx)))
