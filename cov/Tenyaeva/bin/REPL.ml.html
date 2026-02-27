@@ -144,8 +144,8 @@ open Tenyaeva_lib.Interpreter
 open Tenyaeva_lib.Ast
 
 type options =
-  { mutable dump_parsetree : bool
-  ; mutable max_steps : int
+  { mutable dump_parsetree : bool (* changed via command line argument *)
+  ; mutable max_steps : int (* changed via command line argument *)
   }
 
 let run_single options =
