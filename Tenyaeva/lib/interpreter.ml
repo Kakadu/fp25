@@ -111,7 +111,7 @@ module Eval = struct
     | Pat_var id, value -> Some (extend env id value)
     | Pat_constant (Const_int pat), ValInt value when pat = value -> Some env
     | Pat_constant (Const_bool pat), ValBool value when pat = value -> Some env
-    | Pat_constant Const_unit, _ -> Some env
+    | Pat_constant Const_unit, ValUnit -> Some env
     | Pat_constraint (_, pat), value -> match_pattern env (pat, value)
     | Pat_option None, ValOption None -> Some env
     | Pat_option (Some pat), ValOption (Some value) -> match_pattern env (pat, value)
@@ -119,11 +119,9 @@ module Eval = struct
   ;;
 
   let rec extend_names_from_pat (env : environment) = function
-    | Pat_any, _ | Pat_constant Const_unit, ValUnit | Pat_option None, ValOption None ->
-      return env
+    | Pat_any, _ | Pat_constant Const_unit, ValUnit -> return env
     | Pat_var id, value -> return (extend env id value)
-    | Pat_constraint (_, pat), value | Pat_option (Some pat), ValOption (Some value) ->
-      extend_names_from_pat env (pat, value)
+    | Pat_constraint (_, pat), value -> extend_names_from_pat env (pat, value)
     | _ -> fail TypeError
   ;;
 

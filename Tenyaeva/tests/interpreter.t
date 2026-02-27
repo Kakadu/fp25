@@ -24,7 +24,7 @@
 
   $ ../bin/REPL.exe <<EOF
   > let Some x = Some (1 : int) and None = None
-  val x = 1
+  Type error
 
   $ ../bin/REPL.exe <<EOF
   > let x = false;; not x;;
@@ -241,4 +241,4 @@
 
   $ ../bin/REPL.exe <<EOF
   > let Some (x : int) = Some 3
-  val x = 3
+  Type error
