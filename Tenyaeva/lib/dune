@@ -4,6 +4,6 @@
  (modules ast parser pprinter interpreter monad)
  (libraries base angstrom)
  (preprocess
-  (pps ppx_deriving.show ppx_deriving_qcheck))
+  (pps ppx_deriving.show))
  (instrumentation
   (backend bisect_ppx)))
