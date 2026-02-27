@@ -12,12 +12,14 @@ type eval_error =
   | NoVariable of Ast.ident
   | OutOfSteps
 
-let pp_eval_error ppf : eval_error -> _ = function
-  | TypeError -> Format.fprintf ppf "Type error"
-  | DivisionByZero -> Format.fprintf ppf "Division by zero"
-  | MatchFailure -> Format.fprintf ppf "Matching failure"
-  | NoVariable id -> Format.fprintf ppf "Undefined variable '%s'" id
-  | OutOfSteps -> Format.fprintf ppf "Out of steps"
+let pp_eval_error ppf : eval_error -> unit =
+  let open Format in
+  function
+  | TypeError -> fprintf ppf "Type error"
+  | DivisionByZero -> fprintf ppf "Division by zero"
+  | MatchFailure -> fprintf ppf "Matching failure"
+  | NoVariable id -> fprintf ppf "Undefined variable '%s'" id
+  | OutOfSteps -> fprintf ppf "Out of steps"
 ;;
 
 type value =
@@ -31,8 +33,8 @@ type value =
 
 and environment = (Ast.ident, value, Base.String.comparator_witness) Base.Map.t
 
-let rec pp_value ppf =
-  let open Stdlib.Format in
+let rec pp_value ppf : value -> unit =
+  let open Format in
   function
   | ValInt int -> fprintf ppf "%i" int
   | ValBool bool -> fprintf ppf "%b" bool
@@ -72,11 +74,6 @@ module Env = struct
     match Map.find env key with
     | Some value -> return value
     | None -> fail (NoVariable key)
-  ;;
-
-  let find_exn1 env key =
-    let val' = Map.find_exn env key in
-    val'
   ;;
 
   let empty = Map.empty (module String)
@@ -237,7 +234,7 @@ module Eval = struct
 
   let eval_structure_item env out_list =
     let rec extract_names_from_pat (env : environment) acc = function
-      | Pat_var id -> acc @ [ Some id, find_exn1 env id ]
+      | Pat_var id -> acc @ [ Some id, Base.Map.find_exn env id ]
       | Pat_constraint (_, pat) -> extract_names_from_pat env acc pat
       | Pat_option (Some pat) -> extract_names_from_pat env acc pat
       | _ -> acc
