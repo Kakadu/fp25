@@ -155,13 +155,13 @@ let run_single options =
     match parse text with
     | <span data-count="53">O</span>k structure -&gt;
       (match run_interpreter structure options.max_steps with
-       | <span data-count="36">O</span>k out_list -&gt;
-         List.ite<span data-count="36">r</span>
+       | <span data-count="34">O</span>k out_list -&gt;
+         List.ite<span data-count="34">r</span>
            (function
-             | <span data-count="24">S</span>ome id, val' -&gt; Format.printf "val %s = %a\n" id pp_value val'
+             | <span data-count="22">S</span>ome id, val' -&gt; Format.printf "val %s = %a\n" id pp_value val'
              | <span data-count="26">N</span>one, val' -&gt; Format.printf "%a\n" pp_value val')
            out_list
-       | <span data-count="17">E</span>rror err -&gt; Stdlib.Format.print<span data-count="17">f</span> "%a\n" pp_eval_error err)
+       | <span data-count="19">E</span>rror err -&gt; Stdlib.Format.print<span data-count="19">f</span> "%a\n" pp_eval_error err)
     | <span data-count="1">E</span>rror err -&gt; Stdlib.Format.print<span data-count="1">f</span> "%s\n" err);
   <span data-count="88">i</span>f options.dump_parsetree
   then <span data-count="34">(</span>

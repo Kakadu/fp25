@@ -313,72 +313,72 @@ open Ast
 open Format
 
 let pp_constant ppf = function
-  | <span data-count="66035">C</span>onst_int n -&gt; fprintf ppf "%d" n
-  | <span data-count="66192">C</span>onst_bool n -&gt; fprintf ppf "%b" n
-  | <span data-count="66367">C</span>onst_unit -&gt; fprintf ppf "()"
+  | <span data-count="65514">C</span>onst_int n -&gt; fprintf ppf "%d" n
+  | <span data-count="65129">C</span>onst_bool n -&gt; fprintf ppf "%b" n
+  | <span data-count="65697">C</span>onst_unit -&gt; fprintf ppf "()"
 ;;
 
 let pp_rec_flag ppf = function
-  | <span data-count="27679">R</span>ecursive -&gt; fprintf ppf "rec"
-  | <span data-count="27698">N</span>onRecursive -&gt; fprintf ppf ""
+  | <span data-count="27485">R</span>ecursive -&gt; fprintf ppf "rec"
+  | <span data-count="27762">N</span>onRecursive -&gt; fprintf ppf ""
 ;;
 
 let pp_binop ppf = function
-  | <span data-count="6236">A</span>dd -&gt; fprintf ppf "+"
-  | <span data-count="6221">M</span>ult -&gt; fprintf ppf "*"
-  | <span data-count="6208">S</span>ub -&gt; fprintf ppf "-"
-  | <span data-count="6181">D</span>iv -&gt; fprintf ppf "/"
-  | <span data-count="6080">G</span>t -&gt; fprintf ppf "&gt;"
-  | <span data-count="6292">L</span>t -&gt; fprintf ppf "&lt;"
-  | <span data-count="6122">E</span>q -&gt; fprintf ppf "="
-  | <span data-count="6229">N</span>eq -&gt; fprintf ppf "&lt;&gt;"
-  | <span data-count="6110">G</span>te -&gt; fprintf ppf "&gt;="
-  | <span data-count="6194">L</span>te -&gt; fprintf ppf "&lt;="
+  | <span data-count="6232">A</span>dd -&gt; fprintf ppf "+"
+  | <span data-count="6111">M</span>ult -&gt; fprintf ppf "*"
+  | <span data-count="6129">S</span>ub -&gt; fprintf ppf "-"
+  | <span data-count="6211">D</span>iv -&gt; fprintf ppf "/"
+  | <span data-count="5985">G</span>t -&gt; fprintf ppf "&gt;"
+  | <span data-count="6085">L</span>t -&gt; fprintf ppf "&lt;"
+  | <span data-count="6102">E</span>q -&gt; fprintf ppf "="
+  | <span data-count="6051">N</span>eq -&gt; fprintf ppf "&lt;&gt;"
+  | <span data-count="6124">G</span>te -&gt; fprintf ppf "&gt;="
+  | <span data-count="6073">L</span>te -&gt; fprintf ppf "&lt;="
 ;;
 
 let pp_unop ppf = function
-  | <span data-count="15375">N</span>egative -&gt; fprintf ppf "-"
-  | <span data-count="15360">P</span>ositive -&gt; fprintf ppf "+"
-  | <span data-count="15603">N</span>ot -&gt; fprintf ppf "not "
+  | <span data-count="15228">N</span>egative -&gt; fprintf ppf "-"
+  | <span data-count="15453">P</span>ositive -&gt; fprintf ppf "+"
+  | <span data-count="15180">N</span>ot -&gt; fprintf ppf "not "
 ;;
 
 let rec pp_type_annot ppf = function
-  | <span data-count="31766">T</span>ype_int -&gt; fprintf ppf "int"
-  | <span data-count="31422">T</span>ype_bool -&gt; fprintf ppf "bool"
-  | <span data-count="31378">T</span>ype_unit -&gt; fprintf ppf "unit"
-  | <span data-count="31224">T</span>ype_var a -&gt; fprintf ppf "'%s" a
-  | <span data-count="24128">T</span>ype_arrow (ty1, ty2) -&gt; fprintf ppf "(%a -&gt; %a)" pp_type_annot ty1 pp_type_annot ty2
-  | <span data-count="24331">T</span>ype_option ty -&gt;
+  | <span data-count="30745">T</span>ype_int -&gt; fprintf ppf "int"
+  | <span data-count="31331">T</span>ype_bool -&gt; fprintf ppf "bool"
+  | <span data-count="31318">T</span>ype_unit -&gt; fprintf ppf "unit"
+  | <span data-count="31328">T</span>ype_var a -&gt; fprintf ppf "'%s" a
+  | <span data-count="24017">T</span>ype_arrow (ty1, ty2) -&gt; fprintf ppf "(%a -&gt; %a)" pp_type_annot ty1 pp_type_annot ty2
+  | <span data-count="24350">T</span>ype_option ty -&gt;
     (match ty with
-     | <span data-count="4750">T</span>ype_int | <span data-count="4664">T</span>ype_unit | <span data-count="4669">T</span>ype_var _ -&gt; fprintf ppf "%a option" pp_type_annot ty
-     | <span data-count="10248">_</span> -&gt; fprintf ppf "(%a) option" pp_type_annot ty)
+     | <span data-count="4662">T</span>ype_int | <span data-count="4698">T</span>ype_unit | <span data-count="4734">T</span>ype_var _ -&gt; fprintf ppf "%a option" pp_type_annot ty
+     | <span data-count="10256">_</span> -&gt; fprintf ppf "(%a) option" pp_type_annot ty)
 ;;
 
 let rec pp_pattern ppf = function
-  | <span data-count="58956">P</span>at_any -&gt; fprintf ppf "_"
-  | <span data-count="59657">P</span>at_var a -&gt; fprintf ppf "%s" a
-  | <span data-count="59838">P</span>at_constant c -&gt; fprintf ppf "%a" pp_constant c
-  | <span data-count="39482">P</span>at_option x -&gt;
+  | <span data-count="59417">P</span>at_any -&gt; fprintf ppf "_"
+  | <span data-count="59152">P</span>at_var a -&gt; fprintf ppf "%s" a
+  | <span data-count="58595">P</span>at_constant c -&gt; fprintf ppf "%a" pp_constant c
+  | <span data-count="39756">P</span>at_option x -&gt;
     (match x with
-     | <span data-count="19746">S</span>ome x -&gt; fprintf ppf "Some (%a)" pp_pattern x
-     | <span data-count="19736">N</span>one -&gt; fprintf ppf "None")
-  | <span data-count="39936">P</span>at_constraint (ty, x) -&gt; fprintf ppf "(%a : %a)" pp_pattern x pp_type_annot ty
+     | <span data-count="19799">S</span>ome x -&gt; fprintf ppf "Some (%a)" pp_pattern x
+     | <span data-count="19957">N</span>one -&gt; fprintf ppf "None")
+  | <span data-count="39867">P</span>at_constraint (ty, x) -&gt; fprintf ppf "(%a : %a)" pp_pattern x pp_type_annot ty
 ;;
 
 let rec pp_expression ppf = function
-  | <span data-count="138756">E</span>xpr_const c -&gt; fprintf ppf "%a" pp_constant c
-  | <span data-count="138396">E</span>xpr_ident ident -&gt; fprintf ppf "%s" ident
-  | <span data-count="45788">E</span>xpr_fun (p, e) -&gt; fprintf ppf "(fun %a -&gt; %a)" pp_pattern p pp_expression e
-  | <span data-count="46045">E</span>xpr_apply (e1, e2) -&gt; fprintf ppf "(%a) (%a)" pp_expression e1 pp_expression e2
-  | <span data-count="15470">E</span>xpr_if (c, th, el) -&gt;
+  | <span data-count="137745">E</span>xpr_const c -&gt; fprintf ppf "%a" pp_constant c
+  | <span data-count="137400">E</span>xpr_ident ident -&gt; fprintf ppf "%s" ident
+  | <span data-count="45943">E</span>xpr_fun (p, e) -&gt; fprintf ppf "(fun %a -&gt; %a)" pp_pattern p pp_expression e
+  | <span data-count="46269">E</span>xpr_apply (e1, e2) -&gt; fprintf ppf "(%a) (%a)" pp_expression e1 pp_expression e2
+  | <span data-count="15196">E</span>xpr_if (c, th, el) -&gt;
     let ppifexpr_helper ppf e =
-      <span data-count="38617">m</span>atch e with
-      | <span data-count="7658">E</span>xpr_ident _ | <span data-count="7698">E</span>xpr_const _ -&gt; fprintf ppf "%a" pp_expression e
-      | <span data-count="23261">_</span> -&gt; fprintf ppf "(%a)" pp_expression e
+      <span data-count="37924">m</span>atch e with
+      | <span data-count="7455">E</span>xpr_ident _ | <span data-count="7421">E</span>xpr_const _ -&gt; fprintf ppf "%a" pp_expression e
+      | <span data-count="23048">_</span> -&gt; fprintf ppf "(%a)" pp_expression e
     in
     let ppifexpr = function
-      | <span data-count="7793">N</span>one -&gt; fprintf ppf "if (%a) then (%a)" ppifexpr_helper c ppifexpr_helper th
-      | <span data-count="7677">S</span>ome x -&gt;
+      | <span data-count="7664">N</span>one -&gt; fprintf ppf "if (%a) then (%a)" ppifexpr_helper c ppifexpr_helper th
+      | <span data-count="7532">S</span>ome x -&gt;
         fprintf
           ppf
           "if (%a) then (%a) else (%a)"
@@ -390,59 +390,59 @@ let rec pp_expression ppf = function
           x
     in
     ppifexpr el
-  | <span data-count="15435">E</span>xpr_let (recf, vb, vbl, e) -&gt;
+  | <span data-count="15175">E</span>xpr_let (recf, vb, vbl, e) -&gt;
     fprintf
       ppf
       "let %a %a in (%a)"
       pp_rec_flag
       recf
       (fun ppf () -&gt;
-        <span data-count="15435">f</span>printf ppf "%a" pp_value_binding vb;
-        <span data-count="15435">L</span>ist.iter (fun vb1 -&gt; <span data-count="15461">f</span>printf ppf " and %a" pp_value_binding vb1) vbl)
+        <span data-count="15175">f</span>printf ppf "%a" pp_value_binding vb;
+        <span data-count="15175">L</span>ist.iter (fun vb1 -&gt; <span data-count="15157">f</span>printf ppf " and %a" pp_value_binding vb1) vbl)
       ()
       pp_expression
       e
-  | <span data-count="61873">E</span>xpr_binop (op, e1, e2) -&gt;
+  | <span data-count="61103">E</span>xpr_binop (op, e1, e2) -&gt;
     fprintf ppf "(%a) %a (%a)" pp_expression e1 pp_binop op pp_expression e2
-  | <span data-count="46338">E</span>xpr_unop (op, e) -&gt; fprintf ppf "%a(%a)" pp_unop op pp_expression e
-  | <span data-count="15438">E</span>xpr_function (case, casel) -&gt;
+  | <span data-count="45861">E</span>xpr_unop (op, e) -&gt; fprintf ppf "%a(%a)" pp_unop op pp_expression e
+  | <span data-count="15292">E</span>xpr_function (case, casel) -&gt;
     fprintf ppf "function\n";
-    <span data-count="15438">L</span>ist.iter
+    <span data-count="15292">L</span>ist.iter
       (fun { case_pat; case_expr } -&gt;
-        <span data-count="31079">f</span>printf ppf "| %a -&gt; (%a)\n" pp_pattern case_pat pp_expression case_expr)
+        <span data-count="30576">f</span>printf ppf "| %a -&gt; (%a)\n" pp_pattern case_pat pp_expression case_expr)
       (case :: casel)
-  | <span data-count="15296">E</span>xpr_match (e, case, casel) -&gt;
+  | <span data-count="15189">E</span>xpr_match (e, case, casel) -&gt;
     fprintf ppf "match (%a) with\n" pp_expression e;
-    <span data-count="15296">L</span>ist.iter
+    <span data-count="15189">L</span>ist.iter
       (fun { case_pat; case_expr } -&gt;
-        <span data-count="30554">f</span>printf ppf "| %a -&gt; (%a)\n" pp_pattern case_pat pp_expression case_expr)
+        <span data-count="30182">f</span>printf ppf "| %a -&gt; (%a)\n" pp_pattern case_pat pp_expression case_expr)
       (case :: casel)
-  | <span data-count="61201">E</span>xpr_option x -&gt;
+  | <span data-count="61163">E</span>xpr_option x -&gt;
     (match x with
-     | <span data-count="30342">S</span>ome x -&gt; fprintf ppf "Some (%a)" pp_expression x
-     | <span data-count="30859">N</span>one -&gt; fprintf ppf "None")
-  | <span data-count="61726">E</span>xpr_constraint (ty, x) -&gt; fprintf ppf "(%a : %a)" pp_expression x pp_type_annot ty
+     | <span data-count="30482">S</span>ome x -&gt; fprintf ppf "Some (%a)" pp_expression x
+     | <span data-count="30681">N</span>one -&gt; fprintf ppf "None")
+  | <span data-count="60838">E</span>xpr_constraint (ty, x) -&gt; fprintf ppf "(%a : %a)" pp_expression x pp_type_annot ty
 
 and pp_value_binding ppf { vb_pat; vb_expr } =
-  <span data-count="90766">f</span>printf ppf "%a = %a" pp_pattern vb_pat pp_expression vb_expr
+  <span data-count="90420">f</span>printf ppf "%a = %a" pp_pattern vb_pat pp_expression vb_expr
 ;;
 
 let pp_structure_item ppf = function
-  | <span data-count="39985">S</span>tr_eval expr -&gt; fprintf ppf "%a" pp_expression expr
-  | <span data-count="39942">S</span>tr_value (recf, vb, vbl) -&gt;
+  | <span data-count="39840">S</span>tr_eval expr -&gt; fprintf ppf "%a" pp_expression expr
+  | <span data-count="40072">S</span>tr_value (recf, vb, vbl) -&gt;
     fprintf
       ppf
       "let %a %a"
       pp_rec_flag
       recf
       (fun ppf () -&gt;
-        <span data-count="39942">f</span>printf ppf "%a" pp_value_binding vb;
-        <span data-count="39942">L</span>ist.iter (fun vb1 -&gt; <span data-count="19928">f</span>printf ppf " and %a" pp_value_binding vb1) vbl)
+        <span data-count="40072">f</span>printf ppf "%a" pp_value_binding vb;
+        <span data-count="40072">L</span>ist.iter (fun vb1 -&gt; <span data-count="20016">f</span>printf ppf " and %a" pp_value_binding vb1) vbl)
       ()
 ;;
 
 let pp_structure ppf structure =
-  <span data-count="40000">L</span>ist.iter (fun item -&gt; <span data-count="79927">f</span>printf ppf "%a\n;;\n\n" pp_structure_item item) structure
+  <span data-count="40000">L</span>ist.iter (fun item -&gt; <span data-count="79912">f</span>printf ppf "%a\n;;\n\n" pp_structure_item item) structure
 ;;
 </code></pre>
       </div>
