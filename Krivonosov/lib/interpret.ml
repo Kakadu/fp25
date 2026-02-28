@@ -114,7 +114,32 @@ let initial_env () =
            | VUnit -> Stdio.printf "()\n%!");
           Ok VUnit )
   in
-  [ "print", print_builtin ]
+  let rec fix_apply f =
+    VBuiltin
+      ( "fix_partial"
+      , fun x ->
+          match f with
+          | VClosure _ | VBuiltin _ ->
+            let fix_f = fix_apply f in
+            apply f fix_f >>= fun partial -> apply partial x
+          | _ -> Error TypeMismatch )
+  and apply fn arg =
+    match fn with
+    | VClosure (param, body, closure_env) ->
+      let new_env = (param, arg) :: closure_env in
+      eval 10000 new_env body
+    | VBuiltin (_, builtin_fn) -> builtin_fn arg
+    | _ -> Error TypeMismatch
+  in
+  let fix_builtin =
+    VBuiltin
+      ( "fix"
+      , fun f ->
+          match f with
+          | VClosure _ | VBuiltin _ -> Ok (fix_apply f)
+          | _ -> Error TypeMismatch )
+  in
+  [ "print", print_builtin; "fix", fix_builtin ]
 ;;
 
 (** Public function to evaluate an AST expression *)

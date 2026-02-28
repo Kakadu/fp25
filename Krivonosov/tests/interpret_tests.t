@@ -127,6 +127,21 @@ Fix combinator (Z-combinator) — recursion without let rec on the function itse
   > let rec fix = fun f x -> f (fix f) x in let fib1 = fun self n -> if n <= 1 then n else self (n - 1) + self (n - 2) in fix fib1 10
   55
 
+Builtin fix combinator — recursion without let rec at all
+  $ ../bin/REPL.exe <<EOF
+  > let fac = fun self n -> if n <= 1 then 1 else n * self (n - 1) in fix fac 5
+  120
+  $ ../bin/REPL.exe <<EOF
+  > let fib = fun self n -> if n <= 1 then n else self (n - 1) + self (n - 2) in fix fib 10
+  55
+  $ ../bin/REPL.exe <<EOF
+  > fix
+  <builtin:fix>
+  $ ../bin/REPL.exe <<EOF
+  > fix 42
+  Type error
+  [1]
+
 Multi-parameter syntax sugar
   $ ../bin/REPL.exe <<EOF
   > (fun x y -> x + y) 2 3
