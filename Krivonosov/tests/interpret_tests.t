@@ -313,3 +313,14 @@ Fused keywords must be rejected
   > let x = 5 inx
   Error: : no more choices
   [1]
+
+Keywords without space before parens/digits (word boundary, not whitespace)
+  $ ../bin/REPL.exe <<EOF
+  > let x = 5 in(x)
+  5
+  $ ../bin/REPL.exe <<EOF
+  > if 1 then(42) else 0
+  42
+  $ ../bin/REPL.exe <<EOF
+  > let x = 5 in(x + 1)
+  6

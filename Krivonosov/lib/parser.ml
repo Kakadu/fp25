@@ -15,9 +15,6 @@ let is_space = function
 
 let spaces = skip_while is_space
 
-(* Mandatory whitespace — prevents fusing keywords with identifiers *)
-let spaces1 = satisfy is_space *> spaces
-
 (* Keyword filtering *)
 let is_keyword = function
   | "let" | "rec" | "if" | "then" | "else" | "in" | "fun" -> true
@@ -28,6 +25,17 @@ let is_ident_char = function
   | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '\'' -> true
   | _ -> false
 ;;
+
+(* Word boundary — next char must not be part of an identifier *)
+let word_boundary =
+  peek_char
+  >>= function
+  | Some c when is_ident_char c -> fail "expected word boundary"
+  | _ -> return ()
+;;
+
+(* Keyword parser: matches exact word and skips trailing spaces *)
+let keyword w = string w *> word_boundary *> spaces
 
 (* Multi-character identifier parser *)
 let identifier =
@@ -81,7 +89,7 @@ let pexpr =
     in
     (* Lambda abstractions: fun x y z -> body *)
     let plambda =
-      string "fun" *> spaces1 *> many1 (identifier <* spaces)
+      keyword "fun" *> many1 (identifier <* spaces)
       <* string "->"
       <* spaces
       >>= fun params ->
@@ -92,16 +100,16 @@ let pexpr =
     in
     (* If-then-else expression *)
     let pif =
-      string "if" *> spaces1 *> pexpr
+      keyword "if" *> pexpr
       >>= fun cond ->
-      spaces *> string "then" *> spaces1 *> pexpr
+      spaces *> keyword "then" *> pexpr
       >>= fun then_branch ->
-      option None (spaces *> string "else" *> spaces1 *> pexpr >>| Option.some)
+      option None (spaces *> keyword "else" *> pexpr >>| Option.some)
       >>| fun else_branch -> Ast.If (cond, then_branch, else_branch)
     in
     (* Let expression *)
     let plet =
-      string "let" *> spaces1 *> option false (string "rec" *> spaces1 *> return true)
+      keyword "let" *> option false (keyword "rec" *> return true)
       >>= fun is_rec ->
       identifier
       <* spaces
@@ -110,8 +118,7 @@ let pexpr =
       >>= fun name ->
       pexpr
       >>= fun binding ->
-      spaces *> string "in" *> spaces1 *> pexpr
-      >>| fun body -> Ast.Let (is_rec, name, binding, body)
+      spaces *> keyword "in" *> pexpr >>| fun body -> Ast.Let (is_rec, name, binding, body)
     in
     (* Application: sequence of atoms *)
     let papp =
