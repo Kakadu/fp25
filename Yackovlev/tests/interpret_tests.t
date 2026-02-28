@@ -168,5 +168,10 @@ in the dune file
   Error: : end_of_input
 
   $ $REPL <<EOF
-  > letrec fact = fun n -> if n <= 1 then 1 else n * fact (n - 1) in fact 1
+  > letx = 0 in x
   Error: : end_of_input
+
+  $ $REPL <<EOF
+  > let x = 0 in(x)
+  (let x = 0 in x)
+  0
