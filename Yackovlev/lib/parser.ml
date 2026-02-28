@@ -31,6 +31,11 @@ let ident_raw =
 
 let keywords = [ "let"; "rec"; "in"; "fun"; "if"; "then"; "else" ]
 
+let keyword s =
+  token ident_raw
+  >>= fun id -> if id = s then return () else fail ("Expected keyword " ^ s)
+;;
+
 let ident =
   token ident_raw
   >>= fun s ->
@@ -111,17 +116,17 @@ let expr : Ast.expr Angstrom.t =
     in
     let make_fun params body = List.fold_right (fun x acc -> Abs (x, acc)) params body in
     let fun_expr =
-      symbol "fun" *> many1 ident
+      keyword "fun" *> many1 ident
       >>= fun params -> symbol "->" *> expr >>| fun body -> make_fun params body
     in
     let if_expr =
-      symbol "if" *> expr
+      keyword "if" *> expr
       >>= fun cond ->
-      symbol "then" *> expr
-      >>= fun then_ -> symbol "else" *> expr >>| fun else_ -> If (cond, then_, else_)
+      keyword "then" *> expr
+      >>= fun then_ -> keyword "else" *> expr >>| fun else_ -> If (cond, then_, else_)
     in
     let let_expr =
-      symbol "let" *> token ident_raw
+      keyword "let" *> token ident_raw
       >>= fun next_token ->
       let is_rec = next_token = "rec" in
       (if is_rec
@@ -134,7 +139,7 @@ let expr : Ast.expr Angstrom.t =
       >>= fun params ->
       symbol "=" *> expr
       >>= fun rhs ->
-      symbol "in" *> expr
+      keyword "in" *> expr
       >>| fun body ->
       let rhs' = make_fun params rhs in
       if is_rec then Let_rec (name, rhs', body) else Let (name, rhs', body)

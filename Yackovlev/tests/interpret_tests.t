@@ -166,3 +166,7 @@ in the dune file
   $ $REPL <<EOF
   > 1 + * 2
   Error: : end_of_input
+
+  $ $REPL <<EOF
+  > letrec fact = fun n -> if n <= 1 then 1 else n * fact (n - 1) in fact 1
+  Error: : end_of_input
