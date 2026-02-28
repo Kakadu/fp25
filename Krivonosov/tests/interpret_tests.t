@@ -119,6 +119,14 @@ Fibonacci with let rec
   > let rec fib = fun n -> if n <= 1 then n else fib (n - 1) + fib (n - 2) in fib 10
   55
 
+Fix combinator (Z-combinator) — recursion without let rec on the function itself
+  $ ../bin/REPL.exe <<EOF
+  > let rec fix = fun f x -> f (fix f) x in let fac1 = fun self n -> if n <= 1 then 1 else n * self (n - 1) in fix fac1 5
+  120
+  $ ../bin/REPL.exe <<EOF
+  > let rec fix = fun f x -> f (fix f) x in let fib1 = fun self n -> if n <= 1 then n else self (n - 1) + self (n - 2) in fix fib1 10
+  55
+
 Multi-parameter syntax sugar
   $ ../bin/REPL.exe <<EOF
   > (fun x y -> x + y) 2 3
