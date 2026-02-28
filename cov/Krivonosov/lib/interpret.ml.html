@@ -298,17 +298,17 @@ and environment = (string * value) list
 
 (** Lookup variable in environment *)
 let lookup env name =
-  <span data-count="1080">m</span>atch List.Assoc.find ~equal:String.equal env name with
-  | <span data-count="1078">S</span>ome v -&gt; Ok v
+  <span data-count="2447">m</span>atch List.Assoc.find ~equal:String.equal env name with
+  | <span data-count="2445">S</span>ome v -&gt; Ok v
   | <span data-count="2">N</span>one -&gt; Error (UnknownVariable name)
 ;;
 
 (** Evaluate binary operation *)
 let eval_binop op v1 v2 =
-  <span data-count="640">m</span>atch op, v1, v2 with
-  | <span data-count="124">A</span>st.Add, VInt a, VInt b -&gt; Ok (VInt (a + b))
-  | <span data-count="234">A</span>st.Sub, VInt a, VInt b -&gt; Ok (VInt (a - b))
-  | <span data-count="21">A</span>st.Mul, VInt a, VInt b -&gt; Ok (VInt (a * b))
+  <span data-count="1094">m</span>atch op, v1, v2 with
+  | <span data-count="212">A</span>st.Add, VInt a, VInt b -&gt; Ok (VInt (a + b))
+  | <span data-count="414">A</span>st.Sub, VInt a, VInt b -&gt; Ok (VInt (a - b))
+  | <span data-count="25">A</span>st.Mul, VInt a, VInt b -&gt; Ok (VInt (a * b))
   | <span data-count="1">A</span>st.Div, VInt _, VInt 0 -&gt; Error DivisionByZero
   | <span data-count="1">A</span>st.Div, VInt a, VInt b -&gt; Ok (VInt (a / b))
   | <span data-count="1">A</span>st.Mod, VInt _, VInt 0 -&gt; Error DivisionByZero
@@ -317,37 +317,37 @@ let eval_binop op v1 v2 =
   | <span data-count="2">A</span>st.Neq, VInt a, VInt b -&gt; Ok (VInt (if a &lt;&gt; b then <span data-count="1">1</span> else <span data-count="1">0</span>))
   | <span data-count="2">A</span>st.Lt, VInt a, VInt b -&gt; Ok (VInt (if a &lt; b then <span data-count="1">1</span> else <span data-count="1">0</span>))
   | <span data-count="3">A</span>st.Gt, VInt a, VInt b -&gt; Ok (VInt (if a &gt; b then <span data-count="2">1</span> else <span data-count="1">0</span>))
-  | <span data-count="244">A</span>st.Leq, VInt a, VInt b -&gt; Ok (VInt (if a &lt;= b then <span data-count="118">1</span> else <span data-count="126">0</span>))
+  | <span data-count="426">A</span>st.Leq, VInt a, VInt b -&gt; Ok (VInt (if a &lt;= b then <span data-count="208">1</span> else <span data-count="218">0</span>))
   | <span data-count="2">A</span>st.Geq, VInt a, VInt b -&gt; Ok (VInt (if a &gt;= b then <span data-count="1">1</span> else <span data-count="1">0</span>))
   | <span data-count="2">_</span> -&gt; Error TypeMismatch
 ;;
 
 (** Main evaluation function with step counter *)
 let rec eval steps_remaining env expr =
-  <span data-count="2972">i</span>f steps_remaining &lt;= 0
+  <span data-count="6442">i</span>f steps_remaining &lt;= 0
   then <span data-count="1">E</span>rror StepLimitExceeded
-  else <span data-count="2971">(</span>
+  else <span data-count="6441">(</span>
     let steps = steps_remaining - 1 in
     match expr with
-    | <span data-count="589">A</span>st.Int n -&gt; Ok (VInt n)
-    | <span data-count="1080">A</span>st.Var name -&gt; lookup env name
-    | <span data-count="17">A</span>st.Abs (param, body) -&gt; Ok (VClosure (param, body, env))
-    | <span data-count="641">A</span>st.BinOp (op, l, r) -&gt;
-      eva<span data-count="641">l</span> steps env l &gt;&gt;= fun vl -&gt; <span data-count="640">e</span>va<span data-count="640">l</span> steps env r &gt;&gt;= fun vr -&gt; <span data-count="640">e</span>val_binop op vl vr
-    | <span data-count="252">A</span>st.If (cond, then_branch, else_branch_opt) -&gt;
-      eva<span data-count="252">l</span> steps env cond
+    | <span data-count="954">A</span>st.Int n -&gt; Ok (VInt n)
+    | <span data-count="2447">A</span>st.Var name -&gt; lookup env name
+    | <span data-count="385">A</span>st.Abs (param, body) -&gt; Ok (VClosure (param, body, env))
+    | <span data-count="1095">A</span>st.BinOp (op, l, r) -&gt;
+      eva<span data-count="1095">l</span> steps env l &gt;&gt;= fun vl -&gt; <span data-count="1094">e</span>va<span data-count="1094">l</span> steps env r &gt;&gt;= fun vr -&gt; <span data-count="1094">e</span>val_binop op vl vr
+    | <span data-count="434">A</span>st.If (cond, then_branch, else_branch_opt) -&gt;
+      eva<span data-count="434">l</span> steps env cond
       &gt;&gt;= (function
-       | <span data-count="127">V</span>Int 0 -&gt;
+       | <span data-count="219">V</span>Int 0 -&gt;
          (match else_branch_opt with
-          | <span data-count="126">S</span>ome else_branch -&gt; eval steps env else_branch
+          | <span data-count="218">S</span>ome else_branch -&gt; eval steps env else_branch
           | <span data-count="1">N</span>one -&gt; Ok (VInt 0))
-       | <span data-count="124">V</span>Int _ -&gt; eval steps env then_branch
+       | <span data-count="214">V</span>Int _ -&gt; eval steps env then_branch
        | <span data-count="1">_</span> -&gt; Error TypeMismatch)
-    | <span data-count="27">A</span>st.Let (is_rec, name, binding, body) -&gt;
+    | <span data-count="31">A</span>st.Let (is_rec, name, binding, body) -&gt;
       if is_rec
-      then <span data-count="11">(</span>
+      then <span data-count="13">(</span>
         match binding with
-        | <span data-count="10">A</span>st.Abs (param, func_body) -&gt;
+        | <span data-count="12">A</span>st.Abs (param, func_body) -&gt;
           (* Recursive environment: function references itself *)
           let rec new_env = (name, VClosure (param, func_body, new_env)) :: env in
           eval steps new_env body
@@ -357,17 +357,17 @@ let rec eval steps_remaining env expr =
           <span data-count="1">l</span>et new_env = (name, value) :: env in
           eval steps new_env body)
       else
-        <span data-count="16">e</span>va<span data-count="16">l</span> steps env binding
+        <span data-count="18">e</span>va<span data-count="18">l</span> steps env binding
         &gt;&gt;= fun value -&gt;
-        <span data-count="16">l</span>et new_env = (name, value) :: env in
+        <span data-count="18">l</span>et new_env = (name, value) :: env in
         eval steps new_env body
-    | <span data-count="365">A</span>st.App (f, arg) -&gt;
-      eva<span data-count="365">l</span> steps env f
+    | <span data-count="1095">A</span>st.App (f, arg) -&gt;
+      eva<span data-count="1095">l</span> steps env f
       &gt;&gt;= (function
-       | <span data-count="352">V</span>Closure (param, body, closure_env) -&gt;
-         eva<span data-count="352">l</span> steps env arg
+       | <span data-count="1082">V</span>Closure (param, body, closure_env) -&gt;
+         eva<span data-count="1082">l</span> steps env arg
          &gt;&gt;= fun varg -&gt;
-         <span data-count="352">l</span>et new_env = (param, varg) :: closure_env in
+         <span data-count="1082">l</span>et new_env = (param, varg) :: closure_env in
          eval steps new_env body
        | <span data-count="8">V</span>Builtin (_, builtin_fn) -&gt; eva<span data-count="8">l</span> steps env arg &gt;&gt;= builtin_fn
        | <span data-count="3">_</span> -&gt; Error TypeMismatch))
@@ -375,7 +375,7 @@ let rec eval steps_remaining env expr =
 
 (** Create initial environment with built-in functions *)
 let initial_env () =
-  <span data-count="68">l</span>et print_builtin =
+  <span data-count="70">l</span>et print_builtin =
     VBuiltin
       ( "print"
       , fun v -&gt;
@@ -390,7 +390,7 @@ let initial_env () =
 ;;
 
 (** Public function to evaluate an AST expression *)
-let eval_expr ?(max_steps = <span data-count="0">1</span>0000) ast = <span data-count="68">e</span>val max_steps (initial_en<span data-count="68">v</span> ()) ast
+let eval_expr ?(max_steps = <span data-count="0">1</span>0000) ast = <span data-count="70">e</span>val max_steps (initial_en<span data-count="70">v</span> ()) ast
 </code></pre>
       </div>
     </div>

@@ -390,49 +390,49 @@
 open Angstrom
 
 let is_space = function
-  | <span data-count="514">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\n' | <span data-count="0">'</span>\r' -&gt; true
-  | <span data-count="1885">_</span> -&gt; false
+  | <span data-count="589">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\n' | <span data-count="0">'</span>\r' -&gt; true
+  | <span data-count="2126">_</span> -&gt; false
 ;;
 
-let spaces = skip_whil<span data-count="77">e</span> is_space
+let spaces = skip_whil<span data-count="79">e</span> is_space
 
 (* Keyword filtering *)
 let is_keyword = function
-  | <span data-count="1">"</span>let" | <span data-count="0">"</span>rec" | <span data-count="1">"</span>if" | <span data-count="19">"</span>then" | <span data-count="17">"</span>else" | <span data-count="28">"</span>in" | <span data-count="1">"</span>fun" -&gt; true
-  | <span data-count="164">_</span> -&gt; false
+  | <span data-count="1">"</span>let" | <span data-count="0">"</span>rec" | <span data-count="1">"</span>if" | <span data-count="21">"</span>then" | <span data-count="19">"</span>else" | <span data-count="32">"</span>in" | <span data-count="1">"</span>fun" -&gt; true
+  | <span data-count="198">_</span> -&gt; false
 ;;
 
 let is_ident_char = function
-  | <span data-count="295">'</span>a' .. 'z' | <span data-count="0">'</span>A' .. 'Z' | <span data-count="3">'</span>0' .. '9' | <span data-count="0">'</span>_' | <span data-count="0">'</span>\'' -&gt; true
-  | <span data-count="365">_</span> -&gt; false
+  | <span data-count="346">'</span>a' .. 'z' | <span data-count="0">'</span>A' .. 'Z' | <span data-count="7">'</span>0' .. '9' | <span data-count="0">'</span>_' | <span data-count="0">'</span>\'' -&gt; true
+  | <span data-count="427">_</span> -&gt; false
 ;;
 
 (* Word boundary — next char must not be part of an identifier *)
 let word_boundary =
   peek_char
-  &gt;&gt;<span data-count="77">=</span> function
-  | <span data-count="147">S</span>ome c when is_ident_cha<span data-count="147">r</span> c -&gt; <span data-count="4">f</span>ail "expected word boundary"
-  | <span data-count="143">_</span> -&gt; return ()
+  &gt;&gt;<span data-count="79">=</span> function
+  | <span data-count="167">S</span>ome c when is_ident_cha<span data-count="167">r</span> c -&gt; <span data-count="4">f</span>ail "expected word boundary"
+  | <span data-count="163">_</span> -&gt; return ()
 ;;
 
 (* Keyword parser: matches exact word and skips trailing spaces *)
-let keyword w = <span data-count="367">s</span>trin<span data-count="367">g</span> w *<span data-count="367">&gt;</span> word_boundary *&gt; spaces
+let keyword w = <span data-count="383">s</span>trin<span data-count="383">g</span> w *<span data-count="383">&gt;</span> word_boundary *&gt; spaces
 
 (* Multi-character identifier parser *)
 let identifier =
   let first_char_parser =
     satisfy (function
-      | <span data-count="231">'</span>a' .. 'z' | <span data-count="0">'</span>_' -&gt; true
-      | <span data-count="131">_</span> -&gt; false)
+      | <span data-count="273">'</span>a' .. 'z' | <span data-count="0">'</span>_' -&gt; true
+      | <span data-count="147">_</span> -&gt; false)
   in
-  <span data-count="77">l</span>ift<span data-count="77">2</span>
-    (fun fc rest -&gt; <span data-count="231">S</span>tring.mak<span data-count="231">e</span> 1 fc ^ rest)
+  <span data-count="79">l</span>ift<span data-count="79">2</span>
+    (fun fc rest -&gt; <span data-count="273">S</span>tring.mak<span data-count="273">e</span> 1 fc ^ rest)
     first_char_parser
-    (take_whil<span data-count="77">e</span> is_ident_char)
-  &gt;&gt;<span data-count="77">=</span> fun ident -&gt;
-  <span data-count="231">i</span>f is_keyword ident
-  then <span data-count="67">f</span>ail ("Keyword '" ^ ident ^ "' cannot be used as identifier")
-  else <span data-count="164">r</span>eturn ident
+    (take_whil<span data-count="79">e</span> is_ident_char)
+  &gt;&gt;<span data-count="79">=</span> fun ident -&gt;
+  <span data-count="273">i</span>f is_keyword ident
+  then <span data-count="75">f</span>ail ("Keyword '" ^ ident ^ "' cannot be used as identifier")
+  else <span data-count="198">r</span>eturn ident
 ;;
 
 type error = Parsing_error of string
@@ -443,114 +443,114 @@ let pp_error ppf = function
 
 (* Integer literal parser *)
 let pinteger =
-  take_while<span data-count="77">1</span> (function
-    | <span data-count="189">'</span>0' .. '9' -&gt; true
-    | <span data-count="383">_</span> -&gt; false)
-  &gt;&gt;<span data-count="77">|</span> int_of_string
-  &gt;&gt;<span data-count="77">|</span> fun n -&gt; <span data-count="155">A</span>st.Int n
+  take_while<span data-count="79">1</span> (function
+    | <span data-count="198">'</span>0' .. '9' -&gt; true
+    | <span data-count="431">_</span> -&gt; false)
+  &gt;&gt;<span data-count="79">|</span> int_of_string
+  &gt;&gt;<span data-count="79">|</span> fun n -&gt; <span data-count="163">A</span>st.Int n
 ;;
 
 (* Chainl1: left-associative infix operator parser *)
 let chainl1 p op =
-  <span data-count="225">l</span>et rec go acc = <span data-count="658">o</span>p &gt;&gt;<span data-count="658">=</span> (fun f -&gt; <span data-count="77">p</span> &gt;&gt;= fun x -&gt; <span data-count="75">g</span>o (<span data-count="75">f</span> acc x)) &lt;|&gt; retur<span data-count="658">n</span> acc in
+  <span data-count="231">l</span>et rec go acc = <span data-count="718">o</span>p &gt;&gt;<span data-count="718">=</span> (fun f -&gt; <span data-count="84">p</span> &gt;&gt;= fun x -&gt; <span data-count="82">g</span>o (<span data-count="82">f</span> acc x)) &lt;|&gt; retur<span data-count="718">n</span> acc in
   p &gt;&gt;= go
 ;;
 
 (* Main parser using single fix point *)
 let pexpr =
-  fi<span data-count="77">x</span> (fun pexpr -&gt;
+  fi<span data-count="79">x</span> (fun pexpr -&gt;
     (* Atomic expressions: integers, variables and parenthesized expressions *)
-    <span data-count="75">l</span>et patom =
+    <span data-count="77">l</span>et patom =
       spaces
-      *&gt; choic<span data-count="75">e</span>
-           [ cha<span data-count="75">r</span> '(' *<span data-count="75">&gt;</span> pexpr &lt;<span data-count="75">*</span> cha<span data-count="75">r</span> ')' &lt;<span data-count="75">*</span> spaces &lt;?<span data-count="75">&gt;</span> "Parentheses expected"
-           ; pinteger &lt;<span data-count="75">*</span> spaces
-           ; (identifier &lt;<span data-count="75">*</span> spaces &gt;&gt;<span data-count="75">|</span> fun name -&gt; <span data-count="108">A</span>st.Var name)
+      *&gt; choic<span data-count="77">e</span>
+           [ cha<span data-count="77">r</span> '(' *<span data-count="77">&gt;</span> pexpr &lt;<span data-count="77">*</span> cha<span data-count="77">r</span> ')' &lt;<span data-count="77">*</span> spaces &lt;?<span data-count="77">&gt;</span> "Parentheses expected"
+           ; pinteger &lt;<span data-count="77">*</span> spaces
+           ; (identifier &lt;<span data-count="77">*</span> spaces &gt;&gt;<span data-count="77">|</span> fun name -&gt; <span data-count="130">A</span>st.Var name)
            ]
     in
     (* Lambda abstractions: fun x y z -&gt; body *)
-    <span data-count="75">l</span>et plambda =
-      keywor<span data-count="75">d</span> "fun" *<span data-count="75">&gt;</span> many<span data-count="75">1</span> (identifier &lt;<span data-count="75">*</span> spaces)
-      &lt;<span data-count="75">*</span> strin<span data-count="75">g</span> "-&gt;"
-      &lt;<span data-count="75">*</span> spaces
+    <span data-count="77">l</span>et plambda =
+      keywor<span data-count="77">d</span> "fun" *<span data-count="77">&gt;</span> many<span data-count="77">1</span> (identifier &lt;<span data-count="77">*</span> spaces)
+      &lt;<span data-count="77">*</span> strin<span data-count="77">g</span> "-&gt;"
+      &lt;<span data-count="77">*</span> spaces
       &gt;&gt;= fun params -&gt;
-      <span data-count="22">p</span>expr
+      <span data-count="26">p</span>expr
       &gt;&gt;| fun body -&gt;
       (* Desugar: fun x y z -&gt; body becomes fun x -&gt; fun y -&gt; fun z -&gt; body *)
-      <span data-count="22">L</span>ist.fold_right (fun param acc -&gt; <span data-count="28">A</span>st.Abs (param, acc)) params body
+      <span data-count="26">L</span>ist.fold_right (fun param acc -&gt; <span data-count="36">A</span>st.Abs (param, acc)) params body
     in
     (* If-then-else expression *)
-    <span data-count="75">l</span>et pif =
-      keywor<span data-count="75">d</span> "if" *<span data-count="75">&gt;</span> pexpr
+    <span data-count="77">l</span>et pif =
+      keywor<span data-count="77">d</span> "if" *<span data-count="77">&gt;</span> pexpr
       &gt;&gt;= fun cond -&gt;
-      <span data-count="20">s</span>paces *<span data-count="20">&gt;</span> keywor<span data-count="20">d</span> "then" *<span data-count="20">&gt;</span> pexpr
+      <span data-count="22">s</span>paces *<span data-count="22">&gt;</span> keywor<span data-count="22">d</span> "then" *<span data-count="22">&gt;</span> pexpr
       &gt;&gt;= fun then_branch -&gt;
-      <span data-count="19">o</span>ptio<span data-count="19">n</span> None (spaces *<span data-count="19">&gt;</span> keywor<span data-count="19">d</span> "else" *<span data-count="19">&gt;</span> pexpr &gt;&gt;<span data-count="19">|</span> Option.some)
-      &gt;&gt;| fun else_branch -&gt; <span data-count="19">A</span>st.If (cond, then_branch, else_branch)
+      <span data-count="21">o</span>ptio<span data-count="21">n</span> None (spaces *<span data-count="21">&gt;</span> keywor<span data-count="21">d</span> "else" *<span data-count="21">&gt;</span> pexpr &gt;&gt;<span data-count="21">|</span> Option.some)
+      &gt;&gt;| fun else_branch -&gt; <span data-count="21">A</span>st.If (cond, then_branch, else_branch)
     in
     (* Let expression *)
-    <span data-count="75">l</span>et plet =
-      keywor<span data-count="75">d</span> "let" *<span data-count="75">&gt;</span> optio<span data-count="75">n</span> false (keywor<span data-count="75">d</span> "rec" *<span data-count="75">&gt;</span> retur<span data-count="75">n</span> true)
+    <span data-count="77">l</span>et plet =
+      keywor<span data-count="77">d</span> "let" *<span data-count="77">&gt;</span> optio<span data-count="77">n</span> false (keywor<span data-count="77">d</span> "rec" *<span data-count="77">&gt;</span> retur<span data-count="77">n</span> true)
       &gt;&gt;= fun is_rec -&gt;
-      <span data-count="28">i</span>dentifier
-      &lt;<span data-count="28">*</span> spaces
-      &lt;<span data-count="28">*</span> cha<span data-count="28">r</span> '='
-      &lt;<span data-count="28">*</span> spaces
+      <span data-count="32">i</span>dentifier
+      &lt;<span data-count="32">*</span> spaces
+      &lt;<span data-count="32">*</span> cha<span data-count="32">r</span> '='
+      &lt;<span data-count="32">*</span> spaces
       &gt;&gt;= fun name -&gt;
-      <span data-count="28">p</span>expr
+      <span data-count="32">p</span>expr
       &gt;&gt;= fun binding -&gt;
-      <span data-count="28">s</span>paces *<span data-count="28">&gt;</span> keywor<span data-count="28">d</span> "in" *<span data-count="28">&gt;</span> pexpr &gt;&gt;| fun body -&gt; <span data-count="27">A</span>st.Let (is_rec, name, binding, body)
+      <span data-count="32">s</span>paces *<span data-count="32">&gt;</span> keywor<span data-count="32">d</span> "in" *<span data-count="32">&gt;</span> pexpr &gt;&gt;| fun body -&gt; <span data-count="31">A</span>st.Let (is_rec, name, binding, body)
     in
     (* Application: sequence of atoms *)
-    <span data-count="75">l</span>et papp =
+    <span data-count="77">l</span>et papp =
       patom
       &gt;&gt;= fun first -&gt;
-      <span data-count="241">m</span>an<span data-count="241">y</span> patom &gt;&gt;| fun rest -&gt; <span data-count="241">L</span>ist.fold_left (fun acc e -&gt; <span data-count="51">A</span>st.App (acc, e)) first rest
+      <span data-count="263">m</span>an<span data-count="263">y</span> patom &gt;&gt;| fun rest -&gt; <span data-count="263">L</span>ist.fold_left (fun acc e -&gt; <span data-count="64">A</span>st.App (acc, e)) first rest
     in
     (* Binary operators with precedence *)
     (* Comparison operators: =, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;= (lowest precedence) *)
-    <span data-count="75">l</span>et pcmp_op =
+    <span data-count="77">l</span>et pcmp_op =
       spaces
-      *<span data-count="75">&gt;</span> choic<span data-count="75">e</span>
-           [ strin<span data-count="75">g</span> "&lt;=" *<span data-count="75">&gt;</span> retur<span data-count="75">n</span> (fun l r -&gt; <span data-count="11">A</span>st.BinOp (Ast.Leq, l, r))
-           ; strin<span data-count="75">g</span> "&gt;=" *<span data-count="75">&gt;</span> retur<span data-count="75">n</span> (fun l r -&gt; <span data-count="2">A</span>st.BinOp (Ast.Geq, l, r))
-           ; strin<span data-count="75">g</span> "&lt;&gt;" *<span data-count="75">&gt;</span> retur<span data-count="75">n</span> (fun l r -&gt; <span data-count="2">A</span>st.BinOp (Ast.Neq, l, r))
-           ; cha<span data-count="75">r</span> '&lt;' *<span data-count="75">&gt;</span> retur<span data-count="75">n</span> (fun l r -&gt; <span data-count="2">A</span>st.BinOp (Ast.Lt, l, r))
-           ; cha<span data-count="75">r</span> '&gt;' *<span data-count="75">&gt;</span> retur<span data-count="75">n</span> (fun l r -&gt; <span data-count="3">A</span>st.BinOp (Ast.Gt, l, r))
-           ; cha<span data-count="75">r</span> '=' *<span data-count="75">&gt;</span> retur<span data-count="75">n</span> (fun l r -&gt; <span data-count="3">A</span>st.BinOp (Ast.Eq, l, r))
+      *<span data-count="77">&gt;</span> choic<span data-count="77">e</span>
+           [ strin<span data-count="77">g</span> "&lt;=" *<span data-count="77">&gt;</span> retur<span data-count="77">n</span> (fun l r -&gt; <span data-count="13">A</span>st.BinOp (Ast.Leq, l, r))
+           ; strin<span data-count="77">g</span> "&gt;=" *<span data-count="77">&gt;</span> retur<span data-count="77">n</span> (fun l r -&gt; <span data-count="2">A</span>st.BinOp (Ast.Geq, l, r))
+           ; strin<span data-count="77">g</span> "&lt;&gt;" *<span data-count="77">&gt;</span> retur<span data-count="77">n</span> (fun l r -&gt; <span data-count="2">A</span>st.BinOp (Ast.Neq, l, r))
+           ; cha<span data-count="77">r</span> '&lt;' *<span data-count="77">&gt;</span> retur<span data-count="77">n</span> (fun l r -&gt; <span data-count="2">A</span>st.BinOp (Ast.Lt, l, r))
+           ; cha<span data-count="77">r</span> '&gt;' *<span data-count="77">&gt;</span> retur<span data-count="77">n</span> (fun l r -&gt; <span data-count="3">A</span>st.BinOp (Ast.Gt, l, r))
+           ; cha<span data-count="77">r</span> '=' *<span data-count="77">&gt;</span> retur<span data-count="77">n</span> (fun l r -&gt; <span data-count="3">A</span>st.BinOp (Ast.Eq, l, r))
            ]
       &lt;* spaces
     in
     (* Additive operators: +, - *)
-    <span data-count="75">l</span>et padd_op =
+    <span data-count="77">l</span>et padd_op =
       spaces
-      *<span data-count="75">&gt;</span> choic<span data-count="75">e</span>
-           [ cha<span data-count="75">r</span> '+' *<span data-count="75">&gt;</span> retur<span data-count="75">n</span> (fun l r -&gt; <span data-count="25">A</span>st.BinOp (Ast.Add, l, r))
-           ; cha<span data-count="75">r</span> '-' *<span data-count="75">&gt;</span> retur<span data-count="75">n</span> (fun l r -&gt; <span data-count="14">A</span>st.BinOp (Ast.Sub, l, r))
+      *<span data-count="77">&gt;</span> choic<span data-count="77">e</span>
+           [ cha<span data-count="77">r</span> '+' *<span data-count="77">&gt;</span> retur<span data-count="77">n</span> (fun l r -&gt; <span data-count="26">A</span>st.BinOp (Ast.Add, l, r))
+           ; cha<span data-count="77">r</span> '-' *<span data-count="77">&gt;</span> retur<span data-count="77">n</span> (fun l r -&gt; <span data-count="17">A</span>st.BinOp (Ast.Sub, l, r))
            ]
       &lt;* spaces
     in
     (* Multiplicative operators: *, /, % (higher precedence) *)
-    <span data-count="75">l</span>et pmul_op =
+    <span data-count="77">l</span>et pmul_op =
       spaces
-      *<span data-count="75">&gt;</span> choic<span data-count="75">e</span>
-           [ cha<span data-count="75">r</span> '*' *<span data-count="75">&gt;</span> retur<span data-count="75">n</span> (fun l r -&gt; <span data-count="9">A</span>st.BinOp (Ast.Mul, l, r))
-           ; cha<span data-count="75">r</span> '/' *<span data-count="75">&gt;</span> retur<span data-count="75">n</span> (fun l r -&gt; <span data-count="2">A</span>st.BinOp (Ast.Div, l, r))
-           ; cha<span data-count="75">r</span> '%' *<span data-count="75">&gt;</span> retur<span data-count="75">n</span> (fun l r -&gt; <span data-count="2">A</span>st.BinOp (Ast.Mod, l, r))
+      *<span data-count="77">&gt;</span> choic<span data-count="77">e</span>
+           [ cha<span data-count="77">r</span> '*' *<span data-count="77">&gt;</span> retur<span data-count="77">n</span> (fun l r -&gt; <span data-count="10">A</span>st.BinOp (Ast.Mul, l, r))
+           ; cha<span data-count="77">r</span> '/' *<span data-count="77">&gt;</span> retur<span data-count="77">n</span> (fun l r -&gt; <span data-count="2">A</span>st.BinOp (Ast.Div, l, r))
+           ; cha<span data-count="77">r</span> '%' *<span data-count="77">&gt;</span> retur<span data-count="77">n</span> (fun l r -&gt; <span data-count="2">A</span>st.BinOp (Ast.Mod, l, r))
            ]
       &lt;* spaces
     in
     (* Precedence levels: mul &gt; add &gt; cmp &gt; app &gt; lambda *)
-    <span data-count="75">l</span>et pmul = chainl1 papp pmul_op in
-    <span data-count="75">l</span>et padd = chainl1 pmul padd_op in
-    <span data-count="75">l</span>et pcmp = chainl1 padd pcmp_op in
+    <span data-count="77">l</span>et pmul = chainl1 papp pmul_op in
+    <span data-count="77">l</span>et padd = chainl1 pmul padd_op in
+    <span data-count="77">l</span>et pcmp = chainl1 padd pcmp_op in
     (* Top level: try let, if, lambda first, then comparison *)
-    <span data-count="75">s</span>paces *<span data-count="75">&gt;</span> choic<span data-count="75">e</span> [ plet; pif; plambda; pcmp ] &lt;* spaces)
+    <span data-count="77">s</span>paces *<span data-count="77">&gt;</span> choic<span data-count="77">e</span> [ plet; pif; plambda; pcmp ] &lt;* spaces)
 ;;
 
 let parse str =
-  <span data-count="75">m</span>atch Angstrom.parse_string ~consume:Angstrom.Consume.All pexpr str with
-  | <span data-count="68">R</span>esult.Ok x -&gt; Result.Ok x
+  <span data-count="77">m</span>atch Angstrom.parse_string ~consume:Angstrom.Consume.All pexpr str with
+  | <span data-count="70">R</span>esult.Ok x -&gt; Result.Ok x
   | <span data-count="7">E</span>rror er -&gt; Result.Error (Parsing_error er)
 ;;
 </code></pre>
