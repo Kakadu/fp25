@@ -165,8 +165,8 @@ open Lambda_lib.Interpret
 
 (** Parse command line arguments*)
 let parse_args args =
-  <span data-count="67">l</span>et rec parse max_steps = function
-    | <span data-count="65">[</span>] -&gt; Some max_steps
+  <span data-count="74">l</span>et rec parse max_steps = function
+    | <span data-count="72">[</span>] -&gt; Some max_steps
     | <span data-count="3">"</span>-max-steps" :: n :: rest -&gt;
       (match Stdlib.int_of_string_opt n with
        | <span data-count="2">S</span>ome steps -&gt; parse steps rest
@@ -178,33 +178,33 @@ let parse_args args =
       <span data-count="1">N</span>one
   in
   match parse 10000 args with
-  | <span data-count="65">S</span>ome max_steps -&gt; max_steps
+  | <span data-count="72">S</span>ome max_steps -&gt; max_steps
   | <span data-count="2">N</span>one -&gt; Stdlib.exit 1
 ;;
 
 let () =
-  let max_steps = parse_args (List.tl_ex<span data-count="67">n</span> (Array.to_lis<span data-count="67">t</span> (Sys.get_arg<span data-count="67">v</span> ()))) in
-  <span data-count="65">l</span>et input = In_channel.input_all In_channel.stdin |&gt; <span data-count="65">S</span>tring.strip in
-  <span data-count="65">m</span>atch Parser.parse input with
-  | <span data-count="2">E</span>rror e -&gt;
+  let max_steps = parse_args (List.tl_ex<span data-count="74">n</span> (Array.to_lis<span data-count="74">t</span> (Sys.get_arg<span data-count="74">v</span> ()))) in
+  <span data-count="72">l</span>et input = In_channel.input_all In_channel.stdin |&gt; <span data-count="72">S</span>tring.strip in
+  <span data-count="72">m</span>atch Parser.parse input with
+  | <span data-count="7">E</span>rror e -&gt;
     let msg = Stdlib.Format.asprintf "%a" Parser.pp_error e in
-    <span data-count="2">e</span>printf "Error: %s\n" msg;
-    <span data-count="2">S</span>tdlib.exi<span data-count="0">t</span> 1
-  | <span data-count="63">R</span>esult.Ok ast -&gt;
+    <span data-count="7">e</span>printf "Error: %s\n" msg;
+    <span data-count="7">S</span>tdlib.exi<span data-count="0">t</span> 1
+  | <span data-count="65">R</span>esult.Ok ast -&gt;
     (match eval_expr ~max_steps ast with
      | <span data-count="46">R</span>esult.Ok (VInt n) -&gt; print<span data-count="46">f</span> "%d\n" n
      | <span data-count="1">R</span>esult.Ok (VClosure _) -&gt; print<span data-count="1">f</span> "&lt;fun&gt;\n"
      | <span data-count="1">R</span>esult.Ok (VBuiltin (name, _)) -&gt; print<span data-count="1">f</span> "&lt;builtin:%s&gt;\n" name
      | <span data-count="6">R</span>esult.Ok VUnit -&gt; print<span data-count="6">f</span> "()\n"
-     | <span data-count="1">R</span>esult.Error (UnknownVariable name) -&gt;
+     | <span data-count="2">R</span>esult.Error (UnknownVariable name) -&gt;
        eprintf "Unbound variable: %s\n" name;
-       <span data-count="1">S</span>tdlib.exi<span data-count="0">t</span> 1
+       <span data-count="2">S</span>tdlib.exi<span data-count="0">t</span> 1
      | <span data-count="2">R</span>esult.Error DivisionByZero -&gt;
        eprintf "Division by zero\n";
        <span data-count="2">S</span>tdlib.exi<span data-count="0">t</span> 1
-     | <span data-count="5">R</span>esult.Error TypeMismatch -&gt;
+     | <span data-count="6">R</span>esult.Error TypeMismatch -&gt;
        eprintf "Type error\n";
-       <span data-count="5">S</span>tdlib.exi<span data-count="0">t</span> 1
+       <span data-count="6">S</span>tdlib.exi<span data-count="0">t</span> 1
      | <span data-count="1">R</span>esult.Error StepLimitExceeded -&gt;
        eprintf "Step limit exceeded\n";
        <span data-count="1">S</span>tdlib.exi<span data-count="0">t</span> 1)
