@@ -123,32 +123,32 @@ open Format
 open Ast
 
 let string_of_binop = function
-  | <span data-count="16">A</span>dd -&gt; "+"
-  | <span data-count="19">S</span>ub -&gt; "-"
-  | <span data-count="22">M</span>ul -&gt; "*"
-  | <span data-count="24">D</span>iv -&gt; "/"
+  | <span data-count="42">A</span>dd -&gt; "+"
+  | <span data-count="27">S</span>ub -&gt; "-"
+  | <span data-count="28">M</span>ul -&gt; "*"
+  | <span data-count="20">D</span>iv -&gt; "/"
 ;;
 
 let string_of_cmpop = function
-  | <span data-count="4">E</span>q -&gt; "="
-  | <span data-count="11">N</span>eq -&gt; "&lt;&gt;"
-  | <span data-count="5">L</span>t -&gt; "&lt;"
-  | <span data-count="12">L</span>e -&gt; "&lt;="
+  | <span data-count="14">E</span>q -&gt; "="
+  | <span data-count="29">N</span>eq -&gt; "&lt;&gt;"
+  | <span data-count="7">L</span>t -&gt; "&lt;"
+  | <span data-count="20">L</span>e -&gt; "&lt;="
   | <span data-count="10">G</span>t -&gt; "&gt;"
-  | <span data-count="8">G</span>e -&gt; "&gt;="
+  | <span data-count="12">G</span>e -&gt; "&gt;="
 ;;
 
 let rec pp fmt = function
-  | <span data-count="359">V</span>ar x -&gt; pp_print_string fmt x
-  | <span data-count="413">I</span>nt n when n &lt; 0 -&gt; <span data-count="181">f</span>printf fmt "(%d)" n
-  | <span data-count="232">I</span>nt n -&gt; fprintf fmt "%d" n
-  | <span data-count="77">A</span>bs (x, e) -&gt; fprintf fmt "(fun %s -&gt; %a)" x pp e
-  | <span data-count="141">A</span>pp (e1, e2) -&gt; fprintf fmt "(%a %a)" pp e1 pp e2
-  | <span data-count="58">L</span>et (x, e1, e2) -&gt; fprintf fmt "(let %s = %a in %a)" x pp e1 pp e2
-  | <span data-count="56">L</span>et_rec (f, e1, e2) -&gt; fprintf fmt "(let rec %s = %a in %a)" f pp e1 pp e2
-  | <span data-count="78">I</span>f (cond, t, e) -&gt; fprintf fmt "(if %a then %a else %a)" pp cond pp t pp e
-  | <span data-count="81">B</span>inop (op, e1, e2) -&gt; fprintf fmt "(%a %s %a)" pp e1 (string_of_bino<span data-count="81">p</span> op) pp e2
-  | <span data-count="50">C</span>mp (op, e1, e2) -&gt; fprintf fmt "(%a %s %a)" pp e1 (string_of_cmpo<span data-count="50">p</span> op) pp e2
+  | <span data-count="476">V</span>ar x -&gt; pp_print_string fmt x
+  | <span data-count="476">I</span>nt n when n &lt; 0 -&gt; <span data-count="201">f</span>printf fmt "(%d)" n
+  | <span data-count="275">I</span>nt n -&gt; fprintf fmt "%d" n
+  | <span data-count="85">A</span>bs (x, e) -&gt; fprintf fmt "(fun %s -&gt; %a)" x pp e
+  | <span data-count="157">A</span>pp (e1, e2) -&gt; fprintf fmt "(%a %a)" pp e1 pp e2
+  | <span data-count="105">L</span>et (x, e1, e2) -&gt; fprintf fmt "(let %s = %a in %a)" x pp e1 pp e2
+  | <span data-count="82">L</span>et_rec (f, e1, e2) -&gt; fprintf fmt "(let rec %s = %a in %a)" f pp e1 pp e2
+  | <span data-count="84">I</span>f (cond, t, e) -&gt; fprintf fmt "(if %a then %a else %a)" pp cond pp t pp e
+  | <span data-count="117">B</span>inop (op, e1, e2) -&gt; fprintf fmt "(%a %s %a)" pp e1 (string_of_bino<span data-count="117">p</span> op) pp e2
+  | <span data-count="92">C</span>mp (op, e1, e2) -&gt; fprintf fmt "(%a %s %a)" pp e1 (string_of_cmpo<span data-count="92">p</span> op) pp e2
 ;;
 
 let pp_named = pp
