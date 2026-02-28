@@ -97,8 +97,7 @@ let rec eval steps_remaining env expr =
          >>= fun varg ->
          let new_env = (param, varg) :: closure_env in
          eval steps new_env body
-       | VBuiltin (_, builtin_fn) ->
-         eval steps env arg >>= builtin_fn
+       | VBuiltin (_, builtin_fn) -> eval steps env arg >>= builtin_fn
        | _ -> Error TypeMismatch))
 ;;
 
@@ -120,4 +119,3 @@ let initial_env () =
 
 (** Public function to evaluate an AST expression *)
 let eval_expr ?(max_steps = 10000) ast = eval max_steps (initial_env ()) ast
-;;

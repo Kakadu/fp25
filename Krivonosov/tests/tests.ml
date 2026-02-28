@@ -34,7 +34,6 @@ let%expect_test "parse application with parens" =
   [%expect {| App (Var "x", Var "y") |}]
 ;;
 
-
 (* Test all binary operators *)
 let%expect_test "parse division" =
   Format.printf "%s" (pp (parse_optimistically "10 / 2"));
@@ -100,7 +99,6 @@ let%expect_test "parse let rec" =
 (* ADDITIONAL COVERAGE TESTS *)
 (* ========================================================================== *)
 
-
 let%expect_test "parse multi-param fun syntax" =
   Format.printf "%s" (pp (parse_optimistically "fun x y -> x"));
   [%expect {| Abs ("x", Abs ("y", Var "x")) |}]
@@ -108,7 +106,10 @@ let%expect_test "parse multi-param fun syntax" =
 
 (* Interpreter: Recursive binding tests *)
 let%expect_test "eval recursive function - factorial" =
-  let ast = parse_optimistically "let rec fact = fun n -> if n <= 1 then 1 else n * fact (n - 1) in fact 5" in
+  let ast =
+    parse_optimistically
+      "let rec fact = fun n -> if n <= 1 then 1 else n * fact (n - 1) in fact 5"
+  in
   (match eval_expr ast with
    | Result.Ok (VInt n) -> Format.printf "%d" n
    | Result.Ok (VClosure _) -> Format.printf "<fun>"
@@ -189,7 +190,8 @@ let%expect_test "eval modulo by zero" =
 
 (** Generator for variable names *)
 let gen_name =
-  Gen.(oneof_list [ "x"; "y"; "z"; "f"; "g"; "h"; "n"; "m"; "a"; "b"; "foo"; "bar"; "baz" ])
+  Gen.(
+    oneof_list [ "x"; "y"; "z"; "f"; "g"; "h"; "n"; "m"; "a"; "b"; "foo"; "bar"; "baz" ])
 ;;
 
 (** Generator for binary operators *)
