@@ -18,7 +18,7 @@
       <h2>98.73%</h2>
     </div>
     <div id="navbar">
-      <span class="some-visited" style="bottom:0.81%"></span>
+      <span class="some-visited" style="bottom:0.00%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -124,28 +124,26 @@
 <a id="L99"></a><span > </span>
 <a id="L100"></a><span class="visited"> </span>
 <a id="L101"></a><span class="visited"> </span>
-<a id="L102"></a><span class="visited"> </span>
+<a id="L102"></a><span > </span>
 <a id="L103"></a><span > </span>
 <a id="L104"></a><span > </span>
 <a id="L105"></a><span > </span>
-<a id="L106"></a><span > </span>
-<a id="L107"></a><span class="visited"> </span>
+<a id="L106"></a><span class="visited"> </span>
+<a id="L107"></a><span > </span>
 <a id="L108"></a><span > </span>
 <a id="L109"></a><span > </span>
-<a id="L110"></a><span > </span>
+<a id="L110"></a><span class="visited"> </span>
 <a id="L111"></a><span class="visited"> </span>
 <a id="L112"></a><span class="visited"> </span>
 <a id="L113"></a><span class="visited"> </span>
 <a id="L114"></a><span class="visited"> </span>
-<a id="L115"></a><span class="visited"> </span>
+<a id="L115"></a><span > </span>
 <a id="L116"></a><span > </span>
 <a id="L117"></a><span > </span>
 <a id="L118"></a><span > </span>
 <a id="L119"></a><span > </span>
 <a id="L120"></a><span > </span>
-<a id="L121"></a><span > </span>
-<a id="L122"></a><span class="some-visited"> </span>
-<a id="L123"></a><span > </span>
+<a id="L121"></a><span class="some-visited"> </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -271,8 +269,6 @@
 <a href="#L119">119</a>
 <a href="#L120">120</a>
 <a href="#L121">121</a>
-<a href="#L122">122</a>
-<a href="#L123">123</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -373,8 +369,7 @@ let rec eval steps_remaining env expr =
          &gt;&gt;= fun varg -&gt;
          <span data-count="352">l</span>et new_env = (param, varg) :: closure_env in
          eval steps new_env body
-       | <span data-count="8">V</span>Builtin (_, builtin_fn) -&gt;
-         eva<span data-count="8">l</span> steps env arg &gt;&gt;= builtin_fn
+       | <span data-count="8">V</span>Builtin (_, builtin_fn) -&gt; eva<span data-count="8">l</span> steps env arg &gt;&gt;= builtin_fn
        | <span data-count="2">_</span> -&gt; Error TypeMismatch))
 ;;
 
@@ -396,7 +391,6 @@ let initial_env () =
 
 (** Public function to evaluate an AST expression *)
 let eval_expr ?(max_steps = <span data-count="0">1</span>0000) ast = <span data-count="63">e</span>val max_steps (initial_en<span data-count="63">v</span> ()) ast
-;;
 </code></pre>
       </div>
     </div>
