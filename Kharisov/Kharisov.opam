@@ -18,6 +18,7 @@ depends: [
   "ppx_expect"
   "ppx_deriving"
   "bisect_ppx"
+  "qcheck"
   "odoc" {with-doc}
   "ocamlformat" {build & = "0.26.2"}
 ]
