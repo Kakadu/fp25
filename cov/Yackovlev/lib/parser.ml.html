@@ -344,56 +344,56 @@
 <a href="#L155">155</a>
 <a href="#L156">156</a>
 </pre>
-<pre><code class="ocaml">(** Copyright 2021-2026, Kakadu and contributors *)
+<pre><code class="ocaml">(** Copyright 2021-2026, Kakadu and Yackovlev Nickolay *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
 open Angstrom
 
 let is_space = function
-  | <span data-count="1940">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="46">'</span>\n' | <span data-count="0">'</span>\r' -&gt; true
-  | <span data-count="3217">_</span> -&gt; false
+  | <span data-count="1943">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="48">'</span>\n' | <span data-count="0">'</span>\r' -&gt; true
+  | <span data-count="3181">_</span> -&gt; false
 ;;
 
-let spaces = skip_whil<span data-count="34">e</span> is_space
-let token p = <span data-count="981">p</span> &lt;* spaces
-let symbol s = <span data-count="587">t</span>oken (strin<span data-count="587">g</span> s)
-let parens p = <span data-count="34">s</span>ymbo<span data-count="34">l</span> "(" *<span data-count="34">&gt;</span> p &lt;* symbo<span data-count="34">l</span> ")"
+let spaces = skip_whil<span data-count="36">e</span> is_space
+let token p = <span data-count="1012">p</span> &lt;* spaces
+let symbol s = <span data-count="607">t</span>oken (strin<span data-count="607">g</span> s)
+let parens p = <span data-count="36">s</span>ymbo<span data-count="36">l</span> "(" *<span data-count="36">&gt;</span> p &lt;* symbo<span data-count="36">l</span> ")"
 
 let is_ident_start = function
-  | <span data-count="1786">'</span>a' .. 'z' | <span data-count="1">'</span>_' -&gt; true
-  | <span data-count="2362">_</span> -&gt; false
+  | <span data-count="1741">'</span>a' .. 'z' | <span data-count="1">'</span>_' -&gt; true
+  | <span data-count="2374">_</span> -&gt; false
 ;;
 
 let is_ident_char = function
-  | <span data-count="2057">'</span>a' .. 'z' | <span data-count="0">'</span>A' .. 'Z' | <span data-count="139">'</span>0' .. '9' | <span data-count="71">'</span>_' | <span data-count="87">'</span>\'' -&gt; true
-  | <span data-count="1695">_</span> -&gt; false
+  | <span data-count="2149">'</span>a' .. 'z' | <span data-count="0">'</span>A' .. 'Z' | <span data-count="140">'</span>0' .. '9' | <span data-count="78">'</span>_' | <span data-count="82">'</span>\'' -&gt; true
+  | <span data-count="1658">_</span> -&gt; false
 ;;
 
 let ident_raw =
-  satisf<span data-count="34">y</span> is_ident_start
-  &gt;&gt;<span data-count="34">=</span> fun first -&gt; <span data-count="1787">t</span>ake_whil<span data-count="1787">e</span> is_ident_char &gt;&gt;| fun rest -&gt; <span data-count="1787">S</span>tring.mak<span data-count="1787">e</span> 1 first ^ rest
+  satisf<span data-count="36">y</span> is_ident_start
+  &gt;&gt;<span data-count="36">=</span> fun first -&gt; <span data-count="1742">t</span>ake_whil<span data-count="1742">e</span> is_ident_char &gt;&gt;| fun rest -&gt; <span data-count="1742">S</span>tring.mak<span data-count="1742">e</span> 1 first ^ rest
 ;;
 
 let keywords = [ "let"; "rec"; "in"; "fun"; "if"; "then"; "else" ]
 
 let keyword s =
-  <span data-count="292">t</span>oke<span data-count="292">n</span> ident_raw
-  &gt;&gt;= fun id -&gt; <span data-count="1139">i</span>f id = s then <span data-count="382">r</span>eturn () else <span data-count="757">f</span>ail ("Expected keyword " ^ s)
+  <span data-count="297">t</span>oke<span data-count="297">n</span> ident_raw
+  &gt;&gt;= fun id -&gt; <span data-count="1113">i</span>f id = s then <span data-count="380">r</span>eturn () else <span data-count="733">f</span>ail ("Expected keyword " ^ s)
 ;;
 
 let ident =
-  toke<span data-count="34">n</span> ident_raw
-  &gt;&gt;<span data-count="34">=</span> fun s -&gt;
-  <span data-count="547">i</span>f List.mem s keywords then <span data-count="194">f</span>ail "Keyword cannot be used as identifier" else <span data-count="353">r</span>eturn s
+  toke<span data-count="36">n</span> ident_raw
+  &gt;&gt;<span data-count="36">=</span> fun s -&gt;
+  <span data-count="540">i</span>f List.mem s keywords then <span data-count="193">f</span>ail "Keyword cannot be used as identifier" else <span data-count="347">r</span>eturn s
 ;;
 
 let integer =
-  take_while<span data-count="34">1</span> (function
-    | <span data-count="476">'</span>0' .. '9' -&gt; true
-    | <span data-count="1269">_</span> -&gt; false)
+  take_while<span data-count="36">1</span> (function
+    | <span data-count="524">'</span>0' .. '9' -&gt; true
+    | <span data-count="1278">_</span> -&gt; false)
   &gt;&gt;| int_of_string
-  |&gt; <span data-count="34">t</span>oke<span data-count="34">n</span>
+  |&gt; <span data-count="36">t</span>oke<span data-count="36">n</span>
 ;;
 
 type error = Parsing_error of string
@@ -402,102 +402,102 @@ let pp_error ppf (Parsing_error s) = <span data-count="0">F</span>ormat.fprintf 
 
 let expr : Ast.expr Angstrom.t =
   let open Ast in
-  fi<span data-count="34">x</span> (fun expr -&gt;
-    <span data-count="34">l</span>et chainl1 p op =
-      <span data-count="102">p</span>
+  fi<span data-count="36">x</span> (fun expr -&gt;
+    <span data-count="36">l</span>et chainl1 p op =
+      <span data-count="108">p</span>
       &gt;&gt;= fun init -&gt;
-      <span data-count="2419">m</span>an<span data-count="2419">y</span> (op &gt;&gt;<span data-count="2419">=</span> fun f -&gt; <span data-count="121">p</span> &gt;&gt;| fun v -&gt; <span data-count="118">f</span>, v)
-      &gt;&gt;| fun rest -&gt; <span data-count="2419">L</span>ist.fold_left (fun acc (f, v) -&gt; <span data-count="118">f</span> acc v) init rest
+      <span data-count="2400">m</span>an<span data-count="2400">y</span> (op &gt;&gt;<span data-count="2400">=</span> fun f -&gt; <span data-count="115">p</span> &gt;&gt;| fun v -&gt; <span data-count="112">f</span>, v)
+      &gt;&gt;| fun rest -&gt; <span data-count="2400">L</span>ist.fold_left (fun acc (f, v) -&gt; <span data-count="112">f</span> acc v) init rest
     in
     let atom =
-      choice [ paren<span data-count="34">s</span> expr; (integer &gt;&gt;<span data-count="34">|</span> fun n -&gt; <span data-count="270">I</span>nt n); (ident &gt;&gt;<span data-count="34">|</span> fun x -&gt; <span data-count="261">V</span>ar x) ]
+      choice [ paren<span data-count="36">s</span> expr; (integer &gt;&gt;<span data-count="36">|</span> fun n -&gt; <span data-count="295">I</span>nt n); (ident &gt;&gt;<span data-count="36">|</span> fun x -&gt; <span data-count="260">V</span>ar x) ]
     in
-    <span data-count="34">l</span>et app =
-      many<span data-count="34">1</span> atom
+    <span data-count="36">l</span>et app =
+      many<span data-count="36">1</span> atom
       &gt;&gt;= function
-      | <span data-count="791">[</span> x ] -&gt; return x
-      | <span data-count="86">x</span> :: xs -&gt; return (List.fold_lef<span data-count="86">t</span> (fun acc r -&gt; <span data-count="88">A</span>pp (acc, r)) x xs)
+      | <span data-count="753">[</span> x ] -&gt; return x
+      | <span data-count="114">x</span> :: xs -&gt; return (List.fold_lef<span data-count="114">t</span> (fun acc r -&gt; <span data-count="117">A</span>pp (acc, r)) x xs)
       | <span data-count="0">[</span>] -&gt; fail "application on empty list, impossible by [many1]"
     in
-    <span data-count="34">l</span>et unary =
+    <span data-count="36">l</span>et unary =
       fix (fun self -&gt;
-        <span data-count="34">c</span>hoice
-          [ (symbo<span data-count="34">l</span> "-" *<span data-count="34">&gt;</span> self
-             &gt;&gt;<span data-count="34">|</span> function
-             | <span data-count="101">I</span>nt n -&gt; Int (<span data-count="101">-</span>n)
+        <span data-count="36">c</span>hoice
+          [ (symbo<span data-count="36">l</span> "-" *<span data-count="36">&gt;</span> self
+             &gt;&gt;<span data-count="36">|</span> function
+             | <span data-count="102">I</span>nt n -&gt; Int (<span data-count="102">-</span>n)
              | <span data-count="1">e</span> -&gt; Binop (Sub, Int 0, e))
           ; app
           ])
     in
-    <span data-count="34">l</span>et mul_div =
+    <span data-count="36">l</span>et mul_div =
       let op =
         choice
-          [ symbo<span data-count="34">l</span> "*" *<span data-count="34">&gt;</span> retur<span data-count="34">n</span> (fun l r -&gt; <span data-count="16">B</span>inop (Mul, l, r))
-          ; symbo<span data-count="34">l</span> "/" *<span data-count="34">&gt;</span> retur<span data-count="34">n</span> (fun l r -&gt; <span data-count="11">B</span>inop (Div, l, r))
+          [ symbo<span data-count="36">l</span> "*" *<span data-count="36">&gt;</span> retur<span data-count="36">n</span> (fun l r -&gt; <span data-count="16">B</span>inop (Mul, l, r))
+          ; symbo<span data-count="36">l</span> "/" *<span data-count="36">&gt;</span> retur<span data-count="36">n</span> (fun l r -&gt; <span data-count="12">B</span>inop (Div, l, r))
           ]
       in
-      <span data-count="34">c</span>hainl<span data-count="34">1</span> unary op
+      <span data-count="36">c</span>hainl<span data-count="36">1</span> unary op
     in
     let add_sub =
       let op =
         choice
-          [ symbo<span data-count="34">l</span> "+" *<span data-count="34">&gt;</span> retur<span data-count="34">n</span> (fun l r -&gt; <span data-count="25">B</span>inop (Add, l, r))
-          ; symbo<span data-count="34">l</span> "-" *<span data-count="34">&gt;</span> retur<span data-count="34">n</span> (fun l r -&gt; <span data-count="15">B</span>inop (Sub, l, r))
+          [ symbo<span data-count="36">l</span> "+" *<span data-count="36">&gt;</span> retur<span data-count="36">n</span> (fun l r -&gt; <span data-count="14">B</span>inop (Add, l, r))
+          ; symbo<span data-count="36">l</span> "-" *<span data-count="36">&gt;</span> retur<span data-count="36">n</span> (fun l r -&gt; <span data-count="19">B</span>inop (Sub, l, r))
           ]
       in
-      <span data-count="34">c</span>hainl<span data-count="34">1</span> mul_div op
+      <span data-count="36">c</span>hainl<span data-count="36">1</span> mul_div op
     in
     let cmp =
       let op =
         choice
-          [ symbo<span data-count="34">l</span> "=" *<span data-count="34">&gt;</span> retur<span data-count="34">n</span> (fun l r -&gt; <span data-count="9">C</span>mp (Eq, l, r))
-          ; symbo<span data-count="34">l</span> "&lt;&gt;" *<span data-count="34">&gt;</span> retur<span data-count="34">n</span> (fun l r -&gt; <span data-count="15">C</span>mp (Neq, l, r))
-          ; symbo<span data-count="34">l</span> "&lt;=" *<span data-count="34">&gt;</span> retur<span data-count="34">n</span> (fun l r -&gt; <span data-count="11">C</span>mp (Le, l, r))
-          ; symbo<span data-count="34">l</span> "&gt;=" *<span data-count="34">&gt;</span> retur<span data-count="34">n</span> (fun l r -&gt; <span data-count="6">C</span>mp (Ge, l, r))
-          ; symbo<span data-count="34">l</span> "&lt;" *<span data-count="34">&gt;</span> retur<span data-count="34">n</span> (fun l r -&gt; <span data-count="4">C</span>mp (Lt, l, r))
-          ; symbo<span data-count="34">l</span> "&gt;" *<span data-count="34">&gt;</span> retur<span data-count="34">n</span> (fun l r -&gt; <span data-count="6">C</span>mp (Gt, l, r))
+          [ symbo<span data-count="36">l</span> "=" *<span data-count="36">&gt;</span> retur<span data-count="36">n</span> (fun l r -&gt; <span data-count="13">C</span>mp (Eq, l, r))
+          ; symbo<span data-count="36">l</span> "&lt;&gt;" *<span data-count="36">&gt;</span> retur<span data-count="36">n</span> (fun l r -&gt; <span data-count="5">C</span>mp (Neq, l, r))
+          ; symbo<span data-count="36">l</span> "&lt;=" *<span data-count="36">&gt;</span> retur<span data-count="36">n</span> (fun l r -&gt; <span data-count="10">C</span>mp (Le, l, r))
+          ; symbo<span data-count="36">l</span> "&gt;=" *<span data-count="36">&gt;</span> retur<span data-count="36">n</span> (fun l r -&gt; <span data-count="10">C</span>mp (Ge, l, r))
+          ; symbo<span data-count="36">l</span> "&lt;" *<span data-count="36">&gt;</span> retur<span data-count="36">n</span> (fun l r -&gt; <span data-count="8">C</span>mp (Lt, l, r))
+          ; symbo<span data-count="36">l</span> "&gt;" *<span data-count="36">&gt;</span> retur<span data-count="36">n</span> (fun l r -&gt; <span data-count="5">C</span>mp (Gt, l, r))
           ]
       in
-      <span data-count="34">c</span>hainl<span data-count="34">1</span> add_sub op
+      <span data-count="36">c</span>hainl<span data-count="36">1</span> add_sub op
     in
-    let make_fun params body = <span data-count="144">L</span>ist.fold_right (fun x acc -&gt; <span data-count="49">A</span>bs (x, acc)) params body in
+    let make_fun params body = <span data-count="137">L</span>ist.fold_right (fun x acc -&gt; <span data-count="57">A</span>bs (x, acc)) params body in
     let fun_expr =
-      keywor<span data-count="34">d</span> "fun" *<span data-count="34">&gt;</span> many<span data-count="34">1</span> ident
-      &gt;&gt;= fun params -&gt; <span data-count="44">s</span>ymbo<span data-count="44">l</span> "-&gt;" *<span data-count="44">&gt;</span> expr &gt;&gt;| fun body -&gt; <span data-count="44">m</span>ake_fun params body
+      keywor<span data-count="36">d</span> "fun" *<span data-count="36">&gt;</span> many<span data-count="36">1</span> ident
+      &gt;&gt;= fun params -&gt; <span data-count="50">s</span>ymbo<span data-count="50">l</span> "-&gt;" *<span data-count="50">&gt;</span> expr &gt;&gt;| fun body -&gt; <span data-count="50">m</span>ake_fun params body
     in
-    <span data-count="34">l</span>et if_expr =
-      keywor<span data-count="34">d</span> "if" *<span data-count="34">&gt;</span> expr
+    <span data-count="36">l</span>et if_expr =
+      keywor<span data-count="36">d</span> "if" *<span data-count="36">&gt;</span> expr
       &gt;&gt;= fun cond -&gt;
-      <span data-count="45">k</span>eywor<span data-count="45">d</span> "then" *<span data-count="45">&gt;</span> expr
-      &gt;&gt;= fun then_ -&gt; <span data-count="45">k</span>eywor<span data-count="45">d</span> "else" *<span data-count="45">&gt;</span> expr &gt;&gt;| fun else_ -&gt; <span data-count="45">I</span>f (cond, then_, else_)
+      <span data-count="51">k</span>eywor<span data-count="51">d</span> "then" *<span data-count="51">&gt;</span> expr
+      &gt;&gt;= fun then_ -&gt; <span data-count="51">k</span>eywor<span data-count="51">d</span> "else" *<span data-count="51">&gt;</span> expr &gt;&gt;| fun else_ -&gt; <span data-count="51">I</span>f (cond, then_, else_)
     in
-    <span data-count="34">l</span>et let_expr =
-      keywor<span data-count="34">d</span> "let" *<span data-count="34">&gt;</span> toke<span data-count="34">n</span> ident_raw
+    <span data-count="36">l</span>et let_expr =
+      keywor<span data-count="36">d</span> "let" *<span data-count="36">&gt;</span> toke<span data-count="36">n</span> ident_raw
       &gt;&gt;= fun next_token -&gt;
-      <span data-count="101">l</span>et is_rec = next_token = "rec" in
+      <span data-count="89">l</span>et is_rec = next_token = "rec" in
       (if is_rec
-       then <span data-count="43">i</span>dent
-       else <span data-count="58">i</span>f List.mem next_token keywords
+       then <span data-count="30">i</span>dent
+       else <span data-count="59">i</span>f List.mem next_token keywords
        then <span data-count="0">f</span>ai<span data-count="0">l</span> "Keyword used as variable name"
-       else <span data-count="58">r</span>etur<span data-count="58">n</span> next_token)
+       else <span data-count="59">r</span>etur<span data-count="59">n</span> next_token)
       &gt;&gt;= fun name -&gt;
-      <span data-count="101">m</span>an<span data-count="101">y</span> ident
+      <span data-count="89">m</span>an<span data-count="89">y</span> ident
       &gt;&gt;= fun params -&gt;
-      <span data-count="101">s</span>ymbo<span data-count="101">l</span> "=" *<span data-count="101">&gt;</span> expr
+      <span data-count="89">s</span>ymbo<span data-count="89">l</span> "=" *<span data-count="89">&gt;</span> expr
       &gt;&gt;= fun rhs -&gt;
-      <span data-count="100">k</span>eywor<span data-count="100">d</span> "in" *<span data-count="100">&gt;</span> expr
+      <span data-count="87">k</span>eywor<span data-count="87">d</span> "in" *<span data-count="87">&gt;</span> expr
       &gt;&gt;| fun body -&gt;
-      <span data-count="100">l</span>et rhs' = make_fun params rhs in
-      <span data-count="100">i</span>f is_rec then <span data-count="43">L</span>et_rec (name, rhs', body) else <span data-count="57">L</span>et (name, rhs', body)
+      <span data-count="87">l</span>et rhs' = make_fun params rhs in
+      <span data-count="87">i</span>f is_rec then <span data-count="30">L</span>et_rec (name, rhs', body) else <span data-count="57">L</span>et (name, rhs', body)
     in
-    <span data-count="34">c</span>hoice [ let_expr; if_expr; fun_expr; cmp ])
+    <span data-count="36">c</span>hoice [ let_expr; if_expr; fun_expr; cmp ])
 ;;
 
 let parse str =
-  <span data-count="139">m</span>atch
-    Angstrom.parse_string (spaces *<span data-count="139">&gt;</span> expr &lt;<span data-count="139">*</span> spaces) ~consume:Angstrom.Consume.All str
+  <span data-count="141">m</span>atch
+    Angstrom.parse_string (spaces *<span data-count="141">&gt;</span> expr &lt;<span data-count="141">*</span> spaces) ~consume:Angstrom.Consume.All str
   with
-  | <span data-count="131">R</span>esult.Ok x -&gt; Result.Ok x
+  | <span data-count="133">R</span>esult.Ok x -&gt; Result.Ok x
   | <span data-count="8">E</span>rror er -&gt; Result.Error (Parsing_error er)
 ;;
 </code></pre>

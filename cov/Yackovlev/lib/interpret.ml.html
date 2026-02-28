@@ -404,7 +404,7 @@
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
-(** Copyright 2021-2026, Kakadu and contributors *)
+(** Copyright 2021-2026, Kakadu and Yackovlev Nickolay *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
@@ -439,25 +439,25 @@ type error =
 
 type 'a eval_result = ('a, error) result
 
-let ok x = <span data-count="170540">O</span>k x
+let ok x = <span data-count="170912">O</span>k x
 let error e = <span data-count="11">E</span>rror e
 
 let ( let* ) (m : 'a eval_result) (f : 'a -&gt; 'b eval_result) : 'b eval_result =
-  <span data-count="170522">m</span>atch m with
-  | <span data-count="170520">O</span>k v -&gt; f v
+  <span data-count="170892">m</span>atch m with
+  | <span data-count="170890">O</span>k v -&gt; f v
   | <span data-count="2">E</span>rror e -&gt; Error e
 ;;
 
 type fuel = int
 
 let tick (fuel : fuel) : (unit * fuel, error) result =
-  <span data-count="101993">i</span>f fuel &lt;= 0 then <span data-count="1">e</span>rror Out_of_fuel else <span data-count="101992">o</span>k ((), fuel - 1)
+  <span data-count="102194">i</span>f fuel &lt;= 0 then <span data-count="1">e</span>rror Out_of_fuel else <span data-count="102193">o</span>k ((), fuel - 1)
 ;;
 
-let lookup (env : env) (x : name) : value option = <span data-count="67343">L</span>ist.assoc_opt x env
+let lookup (env : env) (x : name) : value option = <span data-count="67415">L</span>ist.assoc_opt x env
 
 let string_of_value = function
-  | <span data-count="19">V</span>Int n -&gt; string_of_int n
+  | <span data-count="21">V</span>Int n -&gt; string_of_int n
   | <span data-count="1">V</span>Unit -&gt; "()"
   | <span data-count="1">V</span>Closure _ -&gt; "&lt;fun&gt;"
   | <span data-count="1">V</span>Prim Print_int -&gt; "&lt;prim print_int&gt;"
@@ -473,8 +473,8 @@ let string_of_error : error -&gt; string = function
 ;;
 
 let rec apply (fuel : fuel) (f : value) (arg : value) : (value * fuel, error) result =
-  <span data-count="33531">m</span>atch f with
-  | <span data-count="33524">V</span>Closure { param; body; env } -&gt;
+  <span data-count="33565">m</span>atch f with
+  | <span data-count="33557">V</span>Closure { param; body; env } -&gt;
     let env' = (param, arg) :: env in
     eval env' fuel body
   | <span data-count="3">V</span>Prim Print_int -&gt;
@@ -483,11 +483,11 @@ let rec apply (fuel : fuel) (f : value) (arg : value) : (value * fuel, error) re
        print_endline (string_of_in<span data-count="2">t</span> n);
        <span data-count="2">o</span>k (VUnit, fuel)
      | <span data-count="1">v</span> -&gt; error (Type_error ("print_int expects int, got " ^ string_of_valu<span data-count="1">e</span> v)))
-  | <span data-count="3">V</span>Prim Fix -&gt;
+  | <span data-count="4">V</span>Prim Fix -&gt;
     (match arg with
-     | <span data-count="2">V</span>Closure { param = self; body; env } -&gt;
+     | <span data-count="3">V</span>Closure { param = self; body; env } -&gt;
        (match body with
-        | <span data-count="1">A</span>bs (arg, inner_body) -&gt;
+        | <span data-count="2">A</span>bs (arg, inner_body) -&gt;
           let rec rec_closure =
             VClosure { param = arg; body = inner_body; env = (self, rec_closure) :: env }
           in
@@ -497,21 +497,21 @@ let rec apply (fuel : fuel) (f : value) (arg : value) : (value * fuel, error) re
   | <span data-count="1">v</span> -&gt; error (Not_a_function v)
 
 and eval (env : env) (fuel : fuel) (e : expr) : (value * fuel, error) result =
-  <span data-count="101993">l</span>et* (), fuel = tic<span data-count="101993">k</span> fuel in
-  <span data-count="101992">m</span>atch e with
-  | <span data-count="67343">V</span>ar x -&gt;
+  <span data-count="102194">l</span>et* (), fuel = tic<span data-count="102194">k</span> fuel in
+  <span data-count="102193">m</span>atch e with
+  | <span data-count="67415">V</span>ar x -&gt;
     (match lookup env x with
-     | <span data-count="67342">S</span>ome v -&gt; ok (v, fuel)
+     | <span data-count="67414">S</span>ome v -&gt; ok (v, fuel)
      | <span data-count="1">N</span>one -&gt; error (Unknown_variable x))
-  | <span data-count="418">I</span>nt n -&gt; ok (VInt n, fuel)
-  | <span data-count="9">A</span>bs (x, body) -&gt; ok (VClosure { param = x; body; env }, fuel)
-  | <span data-count="33531">A</span>pp (e1, e2) -&gt;
-    let* f, fuel1 = eva<span data-count="33531">l</span> env fuel e1 in
-    <span data-count="33531">l</span>et* arg, fuel2 = eva<span data-count="33531">l</span> env fuel1 e2 in
-    <span data-count="33531">a</span>pply fuel2 f arg
-  | <span data-count="9">L</span>et (x, e1, e2) -&gt;
-    let* v1, fuel1 = eva<span data-count="9">l</span> env fuel e1 in
-    <span data-count="9">l</span>et env' = (x, v1) :: env in
+  | <span data-count="444">I</span>nt n -&gt; ok (VInt n, fuel)
+  | <span data-count="29">A</span>bs (x, body) -&gt; ok (VClosure { param = x; body; env }, fuel)
+  | <span data-count="33565">A</span>pp (e1, e2) -&gt;
+    let* f, fuel1 = eva<span data-count="33565">l</span> env fuel e1 in
+    <span data-count="33565">l</span>et* arg, fuel2 = eva<span data-count="33565">l</span> env fuel1 e2 in
+    <span data-count="33565">a</span>pply fuel2 f arg
+  | <span data-count="14">L</span>et (x, e1, e2) -&gt;
+    let* v1, fuel1 = eva<span data-count="14">l</span> env fuel e1 in
+    <span data-count="14">l</span>et env' = (x, v1) :: env in
     eval env' fuel1 e2
   | <span data-count="4">L</span>et_rec (f, rhs, body) -&gt;
     (match rhs with
@@ -520,40 +520,40 @@ and eval (env : env) (fuel : fuel) (e : expr) : (value * fuel, error) result =
        and env' = (f, closure) :: env in
        eval env' fuel body
      | <span data-count="1">_</span> -&gt; error (Type_error "let rec expects a function on the right-hand side"))
-  | <span data-count="191">I</span>f (cond, e_then, e_else) -&gt;
-    let* v_cond, fuel1 = eva<span data-count="191">l</span> env fuel cond in
-    <span data-count="191">(</span>match v_cond with
-     | <span data-count="190">V</span>Int n -&gt; if n &lt;&gt; 0 then <span data-count="92">e</span>val env fuel1 e_then else <span data-count="98">e</span>val env fuel1 e_else
+  | <span data-count="203">I</span>f (cond, e_then, e_else) -&gt;
+    let* v_cond, fuel1 = eva<span data-count="203">l</span> env fuel cond in
+    <span data-count="203">(</span>match v_cond with
+     | <span data-count="202">V</span>Int n -&gt; if n &lt;&gt; 0 then <span data-count="94">e</span>val env fuel1 e_then else <span data-count="108">e</span>val env fuel1 e_else
      | <span data-count="1">_</span> -&gt; error (Type_error "if condition must be an int"))
-  | <span data-count="294">B</span>inop (op, e1, e2) -&gt;
-    let* v1, fuel1 = eva<span data-count="294">l</span> env fuel e1 in
-    <span data-count="294">l</span>et* v2, fuel2 = eva<span data-count="294">l</span> env fuel1 e2 in
-    <span data-count="294">(</span>match v1, v2 with
-     | <span data-count="293">V</span>Int n1, VInt n2 -&gt;
+  | <span data-count="314">B</span>inop (op, e1, e2) -&gt;
+    let* v1, fuel1 = eva<span data-count="314">l</span> env fuel e1 in
+    <span data-count="314">l</span>et* v2, fuel2 = eva<span data-count="314">l</span> env fuel1 e2 in
+    <span data-count="314">(</span>match v1, v2 with
+     | <span data-count="313">V</span>Int n1, VInt n2 -&gt;
        let* n =
          match op with
          | <span data-count="94">A</span>dd -&gt; o<span data-count="94">k</span> (n1 + n2)
-         | <span data-count="186">S</span>ub -&gt; o<span data-count="186">k</span> (n1 - n2)
-         | <span data-count="11">M</span>ul -&gt; o<span data-count="11">k</span> (n1 * n2)
+         | <span data-count="196">S</span>ub -&gt; o<span data-count="196">k</span> (n1 - n2)
+         | <span data-count="21">M</span>ul -&gt; o<span data-count="21">k</span> (n1 * n2)
          | <span data-count="2">D</span>iv -&gt; if n2 = 0 then <span data-count="1">e</span>rro<span data-count="1">r</span> Div_by_zero else <span data-count="1">o</span><span data-count="1">k</span> (n1 / n2)
        in
-       <span data-count="292">o</span>k (VInt n, fuel2)
+       <span data-count="312">o</span>k (VInt n, fuel2)
      | <span data-count="1">_</span> -&gt; error (Type_error "integer operands expected in arithmetic"))
-  | <span data-count="193">C</span>mp (op, e1, e2) -&gt;
-    let* v1, fuel1 = eva<span data-count="193">l</span> env fuel e1 in
-    <span data-count="193">l</span>et* v2, fuel2 = eva<span data-count="193">l</span> env fuel1 e2 in
-    <span data-count="193">(</span>match v1, v2 with
-     | <span data-count="192">V</span>Int n1, VInt n2 -&gt;
+  | <span data-count="205">C</span>mp (op, e1, e2) -&gt;
+    let* v1, fuel1 = eva<span data-count="205">l</span> env fuel e1 in
+    <span data-count="205">l</span>et* v2, fuel2 = eva<span data-count="205">l</span> env fuel1 e2 in
+    <span data-count="205">(</span>match v1, v2 with
+     | <span data-count="204">V</span>Int n1, VInt n2 -&gt;
        let b =
          match op with
-         | <span data-count="7">E</span>q -&gt; n1 = n2
+         | <span data-count="19">E</span>q -&gt; n1 = n2
          | <span data-count="1">N</span>eq -&gt; n1 &lt;&gt; n2
          | <span data-count="1">L</span>t -&gt; n1 &lt; n2
          | <span data-count="182">L</span>e -&gt; n1 &lt;= n2
          | <span data-count="1">G</span>t -&gt; n1 &gt; n2
          | <span data-count="0">G</span>e -&gt; n1 &gt;= n2
        in
-       ok (VInt (if b then <span data-count="94">1</span> else <span data-count="98">0</span>), fuel2)
+       ok (VInt (if b then <span data-count="96">1</span> else <span data-count="108">0</span>), fuel2)
      | <span data-count="1">_</span> -&gt; error (Type_error "comparison expects integer operands"))
 ;;
 
