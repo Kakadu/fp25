@@ -298,15 +298,15 @@ and environment = (string * value) list
 
 (** Lookup variable in environment *)
 let lookup env name =
-  <span data-count="1078">m</span>atch List.Assoc.find ~equal:String.equal env name with
-  | <span data-count="1076">S</span>ome v -&gt; Ok v
+  <span data-count="1080">m</span>atch List.Assoc.find ~equal:String.equal env name with
+  | <span data-count="1078">S</span>ome v -&gt; Ok v
   | <span data-count="2">N</span>one -&gt; Error (UnknownVariable name)
 ;;
 
 (** Evaluate binary operation *)
 let eval_binop op v1 v2 =
-  <span data-count="639">m</span>atch op, v1, v2 with
-  | <span data-count="123">A</span>st.Add, VInt a, VInt b -&gt; Ok (VInt (a + b))
+  <span data-count="640">m</span>atch op, v1, v2 with
+  | <span data-count="124">A</span>st.Add, VInt a, VInt b -&gt; Ok (VInt (a + b))
   | <span data-count="234">A</span>st.Sub, VInt a, VInt b -&gt; Ok (VInt (a - b))
   | <span data-count="21">A</span>st.Mul, VInt a, VInt b -&gt; Ok (VInt (a * b))
   | <span data-count="1">A</span>st.Div, VInt _, VInt 0 -&gt; Error DivisionByZero
@@ -324,26 +324,26 @@ let eval_binop op v1 v2 =
 
 (** Main evaluation function with step counter *)
 let rec eval steps_remaining env expr =
-  <span data-count="2961">i</span>f steps_remaining &lt;= 0
+  <span data-count="2972">i</span>f steps_remaining &lt;= 0
   then <span data-count="1">E</span>rror StepLimitExceeded
-  else <span data-count="2960">(</span>
+  else <span data-count="2971">(</span>
     let steps = steps_remaining - 1 in
     match expr with
-    | <span data-count="584">A</span>st.Int n -&gt; Ok (VInt n)
-    | <span data-count="1078">A</span>st.Var name -&gt; lookup env name
+    | <span data-count="589">A</span>st.Int n -&gt; Ok (VInt n)
+    | <span data-count="1080">A</span>st.Var name -&gt; lookup env name
     | <span data-count="17">A</span>st.Abs (param, body) -&gt; Ok (VClosure (param, body, env))
-    | <span data-count="640">A</span>st.BinOp (op, l, r) -&gt;
-      eva<span data-count="640">l</span> steps env l &gt;&gt;= fun vl -&gt; <span data-count="639">e</span>va<span data-count="639">l</span> steps env r &gt;&gt;= fun vr -&gt; <span data-count="639">e</span>val_binop op vl vr
-    | <span data-count="251">A</span>st.If (cond, then_branch, else_branch_opt) -&gt;
-      eva<span data-count="251">l</span> steps env cond
+    | <span data-count="641">A</span>st.BinOp (op, l, r) -&gt;
+      eva<span data-count="641">l</span> steps env l &gt;&gt;= fun vl -&gt; <span data-count="640">e</span>va<span data-count="640">l</span> steps env r &gt;&gt;= fun vr -&gt; <span data-count="640">e</span>val_binop op vl vr
+    | <span data-count="252">A</span>st.If (cond, then_branch, else_branch_opt) -&gt;
+      eva<span data-count="252">l</span> steps env cond
       &gt;&gt;= (function
        | <span data-count="127">V</span>Int 0 -&gt;
          (match else_branch_opt with
           | <span data-count="126">S</span>ome else_branch -&gt; eval steps env else_branch
           | <span data-count="1">N</span>one -&gt; Ok (VInt 0))
-       | <span data-count="123">V</span>Int _ -&gt; eval steps env then_branch
+       | <span data-count="124">V</span>Int _ -&gt; eval steps env then_branch
        | <span data-count="1">_</span> -&gt; Error TypeMismatch)
-    | <span data-count="25">A</span>st.Let (is_rec, name, binding, body) -&gt;
+    | <span data-count="27">A</span>st.Let (is_rec, name, binding, body) -&gt;
       if is_rec
       then <span data-count="11">(</span>
         match binding with
@@ -357,9 +357,9 @@ let rec eval steps_remaining env expr =
           <span data-count="1">l</span>et new_env = (name, value) :: env in
           eval steps new_env body)
       else
-        <span data-count="14">e</span>va<span data-count="14">l</span> steps env binding
+        <span data-count="16">e</span>va<span data-count="16">l</span> steps env binding
         &gt;&gt;= fun value -&gt;
-        <span data-count="14">l</span>et new_env = (name, value) :: env in
+        <span data-count="16">l</span>et new_env = (name, value) :: env in
         eval steps new_env body
     | <span data-count="365">A</span>st.App (f, arg) -&gt;
       eva<span data-count="365">l</span> steps env f
@@ -375,7 +375,7 @@ let rec eval steps_remaining env expr =
 
 (** Create initial environment with built-in functions *)
 let initial_env () =
-  <span data-count="65">l</span>et print_builtin =
+  <span data-count="68">l</span>et print_builtin =
     VBuiltin
       ( "print"
       , fun v -&gt;
@@ -390,7 +390,7 @@ let initial_env () =
 ;;
 
 (** Public function to evaluate an AST expression *)
-let eval_expr ?(max_steps = <span data-count="0">1</span>0000) ast = <span data-count="65">e</span>val max_steps (initial_en<span data-count="65">v</span> ()) ast
+let eval_expr ?(max_steps = <span data-count="0">1</span>0000) ast = <span data-count="68">e</span>val max_steps (initial_en<span data-count="68">v</span> ()) ast
 </code></pre>
       </div>
     </div>
