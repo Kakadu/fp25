@@ -382,7 +382,7 @@ let is_space = function
 
 let spaces = skip_whil<span data-count="74">e</span> is_space
 
-(* Обязательный пробел — предотвращает склеивание ключевых слов с идентификаторами *)
+(* Mandatory whitespace — prevents fusing keywords with identifiers *)
 let spaces1 = satisf<span data-count="74">y</span> is_space *<span data-count="74">&gt;</span> spaces
 
 (* Keyword filtering *)
