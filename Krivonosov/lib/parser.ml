@@ -15,7 +15,7 @@ let is_space = function
 
 let spaces = skip_while is_space
 
-(* Обязательный пробел — предотвращает склеивание ключевых слов с идентификаторами *)
+(* Mandatory whitespace — prevents fusing keywords with identifiers *)
 let spaces1 = satisfy is_space *> spaces
 
 (* Keyword filtering *)
