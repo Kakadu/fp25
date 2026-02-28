@@ -175,3 +175,13 @@ in the dune file
   > let x = 0 in(x)
   (let x = 0 in x)
   0
+
+  $ $REPL <<EOF
+  > let fix f eta = f (fix f) eta in let fact_gen = fun fact -> fun n -> if n = 0 then 1 else n * fact (n - 1) in let fact = fix fact_gen in fact 5
+  (let fix = (fun f -> (fun eta -> ((f (fix f)) eta))) in (let fact_gen = (fun fact -> (fun n -> (if (n = 0) then 1 else (n * (fact (n - 1)))))) in (let fact = (fix fact_gen) in (fact 5))))
+  120
+
+  $ $REPL <<EOF
+  > let fix = fun f ->  (fun x -> f (fun y -> (x x) y))  (fun x -> f (fun y -> (x x) y)) in let fact = fix (fun fact -> fun n -> if n = 0 then 1 else n * fact (n - 1)) in fact 5
+  (let fix = (fun f -> ((fun x -> (f (fun y -> ((x x) y)))) (fun x -> (f (fun y -> ((x x) y)))))) in (let fact = (fix (fun fact -> (fun n -> (if (n = 0) then 1 else (n * (fact (n - 1))))))) in (fact 5)))
+  120
