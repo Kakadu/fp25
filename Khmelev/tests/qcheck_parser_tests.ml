@@ -59,7 +59,12 @@ let test_print_parse =
        let printed = Printast.show expr in
        match Parser.parse printed with
        | Ok parsed -> String.equal printed (Printast.show parsed)
-       | Error _ -> true)
+       | Error e ->
+         QCheck.Test.fail_reportf
+           "Parse error for: %s\nError: %a"
+           printed
+           Parser.pp_error
+           e)
 ;;
 
 let test_parse_valid =
