@@ -283,3 +283,33 @@ Type error - applying number as function
   > let f = 5 in f 3
   Type error
   [1]
+
+Fused keywords must be rejected
+  $ ../bin/REPL.exe <<EOF
+  > letrec f = fun x -> x in f 1
+  Error: : end_of_input
+  [1]
+  $ ../bin/REPL.exe <<EOF
+  > letx = 5 in x
+  Error: : end_of_input
+  [1]
+  $ ../bin/REPL.exe <<EOF
+  > ifthen 42
+  Unbound variable: ifthen
+  [1]
+  $ ../bin/REPL.exe <<EOF
+  > funx -> x
+  Error: : end_of_input
+  [1]
+  $ ../bin/REPL.exe <<EOF
+  > if 1 then42 else 0
+  Error: : no more choices
+  [1]
+  $ ../bin/REPL.exe <<EOF
+  > if 1 then 42 else0
+  Type error
+  [1]
+  $ ../bin/REPL.exe <<EOF
+  > let x = 5 inx
+  Error: : no more choices
+  [1]

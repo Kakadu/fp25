@@ -15,6 +15,9 @@ let is_space = function
 
 let spaces = skip_while is_space
 
+(* Обязательный пробел — предотвращает склеивание ключевых слов с идентификаторами *)
+let spaces1 = satisfy is_space *> spaces
+
 (* Keyword filtering *)
 let is_keyword = function
   | "let" | "rec" | "if" | "then" | "else" | "in" | "fun" -> true
@@ -78,7 +81,7 @@ let pexpr =
     in
     (* Lambda abstractions: fun x y z -> body *)
     let plambda =
-      string "fun" *> spaces *> many1 (identifier <* spaces)
+      string "fun" *> spaces1 *> many1 (identifier <* spaces)
       <* string "->"
       <* spaces
       >>= fun params ->
@@ -89,16 +92,16 @@ let pexpr =
     in
     (* If-then-else expression *)
     let pif =
-      string "if" *> spaces *> pexpr
+      string "if" *> spaces1 *> pexpr
       >>= fun cond ->
-      spaces *> string "then" *> spaces *> pexpr
+      spaces *> string "then" *> spaces1 *> pexpr
       >>= fun then_branch ->
-      option None (spaces *> string "else" *> spaces *> pexpr >>| Option.some)
+      option None (spaces *> string "else" *> spaces1 *> pexpr >>| Option.some)
       >>| fun else_branch -> Ast.If (cond, then_branch, else_branch)
     in
     (* Let expression *)
     let plet =
-      string "let" *> spaces *> option false (string "rec" *> spaces *> return true)
+      string "let" *> spaces1 *> option false (string "rec" *> spaces1 *> return true)
       >>= fun is_rec ->
       identifier
       <* spaces
@@ -107,7 +110,7 @@ let pexpr =
       >>= fun name ->
       pexpr
       >>= fun binding ->
-      spaces *> string "in" *> spaces *> pexpr
+      spaces *> string "in" *> spaces1 *> pexpr
       >>| fun body -> Ast.Let (is_rec, name, binding, body)
     in
     (* Application: sequence of atoms *)
