@@ -189,11 +189,11 @@ let%expect_test "eval modulo by zero" =
 
 (** Generator for variable names *)
 let gen_name =
-  Gen.(oneofl [ "x"; "y"; "z"; "f"; "g"; "h"; "n"; "m"; "a"; "b"; "foo"; "bar"; "baz" ])
+  Gen.(oneof_list [ "x"; "y"; "z"; "f"; "g"; "h"; "n"; "m"; "a"; "b"; "foo"; "bar"; "baz" ])
 ;;
 
 (** Generator for binary operators *)
-let gen_binop = Gen.oneofl Ast.[ Add; Sub; Mul; Div; Mod; Eq; Neq; Lt; Gt; Leq; Geq ]
+let gen_binop = Gen.oneof_list Ast.[ Add; Sub; Mul; Div; Mod; Eq; Neq; Lt; Gt; Leq; Geq ]
 
 (** Generator for AST expressions with bounded depth
     @param max_depth Maximum depth of the generated AST tree *)
@@ -209,7 +209,7 @@ let gen_ast max_depth =
         ]
     else
       (* Generate all kinds of expressions *)
-      frequency
+      oneof_weighted
         [ (* Leaf nodes - higher weight for simpler expressions *)
           3, map (fun n -> Ast.Int n) (int_range 0 100)
         ; 3, map (fun name -> Ast.Var name) gen_name (* Binary operations *)
@@ -300,7 +300,7 @@ let test_parser_deterministic =
   Test.make
     ~name:"parser is deterministic"
     ~count:1000
-    (make Gen.(small_string ~gen:printable))
+    (make Gen.(string_small_of printable))
     (fun str ->
       let result1 = Parser.parse str in
       let result2 = Parser.parse str in
