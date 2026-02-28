@@ -287,48 +287,48 @@ let gen_cmpop =
 let gen_expr =
   let open QCheck.Gen in
   let rec expr depth =
-    <span data-count="14480">d</span>elay (fun () -&gt;
-      <span data-count="1364">i</span>f depth &lt;= 0
+    <span data-count="12380">d</span>elay (fun () -&gt;
+      <span data-count="1136">i</span>f depth &lt;= 0
       then
-        <span data-count="344">o</span>neof
-          [ ma<span data-count="344">p</span> (fun i -&gt; <span data-count="168">I</span>nt i) (int_rang<span data-count="344">e</span> (-100) 100); ma<span data-count="344">p</span> (fun s -&gt; <span data-count="176">V</span>ar s) gen_name ]
-      else <span data-count="1020">(</span>
+        <span data-count="266">o</span>neof
+          [ ma<span data-count="266">p</span> (fun i -&gt; <span data-count="142">I</span>nt i) (int_rang<span data-count="266">e</span> (-100) 100); ma<span data-count="266">p</span> (fun s -&gt; <span data-count="124">V</span>ar s) gen_name ]
+      else <span data-count="870">(</span>
         let new_depth = depth - 1 in
         oneof_weighted
-          [ 3, ma<span data-count="1020">p</span> (fun i -&gt; <span data-count="214">I</span>nt i) (int_rang<span data-count="1020">e</span> (-100) 100)
-          ; 3, ma<span data-count="1020">p</span> (fun s -&gt; <span data-count="226">V</span>ar s) gen_name
+          [ 3, ma<span data-count="870">p</span> (fun i -&gt; <span data-count="214">I</span>nt i) (int_rang<span data-count="870">e</span> (-100) 100)
+          ; 3, ma<span data-count="870">p</span> (fun s -&gt; <span data-count="192">V</span>ar s) gen_name
           ; ( 1
-            , map<span data-count="1020">3</span>
-                (fun op l r -&gt; <span data-count="90">B</span>inop (op, l, r))
+            , map<span data-count="870">3</span>
+                (fun op l r -&gt; <span data-count="62">B</span>inop (op, l, r))
                 gen_binop
-                (exp<span data-count="1020">r</span> new_depth)
-                (exp<span data-count="1020">r</span> new_depth) )
+                (exp<span data-count="870">r</span> new_depth)
+                (exp<span data-count="870">r</span> new_depth) )
           ; ( 1
-            , map<span data-count="1020">3</span>
-                (fun op l r -&gt; <span data-count="76">C</span>mp (op, l, r))
+            , map<span data-count="870">3</span>
+                (fun op l r -&gt; <span data-count="42">C</span>mp (op, l, r))
                 gen_cmpop
-                (exp<span data-count="1020">r</span> new_depth)
-                (exp<span data-count="1020">r</span> new_depth) )
-          ; 1, map<span data-count="1020">2</span> (fun name body -&gt; <span data-count="74">A</span>bs (name, body)) gen_name (exp<span data-count="1020">r</span> new_depth)
-          ; 2, map<span data-count="1020">2</span> (fun e1 e2 -&gt; <span data-count="134">A</span>pp (e1, e2)) (exp<span data-count="1020">r</span> new_depth) (exp<span data-count="1020">r</span> new_depth)
+                (exp<span data-count="870">r</span> new_depth)
+                (exp<span data-count="870">r</span> new_depth) )
+          ; 1, map<span data-count="870">2</span> (fun name body -&gt; <span data-count="64">A</span>bs (name, body)) gen_name (exp<span data-count="870">r</span> new_depth)
+          ; 2, map<span data-count="870">2</span> (fun e1 e2 -&gt; <span data-count="122">A</span>pp (e1, e2)) (exp<span data-count="870">r</span> new_depth) (exp<span data-count="870">r</span> new_depth)
           ; ( 1
-            , map<span data-count="1020">3</span>
-                (fun c t e -&gt; <span data-count="78">I</span>f (c, t, e))
-                (exp<span data-count="1020">r</span> new_depth)
-                (exp<span data-count="1020">r</span> new_depth)
-                (exp<span data-count="1020">r</span> new_depth) )
+            , map<span data-count="870">3</span>
+                (fun c t e -&gt; <span data-count="72">I</span>f (c, t, e))
+                (exp<span data-count="870">r</span> new_depth)
+                (exp<span data-count="870">r</span> new_depth)
+                (exp<span data-count="870">r</span> new_depth) )
           ; ( 1
-            , map<span data-count="1020">3</span>
-                (fun x e1 e2 -&gt; <span data-count="76">L</span>et (x, e1, e2))
+            , map<span data-count="870">3</span>
+                (fun x e1 e2 -&gt; <span data-count="50">L</span>et (x, e1, e2))
                 gen_name
-                (exp<span data-count="1020">r</span> new_depth)
-                (exp<span data-count="1020">r</span> new_depth) )
+                (exp<span data-count="870">r</span> new_depth)
+                (exp<span data-count="870">r</span> new_depth) )
           ; ( 1
-            , map<span data-count="1020">3</span>
+            , map<span data-count="870">3</span>
                 (fun x e1 e2 -&gt; <span data-count="52">L</span>et_rec (x, e1, e2))
                 gen_name
-                (exp<span data-count="1020">r</span> new_depth)
-                (exp<span data-count="1020">r</span> new_depth) )
+                (exp<span data-count="870">r</span> new_depth)
+                (exp<span data-count="870">r</span> new_depth) )
           ]))
   in
   size<span data-count="1">d</span> (fun n -&gt; <span data-count="200">e</span>xpr (mi<span data-count="200">n</span> n 5))
