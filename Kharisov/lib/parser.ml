@@ -74,7 +74,7 @@ let integer = digits >>| fun n -> EConst n
 (* stolen from Angstrom README, only God knows who could create that *)
 let chainl1 e op =
   let rec go acc = lift2 (fun f x -> f acc x) op e >>= go <|> return acc in
-  e >>= fun init -> go init
+  e >>= go
 ;;
 
 let expr =

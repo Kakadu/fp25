@@ -28,5 +28,7 @@ let () =
   | Ok (v, output) ->
     List.iter print_endline output;
     print_endline (Interpret_lib.Interpret.format_value v)
-  | Error e -> print_endline (Interpret_lib.Interpret.format_error e)
+  | Error e ->
+    print_endline (Interpret_lib.Interpret.format_error e);
+    exit 1
 ;;
