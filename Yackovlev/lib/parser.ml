@@ -1,4 +1,4 @@
-(** Copyright 2021-2026, Kakadu and contributors *)
+(** Copyright 2021-2026, Kakadu and Yackovlev Nickolay *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
