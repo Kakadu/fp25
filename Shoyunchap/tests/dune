@@ -1,0 +1,26 @@
+(dirs
+ (:standard \ tests_that_you_need_to_implement))
+
+(test
+ (name parser_tests)
+ (modules parser_tests)
+ (libraries lambda_lib)
+ (instrumentation
+  (backend bisect_ppx)))
+
+(test
+ (name printer_tests)
+ (modules printer_tests)
+ (libraries lambda_lib)
+ (instrumentation
+  (backend bisect_ppx)))
+
+(test
+ (name parser_prop_tests)
+ (modules parser_prop_tests)
+ (libraries lambda_lib qcheck)
+ (instrumentation
+  (backend bisect_ppx)))
+
+(cram
+ (deps ../REPL.exe))
