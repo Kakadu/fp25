@@ -1,0 +1,1 @@
+# Don't edit '*.opam' file manually. Use 'dune b @install'

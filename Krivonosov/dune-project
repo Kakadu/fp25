@@ -1,0 +1,44 @@
+(lang dune 3.7)
+
+(generate_opam_files true)
+
+(cram enable)
+
+(license "LGPL-3.0-or-later WITH OCaml-LGPL-linking-exception")
+
+(authors "Krivonosov Konstantin <st129900@student.spbu.ru>")
+
+(maintainers "Krivonosov Konstantin <st129900@student.spbu.ru>")
+
+(bug_reports "https://github.com/Kakadu/fp25")
+
+(homepage "https://github.com/Kakadu/fp25")
+
+(package
+ (name Krivonosov)
+ (synopsis "An interpreter for mimiML")
+ (description
+  "A Call-by-Value miniML interpreter featuring recursion, arithmetic, and monadic error handling")
+ (documentation "https://kakadu.github.io/fp25/docs/Krivonosov")
+ (version 0.1)
+ (depends
+  (dune
+   (= "3.19.1"))
+  (angstrom
+   (= "0.16.0"))
+  base
+  stdio
+  (ppx_inline_test :with-test)
+  ppx_expect
+  ppx_deriving
+  bisect_ppx
+  (qcheck :with-test)
+  (qcheck-core :with-test)
+  (odoc :with-doc)
+  (ocamlformat
+   (and
+    :build
+    (= "0.26.2")))
+  ; base
+  ; After adding dependencies to 'dune' files add the same dependecies here too
+  ))

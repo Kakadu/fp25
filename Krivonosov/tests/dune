@@ -1,0 +1,12 @@
+(cram
+ (applies_to interpret_tests)
+ (deps ../bin/REPL.exe))
+
+(library
+ (name tests)
+ (modules tests)
+ (libraries lambda_lib qcheck)
+ (preprocess
+  (pps ppx_expect ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx)))
