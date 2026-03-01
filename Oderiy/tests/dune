@@ -1,0 +1,24 @@
+(library
+ (name mml_tests)
+ (inline_tests)
+ (modules parser_test interpret_test print_test)
+ (libraries mml)
+ (preprocess
+  (pps ppx_expect ppx_deriving.show)))
+
+(executable
+ (name qcheck_test)
+ (modules qcheck_test)
+ (libraries mml)
+ (modes byte exe)
+ (instrumentation
+  (backend bisect_ppx)))
+
+(cram
+ (applies_to miniml_tests)
+ (deps
+  ../bin/REPL.exe
+  factorial.miniml
+  fibonacci.miniml
+  builtin_fix.miniml
+  fix_factorial.miniml))
