@@ -1,0 +1,11 @@
+[@@@ocaml.text "/*"]
+
+(** Copyright 2021-2026, Kakadu and Yackovlev Nickolay *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+[@@@ocaml.text "/*"]
+
+val pp_named : Format.formatter -> Ast.expr -> unit
+val pp : Format.formatter -> Ast.expr -> unit
+val show : Ast.expr -> string
