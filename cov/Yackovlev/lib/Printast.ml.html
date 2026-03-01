@@ -35,35 +35,39 @@
 <a id="L11"></a><span > </span>
 <a id="L12"></a><span > </span>
 <a id="L13"></a><span class="visited"> </span>
-<a id="L14"></a><span class="visited"> </span>
-<a id="L15"></a><span class="visited"> </span>
-<a id="L16"></a><span class="visited"> </span>
-<a id="L17"></a><span > </span>
-<a id="L18"></a><span > </span>
-<a id="L19"></a><span > </span>
+<a id="L14"></a><span > </span>
+<a id="L15"></a><span > </span>
+<a id="L16"></a><span > </span>
+<a id="L17"></a><span class="visited"> </span>
+<a id="L18"></a><span class="visited"> </span>
+<a id="L19"></a><span class="visited"> </span>
 <a id="L20"></a><span class="visited"> </span>
-<a id="L21"></a><span class="visited"> </span>
-<a id="L22"></a><span class="visited"> </span>
-<a id="L23"></a><span class="visited"> </span>
+<a id="L21"></a><span > </span>
+<a id="L22"></a><span > </span>
+<a id="L23"></a><span > </span>
 <a id="L24"></a><span class="visited"> </span>
 <a id="L25"></a><span class="visited"> </span>
-<a id="L26"></a><span > </span>
-<a id="L27"></a><span > </span>
-<a id="L28"></a><span > </span>
+<a id="L26"></a><span class="visited"> </span>
+<a id="L27"></a><span class="visited"> </span>
+<a id="L28"></a><span class="visited"> </span>
 <a id="L29"></a><span class="visited"> </span>
-<a id="L30"></a><span class="visited"> </span>
-<a id="L31"></a><span class="visited"> </span>
-<a id="L32"></a><span class="visited"> </span>
+<a id="L30"></a><span > </span>
+<a id="L31"></a><span > </span>
+<a id="L32"></a><span > </span>
 <a id="L33"></a><span class="visited"> </span>
 <a id="L34"></a><span class="visited"> </span>
 <a id="L35"></a><span class="visited"> </span>
 <a id="L36"></a><span class="visited"> </span>
 <a id="L37"></a><span class="visited"> </span>
 <a id="L38"></a><span class="visited"> </span>
-<a id="L39"></a><span > </span>
-<a id="L40"></a><span > </span>
-<a id="L41"></a><span > </span>
+<a id="L39"></a><span class="visited"> </span>
+<a id="L40"></a><span class="visited"> </span>
+<a id="L41"></a><span class="visited"> </span>
 <a id="L42"></a><span class="visited"> </span>
+<a id="L43"></a><span > </span>
+<a id="L44"></a><span > </span>
+<a id="L45"></a><span > </span>
+<a id="L46"></a><span class="visited"> </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -110,6 +114,10 @@
 <a href="#L40">40</a>
 <a href="#L41">41</a>
 <a href="#L42">42</a>
+<a href="#L43">43</a>
+<a href="#L44">44</a>
+<a href="#L45">45</a>
+<a href="#L46">46</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -122,33 +130,37 @@
 open Format
 open Ast
 
+let string_of_unop = function
+  | <span data-count="62">N</span>eg -&gt; "-"
+;;
+
 let string_of_binop = function
-  | <span data-count="20">A</span>dd -&gt; "+"
-  | <span data-count="33">S</span>ub -&gt; "-"
-  | <span data-count="26">M</span>ul -&gt; "*"
-  | <span data-count="22">D</span>iv -&gt; "/"
+  | <span data-count="30">A</span>dd -&gt; "+"
+  | <span data-count="15">S</span>ub -&gt; "-"
+  | <span data-count="13">M</span>ul -&gt; "*"
+  | <span data-count="20">D</span>iv -&gt; "/"
 ;;
 
 let string_of_cmpop = function
-  | <span data-count="20">E</span>q -&gt; "="
-  | <span data-count="9">N</span>eq -&gt; "&lt;&gt;"
-  | <span data-count="15">L</span>t -&gt; "&lt;"
-  | <span data-count="18">L</span>e -&gt; "&lt;="
-  | <span data-count="8">G</span>t -&gt; "&gt;"
-  | <span data-count="20">G</span>e -&gt; "&gt;="
+  | <span data-count="14">E</span>q -&gt; "="
+  | <span data-count="17">N</span>eq -&gt; "&lt;&gt;"
+  | <span data-count="7">L</span>t -&gt; "&lt;"
+  | <span data-count="7">L</span>e -&gt; "&lt;="
+  | <span data-count="10">G</span>t -&gt; "&gt;"
+  | <span data-count="7">G</span>e -&gt; "&gt;="
 ;;
 
 let rec pp fmt = function
-  | <span data-count="449">V</span>ar x -&gt; pp_print_string fmt x
-  | <span data-count="518">I</span>nt n when n &lt; 0 -&gt; <span data-count="203">f</span>printf fmt "(%d)" n
-  | <span data-count="315">I</span>nt n -&gt; fprintf fmt "%d" n
-  | <span data-count="90">A</span>bs (x, e) -&gt; fprintf fmt "(fun %s -&gt; %a)" x pp e
-  | <span data-count="199">A</span>pp (e1, e2) -&gt; fprintf fmt "(%a %a)" pp e1 pp e2
-  | <span data-count="100">L</span>et (x, e1, e2) -&gt; fprintf fmt "(let %s = %a in %a)" x pp e1 pp e2
-  | <span data-count="56">L</span>et_rec (f, e1, e2) -&gt; fprintf fmt "(let rec %s = %a in %a)" f pp e1 pp e2
-  | <span data-count="94">I</span>f (cond, t, e) -&gt; fprintf fmt "(if %a then %a else %a)" pp cond pp t pp e
-  | <span data-count="101">B</span>inop (op, e1, e2) -&gt; fprintf fmt "(%a %s %a)" pp e1 (string_of_bino<span data-count="101">p</span> op) pp e2
-  | <span data-count="90">C</span>mp (op, e1, e2) -&gt; fprintf fmt "(%a %s %a)" pp e1 (string_of_cmpo<span data-count="90">p</span> op) pp e2
+  | <span data-count="364">V</span>ar x -&gt; pp_print_string fmt x
+  | <span data-count="375">I</span>nt n -&gt; fprintf fmt "%d" n
+  | <span data-count="91">A</span>bs (x, e) -&gt; fprintf fmt "(fun %s -&gt; %a)" x pp e
+  | <span data-count="155">A</span>pp (e1, e2) -&gt; fprintf fmt "(%a %a)" pp e1 pp e2
+  | <span data-count="69">L</span>et (x, e1, e2) -&gt; fprintf fmt "(let %s = %a in %a)" x pp e1 pp e2
+  | <span data-count="48">L</span>et_rec (f, e1, e2) -&gt; fprintf fmt "(let rec %s = %a in %a)" f pp e1 pp e2
+  | <span data-count="47">I</span>f (cond, t, e) -&gt; fprintf fmt "(if %a then %a else %a)" pp cond pp t pp e
+  | <span data-count="62">U</span>nop (op, e) -&gt; fprintf fmt "(%s%a)" (string_of_uno<span data-count="62">p</span> op) pp e
+  | <span data-count="78">B</span>inop (op, e1, e2) -&gt; fprintf fmt "(%a %s %a)" pp e1 (string_of_bino<span data-count="78">p</span> op) pp e2
+  | <span data-count="62">C</span>mp (op, e1, e2) -&gt; fprintf fmt "(%a %s %a)" pp e1 (string_of_cmpo<span data-count="62">p</span> op) pp e2
 ;;
 
 let pp_named = pp

@@ -84,18 +84,18 @@
 open Lambda_lib
 
 let main () =
-  <span data-count="35">l</span>et input = In_channel.input_all In_channel.stdin in
-  <span data-count="35">m</span>atch Parser.parse input with
-  | <span data-count="2">E</span>rror (Parser.Parsing_error err) -&gt; Format.printf "Error: %s\n%!" err
+  <span data-count="36">l</span>et input = In_channel.input_all In_channel.stdin in
+  <span data-count="36">m</span>atch Parser.parse input with
+  | <span data-count="3">E</span>rror (Parser.Parsing_error err) -&gt; Format.printf "Error: %s\n%!" err
   | <span data-count="33">O</span>k ast -&gt;
     Format.printf "%a\n%!" Printast.pp_named ast;
     <span data-count="33">l</span>et fuel = 100_000 in
     (match Interpret.eval Interpret.initial_env fuel ast with
-     | <span data-count="22">O</span>k (v, _fuel_left) -&gt; Format.printf "%s\n%!" (Interpret.string_of_valu<span data-count="22">e</span> v)
-     | <span data-count="11">E</span>rror err -&gt; Format.printf "Error: %s\n%!" (Interpret.string_of_erro<span data-count="11">r</span> err))
+     | <span data-count="21">O</span>k (v, _fuel_left) -&gt; Format.printf "%s\n%!" (Interpret.string_of_valu<span data-count="21">e</span> v)
+     | <span data-count="12">E</span>rror err -&gt; Format.printf "Error: %s\n%!" (Interpret.string_of_erro<span data-count="12">r</span> err))
 ;;
 
-let () = mai<span data-count="35">n</span> ()
+let () = mai<span data-count="36">n</span> ()
 </code></pre>
       </div>
     </div>
