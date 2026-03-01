@@ -30,19 +30,13 @@ let gen_expr =
   let rec expr depth =
     delay (fun () ->
       if depth <= 0
-      then
-        oneof
-          [ map (fun i -> Int i) (int_range 0 100); map (fun s -> Var s) gen_name ]
+      then oneof [ map (fun i -> Int i) (int_range 0 100); map (fun s -> Var s) gen_name ]
       else (
         let new_depth = depth - 1 in
         oneof_weighted
           [ 3, map (fun i -> Int i) (int_range 0 100)
           ; 3, map (fun s -> Var s) gen_name
-          ; ( 1
-            , map2
-                (fun op e -> Unop (op, e))
-                gen_unop
-                (expr new_depth) )
+          ; 1, map2 (fun op e -> Unop (op, e)) gen_unop (expr new_depth)
           ; ( 1
             , map3
                 (fun op l r -> Binop (op, l, r))

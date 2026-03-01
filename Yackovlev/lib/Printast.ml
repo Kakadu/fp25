@@ -11,6 +11,7 @@ open Ast
 
 let string_of_unop = function
   | Neg -> "-"
+;;
 
 let string_of_binop = function
   | Add -> "+"

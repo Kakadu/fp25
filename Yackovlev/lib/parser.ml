@@ -65,16 +65,12 @@ let expr : Ast.expr Angstrom.t =
       choice [ parens expr; (integer >>| fun n -> Int n); (ident >>| fun x -> Var x) ]
     in
     let app =
-      atom >>= fun first ->
-      many atom >>| fun rest ->
-      List.fold_left (fun acc r -> App (acc, r)) first rest
+      atom
+      >>= fun first ->
+      many atom >>| fun rest -> List.fold_left (fun acc r -> App (acc, r)) first rest
     in
     let unary =
-      fix (fun self ->
-        choice
-          [ (symbol "-" *> self >>| fun e -> Unop (Neg, e))
-          ; app
-          ])
+      fix (fun self -> choice [ (symbol "-" *> self >>| fun e -> Unop (Neg, e)); app ])
     in
     let mul_div =
       let op =

@@ -7,9 +7,7 @@
 [@@@ocaml.text "/*"]
 
 type name = string
-
-type unop =
-  | Neg (** -e *)
+type unop = Neg (** -e *)
 
 type binop =
   | Add (** e1 + e2 *)

@@ -125,7 +125,10 @@ and eval (env : env) (fuel : fuel) (e : expr) : (value * fuel, error) result =
     let* v1, fuel1 = eval env fuel e1 in
     (match v1 with
      | VInt n ->
-       let res = match op with | Neg -> -n in
+       let res =
+         match op with
+         | Neg -> -n
+       in
        ok (VInt res, fuel1)
      | _ -> error (Type_error "integer operand expected in unary operation"))
   | Binop (op, e1, e2) ->
