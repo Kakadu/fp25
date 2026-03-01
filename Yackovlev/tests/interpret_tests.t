@@ -14,13 +14,8 @@ SPDX-License-Identifier: CC0-1.0
   10
 
   $ $REPL <<EOF
-  > -5 + 3
-  ((-5) + 3)
-  -2
-
-  $ $REPL <<EOF
   > -(1 + 2)
-  (0 - (1 + 2))
+  (-(1 + 2))
   -3
 
   $ $REPL <<EOF
@@ -39,6 +34,15 @@ SPDX-License-Identifier: CC0-1.0
   0
 
   $ $REPL <<EOF
+  > 5 >= 10
+  (5 >= 10)
+  0
+
+  $ printf "1 \r\t + 2\n" | $REPL
+  (1 + 2)
+  3
+
+  $ $REPL <<EOF
   > if 1 < 2 then 100 else 200
   (if (1 < 2) then 100 else 200)
   100
@@ -52,11 +56,6 @@ SPDX-License-Identifier: CC0-1.0
   > let x = 5 in let y = x + 1 in x * y
   (let x = 5 in (let y = (x + 1) in (x * y)))
   30
-
-  $ $REPL <<EOF
-  > let x = 10 in let x = 20 in x
-  (let x = 10 in (let x = 20 in x))
-  20
 
   $ $REPL <<EOF
   > let f = fun x y z -> x + y + z in f 1 2 3
@@ -160,6 +159,15 @@ SPDX-License-Identifier: CC0-1.0
   Error: : end_of_input
 
   $ $REPL <<EOF
+  > -(fun x -> x)
+  (-(fun x -> x))
+  Error: Type error: integer operand expected in unary operation
+
+  $ $REPL <<EOF
+  > let if = 5 in 1
+  Error: : no more choices
+
+  $ $REPL <<EOF
   > letx = 0 in x
   Error: : end_of_input
 
@@ -169,11 +177,7 @@ SPDX-License-Identifier: CC0-1.0
   0
 
   $ $REPL <<EOF
-  > let fix f eta = f (fix f) eta in let fact_gen = fun fact -> fun n -> if n = 0 then 1 else n * fact (n - 1) in let fact = fix fact_gen in fact 5
-  (let fix = (fun f -> (fun eta -> ((f (fix f)) eta))) in (let fact_gen = (fun fact -> (fun n -> (if (n = 0) then 1 else (n * (fact (n - 1)))))) in (let fact = (fix fact_gen) in (fact 5))))
-  120
-
-  $ $REPL <<EOF
-  > let fix = fun f ->  (fun x -> f (fun y -> (x x) y))  (fun x -> f (fun y -> (x x) y)) in let fact = fix (fun fact -> fun n -> if n = 0 then 1 else n * fact (n - 1)) in fact 5
-  (let fix = (fun f -> ((fun x -> (f (fun y -> ((x x) y)))) (fun x -> (f (fun y -> ((x x) y)))))) in (let fact = (fix (fun fact -> (fun n -> (if (n = 0) then 1 else (n * (fact (n - 1))))))) in (fact 5)))
+  > let fix = fun f -> (fun x -> f (fun eta -> x x eta)) (fun x -> f (fun eta -> x x eta)) in
+  > let fact = fun self n -> if n <= 1 then 1 else n * self (n - 1) in fix fact 5
+  (let fix = (fun f -> ((fun x -> (f (fun eta -> ((x x) eta)))) (fun x -> (f (fun eta -> ((x x) eta)))))) in (let fact = (fun self -> (fun n -> (if (n <= 1) then 1 else (n * (self (n - 1)))))) in ((fix fact) 5)))
   120

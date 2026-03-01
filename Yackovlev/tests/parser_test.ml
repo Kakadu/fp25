@@ -7,7 +7,7 @@ open Ast
 
 let gen_name =
   let open QCheck.Gen in
-  oneof_list [ "x"; "y"; "z"; "a"; "b"; "c"; "x1"; "y_2"; "n'"; "fact"; "fib" ]
+  oneof_list [ "x"; "y"; "z"; "a"; "b"; "aB"; "x1"; "y_2"; "n'"; "fact"; "fib" ]
 ;;
 
 let gen_binop =
@@ -20,6 +20,11 @@ let gen_cmpop =
   oneof_list [ Eq; Neq; Lt; Le; Gt; Ge ]
 ;;
 
+let gen_unop =
+  let open QCheck.Gen in
+  oneof_list [ Neg ]
+;;
+
 let gen_expr =
   let open QCheck.Gen in
   let rec expr depth =
@@ -27,12 +32,17 @@ let gen_expr =
       if depth <= 0
       then
         oneof
-          [ map (fun i -> Int i) (int_range (-100) 100); map (fun s -> Var s) gen_name ]
+          [ map (fun i -> Int i) (int_range 0 100); map (fun s -> Var s) gen_name ]
       else (
         let new_depth = depth - 1 in
         oneof_weighted
-          [ 3, map (fun i -> Int i) (int_range (-100) 100)
+          [ 3, map (fun i -> Int i) (int_range 0 100)
           ; 3, map (fun s -> Var s) gen_name
+          ; ( 1
+            , map2
+                (fun op e -> Unop (op, e))
+                gen_unop
+                (expr new_depth) )
           ; ( 1
             , map3
                 (fun op l r -> Binop (op, l, r))
