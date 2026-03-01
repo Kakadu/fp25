@@ -1,0 +1,9 @@
+(library
+ (name tenyaeva_lib)
+ (public_name Tenyaeva.Lib)
+ (modules ast parser pprinter interpreter monad)
+ (libraries base angstrom)
+ (preprocess
+  (pps ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx)))
