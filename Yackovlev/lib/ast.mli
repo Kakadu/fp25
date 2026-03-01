@@ -8,6 +8,9 @@
 
 type name = string
 
+type unop =
+  | Neg (** -e *)
+
 type binop =
   | Add (** e1 + e2 *)
   | Sub (** e1 - e2 *)
@@ -30,6 +33,7 @@ type expr =
   | Let of name * expr * expr (** Non-recursive let: let x = e1 in e2 *)
   | Let_rec of name * expr * expr (** Recursive let: let rec f = e1 in e2 *)
   | If of expr * expr * expr (** If expression *)
+  | Unop of unop * expr (** Unary operation *)
   | Binop of binop * expr * expr (** Arithmetic operation *)
   | Cmp of cmpop * expr * expr (** Comparison *)
 

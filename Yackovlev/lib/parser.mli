@@ -8,5 +8,4 @@
 
 type error = Parsing_error of string
 
-val pp_error : Format.formatter -> error -> unit
 val parse : string -> (Ast.expr, error) result

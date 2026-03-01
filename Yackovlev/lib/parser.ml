@@ -52,8 +52,6 @@ let integer =
 
 type error = Parsing_error of string
 
-let pp_error ppf (Parsing_error s) = Format.fprintf ppf "%s" s
-
 let expr : Ast.expr Angstrom.t =
   let open Ast in
   fix (fun expr ->
@@ -67,19 +65,14 @@ let expr : Ast.expr Angstrom.t =
       choice [ parens expr; (integer >>| fun n -> Int n); (ident >>| fun x -> Var x) ]
     in
     let app =
-      many1 atom
-      >>= function
-      | [ x ] -> return x
-      | x :: xs -> return (List.fold_left (fun acc r -> App (acc, r)) x xs)
-      | [] -> fail "application on empty list, impossible by [many1]"
+      atom >>= fun first ->
+      many atom >>| fun rest ->
+      List.fold_left (fun acc r -> App (acc, r)) first rest
     in
     let unary =
       fix (fun self ->
         choice
-          [ (symbol "-" *> self
-             >>| function
-             | Int n -> Int (-n)
-             | e -> Binop (Sub, Int 0, e))
+          [ (symbol "-" *> self >>| fun e -> Unop (Neg, e))
           ; app
           ])
     in

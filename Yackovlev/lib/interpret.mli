@@ -46,11 +46,3 @@ val eval : env -> fuel -> expr -> (value * fuel, error) result
 val initial_env : env
 val string_of_value : value -> string
 val string_of_error : error -> string
-
-type run_error =
-  | RuntimeError of error
-  | ParseError of Parser.error
-
-val string_of_run_error : run_error -> string
-val run_program : ?fuel:fuel -> string -> (value * fuel, run_error) result
-val parse_and_run : ?fuel:fuel -> string -> unit

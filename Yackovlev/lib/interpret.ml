@@ -121,6 +121,13 @@ and eval (env : env) (fuel : fuel) (e : expr) : (value * fuel, error) result =
     (match v_cond with
      | VInt n -> if n <> 0 then eval env fuel1 e_then else eval env fuel1 e_else
      | _ -> error (Type_error "if condition must be an int"))
+  | Unop (op, e1) ->
+    let* v1, fuel1 = eval env fuel e1 in
+    (match v1 with
+     | VInt n ->
+       let res = match op with | Neg -> -n in
+       ok (VInt res, fuel1)
+     | _ -> error (Type_error "integer operand expected in unary operation"))
   | Binop (op, e1, e2) ->
     let* v1, fuel1 = eval env fuel e1 in
     let* v2, fuel2 = eval env fuel1 e2 in
@@ -154,28 +161,3 @@ and eval (env : env) (fuel : fuel) (e : expr) : (value * fuel, error) result =
 ;;
 
 let initial_env : env = [ "print_int", VPrim Print_int; "fix", VPrim Fix ]
-
-type run_error =
-  | RuntimeError of error
-  | ParseError of Parser.error
-
-let string_of_run_error (err : run_error) : string =
-  match err with
-  | RuntimeError e -> string_of_error e
-  | ParseError e -> Format.asprintf "%a" Parser.pp_error e
-;;
-
-let run_program ?(fuel = 100_000) (str : string) : (value * fuel, run_error) result =
-  match Parser.parse str with
-  | Result.Error e -> Error (ParseError e)
-  | Result.Ok ast ->
-    (match eval initial_env fuel ast with
-     | Ok v -> Ok v
-     | Error e -> Error (RuntimeError e))
-;;
-
-let parse_and_run ?fuel (str : string) : unit =
-  match run_program ?fuel str with
-  | Ok (v, _fuel_left) -> Format.printf "Success: %s\n%!" (string_of_value v)
-  | Error err -> Format.eprintf "Error: %s\n%!" (string_of_run_error err)
-;;
