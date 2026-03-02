@@ -24,18 +24,21 @@ let is_varname str =
   String.length str > 0 && is_first_letter str.[0] && String.for_all is_valid_char str
 ;;
 
-let gen_varname =
-  let open Gen in
-  let first_char = char_range 'a' 'z' in
-  let other_char =
-    oneof [ char_range 'a' 'z'; char_range 'A' 'Z'; char_range '0' '9'; return '_' ]
-  in
-  let size = int_range 1 20 in
-  map
-    (fun (c, rest) -> String.of_seq (List.to_seq (c :: rest)))
-    (pair first_char (list_size size other_char))
-;;
+(*
+   let gen_varname =
+   let open Gen in
+   let first_char = char_range 'a' 'z' in
+   let other_char =
+   oneof [ char_range 'a' 'z'; char_range 'A' 'Z'; char_range '0' '9'; return '_' ]
+   in
+   let size = int_range 1 6 in
+   map
+   (fun (c, rest) -> String.of_seq (List.to_seq (c :: rest)))
+   (pair first_char (list_size size other_char))
+   ;;
+*)
 
+let gen_varname = Gen.oneofl [ "a"; "b"; "c"; "d"; "e"; "f"; "h"; "g" ]
 let gen_binop = Gen.(oneofl [ Plus; Minus; Times; Divide; Eq; Neq; Lt; Gt; Le; Ge ])
 
 let rec gen_ast depth =

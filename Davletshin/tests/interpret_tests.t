@@ -145,3 +145,12 @@ recursive
   > let rec fact n = if n = 1 then 1 else n * fact (n - 1) in fact 5
   Success: 120
 
+check this out
+  $ ../bin/REPL.exe <<EOF
+  > let rec sumones n = if n = 1 then 1 else 1 + sumones (n - 1) in (sumones 100000)
+  Success: 100000
+
+  $ ../bin/REPL.exe <<EOF
+  > let rec fib n = if n < 2 then n else fib (n - 1) + fib (n - 2) in fib 35
+  Success: 9227465
+

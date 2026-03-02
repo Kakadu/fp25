@@ -45,7 +45,7 @@ end = struct
   (** [eval_var env x] is the [v] such that [<env, x> ==> v]. *)
   and eval_var env x =
     match env with
-    | [] -> M.fail (UnknownVariable "x")
+    | [] -> M.fail (UnknownVariable x)
     | (y, v) :: rest -> if y = x then M.return v else eval_var rest x
 
   (** [eval_app env e1 e2] is the [v] such that [<env, e1 e2> ==> v]. *)
