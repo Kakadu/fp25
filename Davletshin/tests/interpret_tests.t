@@ -154,3 +154,23 @@ check this out
   > let rec fib n = if n < 2 then n else fib (n - 1) + fib (n - 2) in fib 35
   Success: 9227465
 
+print
+  $ ../bin/REPL.exe <<EOF
+  > let a = 10 in let ab = print (a*a) in a
+  100
+  Success: 10
+
+  $ ../bin/REPL.exe <<EOF
+  > let rec fact n = if n < 2 then let ab = print n in n else let ab = print n in n*fact(n-1) in fact 5
+  5
+  4
+  3
+  2
+  1
+  Success: 120
+
+  $ ../bin/REPL.exe <<EOF
+  > if 1 then print(1) else print(0)
+  1
+  Success: Unit
+

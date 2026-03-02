@@ -12,11 +12,12 @@ open Ast
 open Utils
 
 module Interpret (M : MONADERROR) : sig
-  val run : name Ast.t -> int -> int M.t
+  val run : name Ast.t -> int -> output M.t
 end = struct
   type env = (name * value) list
 
   and value =
+    | VUnit
     | VInt of int
     | VClosure of name * name Ast.t * env
 
@@ -40,7 +41,8 @@ end = struct
       | Let (Nonrec, n, e1, e2) -> eval_let env n e1 e2 steps
       | Let (Rec, n, Abs (x, b), e2) -> eval_letrec env n x b e2 steps
       | Let (Rec, _, _, _) ->
-        M.fail (TypeError "Tried to bind non-function to recursive binding"))
+        M.fail (TypeError "Tried to bind non-function to recursive binding")
+      | Print e -> eval_print env e steps)
 
   (** [eval_var env x] is the [v] such that [<env, x> ==> v]. *)
   and eval_var env x =
@@ -89,17 +91,27 @@ end = struct
     | _ -> M.fail (TypeError "if guard must be an integer")
 
   and eval_let env n e1 e2 steps =
-    let* v1 = eval env e1 steps in
+    let* v1 = eval env e1 (steps - 1) in
     eval ((n, v1) :: env) e2 (steps - 1)
 
   and eval_letrec env n x b e2 steps =
     let rec env' = (n, VClosure (x, b, env')) :: env in
     eval env' e2 (steps - 1)
 
+  and eval_print env e steps =
+    let* v = eval env e (steps - 1) in
+    match v with
+    | VInt n ->
+      print_int n;
+      print_newline ();
+      M.return VUnit
+    | _ -> M.fail (TypeError "Tried to print non-integer")
+
   and print (e : value) =
     match e with
-    | VInt n -> M.return n
-    | VClosure _ -> M.fail (TypeError "Tried to return non-integer")
+    | VUnit -> M.return OUnit
+    | VInt n -> M.return (OInt n)
+    | _ -> M.fail (TypeError "Tried to return non-integer")
   ;;
 
   let run e steps =
@@ -113,7 +125,10 @@ let parse_and_run str steps =
   match Parser.parse str with
   | Ok ast ->
     (match I.run ast steps with
-     | Ok n -> Printf.printf "Success: %d\n" n
+     | Ok n ->
+       (match n with
+        | OUnit -> Printf.printf "Success: Unit"
+        | OInt n -> Printf.printf "Success: %d\n" n)
      | Error err ->
        (match err with
         | UnknownVariable x -> Format.eprintf "UnknownVariable: %s\n" x

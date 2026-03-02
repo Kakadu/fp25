@@ -19,6 +19,10 @@ module type MONAD_FAIL = sig
   val fail : 'e -> ('a, 'e) t
 end
 
+type output =
+  | OUnit
+  | OInt of int
+
 type error =
   | UnknownVariable of string
   | TypeError of string
