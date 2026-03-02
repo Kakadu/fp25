@@ -1,0 +1,16 @@
+(library
+ (name inline_tests)
+ (libraries lambda_lib base)
+ (preprocess
+  (pps ppx_expect))
+ (inline_tests)
+ (modules interpret_expect parser_test))
+
+(test
+ (name parser_gentest)
+ (libraries lambda_lib qcheck)
+ (modules parser_gentest))
+
+(cram
+ (applies_to interpret_tests)
+ (deps ../bin/REPL.exe))

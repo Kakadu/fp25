@@ -1,9 +1,19 @@
 (library
  (name tests)
  (libraries Filichkin_lib qcheck)
- (modules parser_test interprate_test)
+ (modules
+  adt_interpret_test
+  adt_parser_test
+  adt_typecheck_test
+  interprate_test
+  parser_test
+  parser_misc_test
+  print_test
+  typecheck_test)
  (preprocess
   (pps ppx_expect ppx_deriving.show))
+ (inline_tests
+  (backend ppx_expect))
  (instrumentation
   (backend bisect_ppx)))
 

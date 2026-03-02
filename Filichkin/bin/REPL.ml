@@ -9,21 +9,36 @@
 open Filichkin_lib.Print
 open Filichkin_lib.Parser
 open Filichkin_lib.Interpret
+open Filichkin_lib.Typecheck
+module Interpret = Filichkin_lib.Interpret
+module Typecheck = Filichkin_lib.Typecheck
 
-let repl () =
-  let input = read_line () in
-  match parser input with
-  | Ok ast ->
-    let printed_ast = print_ast ast in
-    Printf.printf "%s\n" printed_ast;
-    (match run_interpret ast with
-     | Ok value -> Printf.printf "%s\n\n" (string_of_value value)
-     (* repl () *)
-     | Error err -> Printf.printf "%s\n\n" (string_of_error err))
-    (* repl () *)
-  | Error (`parse_error msg) -> Printf.printf "Parse error: %s\n\n" msg
+let read_one_line () =
+  try Some (read_line ()) with
+  | End_of_file -> None
 ;;
 
-(* repl () *)
+let repl () =
+  match read_one_line () with
+  | None -> ()
+  | Some input ->
+    (match parser input with
+     | Error (`parse_error msg) -> Printf.printf "Parse error: %s\n" msg
+     | Ok toplevels ->
+       print_ast_p toplevels;
+       (match typecheck_program Typecheck.initial_state toplevels with
+        | Error type_err -> Printf.printf "Type error: %s\n" type_err
+        | Ok tc_state ->
+          (match get_last_type tc_state with
+           | Some ty -> Printf.printf "Type: %s\n" (string_of_type ty)
+           | None -> ());
+          (match interpret_program Interpret.initial_state toplevels with
+           | Error err -> Printf.printf "%s\n" (string_of_error err)
+           | Ok (_, last_result) ->
+             (match last_result with
+              | Some v -> Printf.printf "%s\n" (string_of_value v)
+              | None -> ());
+             Printf.printf "\n")))
+;;
 
 let () = repl ()

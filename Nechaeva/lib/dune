@@ -1,0 +1,10 @@
+(library
+ (name lambda_lib)
+ (public_name Nechaeva.Lib)
+ (modules Ast Parser Printast Interpret)
+ (modules_without_implementation ast)
+ (libraries base angstrom)
+ (preprocess
+  (pps ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx)))
