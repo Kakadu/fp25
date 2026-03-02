@@ -20,6 +20,7 @@
  (description
   "An interpreter for subset of C# language with async/await and LINQ (and some other stuff which will be added later)")
  ; TODO: actual documentation (documentation "https://kakadu.github.io/fp2024/docs/Lambda")
+ ; TODO: update old links
  (version 0.1)
  (depends
   dune
