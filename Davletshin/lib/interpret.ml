@@ -1,14 +1,12 @@
 [@@@ocaml.text "/*"]
 
-(** Copyright 2021-2024, Kakadu and contributors *)
+(** Copyright 2021-2026, Kakadu and contributors *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
 [@@@ocaml.text "/*"]
 
-(** Real monadic interpreter goes here *)
 open Ast
-
 open Utils
 
 module Interpret (M : MONADERROR) : sig

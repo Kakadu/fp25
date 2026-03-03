@@ -1,8 +1,7 @@
-(** Copyright 2021-2023, Kakadu and contributors *)
+(** Copyright 2021-2026, Kakadu and contributors *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-(* TODO: implement parser here *)
 open Angstrom
 open Ast
 

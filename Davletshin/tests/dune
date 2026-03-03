@@ -1,4 +1,4 @@
-(executable
+(test
  (name gen_tests)
  (libraries miniml_lib qcheck)
  (modules gen_tests)
