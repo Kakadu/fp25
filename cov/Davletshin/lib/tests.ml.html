@@ -588,7 +588,7 @@
 (** ***** UNIT TESTS COULD GO HERE (JUST AN EXAMPLE) *)
 let rec fact n = <span data-count="5">i</span>f n = 1 then <span data-count="1">1</span> else <span data-count="4">n</span> * fac<span data-count="4">t</span> (n - 1)
 
-let%test _ = <span data-count="1">f</span>ac<span data-count="1">t</span> 5 = 120
+let%test "factorial" = <span data-count="1">f</span>ac<span data-count="1">t</span> 5 = 120
 
 (* These is a simple unit test that tests a single function 'fact'
    If you want to test something large, like interpretation of a piece
@@ -604,7 +604,7 @@ let pp = Printast.pp_named
 
 (* ---------- old tests ---------- *)
 
-let%expect_test _ =
+let%expect_test "factorial of 5" =
   <span data-count="1">F</span>ormat.printf
     "%a"
     pp
@@ -622,32 +622,32 @@ let%expect_test _ =
        (App ((Var fact), (Int 5))))) |}<span data-count="5">]</span>
 ;;
 
-let%expect_test _ =
+let%expect_test "simple application" =
   <span data-count="1">F</span>ormat.printf "%a" pp (parse_optimisticall<span data-count="1">y</span> "(x y)");
   <span data-count="1">[</span>%expect {| (App ((Var x), (Var y))) |}<span data-count="5">]</span>
 ;;
 
-let%expect_test _ =
+let%expect_test "simple abstraction" =
   <span data-count="1">F</span>ormat.printf "%a" pp (parse_optimisticall<span data-count="1">y</span> "(fun x -&gt; x x)");
   <span data-count="1">[</span>%expect {| (Abs (x, (App ((Var x), (Var x))))) |}<span data-count="5">]</span>
 ;;
 
-let%expect_test _ =
+let%expect_test "abs + app" =
   <span data-count="1">F</span>ormat.printf "%a" pp (parse_optimisticall<span data-count="1">y</span> "(fun f -&gt; fun x -&gt; f (x x))");
   <span data-count="1">[</span>%expect {| (Abs (f, (Abs (x, (App ((Var f), (App ((Var x), (Var x))))))))) |}<span data-count="5">]</span>
 ;;
 
-let%expect_test _ =
+let%expect_test "abs + app" =
   <span data-count="1">F</span>ormat.printf "%a" pp (parse_optimisticall<span data-count="1">y</span> "(fun f -&gt; fun x -&gt; f (1 1))");
   <span data-count="1">[</span>%expect {| (Abs (f, (Abs (x, (App ((Var f), (App ((Int 1), (Int 1))))))))) |}<span data-count="5">]</span>
 ;;
 
-let%expect_test _ =
+let%expect_test "abs + binop" =
   <span data-count="1">F</span>ormat.printf "%a" pp (parse_optimisticall<span data-count="1">y</span> "(fun f -&gt; 1 + 2)");
   <span data-count="1">[</span>%expect {| (Abs (f, (Binop (Plus, (Int 1), (Int 2))))) |}<span data-count="5">]</span>
 ;;
 
-let%expect_test _ =
+let%expect_test "binop + condition" =
   <span data-count="1">F</span>ormat.printf "%a" pp (parse_optimisticall<span data-count="1">y</span> "1 + if 1 then 1 else 2");
   <span data-count="1">[</span>%expect {| (Binop (Plus, (Int 1), (If ((Int 1), (Int 1), (Int 2))))) |}<span data-count="5">]</span>
 ;;
