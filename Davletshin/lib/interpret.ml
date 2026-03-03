@@ -37,9 +37,7 @@ end = struct
       | Unop (op, e) -> eval_unop env op e steps
       | If (c, t, e) -> eval_if env c t e steps
       | Let (Nonrec, n, e1, e2) -> eval_let env n e1 e2 steps
-      | Let (Rec, n, Abs (x, b), e2) -> eval_letrec env n x b e2 steps
-      | Let (Rec, _, _, _) ->
-        M.fail (TypeError "Tried to bind non-function to recursive binding")
+      | Let (Rec, n, b, e2) -> eval_letrec env n b e2 steps
       | Fix e -> eval_fix env e steps
       | Print e -> eval_print env e steps)
 
@@ -93,16 +91,22 @@ end = struct
     let* v1 = eval env e1 (steps - 1) in
     eval ((n, v1) :: env) e2 (steps - 1)
 
-  and eval_letrec env n x b e2 steps =
-    let rec env' = (n, VClosure (x, b, env')) :: env in
-    eval env' e2 (steps - 1)
+  and eval_letrec env n b e2 steps =
+    match b with
+    | Abs (x, body) ->
+      let rec env' = (n, VClosure (x, body, env')) :: env in
+      eval env' e2 (steps - 1)
+    | body -> eval env body (steps - 1)
 
   and eval_fix env e steps =
     let* v = eval env e (steps - 1) in
     match v with
-    | VClosure (x, Abs (arg, body), defenv) ->
-      let rec self = VClosure (arg, body, (x, self) :: defenv) in
-      M.return self
+    | VClosure (self, body, defenv) ->
+      (match body with
+       | Abs (param, b) ->
+         let rec new_closure = VClosure (param, b, (self, new_closure) :: defenv) in
+         M.return new_closure
+       | b -> eval env b (steps - 1))
     | _ -> M.fail (TypeError "Tried to apply fix to not a function")
 
   and eval_print env e steps =
