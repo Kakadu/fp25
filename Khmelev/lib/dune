@@ -1,0 +1,10 @@
+(library
+ (name lambda_lib)
+ (public_name Khmelev.Lib)
+ (wrapped false)
+ (modules Ast Interpret Parser Printast)
+ (libraries base angstrom)
+ (preprocess
+  (pps ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx)))

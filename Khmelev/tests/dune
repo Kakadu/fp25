@@ -1,0 +1,32 @@
+(cram
+ (applies_to test)
+ (deps
+  ../bin/REPL.exe
+  (source_tree cram_test)))
+
+(test
+ (name qcheck_parser_tests)
+ (modules qcheck_parser_tests)
+ (libraries lambda_lib qcheck)
+ (instrumentation
+  (backend bisect_ppx)))
+
+(library
+ (name parser_test)
+ (modules parser_test)
+ (libraries lambda_lib)
+ (inline_tests)
+ (preprocess
+  (pps ppx_inline_test))
+ (instrumentation
+  (backend bisect_ppx)))
+
+(library
+ (name interpret_test)
+ (modules interpret_test)
+ (libraries lambda_lib)
+ (inline_tests)
+ (preprocess
+  (pps ppx_inline_test))
+ (instrumentation
+  (backend bisect_ppx)))
