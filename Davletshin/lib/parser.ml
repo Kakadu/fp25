@@ -50,15 +50,6 @@ let conde = function
   | h :: tl -> List.fold_left ( <|> ) h tl
 ;;
 
-type dispatch =
-  { apps : dispatch -> string Ast.t Angstrom.t
-  ; single : dispatch -> string Ast.t Angstrom.t
-  ; multiplicative : dispatch -> string Ast.t Angstrom.t
-  ; additive : dispatch -> string Ast.t Angstrom.t
-  ; unary : dispatch -> string Ast.t Angstrom.t
-  ; comparison : dispatch -> string Ast.t Angstrom.t
-  }
-
 type error = [ `Parsing_error of string ]
 
 let pp_error ppf = function
@@ -100,6 +91,7 @@ let parser =
            >>= fun bind ->
            spaces *> string "in" *> parser
            >>| fun body -> Let (flag, name, desugar_abs args bind, body))
+        ; (string "fix" *> parser >>| fun f -> Fix f)
         ; (string "print" *> parser >>| fun output -> Print output)
         ]
     in

@@ -42,6 +42,7 @@ end = struct
       | Let (Rec, n, Abs (x, b), e2) -> eval_letrec env n x b e2 steps
       | Let (Rec, _, _, _) ->
         M.fail (TypeError "Tried to bind non-function to recursive binding")
+      | Fix e -> eval_fix env e steps
       | Print e -> eval_print env e steps)
 
   (** [eval_var env x] is the [v] such that [<env, x> ==> v]. *)
@@ -97,6 +98,14 @@ end = struct
   and eval_letrec env n x b e2 steps =
     let rec env' = (n, VClosure (x, b, env')) :: env in
     eval env' e2 (steps - 1)
+
+  and eval_fix env e steps =
+    let* v = eval env e (steps - 1) in
+    match v with
+    | VClosure (x, Abs (arg, body), defenv) ->
+      let rec self = VClosure (arg, body, (x, self) :: defenv) in
+      M.return self
+    | _ -> M.fail (TypeError "Tried to apply fix to not a function")
 
   and eval_print env e steps =
     let* v = eval env e (steps - 1) in

@@ -174,3 +174,11 @@ print
   1
   Success: Unit
 
+fix
+  $ ../bin/REPL.exe <<EOF
+  > let fact = fix (fun self n -> if n < 2 then n else n * self (n-1)) in fact 5
+  Success: 120
+
+  $ ../bin/REPL.exe <<EOF
+  > let fib = fix (fun self n -> if n < 2 then n else self (n-1) + self (n-2)) in fib 6
+  Success: 8

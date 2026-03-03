@@ -38,6 +38,7 @@ type 'name t = 'name Ast.t =
   | Unop of uop * 'name t
   | If of 'name t * 'name t * 'name t
   | Let of flag * 'name * 'name t * 'name t
+  | Fix of 'name t
   | Print of 'name t
 [@@deriving show { with_path = false }]
 

@@ -59,6 +59,8 @@ let rec gen_ast depth =
              gen_varname
              (gen_ast (depth - 1))
              (gen_ast (depth - 1))
+         ; map (fun e -> Fix e) (gen_ast (depth - 1))
+         ; map (fun e -> Print e) (gen_ast (depth - 1))
          ])
 ;;
 
@@ -92,6 +94,8 @@ let rec lol = function
   | If (c, t, e) -> "(if " ^ lol c ^ " then " ^ lol t ^ " else " ^ lol e ^ ")"
   | Let (Nonrec, n, e1, e2) -> "(let " ^ n ^ " = " ^ lol e1 ^ " in " ^ lol e2 ^ ")"
   | Let (Rec, n, e1, e2) -> "(let rec " ^ n ^ " = " ^ lol e1 ^ " in " ^ lol e2 ^ ")"
+  | Fix e -> "(fix " ^ lol e ^ ")"
+  | Print e -> "(print " ^ lol e ^ ")"
 ;;
 
 let rec equal e1 e2 =
@@ -105,6 +109,8 @@ let rec equal e1 e2 =
   | If (c1, t1, e1), If (c2, t2, e2) -> equal c1 c2 && equal t1 t2 && equal e1 e2
   | Let (f1, p1, b1, e1), Let (f2, p2, b2, e2) ->
     f1 = f2 && String.equal p1 p2 && equal b1 b2 && equal e1 e2
+  | Fix e1, Fix e2 -> equal e1 e2
+  | Print e1, Print e2 -> equal e1 e2
   | _ -> false
 ;;
 
