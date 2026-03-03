@@ -9,7 +9,7 @@
 (** ***** UNIT TESTS COULD GO HERE (JUST AN EXAMPLE) *)
 let rec fact n = if n = 1 then 1 else n * fact (n - 1)
 
-let%test _ = fact 5 = 120
+let%test "factorial" = fact 5 = 120
 
 (* These is a simple unit test that tests a single function 'fact'
    If you want to test something large, like interpretation of a piece
@@ -25,7 +25,7 @@ let pp = Printast.pp_named
 
 (* ---------- old tests ---------- *)
 
-let%expect_test _ =
+let%expect_test "factorial of 5" =
   Format.printf
     "%a"
     pp
@@ -43,32 +43,32 @@ let%expect_test _ =
        (App ((Var fact), (Int 5))))) |}]
 ;;
 
-let%expect_test _ =
+let%expect_test "simple application" =
   Format.printf "%a" pp (parse_optimistically "(x y)");
   [%expect {| (App ((Var x), (Var y))) |}]
 ;;
 
-let%expect_test _ =
+let%expect_test "simple abstraction" =
   Format.printf "%a" pp (parse_optimistically "(fun x -> x x)");
   [%expect {| (Abs (x, (App ((Var x), (Var x))))) |}]
 ;;
 
-let%expect_test _ =
+let%expect_test "abs + app" =
   Format.printf "%a" pp (parse_optimistically "(fun f -> fun x -> f (x x))");
   [%expect {| (Abs (f, (Abs (x, (App ((Var f), (App ((Var x), (Var x))))))))) |}]
 ;;
 
-let%expect_test _ =
+let%expect_test "abs + app" =
   Format.printf "%a" pp (parse_optimistically "(fun f -> fun x -> f (1 1))");
   [%expect {| (Abs (f, (Abs (x, (App ((Var f), (App ((Int 1), (Int 1))))))))) |}]
 ;;
 
-let%expect_test _ =
+let%expect_test "abs + binop" =
   Format.printf "%a" pp (parse_optimistically "(fun f -> 1 + 2)");
   [%expect {| (Abs (f, (Binop (Plus, (Int 1), (Int 2))))) |}]
 ;;
 
-let%expect_test _ =
+let%expect_test "binop + condition" =
   Format.printf "%a" pp (parse_optimistically "1 + if 1 then 1 else 2");
   [%expect {| (Binop (Plus, (Int 1), (If ((Int 1), (Int 1), (Int 2))))) |}]
 ;;
