@@ -8,16 +8,28 @@
 
 open Miniml_lib
 
-let () =
-  let () =
-    let open Stdlib.Arg in
-    parse
-      []
-      (fun _ ->
-        Stdlib.Format.eprintf "Positioned arguments are not supported\n";
-        Stdlib.exit 1)
-      "Read-Eval-Print-Loop for Utyped Lambda Calculus"
-  in
-  let text = In_channel.(input_all stdin) |> String.trim in
-  Interpret.parse_and_run text 1000000
+let interactive = Unix.isatty Unix.stdin
+
+let rec repl () =
+  if interactive
+  then (
+    print_string ">> ";
+    flush stdout);
+  match read_line () with
+  | exception End_of_file -> ()
+  | line ->
+    let text = String.trim line in
+    if not (String.equal text "") then Interpret.parse_and_run text 1000000;
+    repl ()
 ;;
+
+let () =
+  let open Stdlib.Arg in
+  parse
+    []
+    (fun _ ->
+      Stdlib.Format.eprintf "Positioned arguments are not supported\n";
+      Stdlib.exit 1)
+    "Read-Eval-Print-Loop for Utyped Lambda Calculus"
+in
+repl ()
