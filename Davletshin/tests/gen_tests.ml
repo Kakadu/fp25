@@ -8,24 +8,10 @@
 
 open Miniml_lib
 open Ast
-open QCheck2
+open QCheck
 
-let is_first_letter = function
-  | 'a' .. 'z' -> true
-  | _ -> false
-;;
-
-let is_valid_char = function
-  | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' -> true
-  | _ -> false
-;;
-
-let is_varname str =
-  String.length str > 0 && is_first_letter str.[0] && String.for_all is_valid_char str
-;;
-
-let gen_varname = Gen.oneofl [ "a"; "b"; "c"; "d"; "e"; "f"; "h"; "g" ]
-let gen_binop = Gen.(oneofl [ Plus; Minus; Times; Divide; Eq; Neq; Lt; Gt; Le; Ge ])
+let gen_varname = Gen.oneof_list [ "a"; "b"; "c"; "d"; "e"; "f"; "h"; "g" ]
+let gen_binop = Gen.(oneof_list [ Plus; Minus; Times; Divide; Eq; Neq; Lt; Gt; Le; Ge ])
 
 let rec gen_ast depth =
   let open Gen in
@@ -116,16 +102,17 @@ let rec equal e1 e2 =
 
 let pprint ast = Format.asprintf "%a" Pprintast.pp ast
 let gen_ast_sized = Gen.sized (fun s -> gen_ast (3 + (s mod 3)))
+let arb_ast = make ~print:lol gen_ast_sized
 
 let parse_test =
-  Test.make ~count:200 ~name:"parser test" ~print:lol gen_ast_sized (fun ast ->
+  Test.make ~count:200 ~name:"parser test" arb_ast (fun ast ->
     match Parser.parse (lol ast) with
     | Result.Ok ast' -> equal ast ast'
     | Result.Error _ -> false)
 ;;
 
 let pprint_test =
-  Test.make ~count:200 ~name:"pprint test" ~print:pprint gen_ast_sized (fun ast ->
+  Test.make ~count:200 ~name:"pprint test" arb_ast (fun ast ->
     match Parser.parse (pprint ast) with
     | Result.Ok ast' -> equal ast ast'
     | Result.Error _ -> false)

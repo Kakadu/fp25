@@ -11,7 +11,6 @@ let is_space = function
 ;;
 
 let spaces = skip_while is_space
-let space1 = skip is_space
 
 let is_keyword = function
   | "let" | "rec" | "in" | "fun" | "if" | "then" | "else" | "print" | "fix" -> true
