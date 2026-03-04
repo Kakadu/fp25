@@ -6,16 +6,14 @@
 
 [@@@ocaml.text "/*"]
 
-open Lambda_lib.Ast  
+open Lambda_lib.Ast
 open Lambda_lib.Parser
-
 
 let run_parse input =
   match parse input with
   | Ok expr -> print_endline (show_expr expr)
   | Error (`Parsing_error msg) -> print_endline ("Parsing error: " ^ msg)
-
-
+;;
 
 let%expect_test "literals" =
   run_parse "42";
@@ -26,7 +24,8 @@ let%expect_test "literals" =
   run_parse "fact_1";
   run_parse "(((x)))";
   run_parse "(1 + 2) = ((3 * 1) < (4 + 2)) > ((10 / 5) <> (2 * 2))";
-  [%expect {|
+  [%expect
+    {|
     (Lit (Ast.Integer 42))
     (Lit (Ast.Integer 0))
     (UnOp (Ast.Negate, (Lit (Ast.Integer 7))))
@@ -36,23 +35,22 @@ let%expect_test "literals" =
     (Var "x")
     Parsing error: Parsing error
   |}]
-
-
+;;
 
 let%expect_test "unary_minus" =
   run_parse "-x";
   run_parse "-(x + y)";
   run_parse "5 * -3";
   run_parse "-x + y";
-  [%expect {|
+  [%expect
+    {|
     (UnOp (Ast.Negate, (Var "x")))
     (UnOp (Ast.Negate, (BinOp (Ast.Add, (Var "x"), (Var "y")))))
     (BinOp (Ast.Mul, (Lit (Ast.Integer 5)),
        (UnOp (Ast.Negate, (Lit (Ast.Integer 3))))))
     (BinOp (Ast.Add, (UnOp (Ast.Negate, (Var "x"))), (Var "y")))
   |}]
-
-
+;;
 
 let%expect_test "arithmetic_precedence" =
   run_parse "1 + 2 * 3";
@@ -62,7 +60,8 @@ let%expect_test "arithmetic_precedence" =
   run_parse "a * b + c * d";
   run_parse "((4 + 6) * (1 - 9)) / 10";
   run_parse "1 + 2 * 3 - 4 / 2";
-  [%expect {|
+  [%expect
+    {|
     (BinOp (Ast.Add, (Lit (Ast.Integer 1)),
        (BinOp (Ast.Mul, (Lit (Ast.Integer 2)), (Lit (Ast.Integer 3))))))
     (BinOp (Ast.Mul,
@@ -84,13 +83,13 @@ let%expect_test "arithmetic_precedence" =
           (BinOp (Ast.Mul, (Lit (Ast.Integer 2)), (Lit (Ast.Integer 3)))))),
        (BinOp (Ast.Div, (Lit (Ast.Integer 4)), (Lit (Ast.Integer 2))))))
   |}]
-
-
+;;
 
 let%expect_test "left_associativity" =
   run_parse "1 - 2 - 3";
   run_parse "8 / 2 / 2";
-  [%expect {|
+  [%expect
+    {|
     (BinOp (Ast.Sub,
        (BinOp (Ast.Sub, (Lit (Ast.Integer 1)), (Lit (Ast.Integer 2)))),
        (Lit (Ast.Integer 3))))
@@ -98,8 +97,7 @@ let%expect_test "left_associativity" =
        (BinOp (Ast.Div, (Lit (Ast.Integer 8)), (Lit (Ast.Integer 2)))),
        (Lit (Ast.Integer 2))))
   |}]
-
-
+;;
 
 let%expect_test "comparisons" =
   run_parse "x = y";
@@ -111,7 +109,8 @@ let%expect_test "comparisons" =
   run_parse "3 <= y";
   run_parse "1 <> 9";
   run_parse "-x < 0";
-  [%expect {|
+  [%expect
+    {|
     (CmpOp (Ast.Eq, (Var "x"), (Var "y")))
     (CmpOp (Ast.Ge, (Var "x"), (Var "y")))
     (CmpOp (Ast.Le, (Var "x"), (Var "y")))
@@ -122,15 +121,15 @@ let%expect_test "comparisons" =
     (CmpOp (Ast.Neq, (Lit (Ast.Integer 1)), (Lit (Ast.Integer 9))))
     (CmpOp (Ast.Lt, (UnOp (Ast.Negate, (Var "x"))), (Lit (Ast.Integer 0))))
   |}]
-
-
+;;
 
 let%expect_test "if_expressions" =
   run_parse "if n then 1 else 0";
   run_parse "if x > 0 then x else -x";
   run_parse "if x then if y then 1 else 2 else 3";
   run_parse "if x > 0 then x + 1 else x - 1";
-  [%expect {|
+  [%expect
+    {|
     (If ((Var "n"), (Lit (Ast.Integer 1)), (Lit (Ast.Integer 0))))
     (If ((CmpOp (Ast.Gt, (Var "x"), (Lit (Ast.Integer 0)))), (Var "x"),
        (UnOp (Ast.Negate, (Var "x")))))
@@ -141,14 +140,13 @@ let%expect_test "if_expressions" =
        (BinOp (Ast.Add, (Var "x"), (Lit (Ast.Integer 1)))),
        (BinOp (Ast.Sub, (Var "x"), (Lit (Ast.Integer 1))))))
   |}]
-
-
+;;
 
 let%expect_test "lambdas" =
   run_parse "fun x -> x";
   run_parse "fun a b c -> a * b + c";
-  
-  [%expect {|
+  [%expect
+    {|
     (Lam ("x", (Var "x")))
     (Lam ("a",
        (Lam ("b",
@@ -159,8 +157,7 @@ let%expect_test "lambdas" =
           ))
        ))
   |}]
-
-
+;;
 
 let%expect_test "different_applications" =
   run_parse "f x";
@@ -171,9 +168,10 @@ let%expect_test "different_applications" =
   run_parse "f x = g((y+1)/(z-1))";
   run_parse "f (let x = 1 in x)";
   run_parse "f (if x then 1 else 2)";
-  run_parse "if f x then 1 else 2"; 
+  run_parse "if f x then 1 else 2";
   run_parse "f (let x = 1 in x) (if y then 3 else 4)";
-  [%expect {|
+  [%expect
+    {|
     (App ((Var "f"), (Var "x")))
     (App ((App ((App ((Var "f"), (Var "x"))), (Var "y"))), (Var "z")))
     (App ((App ((Var "f"), (BinOp (Ast.Add, (Var "x"), (Lit (Ast.Integer 1)))))),
@@ -196,14 +194,14 @@ let%expect_test "different_applications" =
           )),
        (If ((Var "y"), (Lit (Ast.Integer 3)), (Lit (Ast.Integer 4))))))
   |}]
-
-
+;;
 
 let%expect_test "let_bindings" =
   run_parse "let x = 5 in x + 1";
   run_parse "let rec fact = fun n -> if n <= 1 then 1 else n * fact (n - 1) in fact 5";
   run_parse "let x = if y then 1 else 2 in x + 3";
-  [%expect {|
+  [%expect
+    {|
     (Let (Ast.Plain, "x", (Lit (Ast.Integer 5)),
        (BinOp (Ast.Add, (Var "x"), (Lit (Ast.Integer 1))))))
     (Let (Ast.Recursive, "fact",
@@ -221,14 +219,14 @@ let%expect_test "let_bindings" =
        (If ((Var "y"), (Lit (Ast.Integer 1)), (Lit (Ast.Integer 2)))),
        (BinOp (Ast.Add, (Var "x"), (Lit (Ast.Integer 3))))))
   |}]
-
-
+;;
 
 let%expect_test "fix_combinator" =
   run_parse "fix f";
   run_parse "fix (fun f -> fun n -> if n then n * f (n - 1) else 1)";
   run_parse "fix (fun f -> fun x -> f x)";
-  [%expect {|
+  [%expect
+    {|
     (Fix (Var "f"))
     (Fix
        (Lam ("f",
@@ -243,14 +241,18 @@ let%expect_test "fix_combinator" =
           )))
     (Fix (Lam ("f", (Lam ("x", (App ((Var "f"), (Var "x"))))))))
   |}]
-
-
+;;
 
 let%expect_test "complex_nested" =
   run_parse "let f = fun x -> x * x in if f 5 > 20 then f (2 + 3) else 0";
-  run_parse "let rec fact_helper = fun acc n -> if n = 0 then acc else fact_helper (acc * n) (n - 1) in let fact = fun n -> fact_helper 1 n in fact 5";
-  run_parse "let rec fibonacci = fun n -> if n <= 1 then n else fibonacci (n - 1) + fibonacci (n - 2) in fibonacci 1";  
-  [%expect {|
+  run_parse
+    "let rec fact_helper = fun acc n -> if n = 0 then acc else fact_helper (acc * n) (n \
+     - 1) in let fact = fun n -> fact_helper 1 n in fact 5";
+  run_parse
+    "let rec fibonacci = fun n -> if n <= 1 then n else fibonacci (n - 1) + fibonacci (n \
+     - 2) in fibonacci 1";
+  [%expect
+    {|
     (Let (Ast.Plain, "f", (Lam ("x", (BinOp (Ast.Mul, (Var "x"), (Var "x"))))),
        (If (
           (CmpOp (Ast.Gt, (App ((Var "f"), (Lit (Ast.Integer 5)))),
@@ -291,8 +293,7 @@ let%expect_test "complex_nested" =
           )),
        (App ((Var "fibonacci"), (Lit (Ast.Integer 1))))))
   |}]
-
-
+;;
 
 let%expect_test "parse_errors" =
   run_parse "let";
@@ -301,7 +302,8 @@ let%expect_test "parse_errors" =
   run_parse "let rec";
   run_parse "let x=";
   run_parse "";
-  [%expect {|
+  [%expect
+    {|
     Parsing error: Parsing error
     Parsing error: Parsing error
     Parsing error: Parsing error
@@ -309,3 +311,4 @@ let%expect_test "parse_errors" =
     Parsing error: Parsing error
     Parsing error: Parsing error
   |}]
+;;
