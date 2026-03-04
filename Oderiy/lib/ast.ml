@@ -1,6 +1,6 @@
 [@@@ocaml.text "/*"]
 
-(** Copyright 2021-2024, Kakadu and contributors *)
+(** Copyright 2025, XRenso *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
@@ -38,4 +38,3 @@ type 'name t =
   (** Conditional: [if cond then e1 else e2] evaluates to [e1] if [cond] is non-zero, otherwise [e2] *)
   | LetRec of 'name * 'name t * 'name t
   (** Recursive let: [let rec f = e1 in e2] creates recursive binding of [f] to [e1] in [e2] *)
-  | Fix (** Fixed-point operator: [fix] enables recursion without explicit [let rec] *)

@@ -1,6 +1,6 @@
 [@@@ocaml.text "/*"]
 
-(** Copyright 2021-2024, Kakadu and contributors *)
+(** Copyright 2025, XRenso *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
@@ -51,6 +51,7 @@ open Ast
 type value =
   | VNum of int
   | VFun of string * string Ast.t * env
+  | VBuiltin of string * (value -> (value, error) StateResult.t)
 
 and env = (string * value) list
 
@@ -60,7 +61,7 @@ let rec find_var name = function
   | _ :: rest -> find_var name rest
 ;;
 
-let run limit expr =
+let run ?(output = Stdlib.Printf.printf "%d\n") limit expr =
   let tick limit =
     let open StateResult in
     get_state
@@ -69,6 +70,22 @@ let run limit expr =
     if new_steps > limit
     then fail `Steps_exceeded
     else put_state new_steps >>= fun () -> return ()
+  in
+  let rec initial_env =
+    [ ( "print"
+      , VBuiltin
+          ( "print"
+          , fun v ->
+              let open StateResult in
+              match v with
+              | VNum n ->
+                output n;
+                return (VNum n)
+              | _ -> fail (`Type_error "print: argument must be a number") ) )
+    ; "fix", VFun ("__f", fix_body, initial_env)
+    ]
+  and fix_body =
+    Fun ("__x", App (App (Var "__f", App (Var "fix", Var "__f")), Var "__x"))
   in
   let rec interp limit bindings term =
     let open StateResult in
@@ -88,6 +105,7 @@ let run limit expr =
       >>= fun arg_val ->
       (match fn_val with
        | VFun (param, body, closure) -> interp limit ((param, arg_val) :: closure) body
+       | VBuiltin (_, f) -> f arg_val
        | _ -> fail (`Type_error "applying non-function"))
     | Neg expr ->
       interp limit bindings expr
@@ -115,11 +133,6 @@ let run limit expr =
        | VNum 0 -> interp limit bindings no
        | VNum _ -> interp limit bindings yes
        | _ -> fail (`Type_error "condition must be number"))
-    | Fix ->
-      let fix_body =
-        Fun ("__x", App (App (Var "__f", App (Fix, Var "__f")), Var "__x"))
-      in
-      return (VFun ("__f", fix_body, bindings))
   and apply_binop op x y =
     let open StateResult in
     match op with
@@ -134,10 +147,10 @@ let run limit expr =
     | Gt -> return (VNum (if x > y then 1 else 0))
   in
   let open StateResult in
-  interp limit [] expr
+  interp limit initial_env expr
   >>= (function
          | VNum n -> return n
-         | VFun _ -> fail (`Type_error "result is function, not number"))
+         | VFun _ | VBuiltin _ -> fail (`Type_error "result is function, not number"))
   |> fun computation -> run_computation computation 0
 ;;
 

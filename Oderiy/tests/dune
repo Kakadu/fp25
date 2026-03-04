@@ -6,13 +6,10 @@
  (preprocess
   (pps ppx_expect ppx_deriving.show)))
 
-(executable
+(test
  (name qcheck_test)
  (modules qcheck_test)
- (libraries mml)
- (modes byte exe)
- (instrumentation
-  (backend bisect_ppx)))
+ (libraries mml qcheck))
 
 (cram
  (applies_to miniml_tests)

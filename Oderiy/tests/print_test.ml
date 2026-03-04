@@ -1,6 +1,6 @@
 [@@@ocaml.text "/*"]
 
-(** Copyright 2021-2024, Kakadu and contributors *)
+(** Copyright 2025, XRenso *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
@@ -158,12 +158,6 @@ let%expect_test "print greater than" =
   show
     (If (Bin (Gt, Var "p", Int 0), If (Bin (Gt, Var "p", Int 50), Int 2, Int 1), Int 0));
   [%expect {| (if (p > 0) then (if (p > 50) then 2 else 1) else 0) |}]
-;;
-
-(* Fix *)
-let%expect_test "print fix operator" =
-  show Fix;
-  [%expect {| fix |}]
 ;;
 
 (* Complex nested structures *)

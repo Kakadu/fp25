@@ -1,6 +1,6 @@
 [@@@ocaml.text "/*"]
 
-(** Copyright 2021-2024, Kakadu and contributors *)
+(** Copyright 2025, XRenso *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
@@ -34,7 +34,6 @@ let rec pp fmt = function
     Format.fprintf fmt "(let rec %s = %a in %a)" fname pp func pp body
   | If (cond, then_br, else_br) ->
     Format.fprintf fmt "(if %a then %a else %a)" pp cond pp then_br pp else_br
-  | Fix -> Format.fprintf fmt "fix"
 ;;
 
 let to_string expr = Format.asprintf "%a" pp expr

@@ -1,4 +1,4 @@
-(* Copyright 2021-2024, Kakadu and contributors *)
+(* Copyright 2025, XRenso *)
 (* SPDX-License-Identifier: CC0-1.0 *)
 
 Cram tests for miniML interpreter
@@ -59,3 +59,39 @@ Test fix combinator (manual implementation)
   in fact 5
   $ cat fix_factorial.miniml | ../bin/REPL.exe
   Success: 120
+
+Test built-in print function
+  $ echo "print 42" | ../bin/REPL.exe
+  42
+  Success: 42
+
+  $ echo "let x = print 10 in x + 1" | ../bin/REPL.exe
+  10
+  Success: 11
+
+Test user can redefine fix
+  $ echo "let fix = 42 in fix" | ../bin/REPL.exe
+  Success: 42
+
+Test user can redefine print
+  $ echo "let print = fun x -> x + 1 in print 5" | ../bin/REPL.exe
+  Success: 6
+
+Test letrec without space is identifier
+  $ echo "let letrec = 7 in letrec" | ../bin/REPL.exe
+  Success: 7
+
+Test division by zero
+  $ echo "1 / 0" | ../bin/REPL.exe
+  Error: Division by zero
+  [1]
+
+Test unbound variable
+  $ echo "unknown" | ../bin/REPL.exe
+  Error: Unbound variable: unknown
+  [1]
+
+Test applying non-function
+  $ echo "42 1" | ../bin/REPL.exe
+  Error: applying non-function
+  [1]

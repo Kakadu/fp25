@@ -1,4 +1,4 @@
-(** Copyright 2021-2023, Kakadu and contributors *)
+(** Copyright 2025, XRenso *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
@@ -121,7 +121,6 @@ let miniml_parser =
         ; (token (string "fun") *> many1 (token parse_ident)
            >>= fun params ->
            token (string "->") *> self.p_expr self >>| fun body -> make_fun params body)
-        ; token (string "fix") *> return Ast.Fix
         ; (token parse_ident >>| fun v -> Ast.Var v)
         ])
   in
