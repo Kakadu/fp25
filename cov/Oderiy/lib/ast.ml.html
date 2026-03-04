@@ -18,7 +18,7 @@
       <h2>0.00%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="top:29.27%"></span>
+      <span class="unvisited" style="top:30.00%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -63,7 +63,6 @@
 <a id="L38"></a><span > </span>
 <a id="L39"></a><span > </span>
 <a id="L40"></a><span > </span>
-<a id="L41"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -108,11 +107,10 @@
 <a href="#L38">38</a>
 <a href="#L39">39</a>
 <a href="#L40">40</a>
-<a href="#L41">41</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
-(** Copyright 2021-2024, Kakadu and contributors *)
+(** Copyright 2025, XRenso *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
@@ -150,7 +148,6 @@ type 'name t =
   (** Conditional: [if cond then e1 else e2] evaluates to [e1] if [cond] is non-zero, otherwise [e2] *)
   | LetRec of 'name * 'name t * 'name t
   (** Recursive let: [let rec f = e1 in e2] creates recursive binding of [f] to [e1] in [e2] *)
-  | Fix (** Fixed-point operator: [fix] enables recursion without explicit [let rec] *)
 </code></pre>
       </div>
     </div>
