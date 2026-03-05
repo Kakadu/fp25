@@ -9,7 +9,7 @@ open Parser
 let gen_ident =
   let open Gen in
   map
-    (fun s -> if List.mem s Parser.reserved then Id "x" else Id s)
+    (fun s -> if List.mem s reserved then Id "x" else Id s)
     string_small
 
 let gen_ident_length len =
@@ -19,7 +19,7 @@ let gen_ident_length len =
   map
     (fun chars ->
       let s = String.of_seq (List.to_seq chars) in
-      if List.mem s Parser.reserved then Id "x" else Id s)
+      if List.mem s reserved then Id "x" else Id s)
     char_list_gen
 
 let gen_val_type =
@@ -194,10 +194,10 @@ let test_count = 10
 
 (* Correct parser work *)
 let prop_parse_no_crash =
-  Test.make ~name:"parser does not crash on valid expressions" ~count:test_count
+  Test.make ~name:"Parser does not crash on valid expressions" ~count:test_count
     (expr_arbitrary 5) (fun expr ->
       let str = Ast.show_expr expr in
-      match Parser.apply_parser Parser.parse_ops str with
+      match apply_parser Parser.parse_ops str with
       | Ok _ -> true
       | Error e ->
           Printf.printf "\nParse error (but no crash): %s\n%s\n" str e;
@@ -206,10 +206,10 @@ let prop_parse_no_crash =
 (* Roundtrip: show -> parse -> show *)
 let prop_roundtrip_expr =
   let gen = expr_arbitrary 5 in
-  Test.make ~name:"expression roundtrip: show -> parse -> show"
+  Test.make ~name:"Expression roundtrip: show -> parse -> show"
     ~count:(test_count / 2) gen (fun expr ->
       let str1 = Ast.show_expr expr in
-      match Parser.apply_parser Parser.parse_ops str1 with
+      match apply_parser Parser.parse_ops str1 with
       | Ok expr' ->
           let str2 = Ast.show_expr expr' in
           if str1 = str2 then true
@@ -226,10 +226,10 @@ let prop_roundtrip_expr =
 (* Operators priority tests *)
 let prop_operator_precedence =
   let gen = expr_arbitrary 3 in
-  Test.make ~name:"operator precedence is preserved" ~count:(test_count / 2) gen
+  Test.make ~name:"Operator precedence is preserved" ~count:(test_count / 2) gen
     (fun expr ->
       let str = Ast.show_expr expr in
-      match Parser.apply_parser Parser.parse_ops str with
+      match apply_parser Parser.parse_ops str with
       | Ok expr' ->
           if compare_expr_structure expr expr' then true
           else (
@@ -237,28 +237,28 @@ let prop_operator_precedence =
             Printf.eprintf "Original: %s\n" (Ast.show_expr expr);
             Printf.eprintf "Parsed:   %s\n" (Ast.show_expr expr');
             false)
-      | Error e ->
+      | Error _ ->
           Printf.eprintf "\nParse failed: %s\n" str;
           false)
 
 (* Stmt tests *)
 let prop_stmt_no_crash =
-  Test.make ~name:"statement parser does not crash" ~count:(test_count / 2)
+  Test.make ~name:"Statement parser does not crash" ~count:(test_count / 2)
     (stmt_arbitrary 3) (fun stmt ->
       let str = Ast.show_stmt stmt in
-      (* временно, пока нет отдельного парсера утверждений *)
+      (*TODO: stmt parser *)
       true)
 
 (* Correct space pacing *)
 let prop_whitespace_handling =
   let gen = expr_arbitrary 3 in
-  Test.make ~name:"parser handles whitespace correctly" ~count:(test_count / 5)
+  Test.make ~name:"Parser handles whitespace correctly" ~count:(test_count / 5)
     gen (fun expr ->
       let base_str = Ast.show_expr expr in
       let spaced_str = add_random_whitespace base_str in
       match
-        ( Parser.apply_parser Parser.parse_ops base_str,
-          Parser.apply_parser Parser.parse_ops spaced_str )
+        ( apply_parser parse_ops base_str,
+          apply_parser parse_ops spaced_str )
       with
       | Ok expr1, Ok expr2 ->
           if compare_expr_structure expr1 expr2 then true
