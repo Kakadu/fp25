@@ -205,45 +205,13 @@ let check_initialized n =
   | TCMethod _ -> return ()
 
 let typecheck_expr =
-  let ( let* ) = ( >>= ) in
   let rec tc_expr_ = function
     | EId n ->
-        (* Отладка: что ищем *)
-        let* () =
-          Printf.printf "Looking for identifier: %s\n" (string_of_ident n);
-          return ()
-        in
         name_to_obj_ctx n
-        >>= (fun ctx ->
-              (* Отладка: нашли в локальных *)
-              let* () =
-                Printf.printf "Found in local env: %s\n" (string_of_ident n);
-                return ()
-              in
-              check_initialized n *> return ctx)
+        >>= (fun ctx -> check_initialized n *> return ctx)
         <|> ( get_curr_class_name >>= fun class_name ->
-              (* Отладка: ищем в классе *)
-              let* () =
-                Printf.printf "Looking in class: %s\n"
-                  (string_of_ident class_name);
-                return ()
-              in
               find_memb_from_obj class_name n >>= function
-              | Some memb ->
-                  (* Отладка: нашли в классе *)
-                  let* () =
-                    match memb with
-                    | TCField f ->
-                        Printf.printf "Found field in class: %s\n"
-                          (string_of_ident f.field_name);
-                        return ()
-                    | TCMethod m ->
-                        Printf.printf "Found method in class: %s\n"
-                          (string_of_ident m.method_name);
-                        return ()
-                    | _ -> return ()
-                  in
-                  return memb
+              | Some memb -> return memb
               | None ->
                   fail
                     (TCError
@@ -358,14 +326,9 @@ let tc_member mem class_fields =
     iter f params
   in
   let tc_meth typ params body class_fields =
-    Printf.printf "=== Entering tc_meth ===\n";
-    Printf.printf "Method return type: %s\n" (show__type typ);
-    Printf.printf "Number of class fields: %d\n" (List.length class_fields);
-
     apply_local
       (let add_field_to_env = function
          | VarField (mods, field_typ, id, init) ->
-             Printf.printf "Adding field to env: %s\n" (string_of_ident id);
              let field_info =
                {
                  field_modifiers = mods;
@@ -376,18 +339,10 @@ let tc_member mem class_fields =
                }
              in
              write_local_el id (TCField field_info)
-         | Method _ ->
-             Printf.printf "Skipping method in fields\n";
-             return ()
+         | Method _ -> return ()
        in
-       Printf.printf "Iterating over class fields...\n";
        iter add_field_to_env class_fields
-       *> (Printf.printf "Fields added, checking params...\n";
-           return ())
-       *> write_meth_type typ
-       *> (Printf.printf "Params saved, checking body...\n";
-           return ())
-       *> save_params_to_l params *> typecheck_stmt body)
+       *> write_meth_type typ *> save_params_to_l params *> typecheck_stmt body)
   in
   let tc_class_method (mds, tp, id, pms, b) class_fields =
     let m = method_of_ast (Method (mds, tp, id, pms, b)) in
@@ -401,7 +356,8 @@ let tc_member mem class_fields =
       | _, _, _ ->
           fail
             (TCError
-               (OtherError "Main must be static, no params, return int/void"))
+               (OtherError
+                  "Main must be static, non-async, no params, return int/void"))
     else tc_meth tp pms b class_fields
   in
   match mem with
