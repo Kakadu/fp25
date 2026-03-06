@@ -18,10 +18,10 @@
       <h2>55.56%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="top:19.30%"></span>
-      <span class="unvisited" style="top:21.05%"></span>
-      <span class="unvisited" style="top:22.81%"></span>
-      <span class="unvisited" style="top:24.56%"></span>
+      <span class="unvisited" style="top:18.97%"></span>
+      <span class="unvisited" style="top:20.69%"></span>
+      <span class="unvisited" style="top:22.41%"></span>
+      <span class="unvisited" style="top:24.14%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -74,15 +74,16 @@
 <a id="L46"></a><span > </span>
 <a id="L47"></a><span > </span>
 <a id="L48"></a><span > </span>
-<a id="L49"></a><span class="visited"> </span>
+<a id="L49"></a><span > </span>
 <a id="L50"></a><span class="visited"> </span>
-<a id="L51"></a><span > </span>
+<a id="L51"></a><span class="visited"> </span>
 <a id="L52"></a><span > </span>
-<a id="L53"></a><span class="visited"> </span>
+<a id="L53"></a><span > </span>
 <a id="L54"></a><span class="visited"> </span>
 <a id="L55"></a><span class="visited"> </span>
-<a id="L56"></a><span > </span>
+<a id="L56"></a><span class="visited"> </span>
 <a id="L57"></a><span > </span>
+<a id="L58"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -144,6 +145,7 @@
 <a href="#L55">55</a>
 <a href="#L56">56</a>
 <a href="#L57">57</a>
+<a href="#L58">58</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -170,6 +172,7 @@ end
 type output =
   | OUnit
   | OInt of int
+  | OAbs of name
 
 type error =
   | UnknownVariable of string
@@ -193,12 +196,12 @@ end
 module RESULT : MONADERROR with type 'a t = ('a, error) Result.t = struct
   type 'a t = ('a, error) Result.t
 
-  let return x = <span data-count="239786138">O</span>k x
-  let fail x = <span data-count="2">E</span>rror x
+  let return x = <span data-count="239786146">O</span>k x
+  let fail x = <span data-count="1">E</span>rror x
 
   let ( let* ) m f =
-    <span data-count="239786104">m</span>atch m with
-    | <span data-count="239786103">O</span>k x -&gt; f x
+    <span data-count="239786111">m</span>atch m with
+    | <span data-count="239786110">O</span>k x -&gt; f x
     | <span data-count="1">E</span>rror e -&gt; Error e
   ;;
 end
