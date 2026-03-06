@@ -113,7 +113,7 @@ let empty_runtime =
 let string_of_ident (Id s) = s
 
 let rec lookup_env id = function
-  | [] -> Error (NoVariable ("variable not found: " ^ string_of_ident id))
+  | [] -> Error (NoVariable ("Variable not found: " ^ string_of_ident id))
   | scope :: rest ->
     (match IdMap.find_opt id scope with
      | Some var_info -> Ok var_info.loc
@@ -203,7 +203,7 @@ let push_scope env = Ok (IdMap.empty :: env)
 
 let pop_scope = function
   | _ :: rest -> Ok rest
-  | [] -> Error (OtherError "cannot pop scope")
+  | [] -> Error (OtherError "Cannot pop scope")
 ;;
 
 let var_field_of_ast = function
@@ -235,11 +235,11 @@ let class_of_ast (Class (_, _, fields)) =
 
 let find_field obj_id field_id rt =
   match List.find_opt (fun o -> o.obj_id = obj_id) rt.objects with
-  | None -> Error (OtherError "object not found")
+  | None -> Error (OtherError "Object not found")
   | Some obj ->
     (match List.find_opt (fun (id, _) -> id = field_id) obj.fields with
      | Some (_, v) -> Ok v
-     | None -> Error (OtherError "field not found"))
+     | None -> Error (OtherError "Field not found"))
 ;;
 
 let update_field obj_id field_id new_value rt =
@@ -309,7 +309,7 @@ let rec eval_expr (rt : runtime) = function
              return (v, rt2)
            | Error _ ->
              (match rt1.curr_object with
-              | None -> Error (OtherError ("cannot assign to " ^ string_of_ident id))
+              | None -> Error (OtherError ("Cannot assign to " ^ string_of_ident id))
               | Some obj_id ->
                 let rt2 = update_field obj_id id v rt1 in
                 return (v, rt2))))
@@ -352,7 +352,7 @@ let rec eval_expr (rt : runtime) = function
     (match fn_expr with
      | EId id ->
        (match lookup_func_opt id rt.fenv with
-        | None -> Error (OtherError ("function not found: " ^ string_of_ident id))
+        | None -> Error (OtherError ("Function not found: " ^ string_of_ident id))
         | Some f ->
           let rec eval_args rt = function
             | [] -> return ([], rt)
@@ -364,7 +364,7 @@ let rec eval_expr (rt : runtime) = function
           let* arg_vals, rt2 = eval_args rt args in
           let* v, rt3 = call_function rt2 f arg_vals in
           return (v, rt3))
-     | _ -> Error (OtherError "invalid function call"))
+     | _ -> Error (OtherError "Invalid function call"))
   | EArrayAccess _ -> Error NotImplemented
   | EAwait _ -> Error NotImplemented
 
@@ -399,10 +399,10 @@ and call_function (rt : runtime) f args =
       let* env2 =
         match env with
         | scope :: rest -> Ok (IdMap.add p var_info scope :: rest)
-        | [] -> Error (OtherError "empty environment in bind_params")
+        | [] -> Error (OtherError "Empty environment in bind_params")
       in
       bind_params env2 ps vs rt1
-    | _ -> Error (OtherError "argument mismatch")
+    | _ -> Error (OtherError "Argument mismatch")
   in
   let* rt_func, _ = bind_params [ IdMap.empty ] f.params args rt in
   let rt_with_this = { rt_func with curr_object = caller_obj } in
@@ -411,7 +411,7 @@ and call_function (rt : runtime) f args =
   match flow with
   | Return v -> return (v, restored_rt)
   | Normal -> return (VNull, restored_rt)
-  | Break | Continue -> Error (OtherError "break/continue outside loop")
+  | Break | Continue -> Error (OtherError "Break/continue outside loop")
 
 and exec_stmt (rt : runtime) = function
   | SExpr e ->
@@ -480,7 +480,7 @@ and exec_stmt (rt : runtime) = function
         let* rt1, r = exec_stmt rt0 s in
         (match r with
          | Normal -> return rt1
-         | _ -> Error (OtherError "invalid control flow in for init"))
+         | _ -> Error (OtherError "Invalid control flow in for init"))
     in
     let rec loop rt =
       let* cond_val, rt1 =

@@ -48,7 +48,7 @@ module AdrMap = Map.Make (Adr)
 
 type var_info =
   { var_type : var_type
-  ; initialized : bool (* TODO: ?? *)
+  ; initialized : bool
   }
 [@@deriving show { with_path = false }, eq]
 
@@ -59,7 +59,6 @@ type field_info =
   ; field_init : expr option
   ; is_static : bool
   }
-[@@deriving show { with_path = false }, eq]
 
 type method_info =
   { method_modifiers : modifier list
@@ -70,13 +69,11 @@ type method_info =
   ; is_static : bool
   ; is_main : bool
   }
-[@@deriving show { with_path = false }, eq]
 
 type obj_content =
   | TCLocalVar of var_info
   | TCField of field_info
   | TCMethod of method_info
-[@@deriving show { with_path = false }, eq]
 
 type context = TCClass of c_sharp_class
 

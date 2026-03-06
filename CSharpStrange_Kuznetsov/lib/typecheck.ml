@@ -339,19 +339,24 @@ let tc_member mem class_fields =
     let m = method_of_ast (Method (mds, tp, id, pms, b)) in
     if m.is_main
     then (
-      let handle_main =
-        match mds, pms, tp with
-        | [ MStatic ], Params [], TypeBase TypeInt | [ MStatic ], Params [], TypeVoid ->
-          tc_meth tp (Params []) b class_fields *> read_main_class
-          >>= (function
-           | None -> get_curr_class_name >>= fun n -> write_main_class (Some n)
-           | Some _ -> fail (TCError (OtherError "Main method already exists")))
-        | _, _, _ ->
-          fail
-            (TCError
-               (OtherError "Main must be static, non-async, no params, return int/void"))
+      let is_valid_signature =
+        mds = [ MStatic ]
+        && pms = Params []
+        &&
+        match tp with
+        | TypeBase TypeInt | TypeVoid -> true
+        | _ -> false
       in
-      handle_main)
+      if is_valid_signature
+      then
+        tc_meth tp (Params []) b class_fields *> read_main_class
+        >>= function
+        | None -> get_curr_class_name >>= fun n -> write_main_class (Some n)
+        | Some _ -> fail (TCError (OtherError "Main method already exists"))
+      else
+        fail
+          (TCError
+             (OtherError "Main must be static, non-async, no params, return int/void")))
     else tc_meth tp pms b class_fields
   in
   match mem with

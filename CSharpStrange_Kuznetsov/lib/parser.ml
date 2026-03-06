@@ -192,7 +192,7 @@ let parse_ops =
     let lv2 =
       many (choice [ ( ^!^ ); ( ^!-^ ) ])
       >>= fun ops ->
-      let appl op acc = op acc in
+      let appl op = op in
       lv1 >>= fun e -> return (List.fold_right ops ~f:appl ~init:e)
     in
     (* TODO: rewrite somehow + more ops *)

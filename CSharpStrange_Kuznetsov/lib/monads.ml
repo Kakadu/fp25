@@ -63,7 +63,7 @@ module STATEERROR = struct
   ;;
 
   (*('st, 'a) t -> 'st -> 'st * ('a, error) Result.t *)
-  let run f st = f st
+  let run f = f
 end
 
 module TYPECHECK = struct

@@ -86,10 +86,6 @@ type field_info =
   ; is_static : bool
   }
 
-val pp_field_info : Format.formatter -> field_info -> unit
-val show_field_info : field_info -> string
-val equal_field_info : field_info -> field_info -> bool
-
 (* Method information for type checker *)
 type method_info =
   { method_modifiers : modifier list
@@ -101,19 +97,11 @@ type method_info =
   ; is_main : bool (** Whether this is the Main method *)
   }
 
-val pp_method_info : Format.formatter -> method_info -> unit
-val show_method_info : method_info -> string
-val equal_method_info : method_info -> method_info -> bool
-
 (* Type checker content types *)
 type obj_content =
   | TCLocalVar of var_info (** Local variable *)
   | TCField of field_info (** Class field *)
   | TCMethod of method_info (** Class method *)
-
-val pp_obj_content : Format.formatter -> obj_content -> unit
-val show_obj_content : obj_content -> string
-val equal_obj_content : obj_content -> obj_content -> bool
 
 (**Global context for type checker *)
 type context = TCClass of c_sharp_class
