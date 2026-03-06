@@ -47,7 +47,6 @@ module TYPECHECK : sig
   val lift2 : ('a -> 'b -> 'c) -> 'a t -> 'b t -> 'c t
   val lift3 : ('a -> 'b -> 'c -> 'd) -> 'a t -> 'b t -> 'c t -> 'd t
   val read_local : Common.obj_content IdMap.t t
-  val read_local_el : ident -> (Common.obj_content option -> 'a t) -> 'a t
   val read_local_el_opt : ident -> Common.obj_content option t
   val read_local_el : ident -> Common.obj_content t
   val write_local : Common.obj_content IdMap.t -> unit t
@@ -55,7 +54,6 @@ module TYPECHECK : sig
   val write_meth_type_opt : _type option -> unit t
   val write_meth_type : _type -> unit t
   val read_global : Common.context IdMap.t t
-  val read_global_el : ident -> (Common.context option -> 'a t) -> 'a t
   val read_global_el_opt : ident -> Common.context option t
   val read_global_el : ident -> Common.context t
   val read_meth_type : _type option t

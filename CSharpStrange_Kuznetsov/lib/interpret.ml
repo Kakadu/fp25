@@ -167,7 +167,6 @@ let alloc v store =
   loc, store
 ;;
 
-let lookup_env_r (id : ident) (rt : runtime) = lookup_env id rt.env
 let lookup_store_r l rt = lookup_store l rt.store
 let update_store_r l v rt = { rt with store = update_store l v rt.store }
 
@@ -190,16 +189,6 @@ let string_of_ident = function
 
 let ident_of_vardecl = function
   | Var (_, id) -> id
-;;
-
-let expect_bool = function
-  | VBool b -> Ok b
-  | _ -> Error TypeMismatch
-;;
-
-let expect_int = function
-  | VInt i -> Ok i
-  | _ -> Error TypeMismatch
 ;;
 
 let add_var (id : ident) (loc : location) (env : env) =

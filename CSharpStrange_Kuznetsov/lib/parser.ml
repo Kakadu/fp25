@@ -7,7 +7,6 @@ open Angstrom
 open Base
 
 (* Chain functions *)
-let chainl0 expr op = op >>= (fun op1 -> expr >>| op1) <|> expr
 
 let chainl1 expr op =
   let rec pars e1 = lift2 (fun op1 e2 -> op1 e1 e2) op expr >>= pars <|> return e1 in
