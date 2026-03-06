@@ -1508,7 +1508,7 @@ let empty_runtime =
 let string_of_ident (Id s) = <span data-count="56">s</span>
 
 let rec lookup_env id = function
-  | <span data-count="56">[</span>] -&gt; Error (NoVariable ("variable not found: " ^ string_of_iden<span data-count="56">t</span> id))
+  | <span data-count="56">[</span>] -&gt; Error (NoVariable ("Variable not found: " ^ string_of_iden<span data-count="56">t</span> id))
   | <span data-count="1233">s</span>cope :: rest -&gt;
     (match IdMap.find_opt id scope with
      | <span data-count="430">S</span>ome var_info -&gt; Ok var_info.loc
@@ -1598,7 +1598,7 @@ let push_scope env = <span data-count="79">O</span>k (IdMap.empty :: env)
 
 let pop_scope = function
   | <span data-count="78">_</span> :: rest -&gt; Ok rest
-  | <span data-count="0">[</span>] -&gt; Error (OtherError "cannot pop scope")
+  | <span data-count="0">[</span>] -&gt; Error (OtherError "Cannot pop scope")
 ;;
 
 let var_field_of_ast = function
@@ -1630,11 +1630,11 @@ let class_of_ast (Class (_, _, fields)) =
 
 let find_field obj_id field_id rt =
   <span data-count="0">m</span>atch List.find_opt (fun o -&gt; <span data-count="0">o</span>.obj_id = obj_id) rt.objects with
-  | <span data-count="0">N</span>one -&gt; Error (OtherError "object not found")
+  | <span data-count="0">N</span>one -&gt; Error (OtherError "Object not found")
   | <span data-count="0">S</span>ome obj -&gt;
     (match List.find_opt (fun (id, _) -&gt; <span data-count="0">i</span>d = field_id) obj.fields with
      | <span data-count="0">S</span>ome (_, v) -&gt; Ok v
-     | <span data-count="0">N</span>one -&gt; Error (OtherError "field not found"))
+     | <span data-count="0">N</span>one -&gt; Error (OtherError "Field not found"))
 ;;
 
 let update_field obj_id field_id new_value rt =
@@ -1704,7 +1704,7 @@ let rec eval_expr (rt : runtime) = function
              <span data-count="20">r</span>eturn (v, rt2)
            | <span data-count="0">E</span>rror _ -&gt;
              (match rt1.curr_object with
-              | <span data-count="0">N</span>one -&gt; Error (OtherError ("cannot assign to " ^ string_of_iden<span data-count="0">t</span> id))
+              | <span data-count="0">N</span>one -&gt; Error (OtherError ("Cannot assign to " ^ string_of_iden<span data-count="0">t</span> id))
               | <span data-count="0">S</span>ome obj_id -&gt;
                 let rt2 = update_field obj_id id v rt1 in
                 <span data-count="0">r</span>eturn (v, rt2))))
@@ -1747,7 +1747,7 @@ let rec eval_expr (rt : runtime) = function
     (match fn_expr with
      | <span data-count="1">E</span>Id id -&gt;
        (match lookup_func_opt id rt.fenv with
-        | <span data-count="0">N</span>one -&gt; Error (OtherError ("function not found: " ^ string_of_iden<span data-count="0">t</span> id))
+        | <span data-count="0">N</span>one -&gt; Error (OtherError ("Function not found: " ^ string_of_iden<span data-count="0">t</span> id))
         | <span data-count="1">S</span>ome f -&gt;
           let rec eval_args rt = function
             | <span data-count="1">[</span>] -&gt; return ([], rt)
@@ -1759,7 +1759,7 @@ let rec eval_expr (rt : runtime) = function
           let* arg_vals, rt2 = eval_arg<span data-count="1">s</span> rt args in
           <span data-count="1">l</span>et* v, rt3 = call_functio<span data-count="1">n</span> rt2 f arg_vals in
           <span data-count="1">r</span>eturn (v, rt3))
-     | <span data-count="0">_</span> -&gt; Error (OtherError "invalid function call"))
+     | <span data-count="0">_</span> -&gt; Error (OtherError "Invalid function call"))
   | <span data-count="0">E</span>ArrayAccess _ -&gt; Error NotImplemented
   | <span data-count="0">E</span>Await _ -&gt; Error NotImplemented
 
@@ -1794,10 +1794,10 @@ and call_function (rt : runtime) f args =
       let* env2 =
         match env with
         | <span data-count="3">s</span>cope :: rest -&gt; Ok (IdMap.ad<span data-count="3">d</span> p var_info scope :: rest)
-        | <span data-count="0">[</span>] -&gt; Error (OtherError "empty environment in bind_params")
+        | <span data-count="0">[</span>] -&gt; Error (OtherError "Empty environment in bind_params")
       in
       <span data-count="3">b</span>ind_params env2 ps vs rt1
-    | <span data-count="0">_</span> -&gt; Error (OtherError "argument mismatch")
+    | <span data-count="0">_</span> -&gt; Error (OtherError "Argument mismatch")
   in
   let* rt_func, _ = bind_param<span data-count="7">s</span> [ IdMap.empty ] f.params args rt in
   <span data-count="7">l</span>et rt_with_this = { rt_func with curr_object = caller_obj } in
@@ -1806,7 +1806,7 @@ and call_function (rt : runtime) f args =
   match flow with
   | <span data-count="6">R</span>eturn v -&gt; return (v, restored_rt)
   | <span data-count="0">N</span>ormal -&gt; return (VNull, restored_rt)
-  | <span data-count="0">B</span>reak | <span data-count="0">C</span>ontinue -&gt; Error (OtherError "break/continue outside loop")
+  | <span data-count="0">B</span>reak | <span data-count="0">C</span>ontinue -&gt; Error (OtherError "Break/continue outside loop")
 
 and exec_stmt (rt : runtime) = function
   | <span data-count="56">S</span>Expr e -&gt;
@@ -1875,7 +1875,7 @@ and exec_stmt (rt : runtime) = function
         let* rt1, r = exec_stm<span data-count="11">t</span> rt0 s in
         <span data-count="11">(</span>match r with
          | <span data-count="11">N</span>ormal -&gt; return rt1
-         | <span data-count="0">_</span> -&gt; Error (OtherError "invalid control flow in for init"))
+         | <span data-count="0">_</span> -&gt; Error (OtherError "Invalid control flow in for init"))
     in
     <span data-count="11">l</span>et rec loop rt =
       <span data-count="66">l</span>et* cond_val, rt1 =
@@ -2014,10 +2014,10 @@ let interpret str =
 
 (* TODO: error messages? *)
 (*
+Quicktests for parser
    TODO: lambdas + closures
    arrays (1D) + new
-   FIX BUGS (interpreter)
-   Quicktests for parser (if time permits)
+   
    pre/post increment/decrement
    LINQ (simple array queries)
    async/await (at least without lambdas)

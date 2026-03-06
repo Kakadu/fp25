@@ -987,7 +987,7 @@ let parse_ops =
     <span data-count="6">l</span>et lv2 =
       man<span data-count="6">y</span> (choic<span data-count="6">e</span> [ ( ^!^ ); ( ^!-^ ) ])
       &gt;&gt;= fun ops -&gt;
-      <span data-count="1479">l</span>et appl op acc = <span data-count="44">o</span>p acc in
+      <span data-count="1479">l</span>et appl op = <span data-count="44">o</span>p in
       lv1 &gt;&gt;= fun e -&gt; <span data-count="1459">r</span>eturn (List.fold_righ<span data-count="1459">t</span> ops ~f:appl ~init:e)
     in
     (* TODO: rewrite somehow + more ops *)
