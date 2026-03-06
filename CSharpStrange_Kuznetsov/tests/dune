@@ -1,6 +1,6 @@
 (library
  (name tests)
- (public_name CSharpStrange.Lib.Tests)
+ (public_name CSharpStrange_Kuznetsov.Lib.Tests)
  (modules Parser_tests Pp_tests Typecheck_tests Interpret_tests)
  (libraries angstrom c_sharp_strange_lib qcheck)
  (inline_tests)

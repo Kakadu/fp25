@@ -15,7 +15,7 @@
 (homepage "https://github.com/f1i3g3/fp25")
 
 (package
- (name CSharpStrange)
+ (name CSharpStrange_Kuznetsov)
  (synopsis "An interpreter for strange subset of C# language")
  (description
   "An interpreter for subset of C# language (some stuff like  async/await and LINQ will be added later)")

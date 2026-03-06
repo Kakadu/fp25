@@ -1,6 +1,6 @@
 (library
  (name c_sharp_strange_lib)
- (public_name CSharpStrange.Lib)
+ (public_name CSharpStrange_Kuznetsov.Lib)
  (modules Ast Parser Prettyprinter Typecheck Monads Common Interpret)
  (libraries angstrom base)
  (preprocess
