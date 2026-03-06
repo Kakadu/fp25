@@ -153,7 +153,9 @@ let typecheck_bin_op b e1 e2 expr_tc =
 let typecheck_un_op u e expr_tc =
   let tc_un_op u e =
     find_expr_type e expr_tc >>= fun t ->
-    match u with OpNot -> eq_type t (TypeBase TypeBool)
+    match u with
+    | OpNot -> eq_type t (TypeBase TypeBool)
+    | OpNeg -> eq_type t (TypeBase TypeInt)
   in
   tc_un_op u e >>= fun t ->
   let var_info = { var_type = TypeVar t; initialized = true } in
@@ -203,13 +205,45 @@ let check_initialized n =
   | TCMethod _ -> return ()
 
 let typecheck_expr =
+  let ( let* ) = ( >>= ) in
   let rec tc_expr_ = function
     | EId n ->
+        (* Отладка: что ищем *)
+        let* () =
+          Printf.printf "Looking for identifier: %s\n" (string_of_ident n);
+          return ()
+        in
         name_to_obj_ctx n
-        >>= (fun ctx -> check_initialized n *> return ctx)
+        >>= (fun ctx ->
+              (* Отладка: нашли в локальных *)
+              let* () =
+                Printf.printf "Found in local env: %s\n" (string_of_ident n);
+                return ()
+              in
+              check_initialized n *> return ctx)
         <|> ( get_curr_class_name >>= fun class_name ->
+              (* Отладка: ищем в классе *)
+              let* () =
+                Printf.printf "Looking in class: %s\n"
+                  (string_of_ident class_name);
+                return ()
+              in
               find_memb_from_obj class_name n >>= function
-              | Some memb -> return memb
+              | Some memb ->
+                  (* Отладка: нашли в классе *)
+                  let* () =
+                    match memb with
+                    | TCField f ->
+                        Printf.printf "Found field in class: %s\n"
+                          (string_of_ident f.field_name);
+                        return ()
+                    | TCMethod m ->
+                        Printf.printf "Found method in class: %s\n"
+                          (string_of_ident m.method_name);
+                        return ()
+                    | _ -> return ()
+                  in
+                  return memb
               | None ->
                   fail
                     (TCError
@@ -324,23 +358,36 @@ let tc_member mem class_fields =
     iter f params
   in
   let tc_meth typ params body class_fields =
+    Printf.printf "=== Entering tc_meth ===\n";
+    Printf.printf "Method return type: %s\n" (show__type typ);
+    Printf.printf "Number of class fields: %d\n" (List.length class_fields);
+
     apply_local
       (let add_field_to_env = function
-         | VarField (mods, typ, id, init) ->
+         | VarField (mods, field_typ, id, init) ->
+             Printf.printf "Adding field to env: %s\n" (string_of_ident id);
              let field_info =
                {
                  field_modifiers = mods;
-                 field_type = typ;
+                 field_type = field_typ;
                  field_name = id;
                  field_init = init;
                  is_static = false;
                }
              in
              write_local_el id (TCField field_info)
-         | Method _ -> return ()
+         | Method _ ->
+             Printf.printf "Skipping method in fields\n";
+             return ()
        in
+       Printf.printf "Iterating over class fields...\n";
        iter add_field_to_env class_fields
-       *> write_meth_type typ *> save_params_to_l params *> typecheck_stmt body)
+       *> (Printf.printf "Fields added, checking params...\n";
+           return ())
+       *> write_meth_type typ
+       *> (Printf.printf "Params saved, checking body...\n";
+           return ())
+       *> save_params_to_l params *> typecheck_stmt body)
   in
   let tc_class_method (mds, tp, id, pms, b) class_fields =
     let m = method_of_ast (Method (mds, tp, id, pms, b)) in
