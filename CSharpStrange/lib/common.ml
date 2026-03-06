@@ -23,7 +23,9 @@ type interpret_error =
   | OtherError of string
 [@@deriving show { with_path = false }]
 
-type error = TCError of tc_error | IError of interpret_error
+type error =
+  | TCError of tc_error
+  | IError of interpret_error
 [@@deriving show { with_path = false }]
 
 module Id = struct
@@ -44,27 +46,30 @@ end
 
 module AdrMap = Map.Make (Adr)
 
-type var_info = { var_type : var_type; initialized : bool (* TODO: ?? *) }
+type var_info =
+  { var_type : var_type
+  ; initialized : bool (* TODO: ?? *)
+  }
 [@@deriving show { with_path = false }, eq]
 
-type field_info = {
-  field_modifiers : modifier list;
-  field_type : var_type;
-  field_name : ident;
-  field_init : expr option;
-  is_static : bool;
-}
+type field_info =
+  { field_modifiers : modifier list
+  ; field_type : var_type
+  ; field_name : ident
+  ; field_init : expr option
+  ; is_static : bool
+  }
 [@@deriving show { with_path = false }, eq]
 
-type method_info = {
-  method_modifiers : modifier list;
-  method_return : _type;
-  method_name : ident;
-  method_params : params;
-  method_body : stmt;
-  is_static : bool;
-  is_main : bool;
-}
+type method_info =
+  { method_modifiers : modifier list
+  ; method_return : _type
+  ; method_name : ident
+  ; method_params : params
+  ; method_body : stmt
+  ; is_static : bool
+  ; is_main : bool
+  }
 [@@deriving show { with_path = false }, eq]
 
 type obj_content =
@@ -82,9 +87,5 @@ module TypeCheck = struct
   type class_with_main = ident
 
   type state =
-    global_env
-    * local_env
-    * curr_class option
-    * _type option
-    * class_with_main option
+    global_env * local_env * curr_class option * _type option * class_with_main option
 end

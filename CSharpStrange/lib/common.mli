@@ -30,7 +30,9 @@ val pp_interpret_error : Format.formatter -> interpret_error -> unit
 val show_interpret_error : interpret_error -> string
 
 (** Combined error type *)
-type error = TCError of tc_error | IError of interpret_error
+type error =
+  | TCError of tc_error
+  | IError of interpret_error
 
 val pp_error : Format.formatter -> error -> unit
 val show_error : error -> string
@@ -65,39 +67,39 @@ module AdrMap : sig
   include Map.S with type key = adr
 end
 
-type var_info = {
-  var_type : var_type;
-  initialized : bool;  (** Whether the variable has been initialized *)
-}
 (** Variable information for type checker *)
+type var_info =
+  { var_type : var_type
+  ; initialized : bool (** Whether the variable has been initialized *)
+  }
 
 val pp_var_info : Format.formatter -> var_info -> unit
 val show_var_info : var_info -> string
 val equal_var_info : var_info -> var_info -> bool
 
-type field_info = {
-  field_modifiers : modifier list;
-  field_type : var_type;
-  field_name : ident;
-  field_init : expr option;
-  is_static : bool;
-}
 (** Field information for type checker *)
+type field_info =
+  { field_modifiers : modifier list
+  ; field_type : var_type
+  ; field_name : ident
+  ; field_init : expr option
+  ; is_static : bool
+  }
 
 val pp_field_info : Format.formatter -> field_info -> unit
 val show_field_info : field_info -> string
 val equal_field_info : field_info -> field_info -> bool
 
-type method_info = {
-  method_modifiers : modifier list;
-  method_return : _type;
-  method_name : ident;
-  method_params : params;
-  method_body : stmt;
-  is_static : bool;
-  is_main : bool;  (** Whether this is the Main method *)
-}
 (** Method information for type checker *)
+type method_info =
+  { method_modifiers : modifier list
+  ; method_return : _type
+  ; method_name : ident
+  ; method_params : params
+  ; method_body : stmt
+  ; is_static : bool
+  ; is_main : bool (** Whether this is the Main method *)
+  }
 
 val pp_method_info : Format.formatter -> method_info -> unit
 val show_method_info : method_info -> string
@@ -105,9 +107,9 @@ val equal_method_info : method_info -> method_info -> bool
 
 (** Type checker content types *)
 type obj_content =
-  | TCLocalVar of var_info  (** Local variable *)
-  | TCField of field_info  (** Class field *)
-  | TCMethod of method_info  (** Class method *)
+  | TCLocalVar of var_info (** Local variable *)
+  | TCField of field_info (** Class field *)
+  | TCMethod of method_info (** Class method *)
 
 val pp_obj_content : Format.formatter -> obj_content -> unit
 val show_obj_content : obj_content -> string
@@ -124,9 +126,5 @@ module TypeCheck : sig
   type class_with_main = ident
 
   type state =
-    global_env
-    * local_env
-    * curr_class option
-    * _type option
-    * class_with_main option
+    global_env * local_env * curr_class option * _type option * class_with_main option
 end

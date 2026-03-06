@@ -7,11 +7,13 @@ open C_sharp_strange_lib.Monads
 
 let show_wrap str =
   match interpret str with
-  | Result.Ok x -> (
-      match x with
-      | Some x -> Format.printf "Result: '%a'" pp_value x
-      | None -> Format.print_string "Result: void\n")
+  | Result.Ok x ->
+    (match x with
+     | Some x -> Format.printf "Result: '%a'" pp_value x
+     | None -> Format.print_string "Result: void\n")
   | Result.Error er -> Format.printf "%a\n%!" pp_error (IError er)
+;;
+
 (* TODO: incluede TC? *)
 
 let%expect_test "Main 1" =
@@ -36,10 +38,11 @@ let%expect_test "Main 1" =
   } |};
   [%expect {|
     Result: '-58' |}]
+;;
 
 (* TODO: Доступ к нестатическим полям из статического метода запрещен
-         В статическом классе только статические методы, но static не может быть входом в программу
-         Мб сделать проверку на класс внутри main, но не успею
+   В статическом классе только статические методы, но static не может быть входом в программу
+   Мб сделать проверку на класс внутри main, но не успею
 *)
 
 let%expect_test "Main 2" =
@@ -59,6 +62,8 @@ let%expect_test "Main 2" =
   } |};
   [%expect {|
     Result: '870' |}]
+;;
+
 (* TODO: n without static *)
 
 let%expect_test "Main 3" =
@@ -90,6 +95,7 @@ let%expect_test "Main 3" =
   } |};
   [%expect {|
     Result: '141' |}]
+;;
 
 let%expect_test "Main 4" =
   show_wrap
@@ -107,6 +113,7 @@ let%expect_test "Main 4" =
   } |};
   [%expect {|
     Result: '18' |}]
+;;
 
 let%expect_test "Functions 1" =
   show_wrap
@@ -127,6 +134,8 @@ let%expect_test "Functions 1" =
   } |};
   [%expect {|
     Result: '1' |}]
+;;
+
 (* TODO: не static нельзя *)
 
 let%expect_test "Invalid value" =
@@ -141,3 +150,4 @@ let%expect_test "Invalid value" =
     } |};
   [%expect {|
   (IError (OtherError "Value is not initialized"))|}]
+;;

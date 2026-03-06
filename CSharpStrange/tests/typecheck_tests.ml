@@ -8,11 +8,12 @@ open C_sharp_strange_lib.Ast
 open C_sharp_strange_lib.Common
 
 let show_wrap = function
-  | Some (Program x) -> (
-      match typecheck x with
-      | _, Result.Ok _ -> Format.print_string "Ok!\n"
-      | _, Result.Error e -> Format.printf "%a\n%!" pp_error e)
+  | Some (Program x) ->
+    (match typecheck x with
+     | _, Result.Ok _ -> Format.print_string "Ok!\n"
+     | _, Result.Error e -> Format.printf "%a\n%!" pp_error e)
   | _ -> Format.print_string "Parsing error\n"
+;;
 
 let print_tc p str = show_wrap (parse_option p str)
 let test_ast = print_tc parse_prog
@@ -36,6 +37,7 @@ let%expect_test "Factorial" =
     } |};
   [%expect {|
     Ok! |}]
+;;
 
 let%expect_test "Wrong factorial" =
   test_ast
@@ -50,10 +52,10 @@ let%expect_test "Wrong factorial" =
   [%expect
     {|
     (TCError (OtherError "Returned type does not match the function type")) |}]
+;;
 
 let%expect_test "Already declared variable" =
-  test_ast
-    {| 
+  test_ast {| 
   class Program {
     int a = 5;
     int b = 9;
@@ -61,6 +63,7 @@ let%expect_test "Already declared variable" =
   } |};
   [%expect {|
     (TCError (OtherError "This variable is already declared")) |}]
+;;
 
 let%expect_test "Checking fields" =
   test_ast
@@ -80,6 +83,7 @@ let%expect_test "Checking fields" =
   } |};
   [%expect {|
     Ok! |}]
+;;
 
 (* TODO: parser check! *)
 
@@ -91,6 +95,7 @@ let%expect_test "String + int" =
   } |};
   [%expect {|
     (TCError TypeMismatch) |}]
+;;
 
 (* TODO: string! *)
 
@@ -117,6 +122,7 @@ let%expect_test "While" =
   } |};
   [%expect {|
     Ok! |}]
+;;
 
 let%expect_test "For" =
   test_ast
@@ -139,6 +145,7 @@ let%expect_test "For" =
   } |};
   [%expect {|
     Ok! |}]
+;;
 
 (* TODO: some stuff here! *)
 
@@ -152,6 +159,7 @@ let%expect_test "Wrong main" =
     {|
     (TCError
        (OtherError "Main must be static, non-async, no params, return int/void")) |}]
+;;
 
 let%expect_test "Already declared function" =
   test_ast
@@ -163,6 +171,7 @@ let%expect_test "Already declared function" =
   } |};
   [%expect {|
     (TCError (OtherError "This variable is already declared")) |}]
+;;
 
 let%expect_test "Function type mismatch" =
   test_ast
@@ -174,6 +183,7 @@ let%expect_test "Function type mismatch" =
   }|};
   [%expect {|
     (TCError TypeMismatch) |}]
+;;
 
 (* TODO: occurs check: smth like
    {|
