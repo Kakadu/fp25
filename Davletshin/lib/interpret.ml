@@ -138,16 +138,16 @@ let parse_and_run str steps =
     (match I.run ast steps with
      | Ok n ->
        (match n with
-        | OUnit -> Printf.printf "Success: Unit"
+        | OUnit -> Printf.printf "Success: Unit\n"
         | OInt n -> Printf.printf "Success: %d\n" n
         | OAbs n -> Printf.printf "Success: val %s = <fun>\n" n)
      | Error err ->
        (match err with
-        | UnknownVariable x -> Format.eprintf "UnknownVariable: %s\n" x
-        | TypeError msg -> Format.eprintf "TypeError: %s\n" msg
-        | DivisionByZero -> Format.eprintf "Division by zero\n"
-        | ProgramFreeze -> Format.eprintf "ProgramFreeze\n"))
+        | UnknownVariable x -> Printf.eprintf "UnknownVariable: %s\n%!" x
+        | TypeError msg -> Printf.eprintf "TypeError: %s\n%!" msg
+        | DivisionByZero -> Printf.eprintf "Division by zero\n%!"
+        | ProgramFreeze -> Printf.eprintf "ProgramFreeze\n%!"))
   | Error _ ->
-    Format.eprintf "Parsing error\n%!";
+    Printf.eprintf "Parsing error\n%!";
     exit 1
 ;;

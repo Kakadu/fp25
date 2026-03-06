@@ -11,10 +11,7 @@ open Miniml_lib
 let interactive = Unix.isatty Unix.stdin
 
 let rec repl () =
-  if interactive
-  then (
-    print_string ">> ";
-    flush stdout);
+  if interactive then print_string ">> ";
   match read_line () with
   | exception End_of_file -> ()
   | line ->
