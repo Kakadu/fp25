@@ -13,7 +13,7 @@ let show_wrap str =
   | Result.Error er -> Format.printf "%a\n%!" pp_error (IError er)
 ;;
 
-(* TODO: incluede TC? *)
+(* TODO: include TC? *)
 
 let%expect_test "Main 1" =
   show_wrap
@@ -39,9 +39,9 @@ let%expect_test "Main 1" =
     Result: '-58' |}]
 ;;
 
-(* TODO: Доступ к нестатическим полям из статического метода запрещен
-   В статическом классе только статические методы, но static не может быть входом в программу
-   Мб сделать проверку на класс внутри main, но не успею
+(* TODO: Access to non-static fields from static methods is prohibited
+   Static classes can only have static methods, but static cannot be the program entry point
+   Maybe add class check inside main, but won't have time
 *)
 
 let%expect_test "Main 2" =
@@ -135,7 +135,7 @@ let%expect_test "Functions 1" =
     Result: '1' |}]
 ;;
 
-(* TODO: не static нельзя *)
+(* TODO: non static not allowed *)
 
 let%expect_test "Invalid value" =
   show_wrap

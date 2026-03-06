@@ -4,7 +4,7 @@
 
 open Common
 
-(** State + Error monad combinators *)
+(* State + Error monad combinators *)
 module STATEERROR : sig
   type ('st, 'a) t = 'st -> 'st * ('a, error) Result.t
 
@@ -31,7 +31,7 @@ module STATEERROR : sig
   val run : ('st, 'a) t -> 'st -> 'st * ('a, error) Result.t
 end
 
-(** Typechecker-specific monad operations *)
+(* Typechecker-specific monad operations *)
 module TYPECHECK : sig
   open Ast
 

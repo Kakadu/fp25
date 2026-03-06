@@ -147,7 +147,6 @@ let%expect_test "For" =
     Ok! |}]
 ;;
 
-(* TODO: some stuff here! *)
 
 let%expect_test "Wrong main" =
   test_ast {| 
@@ -185,11 +184,11 @@ let%expect_test "Function type mismatch" =
     (TCError TypeMismatch) |}]
 ;;
 
-(* TODO: occurs check: smth like
+(* TODO: occurs check test: smth like
    {|
    class Program {
-     public void foo() {
-       bool a = new A();
+     public void f() {
+       bool a = new Ob();
      };
    }|}
 *)
