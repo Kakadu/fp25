@@ -6,6 +6,7 @@ open Ast
 open Angstrom
 open Base
 
+val reserved : string list
 val parens : 'a t -> 'a t
 val braces : 'a t -> 'a t
 val brackets : 'a t -> 'a t
