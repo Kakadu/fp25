@@ -10,9 +10,10 @@
                             [(SReturn
                                 (Some (EBinOp (OpMul, (EId (Id "n")),
                                          (EFuncCall ((EId (Id "Factorial")),
-                                            [(EBinOp (OpSub, (EId (Id "n")),
-                                                (EValue (ValInt 1))))
-                                              ]
+                                            (Args
+                                               [(EBinOp (OpSub, (EId (Id "n")),
+                                                   (EValue (ValInt 1))))
+                                                 ])
                                             ))
                                          ))))
                               ]))
