@@ -20,15 +20,9 @@ let vartype_to_type = function
   | TypeVar t -> t
 ;;
 
-let vardecl_to_type = function
-  | Var (t, _) -> return (vartype_to_type t)
-;;
-
 let name_to_obj_ctx = read_local_el
 let eq f e1 e2 = if f e1 e2 then return e1 else fail (TCError TypeMismatch)
 let eq_type t1 t2 = eq equal__type t1 t2
-let eq_ident n1 n2 = eq equal_ident n1 n2
-let eq_ident_return_ctx n1 n2 m f = if equal_ident n1 n2 then Some (f m) else None
 
 let field_of_ast = function
   | VarField (mods, typ, id, init) ->
@@ -78,10 +72,6 @@ let get_class_memb id memb =
   | _ -> None
 ;;
 
-let get_class_name = function
-  | Class (_, id, _) -> id
-;;
-
 let find_memb_from_obj obj_id id =
   let find_memb b id f = List.find_map (f id) b in
   let find_class_memb b id = find_memb b id get_class_memb in
@@ -97,17 +87,6 @@ let is_public obj_id ctx mds =
     | _ :: xs -> is_m_list_public xs
   in
   is_m_list_public mds <|> (read_global_el obj_id >>= fun _ -> fail (TCError AccessError))
-;;
-
-let find_obj_memb_with_fail n_obj n_mem =
-  find_memb_from_obj n_obj n_mem
-  >>= function
-  | Some memb ->
-    (match memb with
-     | TCField f -> is_public n_obj memb f.field_modifiers
-     | TCMethod m -> is_public n_obj memb m.method_modifiers
-     | _ -> fail (TCError (ImpossibleResult "Object can only have fields and methods")))
-  | None -> fail (TCError (OtherError "Class member not found"))
 ;;
 
 let find_memb_type = function
