@@ -4,7 +4,8 @@
 
 open Ast
 
-type tc_error = 
+(** Type checker error types *)
+type tc_error =
   | NotImplemented
   | OccursCheck
   | AccessError
@@ -15,6 +16,7 @@ type tc_error =
 val pp_tc_error : Format.formatter -> tc_error -> unit
 val show_tc_error : tc_error -> string
 
+(** Interpreter error types *)
 type interpret_error =
   | NotImplemented
   | NoVariable of string
@@ -27,124 +29,104 @@ type interpret_error =
 val pp_interpret_error : Format.formatter -> interpret_error -> unit
 val show_interpret_error : interpret_error -> string
 
-type error =
-  | TCError of tc_error
-  | IError of interpret_error
+(** Combined error type *)
+type error = TCError of tc_error | IError of interpret_error
 
 val pp_error : Format.formatter -> error -> unit
 val show_error : error -> string
 
-
+(** Identifier module *)
 module Id : sig
   type t = ident
-  val compare : 't -> 't -> int
+
+  val compare : t -> t -> int
 end
 
+(** Map from identifiers *)
 module IdMap : sig
-  include Map.S with type key = Ast.ident
+  include Map.S with type key = ident
 end
 
-type adr = Adr of int 
+(** Address type *)
+type adr = Adr of int
 
 val pp_adr : Format.formatter -> adr -> unit
 val show_adr : adr -> string
 
+(** Address module *)
 module Adr : sig
   type t = adr
-  val compare : 't -> 't -> int
+
+  val compare : t -> t -> int
 end
 
+(** Map from addresses *)
 module AdrMap : sig
   include Map.S with type key = adr
 end
 
+type var_info = {
+  var_type : var_type;
+  initialized : bool;  (** Whether the variable has been initialized *)
+}
+(** Variable information for type checker *)
+
+val pp_var_info : Format.formatter -> var_info -> unit
+val show_var_info : var_info -> string
+val equal_var_info : var_info -> var_info -> bool
+
+type field_info = {
+  field_modifiers : modifier list;
+  field_type : var_type;
+  field_name : ident;
+  field_init : expr option;
+  is_static : bool;
+}
+(** Field information for type checker *)
+
+val pp_field_info : Format.formatter -> field_info -> unit
+val show_field_info : field_info -> string
+val equal_field_info : field_info -> field_info -> bool
+
+type method_info = {
+  method_modifiers : modifier list;
+  method_return : _type;
+  method_name : ident;
+  method_params : params;
+  method_body : stmt;
+  is_static : bool;
+  is_main : bool;  (** Whether this is the Main method *)
+}
+(** Method information for type checker *)
+
+val pp_method_info : Format.formatter -> method_info -> unit
+val show_method_info : method_info -> string
+val equal_method_info : method_info -> method_info -> bool
+
+(** Type checker content types *)
 type obj_content =
-  | VarType of Ast.var_type
-  | Method of Ast.field
-  | Field of Ast.field
+  | TCLocalVar of var_info  (** Local variable *)
+  | TCField of field_info  (** Class field *)
+  | TCMethod of method_info  (** Class method *)
 
 val pp_obj_content : Format.formatter -> obj_content -> unit
 val show_obj_content : obj_content -> string
 val equal_obj_content : obj_content -> obj_content -> bool
 
+(** Global context for type checker *)
 type context = TCClass of c_sharp_class
 
+(** Type checker state module *)
 module TypeCheck : sig
   type global_env = context IdMap.t
   type local_env = obj_content IdMap.t
   type curr_class = ident
   type class_with_main = ident
-  
-  type state = 
-    global_env * local_env * curr_class option * _type option * class_with_main option
-end
 
-module Interpret : sig
-  type idx = Idx of int 
-
-  val pp_idx : Format.formatter -> idx -> unit
-  val show_idx : idx -> string
-
-  type meth = {
-    m_modifiers : modifier list;
-    m_type : _type;
-    m_id : ident;
-    m_params : params;
-  }
-
-  type constr = {
-    c_modifier : modifier list;
-    c_id : ident;
-    c_params : params;
-  }
-
-  type code =
-    | IConstructor of constr * stmt
-    | IMethod of meth * stmt
-
-  val pp_code : Format.formatter -> code -> unit
-  val show_code : code -> string
-
-  type class_ = {
-    cl_modifiers : modifier list;
-    cl_id : ident;
-    cl_body : code list;
-  }
-
-  type el =
-    | IClass of adr
-    | IValue of val_type
-
-  val pp_el : Format.formatter -> el -> unit
-  val show_el : el -> string
-
-  type vl =
-    | Init of el
-    | NotInit
-
-  val pp_vl : Format.formatter -> vl -> unit
-  val show_vl : vl -> string
-
-  type local_el =
-    | Code of code
-    | Value of vl * idx option
-
-  type local_env = idx * local_el IdMap.t
-
-  type obj = {
-    mems : (field * vl) IdMap.t;
-    cl_name : ident;
-    p_adr : adr option;
-    inh_adr : adr option;
-  }
-
-  type context = IntrClass of class_
-
-  val pp_context : Format.formatter -> context -> unit
-  val show_context : context -> string
-
-  type memory = adr * obj AdrMap.t
-  type local_adr = adr
-  type global_env = context IdMap.t
-  type state = global_env * local_env * local_adr * memory
+  type state =
+    global_env
+    * local_env
+    * curr_class option
+    * _type option
+    * class_with_main option
 end

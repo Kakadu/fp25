@@ -3,46 +3,50 @@
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
 open C_sharp_strange_lib.Interpret
-open C_sharp_strange_lib.Monad
-open C_sharp_strange_lib.Common.Interpret
+open C_sharp_strange_lib.Monads
 
 let show_wrap str =
   match interpret str with
-  | Result.Ok x ->
-    (match x with
-     | Some x -> Format.printf "Result: '%a'" pp_vl x
-     | None -> Format.print_string "Result: void\n")
-  | Result.Error er -> Format.printf "%a\n%!" pp_error er
-;;
+  | Result.Ok x -> (
+      match x with
+      | Some x -> Format.printf "Result: '%a'" pp_value x
+      | None -> Format.print_string "Result: void\n")
+  | Result.Error er -> Format.printf "%a\n%!" pp_error (IError er)
+(* TODO: incluede TC? *)
 
-let%expect_test _ =
+let%expect_test "Main 1" =
   show_wrap
     {| 
   class Program {
-    int b = 9;
-    int c = 67;
-    int a;
-    bool r = false;
-    string s = "ok";
-    char h = 'a';
-    bool t;
+    static int b = 9;
+    static int c = 67;
+    static int a;
+    static bool r = false;
+    static string s = "ok";
+    static char h = 'a';
+    static bool t;
 
-    static int Main() {
+    static int Main() { 
       a = (50 % 2) + b - c;
       r = s != "kkkk" && (190%22 == 100 * -2/5);
       t = (a != b * c) || (a >= b) && (a == c +90);
       return a;
     }
+
   } |};
   [%expect {|
-    Result: '(Init (IValue (VInt -58)))' |}]
-;;
+    Result: '-58' |}]
 
-let%expect_test _ =
+(* TODO: Доступ к нестатическим полям из статического метода запрещен
+         В статическом классе только статические методы, но static не может быть входом в программу
+         Мб сделать проверку на класс внутри main, но не успею
+*)
+
+let%expect_test "Main 2" =
   show_wrap
     {| 
   class Program {
-    int n = 10;
+    static int n = 10;
     static int Main() {
       int res = 0;
       for(int i = 0; i < n; i = i+1) {
@@ -54,15 +58,15 @@ let%expect_test _ =
     }
   } |};
   [%expect {|
-    Result: '(Init (IValue (VInt 870)))' |}]
-;;
+    Result: '870' |}]
+(* TODO: n without static *)
 
-let%expect_test _ =
+let%expect_test "Main 3" =
   show_wrap
     {| 
   class Program {
-    bool t;
-    int a = 5;
+    static bool t;
+    static int a = 5;
 
     static int Main() {
       int b = 5;
@@ -85,15 +89,14 @@ let%expect_test _ =
     }
   } |};
   [%expect {|
-    Result: '(Init (IValue (VInt 141)))' |}]
-;;
+    Result: '141' |}]
 
-let%expect_test _ =
+let%expect_test "Main 4" =
   show_wrap
     {| 
   class Program {
-    int x = 189;
-    int s = 0;
+    static int x = 189;
+    static int s = 0;
     static int Main() {
       while (x != 0) {
           s = s + x % 10;
@@ -103,14 +106,13 @@ let%expect_test _ =
     }
   } |};
   [%expect {|
-    Result: '(Init (IValue (VInt 18)))' |}]
-;;
+    Result: '18' |}]
 
-let%expect_test _ =
+let%expect_test "Functions 1" =
   show_wrap
     {| 
   class Program {
-    public int is_right_triangle(int a, int b, int c) {
+    public static int is_right_triangle(int a, int b, int c) {
       if ((a + b <= c) || (a + c <= b) || (b + c <= a)) {
           return 0;
       } else if ((a * a + b * b == c * c) || (a * a + c * c == b * b) || (b * b + c * c == a * a)) {
@@ -124,11 +126,10 @@ let%expect_test _ =
     }
   } |};
   [%expect {|
-    Result: '(Init (IValue (VInt 1)))' |}]
-;;
+    Result: '1' |}]
+(* TODO: не static нельзя *)
 
-
-let%expect_test _ =
+let%expect_test "Invalid value" =
   show_wrap
     {|
     class Program {
@@ -138,5 +139,5 @@ let%expect_test _ =
         return b;
       }
     } |};
-  [%expect {| (Interpret_error (Other "Value is not initialized")) |}]
-;;
+  [%expect {|
+  (IError (OtherError "Value is not initialized"))|}]

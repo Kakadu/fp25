@@ -5,7 +5,6 @@
 open Ast
 open Parser
 
-(* TODO: refactor Common *)
 type interpret_error =
   | NotImplemented
   | NoVariable of string
@@ -18,11 +17,11 @@ type interpret_error =
 
 type error = IError of interpret_error [@@deriving show { with_path = false }]
 
-let ( let* ) = Result.bind (* TODO: into monad *)
+let ( let* ) = Result.bind
 let return x = Ok x
 
-type 'a res = ('a, interpret_error) result (* TODO: name? *)
-type adr = Adr of int (* TODO?? *) [@@deriving show { with_path = false }]
+type 'a res = ('a, interpret_error) result
+type adr = Adr of int [@@deriving show { with_path = false }]
 
 module IdMap = Map.Make (struct
   type t = ident
@@ -30,9 +29,8 @@ module IdMap = Map.Make (struct
   let compare = compare
 end)
 
-module LocMap = Map.Make (Int) (* TODO: check Common *)
+module LocMap = Map.Make (Int)
 
-(* TODO: check if unite with Ast *)
 type value =
   | VInt of int
   | VBool of bool
@@ -45,24 +43,20 @@ type value =
 and func = { params : ident list; body : stmt }
 
 type location = int
-type env = location IdMap.t list (* scope stack *)
-type func_env = (ident * func) list (* TODO: адреса ???*)
+type var_info = { loc : location; initialized : bool }
+type env = var_info IdMap.t list
+type func_env = (ident * func) list
 type store = { mem : value LocMap.t; next_loc : int }
-
-(* Class *)
 type object_id = int
 type field_value = value
 type object_state = { obj_id : object_id; fields : (ident * field_value) list }
 
 type class_def = {
   name : ident;
-  fields : (ident * _type * expr option) list;
+  fields : (ident * _type * expr option * bool) list;
   methods : (ident * func) list;
 }
 
-(* end class *)
-
-(* TODO: state *)
 type runtime = {
   env : env;
   fenv : func_env;
@@ -70,9 +64,9 @@ type runtime = {
   objects : object_state list;
   curr_object : object_id option;
   class_def : class_def option;
+  static_fields : (ident * value) list;
 }
 
-(* Pp value *)
 let rec pp_value fmt = function
   | VInt i -> Format.fprintf fmt "%d" i
   | VBool b -> Format.fprintf fmt "%b" b
@@ -91,8 +85,8 @@ let empty_runtime =
     objects = [];
     curr_object = None;
     class_def = None;
+    static_fields = [];
   }
-(* Functions *)
 
 let string_of_ident (Id s) = s
 
@@ -100,8 +94,32 @@ let rec lookup_env id = function
   | [] -> Error (NoVariable ("variable not found: " ^ string_of_ident id))
   | scope :: rest -> (
       match IdMap.find_opt id scope with
-      | Some l -> Ok l
+      | Some var_info -> Ok var_info.loc
       | None -> lookup_env id rest)
+
+let check_initialized id env =
+  let rec find_var = function
+    | [] -> Error (NoVariable (string_of_ident id))
+    | scope :: rest -> (
+        match IdMap.find_opt id scope with
+        | Some var_info ->
+            if var_info.initialized then Ok ()
+            else Error (OtherError "Value is not initialized")
+        | None -> find_var rest)
+  in
+  find_var env
+
+let mark_initialized id env =
+  let rec mark_in_scope = function
+    | [] -> []
+    | scope :: rest -> (
+        match IdMap.find_opt id scope with
+        | Some var_info ->
+            let new_var_info = { var_info with initialized = true } in
+            IdMap.add id new_var_info scope :: rest
+        | None -> scope :: mark_in_scope rest)
+  in
+  mark_in_scope env
 
 let rec lookup_func_opt (id : ident) = function
   | [] -> None
@@ -112,21 +130,17 @@ let lookup_store l store =
   match LocMap.find_opt l store.mem with
   | Some v -> Ok v
   | None -> Error (AddressNotFound l)
-(*location not found *)
 
 let update_store l v store = { store with mem = LocMap.add l v store.mem }
 
-(* TODO: renaming *)
 let alloc v store =
   let loc = store.next_loc in
   let store = { mem = LocMap.add loc v store.mem; next_loc = loc + 1 } in
   (loc, store)
 
-(* TODO: make functions local *)
 let lookup_env_r (id : ident) (rt : runtime) = lookup_env id rt.env
 let lookup_store_r l rt = lookup_store l rt.store
 let update_store_r l v rt = { rt with store = update_store l v rt.store }
-(**)
 
 let alloc_r v rt =
   let loc, store2 = alloc v rt.store in
@@ -141,14 +155,14 @@ let value_of_val_type = function
 
 let string_of_ident = function Id s -> s
 let ident_of_vardecl = function Var (_, id) -> id
-
-(*expected bool*)
 let expect_bool = function VBool b -> Ok b | _ -> Error TypeMismatch
 let expect_int = function VInt i -> Ok i | _ -> Error TypeMismatch
 
 let add_var (id : ident) (loc : location) (env : env) =
   match env with
-  | scope :: rest -> Ok (IdMap.add id loc scope :: rest)
+  | scope :: rest ->
+      let var_info = { loc; initialized = false } in
+      Ok (IdMap.add id var_info scope :: rest)
   | [] -> Error (VarDeclared (string_of_ident id))
 
 let push_scope env = Ok (IdMap.empty :: env)
@@ -157,9 +171,13 @@ let pop_scope = function
   | _ :: rest -> Ok rest
   | [] -> Error (OtherError "cannot pop scope")
 
-(* Class functions *)
 let var_field_of_ast = function
-  | VarField (mods, TypeVar typ, id, init) -> Some (id, typ, init)
+  | VarField (mods, TypeVar typ, id, init) ->
+      Some
+        ( id,
+          typ,
+          init,
+          List.exists (function MStatic -> true | _ -> false) mods )
   | Method _ -> None
 
 let method_of_ast = function
@@ -195,39 +213,62 @@ let update_field obj_id field_id new_value rt =
   in
   { rt with objects = update_obj_list rt.objects }
 
-(* evaluation *)
+let find_static_field field_id rt =
+  match List.find_opt (fun (id, _) -> id = field_id) rt.static_fields with
+  | Some (_, v) -> Ok v
+  | None -> Error (NoVariable (string_of_ident field_id))
 
-(* eval_expr : env -> func_env -> store -> expr -> value * store *)
-(* TODO: move binops to one new function *)
+let update_static_field field_id new_value rt =
+  let rec update_static_list = function
+    | [] -> [ (field_id, new_value) ]
+    | (id, v) :: rest when id = field_id -> (id, new_value) :: rest
+    | (id, v) :: rest -> (id, v) :: update_static_list rest
+  in
+  { rt with static_fields = update_static_list rt.static_fields }
+
 let rec eval_expr (rt : runtime) = function
   | EValue v -> return (value_of_val_type v, rt)
   | EId id -> (
-      match lookup_env_r id rt with
-      | Ok loc ->
-          let* v = lookup_store_r loc rt in
-          return (v, rt)
+      match lookup_env id rt.env with
+      | Ok loc -> (
+          match check_initialized id rt.env with
+          | Ok () ->
+              let* v = lookup_store_r loc rt in
+              return (v, rt)
+          | Error e -> Error e)
       | Error _ -> (
-          match rt.curr_object with
-          | None -> Error (NoVariable (string_of_ident id))
-          | Some obj_id -> (
-              match find_field obj_id id rt with
-              | Ok v -> return (v, rt)
-              | Error e -> Error e)))
+          match find_static_field id rt with
+          | Ok v -> return (v, rt)
+          | Error _ -> (
+              match rt.curr_object with
+              | None -> Error (NoVariable (string_of_ident id))
+              | Some obj_id -> (
+                  match find_field obj_id id rt with
+                  | Ok v -> return (v, rt)
+                  | Error e -> Error e))))
   | EBinOp (OpAssign, left, right) -> (
       let* v, rt1 = eval_expr rt right in
       match left with
       | EId id -> (
-          match lookup_env_r id rt1 with
+          match lookup_env id rt1.env with
           | Ok loc ->
-              let rt2 = update_store_r loc v rt1 in
-              return (v, rt2)
+              let new_env = mark_initialized id rt1.env in
+              let rt2 = { rt1 with env = new_env } in
+              let rt3 = update_store_r loc v rt2 in
+              return (v, rt3)
           | Error _ -> (
-              match rt1.curr_object with
-              | None ->
-                  Error (OtherError ("cannot assign to " ^ string_of_ident id))
-              | Some obj_id ->
-                  let rt2 = update_field obj_id id v rt1 in
-                  return (v, rt2)))
+              match find_static_field id rt1 with
+              | Ok _ ->
+                  let rt2 = update_static_field id v rt1 in
+                  return (v, rt2)
+              | Error _ -> (
+                  match rt1.curr_object with
+                  | None ->
+                      Error
+                        (OtherError ("cannot assign to " ^ string_of_ident id))
+                  | Some obj_id ->
+                      let rt2 = update_field obj_id id v rt1 in
+                      return (v, rt2))))
       | _ -> Error TypeMismatch)
   | EBinOp (OpAnd, e1, e2) -> (
       let* v1, rt1 = eval_expr rt e1 in
@@ -254,7 +295,6 @@ let rec eval_expr (rt : runtime) = function
       let* v2, rt2 = eval_expr rt1 e2 in
       eval_binop op v1 v2 rt2
   | EUnOp (OpNot, e) -> (
-      (* TODO separate funtion *)
       let* v, rt1 = eval_expr rt e in
       match v with
       | VBool b -> return (VBool (not b), rt1)
@@ -279,12 +319,10 @@ let rec eval_expr (rt : runtime) = function
               let* arg_vals, rt2 = eval_args rt args in
               let* v, rt3 = call_function rt2 f arg_vals in
               return (v, rt3))
-      | _ -> Error (OtherError "invalid function call") (* TODO *))
+      | _ -> Error (OtherError "invalid function call"))
   | EArrayAccess _ -> Error NotImplemented
   | EAwait _ -> Error NotImplemented
 
-(* TODO: div 0 *)
-(* TODO: other types binop & unop *)
 and eval_binop op v1 v2 rt : (value * runtime) res =
   match (op, v1, v2) with
   | OpAdd, VInt a, VInt b -> return (VInt (a + b), rt)
@@ -312,9 +350,10 @@ and call_function (rt : runtime) f args =
     | [], [] -> return ({ rt with env }, rt)
     | p :: ps, v :: vs ->
         let loc, rt1 = alloc_r v rt in
+        let var_info = { loc; initialized = true } in
         let* env2 =
           match env with
-          | scope :: rest -> Ok (IdMap.add p loc scope :: rest)
+          | scope :: rest -> Ok (IdMap.add p var_info scope :: rest)
           | [] -> Error (OtherError "empty environment in bind_params")
         in
         bind_params env2 ps vs rt1
@@ -329,7 +368,6 @@ and call_function (rt : runtime) f args =
   | Normal -> return (VNull, restored_rt)
   | Break | Continue -> Error (OtherError "break/continue outside loop")
 
-(* exec_stmt : env -> func_env -> store -> stmt -> env * store * exec_result *)
 and exec_stmt (rt : runtime) = function
   | SExpr e ->
       let* _, rt1 = eval_expr rt e in
@@ -341,7 +379,10 @@ and exec_stmt (rt : runtime) = function
       in
       let loc, rt2 = alloc_r value rt1 in
       let* env3 = add_var id loc rt2.env in
-      let rt3 = { rt2 with env = env3 } in
+      let env4 =
+        match init with Some _ -> mark_initialized id env3 | None -> env3
+      in
+      let rt3 = { rt2 with env = env4 } in
       return (rt3, Normal)
   | SIf (cond, then_s, else_s) -> (
       let* v, rt1 = eval_expr rt cond in
@@ -427,49 +468,90 @@ and exec_block rt = function
       let* rt1, r = exec_stmt rt s in
       match r with Normal -> exec_block rt1 rest | _ -> return (rt1, r))
 
+let rec init_static_fields rt fields acc =
+  match fields with
+  | [] -> Ok (rt, List.rev acc)
+  | (id, typ, init_opt) :: rest ->
+      let default_value =
+        match typ with
+        | TypeBase TypeInt -> VInt 0
+        | TypeBase TypeBool -> VBool false
+        | TypeBase TypeChar -> VChar '\x00'
+        | TypeBase TypeString -> VString ""
+        | TypeVoid -> VNull
+      in
+      let rt_with_field =
+        { rt with static_fields = (id, default_value) :: rt.static_fields }
+      in
+      let* value, rt1 =
+        match init_opt with
+        | Some init_expr -> eval_expr rt_with_field init_expr
+        | None -> return (default_value, rt_with_field)
+      in
+      let rt2 = update_static_field id value rt1 in
+      init_static_fields rt2 rest ((id, value) :: acc)
+
+let rec init_instance_fields rt fields acc =
+  match fields with
+  | [] -> Ok (rt, List.rev acc)
+  | (id, typ, init_opt) :: rest ->
+      let* value, rt1 =
+        match init_opt with
+        | Some init_expr -> eval_expr rt init_expr
+        | None ->
+            let default =
+              match typ with
+              | TypeBase TypeInt -> VInt 0
+              | TypeBase TypeBool -> VBool false
+              | TypeBase TypeChar -> VChar '\x00'
+              | TypeBase TypeString -> VString ""
+              | TypeVoid -> VNull
+            in
+            return (default, rt)
+      in
+      init_instance_fields rt1 rest ((id, value) :: acc)
+
 let init_program (Class (_, name, fields)) =
   let class_def = class_of_ast (Class ([], name, fields)) in
-  (* Creating runtime *)
   let rt = { empty_runtime with class_def = Some class_def } in
-  (* Program initialization *)
-  let rec init_fields rt fields acc =
-    match fields with
-    | [] -> Ok (rt, List.rev acc)
-    | (id, typ, init_opt) :: rest ->
-        (* При инициализации поля, другие поля уже должны быть в окружении *)
-        let* value, rt1 =
-          match init_opt with
-          | Some init_expr ->
-              (* Здесь init_expr может ссылаться на другие поля *)
-              eval_expr rt init_expr
-          | None ->
-              let default =
-                match typ with
-                | TypeBase TypeInt -> VInt 0
-                | TypeBase TypeBool -> VBool false
-                | TypeBase TypeChar -> VChar '\x00'
-                | TypeBase TypeString -> VString ""
-                | TypeVoid -> VNull
-              in
-              return (default, rt)
-        in
-        init_fields rt1 rest ((id, value) :: acc)
+
+  let rt_with_methods =
+    List.fold_left
+      (fun rt (id, func) -> { rt with fenv = (id, func) :: rt.fenv })
+      rt class_def.methods
   in
-  let* rt1, fields_list = init_fields rt class_def.fields [] in
-  (* Creating Program *)
+
+  let static_fields =
+    List.filter (fun (_, _, _, is_static) -> is_static) class_def.fields
+  in
+  let instance_fields =
+    List.filter (fun (_, _, _, is_static) -> not is_static) class_def.fields
+  in
+
+  let strip_static (id, typ, init, _) = (id, typ, init) in
+  let static_field_infos = List.map strip_static static_fields in
+  let instance_field_infos = List.map strip_static instance_fields in
+
+  let* rt1, static_vals =
+    init_static_fields rt_with_methods static_field_infos []
+  in
+  let rt2 = { rt1 with static_fields = static_vals } in
+
+  let* rt3, instance_vals = init_instance_fields rt2 instance_field_infos [] in
+
   let obj_id = 0 in
-  let program_object = { obj_id; fields = fields_list } in
-  let rt2 =
-    { rt1 with objects = [ program_object ]; curr_object = Some obj_id }
+  let program_object = { obj_id; fields = instance_vals } in
+  let rt4 =
+    { rt3 with objects = [ program_object ]; curr_object = Some obj_id }
   in
-  Ok (None, rt2)
+
+  Ok (None, rt4)
 
 let interpret_program prog =
   match prog with
   | Program cls -> (
       match init_program cls with
       | Ok (_, rt) -> (
-          (* Find main *)
           match rt.class_def with
           | Some class_def -> (
               match
@@ -487,19 +569,17 @@ let interpret str =
   | Ok prog -> interpret_program prog
   | Error e -> Error (OtherError e)
 
-(* TODO: объединить повторы в функции
+(* TODO: combine repeated code into functions?
    unwrap_return
 *)
 
-(* TODO: errors texts *)
-
+(* TODO: error messages? *)
 (*
-   TODO: класс Program с методами и полями, а также модификаторами
-         лямбды + что-нибудь с замыканиями
-         пре и пост ин/декременты
-         массивы (одномерные) + new
-         LINQ (простенький в массивы)
-         async/await (хотя бы без лямбд)
-
-         ФИКС БАГОВ (Тч, парсер (Qt), интерпретатор)
+   TODO: lambdas + closures
+         arrays (1D) + new
+         FIX BUGS (interpreter)
+         Quicktests for parser (if time permits)
+         pre/post increment/decrement
+         LINQ (simple array queries)
+         async/await (at least without lambdas)
 *)
