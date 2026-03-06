@@ -219,9 +219,7 @@ let save_decl n ctx =
 let apply_local f = read_local >>= fun old_l -> f *> write_local old_l
 
 let rec tc_stmt =
-  let is_expr_bool e =
-    tc_expr_with_type e >>= fun t -> eq_type t (TypeBase TypeBool)
-  in
+  let is_expr_bool e = tc_expr_with_type e >>= fun t -> eq_type t (TypeBase TypeBool) in
   let tc_stmt_expr expr =
     match expr with
     | EFuncCall (e, args) ->
@@ -284,12 +282,13 @@ let rec tc_stmt =
   | SDecl (Var (TypeVar t, n), e) -> tc_decl t n e
   | SReturn e -> tc_return e
   | SWhile (e, s) -> apply_local (is_expr_bool e *> tc_stmt s)
-  | SFor (init, cond, iter, b) ->
-    apply_local (tc_for_state init cond iter *> tc_stmt b)
+  | SFor (init, cond, iter, b) -> apply_local (tc_for_state init cond iter *> tc_stmt b)
   | SIf (e, b, s_opt) -> apply_local (tc_if_state e b s_opt tc_stmt)
   | SBlock st_l -> apply_local (iter tc_stmt st_l)
   | SBreak | SContinue -> fail (TCError NotImplemented)
 ;;
+
+(* TODO Break TC *)
 
 let tc_member mem class_fields =
   let tc_class_field f_type = function
@@ -389,3 +388,5 @@ let tc_obj cl =
 
 let typecheck prog = run (tc_obj prog) (IdMap.empty, IdMap.empty, None, None, None)
 let typecheck_main prog = typecheck prog |> fun ((_, _, _, _, main), res) -> main, res
+
+(* TODO: unify with interpret *)
