@@ -1,0 +1,10 @@
+(test
+ (name gen_tests)
+ (libraries miniml_lib qcheck)
+ (modules gen_tests)
+ (instrumentation
+  (backend bisect_ppx)))
+
+(cram
+ (applies_to interpret_tests)
+ (deps ../bin/REPL.exe))
