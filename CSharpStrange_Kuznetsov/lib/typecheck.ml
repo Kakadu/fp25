@@ -80,15 +80,6 @@ let find_memb_from_obj obj_id id =
   | TCClass (Class (_, _, b)) -> find_class_memb b id |> return
 ;;
 
-let is_public obj_id ctx mds =
-  let rec is_m_list_public = function
-    | [] -> return (Some ctx)
-    | MPublic :: _ -> return (Some ctx)
-    | _ :: xs -> is_m_list_public xs
-  in
-  is_m_list_public mds <|> (read_global_el obj_id >>= fun _ -> fail (TCError AccessError))
-;;
-
 let find_memb_type = function
   | TCLocalVar v -> return (vartype_to_type v.var_type)
   | TCField f -> return (vartype_to_type f.field_type)
