@@ -45,5 +45,4 @@ type 'name t =
   | If of 'name t * 'name t * 'name t (** Condition [if c then t else e] *)
   | Let of flag * 'name * 'name t * 'name t (** Let binding [let [rec] p = e1 in e2] *)
   | Fix of 'name t (** Fix-point combinator [fix (fun self -> e)]*)
-  | Print of 'name t (** Built-in print. Only integers [print n]*)
 [@@deriving eq, show]

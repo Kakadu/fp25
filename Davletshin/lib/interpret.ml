@@ -18,6 +18,7 @@ end = struct
     | VUnit
     | VInt of int
     | VClosure of name * name Ast.t * env
+    | VBuiltin of (value -> value M.t)
 
   let ( let* ) = M.( let* )
   let vint n = M.return (VInt n)
@@ -38,8 +39,7 @@ end = struct
       | If (c, t, e) -> eval_if env c t e steps
       | Let (Nonrec, n, e1, e2) -> eval_let env n e1 e2 steps
       | Let (Rec, n, b, e2) -> eval_letrec env n b e2 steps
-      | Fix e -> eval_fix env e steps
-      | Print e -> eval_print env e steps)
+      | Fix e -> eval_fix env e steps)
 
   (** [eval_var env x] is the [v] such that [<env, x> ==> v]. *)
   and eval_var env x =
@@ -54,6 +54,9 @@ end = struct
     | VClosure (n, body, defenv) ->
       let* v2 = eval env e2 (steps - 1) in
       eval ((n, v2) :: defenv) body (steps - 1)
+    | VBuiltin f ->
+      let* v2 = eval env e2 (steps - 1) in
+      f v2
     | _ -> M.fail (TypeError "Tried to apply non-function")
 
   and eval_binop env op e1 e2 steps =
@@ -109,24 +112,28 @@ end = struct
        | b -> eval env b (steps - 1))
     | _ -> M.fail (TypeError "Tried to apply fix to not a function")
 
-  and eval_print env e steps =
-    let* v = eval env e (steps - 1) in
-    match v with
-    | VInt n ->
-      print_int n;
-      print_newline ();
-      M.return VUnit
-    | _ -> M.fail (TypeError "Tried to print non-integer")
-
   and print (e : value) =
     match e with
     | VUnit -> M.return OUnit
     | VInt n -> M.return (OInt n)
     | VClosure (name, _, _) -> M.return (OAbs name)
+    | VBuiltin _ -> M.return (OAbs "print")
   ;;
 
+  let builtin_print =
+    VBuiltin
+      (function
+        | VInt n ->
+          print_int n;
+          print_newline ();
+          M.return VUnit
+        | _ -> M.fail (TypeError ""))
+  ;;
+
+  let initial_env = [ "print", builtin_print ]
+
   let run e steps =
-    let* v = eval [] e steps in
+    let* v = eval initial_env e steps in
     print v
   ;;
 end

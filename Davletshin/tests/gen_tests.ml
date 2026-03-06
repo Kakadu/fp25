@@ -60,7 +60,6 @@ let rec gen_ast depth =
              (gen_ast (depth - 1))
              (gen_ast (depth - 1))
          ; map (fun e -> Fix e) (gen_ast (depth - 1))
-         ; map (fun e -> Print e) (gen_ast (depth - 1))
          ])
 ;;
 

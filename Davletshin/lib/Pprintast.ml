@@ -43,7 +43,6 @@ let pp =
     | Let (Nonrec, n, e1, e2) -> fprintf fmt "(let %s = %a in %a)" n pp e1 pp e2
     | Let (Rec, n, e1, e2) -> fprintf fmt "(let rec %s = %a in %a)" n pp e1 pp e2
     | Fix f -> fprintf fmt "(fix %a)" pp f
-    | Print e -> fprintf fmt "(print %a)" pp e
   in
   pp
 ;;
