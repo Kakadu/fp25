@@ -8,17 +8,16 @@ open C_sharp_strange_lib.Ast
 open C_sharp_strange_lib.Common
 
 let show_wrap = function
-  | Some (Program x) ->
-    (match typecheck x with
-     | _, Result.Ok _ -> Format.print_string "Ok!\n"
-     | _, Result.Error e -> Format.printf "%a\n%!" pp_error e)
+  | Some (Program x) -> (
+      match typecheck x with
+      | _, Result.Ok _ -> Format.print_string "Ok!\n"
+      | _, Result.Error e -> Format.printf "%a\n%!" pp_error e)
   | _ -> Format.print_string "Some error\n"
-;;
 
 let print_tc p str = show_wrap (parse_option p str)
 let test_ast = print_tc parse_prog
 
-let%expect_test _ =
+let%expect_test "Factorial" =
   test_ast
     {|
     class Program {
@@ -37,11 +36,8 @@ let%expect_test _ =
     } |};
   [%expect {|
     Ok! |}]
-;;
 
-(* TODO: funccall! *)
-
-let%expect_test _ =
+let%expect_test "Wrong factorial" =
   test_ast
     {|
     class Program {
@@ -54,12 +50,10 @@ let%expect_test _ =
   [%expect
     {|
     (TCError (OtherError "Returned type does not match the function type")) |}]
-;;
 
-(* TODO: funccall! *)
-
-let%expect_test _ =
-  test_ast {| 
+let%expect_test "Already declared variable" =
+  test_ast
+    {| 
   class Program {
     int a = 5;
     int b = 9;
@@ -67,9 +61,8 @@ let%expect_test _ =
   } |};
   [%expect {|
     (TCError (OtherError "This variable is already declared")) |}]
-;;
 
-let%expect_test _ =
+let%expect_test "Some types" =
   test_ast
     {| 
   class Program {
@@ -87,11 +80,10 @@ let%expect_test _ =
   } |};
   [%expect {|
     Ok! |}]
-;;
 
 (* TODO: parser check! *)
 
-let%expect_test _ =
+let%expect_test "String + int" =
   test_ast {| 
   class Program {
     string a = "5";
@@ -99,11 +91,10 @@ let%expect_test _ =
   } |};
   [%expect {|
     (TCError TypeMismatch) |}]
-;;
 
 (* TODO: string! *)
 
-let%expect_test _ =
+let%expect_test "While" =
   test_ast
     {| 
   class Program {
@@ -126,11 +117,8 @@ let%expect_test _ =
   } |};
   [%expect {|
     Ok! |}]
-;;
 
-(* TODO: ????! *)
-
-let%expect_test _ =
+let%expect_test "For" =
   test_ast
     {| 
   class Program {
@@ -151,11 +139,10 @@ let%expect_test _ =
   } |};
   [%expect {|
     Ok! |}]
-;;
 
 (* TODO: some stuff here! *)
 
-let%expect_test _ =
+let%expect_test "Wrong main" =
   test_ast {| 
   class Program {
     public virtual void Main() {}
@@ -166,11 +153,10 @@ let%expect_test _ =
     (TCError
        (OtherError
           "Main must be a static method, have no params and return only int and void")) |}]
-;;
 
 (* TODO: formatting???! *)
 
-let%expect_test _ =
+let%expect_test "Already declared function" =
   test_ast
     {| 
   class Program {
@@ -180,9 +166,8 @@ let%expect_test _ =
   } |};
   [%expect {|
     (TCError (OtherError "This variable is already declared")) |}]
-;;
 
-let%expect_test _ =
+let%expect_test "Function type mismatch" =
   test_ast
     {| 
   class Program {
@@ -192,14 +177,13 @@ let%expect_test _ =
   }|};
   [%expect {|
     (TCError TypeMismatch) |}]
-;;
 (* TODO: check formatting??!*)
 
 (* TODO: occurs check: smth like
-  {|
-  class Program {
-    public void foo() {
-      bool a = new A();
-    };
-  }|}
+   {|
+   class Program {
+     public void foo() {
+       bool a = new A();
+     };
+   }|}
 *)
