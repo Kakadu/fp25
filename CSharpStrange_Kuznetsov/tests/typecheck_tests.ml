@@ -147,7 +147,6 @@ let%expect_test "For" =
     Ok! |}]
 ;;
 
-
 let%expect_test "Wrong main" =
   test_ast {| 
   class Program {
