@@ -35,7 +35,8 @@ let%expect_test "Main 1" =
     }
 
   } |};
-  [%expect {|
+  [%expect
+    {|
     Result: '-58' |}]
 ;;
 
@@ -59,7 +60,8 @@ let%expect_test "Main 2" =
       return res;
     }
   } |};
-  [%expect {|
+  [%expect
+    {|
     Result: '870' |}]
 ;;
 
@@ -92,7 +94,8 @@ let%expect_test "Main 3" =
       return 0;
     }
   } |};
-  [%expect {|
+  [%expect
+    {|
     Result: '141' |}]
 ;;
 
@@ -110,7 +113,8 @@ let%expect_test "Main 4" =
       return s;
     }
   } |};
-  [%expect {|
+  [%expect
+    {|
     Result: '18' |}]
 ;;
 
@@ -131,7 +135,8 @@ let%expect_test "Functions 1" =
       return is_right_triangle(3,4,5);
     }
   } |};
-  [%expect {|
+  [%expect
+    {|
     Result: '1' |}]
 ;;
 
@@ -147,6 +152,7 @@ let%expect_test "Invalid value" =
         return b;
       }
     } |};
-  [%expect {|
+  [%expect
+    {|
   (IError (OtherError "Value is not initialized"))|}]
 ;;

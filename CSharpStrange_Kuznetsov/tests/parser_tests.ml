@@ -254,7 +254,9 @@ let%test "Parse method 1" =
 ;;
 
 let%test "Parse method 2" =
-  apply_parser parse_method_member {|public int Func() 
+  apply_parser
+    parse_method_member
+    {|public int Func() 
   {
     return 2;
   }|}
@@ -308,7 +310,9 @@ let%test "Parse method 3" =
 ;;
 
 let%test "Parse class 1" =
-  apply_parser parse_class {|
+  apply_parser
+    parse_class
+    {|
   public class Sample {}|}
   = Ok (Class ([ MPublic ], Id "Sample", []))
 ;;

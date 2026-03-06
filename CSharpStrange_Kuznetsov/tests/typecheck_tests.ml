@@ -35,7 +35,8 @@ let%expect_test "Factorial" =
         return Fac(5);
       }
     } |};
-  [%expect {|
+  [%expect
+    {|
     Ok! |}]
 ;;
 
@@ -55,13 +56,15 @@ let%expect_test "Wrong factorial" =
 ;;
 
 let%expect_test "Already declared variable" =
-  test_ast {| 
+  test_ast
+    {| 
   class Program {
     int a = 5;
     int b = 9;
     int a = 9;
   } |};
-  [%expect {|
+  [%expect
+    {|
     (TCError (OtherError "This variable is already declared")) |}]
 ;;
 
@@ -81,19 +84,22 @@ let%expect_test "Checking fields" =
       r = s != "kkkk" && (190%22 == 100 * -2/5);
     }
   } |};
-  [%expect {|
+  [%expect
+    {|
     Ok! |}]
 ;;
 
 (* TODO: parser check! *)
 
 let%expect_test "String + int" =
-  test_ast {| 
+  test_ast
+    {| 
   class Program {
     string a = "5";
     int c = 9 + a;
   } |};
-  [%expect {|
+  [%expect
+    {|
     (TCError TypeMismatch) |}]
 ;;
 
@@ -120,7 +126,8 @@ let%expect_test "While" =
       }
     }
   } |};
-  [%expect {|
+  [%expect
+    {|
     Ok! |}]
 ;;
 
@@ -143,12 +150,14 @@ let%expect_test "For" =
       return count;
     }
   } |};
-  [%expect {|
+  [%expect
+    {|
     Ok! |}]
 ;;
 
 let%expect_test "Wrong main" =
-  test_ast {| 
+  test_ast
+    {| 
   class Program {
     public async void Main() {}
   }
@@ -167,7 +176,8 @@ let%expect_test "Already declared function" =
     int a = 9;
     void Test() {}
   } |};
-  [%expect {|
+  [%expect
+    {|
     (TCError (OtherError "This variable is already declared")) |}]
 ;;
 
@@ -179,7 +189,8 @@ let%expect_test "Function type mismatch" =
       return n+m;
     }
   }|};
-  [%expect {|
+  [%expect
+    {|
     (TCError TypeMismatch) |}]
 ;;
 

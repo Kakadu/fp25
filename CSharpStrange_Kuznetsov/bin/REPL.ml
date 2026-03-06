@@ -25,8 +25,8 @@ let () =
       ; "-eval", Arg.Unit (fun () -> opts.eval <- true), "Run interpreter\n"
       ]
       (fun _ ->
-        Stdlib.Format.eprintf "Something got wrong\n";
-        Stdlib.exit 1)
+         Stdlib.Format.eprintf "Something got wrong\n";
+         Stdlib.exit 1)
       "\n"
   in
   let path =
