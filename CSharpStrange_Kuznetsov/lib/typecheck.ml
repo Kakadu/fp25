@@ -96,30 +96,9 @@ let find_memb_type = function
   | TCMethod m -> return m.method_return
 ;;
 
-let typecheck_method_args (Params params) (Args args) expr_tc =
-  let params_to_list_of_type p =
-    List.map
-      (function
-        | Var (t, _) -> vartype_to_type t)
-      p
-  in
-  let args_to_list_of_type a = map (fun x -> expr_tc x >>= find_memb_type) a in
-  let compare_two_lists l1 l2 eq rez =
-    match List.compare_lengths l1 l2 with
-    | 0 ->
-      if List.equal eq l1 l2
-      then return rez
-      else fail (TCError (OtherError "Method invocation check error"))
-    | _ -> fail (TCError (OtherError "Method invocation check error"))
-  in
-  args_to_list_of_type args
-  >>= fun args ->
-  compare_two_lists (params_to_list_of_type params) args equal__type params
-;;
-
 let find_expr_type e expr_tc = expr_tc e >>= find_memb_type
 
-let typecheck_bin_op b e1 e2 expr_tc =
+let tc_bin_op b e1 e2 expr_tc =
   let compare_two_expr_type e1 e2 =
     find_expr_type e1 expr_tc
     >>= fun e1 -> find_expr_type e2 expr_tc >>= fun e2 -> eq_type e1 e2
@@ -143,7 +122,7 @@ let typecheck_bin_op b e1 e2 expr_tc =
     find_expr_type e1 expr_tc >>= fun e -> compare_two_expr_type e1 e2 *> return_rez e
 ;;
 
-let typecheck_un_op u e expr_tc =
+let tc_un_op u e expr_tc =
   let tc_un_op u e =
     find_expr_type e expr_tc
     >>= fun t ->
@@ -204,7 +183,7 @@ let check_initialized n =
   | TCMethod _ -> return ()
 ;;
 
-let typecheck_expr =
+let tc_expr =
   let rec tc_expr_ = function
     | EId n ->
       name_to_obj_ctx n
@@ -220,15 +199,15 @@ let typecheck_expr =
       let var_info = { var_type = TypeVar (value_to_type v); initialized = true } in
       return (TCLocalVar var_info)
     | EFuncCall (e, args) -> tc_method_invoke e args tc_expr_
-    | EBinOp (b, e1, e2) -> typecheck_bin_op b e1 e2 tc_expr_
-    | EUnOp (u, e) -> typecheck_un_op u e tc_expr_
+    | EBinOp (b, e1, e2) -> tc_bin_op b e1 e2 tc_expr_
+    | EUnOp (u, e) -> tc_un_op u e tc_expr_
     | _ -> fail (TCError NotImplemented)
   in
   tc_expr_
 ;;
 
-let typecheck_expr_with_type e = typecheck_expr e >>= find_memb_type
-let eq_type_with_expr t e = typecheck_expr_with_type e >>= fun e_t -> eq_type e_t t
+let tc_expr_with_type e = tc_expr e >>= find_memb_type
+let eq_type_with_expr t e = tc_expr_with_type e >>= fun e_t -> eq_type e_t t
 
 let save_decl n ctx =
   read_local_el_opt n
@@ -239,20 +218,20 @@ let save_decl n ctx =
 
 let apply_local f = read_local >>= fun old_l -> f *> write_local old_l
 
-let rec typecheck_stmt =
+let rec tc_stmt =
   let is_expr_bool e =
-    typecheck_expr_with_type e >>= fun t -> eq_type t (TypeBase TypeBool)
+    tc_expr_with_type e >>= fun t -> eq_type t (TypeBase TypeBool)
   in
-  let typecheck_stmt_expr expr =
+  let tc_stmt_expr expr =
     match expr with
     | EFuncCall (e, args) ->
-      typecheck_expr e
+      tc_expr e
       >>= (function
        | TCMethod { method_return = TypeVoid; method_params = pms; _ } ->
-         typecheck_method_args pms args typecheck_expr *> return ()
+         tc_method_args pms args tc_expr *> return ()
        | TCMethod _ -> fail (TCError TypeMismatch)
        | _ -> fail (TCError TypeMismatch))
-    | EBinOp (OpAssign, _, _) -> typecheck_expr expr *> return ()
+    | EBinOp (OpAssign, _, _) -> tc_expr expr *> return ()
     | _ -> fail (TCError TypeMismatch)
   in
   let save_decl n t initialized =
@@ -263,11 +242,11 @@ let rec typecheck_stmt =
       write_local_el n (TCLocalVar var_info)
     | Some _ -> fail (TCError (OtherError "This variable is already declared"))
   in
-  let typecheck_decl t n = function
+  let tc_decl t n = function
     | Some e -> eq_type_with_expr t e *> save_decl n t true *> return ()
     | None -> save_decl n t false *> return ()
   in
-  let typecheck_return e_opt =
+  let tc_return e_opt =
     read_meth_type
     >>= fun m_t ->
     match m_t, e_opt with
@@ -282,33 +261,33 @@ let rec typecheck_stmt =
     | None -> return ()
     | Some s -> f s *> return ()
   in
-  let typecheck_for_state init cond iter =
-    let typecheck_init = function
+  let tc_for_state init cond iter =
+    let tc_init = function
       | None -> return ()
-      | Some (SDecl (Var (TypeVar t, n), e)) -> typecheck_decl t n e
+      | Some (SDecl (Var (TypeVar t, n), e)) -> tc_decl t n e
       | _ -> fail (TCError TypeMismatch)
     in
-    let typecheck_cond = opt_unpack is_expr_bool cond in
-    let typecheck_iter = opt_unpack typecheck_stmt_expr iter in
-    lift3 (fun _ _ _ -> ()) (typecheck_init init) typecheck_cond typecheck_iter
+    let tc_cond = opt_unpack is_expr_bool cond in
+    let tc_iter = opt_unpack tc_stmt_expr iter in
+    lift3 (fun _ _ _ -> ()) (tc_init init) tc_cond tc_iter
   in
-  let typecheck_if_state cond b s_opt tc_st =
-    let typecheck_cond = is_expr_bool cond in
-    let typecheck_state = function
+  let tc_if_state cond b s_opt tc_st =
+    let tc_cond = is_expr_bool cond in
+    let tc_state = function
       | Some st -> tc_st st
       | None -> return ()
     in
-    lift3 (fun _ _ _ -> ()) typecheck_cond (tc_st b) (typecheck_state s_opt)
+    lift3 (fun _ _ _ -> ()) tc_cond (tc_st b) (tc_state s_opt)
   in
   function
-  | SExpr expr -> typecheck_stmt_expr expr
-  | SDecl (Var (TypeVar t, n), e) -> typecheck_decl t n e
-  | SReturn e -> typecheck_return e
-  | SWhile (e, s) -> apply_local (is_expr_bool e *> typecheck_stmt s)
+  | SExpr expr -> tc_stmt_expr expr
+  | SDecl (Var (TypeVar t, n), e) -> tc_decl t n e
+  | SReturn e -> tc_return e
+  | SWhile (e, s) -> apply_local (is_expr_bool e *> tc_stmt s)
   | SFor (init, cond, iter, b) ->
-    apply_local (typecheck_for_state init cond iter *> typecheck_stmt b)
-  | SIf (e, b, s_opt) -> apply_local (typecheck_if_state e b s_opt typecheck_stmt)
-  | SBlock st_l -> apply_local (iter typecheck_stmt st_l)
+    apply_local (tc_for_state init cond iter *> tc_stmt b)
+  | SIf (e, b, s_opt) -> apply_local (tc_if_state e b s_opt tc_stmt)
+  | SBlock st_l -> apply_local (iter tc_stmt st_l)
   | SBreak | SContinue -> fail (TCError NotImplemented)
 ;;
 
@@ -343,7 +322,7 @@ let tc_member mem class_fields =
        iter add_field_to_env class_fields
        *> write_meth_type typ
        *> save_params_to_l params
-       *> typecheck_stmt body)
+       *> tc_stmt body)
   in
   let tc_class_method (mds, tp, id, pms, b) class_fields =
     match method_of_ast (Method (mds, tp, id, pms, b)) with
@@ -383,7 +362,7 @@ let save_global id ctx =
   | Some _ -> fail (TCError (OtherError "This variable is already declared"))
 ;;
 
-let typecheck_obj cl =
+let tc_obj cl =
   match cl with
   | Class (_, id, fields) ->
     let write_mems () =
@@ -408,5 +387,5 @@ let typecheck_obj cl =
     *> return ()
 ;;
 
-let typecheck prog = run (typecheck_obj prog) (IdMap.empty, IdMap.empty, None, None, None)
+let typecheck prog = run (tc_obj prog) (IdMap.empty, IdMap.empty, None, None, None)
 let typecheck_main prog = typecheck prog |> fun ((_, _, _, _, main), res) -> main, res

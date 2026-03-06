@@ -183,10 +183,6 @@ let value_of_val_type = function
   | ValNull -> VNull
 ;;
 
-let string_of_ident = function
-  | Id s -> s
-;;
-
 let ident_of_vardecl = function
   | Var (_, id) -> id
 ;;
