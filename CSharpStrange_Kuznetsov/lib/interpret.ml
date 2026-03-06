@@ -1,4 +1,4 @@
-(** Copyright 2025, Dmitrii Kuznetsov *)
+(** Copyright 2026, Dmitrii Kuznetsov *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
@@ -40,7 +40,7 @@ type value =
   | VObject of adr
 [@@deriving show { with_path = false }]
 
-and func =
+type func =
   { params : ident list
   ; body : stmt
   }
@@ -68,9 +68,9 @@ type object_state =
   ; fields : (ident * field_value) list
   }
 
+(*TODO name*)
 type class_def =
-  { name : ident
-  ; fields : (ident * _type * expr option * bool) list
+  { fields : (ident * _type * expr option * bool) list
   ; methods : (ident * func) list
   }
 
@@ -84,11 +84,11 @@ type runtime =
   ; static_fields : (ident * value) list
   }
 
-let rec pp_value fmt = function
+let pp_value fmt = function
   | VInt i -> Format.fprintf fmt "%d" i
   | VBool b -> Format.fprintf fmt "%b" b
   | VChar c -> Format.fprintf fmt "'%c'" c
-  | VString s -> Format.fprintf fmt "\"%s\"" s
+  | VString s -> Format.fprintf fmt "\"%S\"" s
   | VNull -> Format.fprintf fmt "null"
   | VObject (Adr a) -> Format.fprintf fmt "object@%d" a
 ;;
@@ -232,16 +232,16 @@ let var_field_of_ast = function
 ;;
 
 let method_of_ast = function
-  | Method (mods, ret_type, id, Params params, body) ->
+  | Method (_, _, id, Params params, body) ->
     let params_list = List.map (fun (Var (_, id)) -> id) params in
     Some (id, { params = params_list; body })
   | VarField _ -> None
 ;;
 
-let class_of_ast (Class (mods, name, fields)) =
+let class_of_ast (Class (_, _, fields)) =
   let fields_list = List.filter_map var_field_of_ast fields in
   let methods_list = List.filter_map method_of_ast fields in
-  { name; fields = fields_list; methods = methods_list }
+  { fields = fields_list; methods = methods_list }
 ;;
 
 let find_field obj_id field_id rt =
@@ -277,7 +277,7 @@ let find_static_field field_id rt =
 let update_static_field field_id new_value rt =
   let rec update_static_list = function
     | [] -> [ field_id, new_value ]
-    | (id, v) :: rest when id = field_id -> (id, new_value) :: rest
+    | (id, _) :: rest when id = field_id -> (id, new_value) :: rest
     | (id, v) :: rest -> (id, v) :: update_static_list rest
   in
   { rt with static_fields = update_static_list rt.static_fields }
@@ -603,8 +603,7 @@ let init_program (Class (_, name, fields)) =
   Ok (None, rt4)
 ;;
 
-let interpret_program prog =
-  match prog with
+let interpret_program = function
   | Program cls ->
     (match init_program cls with
      | Ok (_, rt) ->

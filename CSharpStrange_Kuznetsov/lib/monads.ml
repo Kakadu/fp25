@@ -1,4 +1,4 @@
-(** Copyright 2025, Dmitrii Kuznetsov *)
+(** Copyright 2026, Dmitrii Kuznetsov *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
@@ -8,7 +8,7 @@ module STATEERROR = struct
   type ('st, 'a) t = 'st -> 'st * ('a, error) Result.t
 
   let return : 'a -> ('st, 'a) t = fun x st -> st, Result.Ok x
-  let fail : 'a -> ('st, 'b) t = fun e st -> st, Result.Error e
+  let fail e st = st, Result.Error e
 
   let ( >>= ) : ('st, 'a) t -> ('a -> ('st, 'b) t) -> ('st, 'b) t =
     fun x f st ->
@@ -18,6 +18,7 @@ module STATEERROR = struct
     | Result.Error e -> fail e st
   ;;
 
+  let ( let* ) = ( >>= )
   let ( *> ) : ('st, 'a) t -> ('st, 'b) t -> ('st, 'b) t = fun x1 x2 -> x1 >>= fun _ -> x2
 
   let ( <|> ) : ('st, 'a) t -> ('st, 'a) t -> ('st, 'a) t =
@@ -61,7 +62,8 @@ module STATEERROR = struct
     List.fold_left f (return ()) list
   ;;
 
-  let run : ('st, 'a) t -> 'st -> 'st * ('a, error) Result.t = fun f st -> f st
+  (*('st, 'a) t -> 'st -> 'st * ('a, error) Result.t *)
+  let run f st = f st
 end
 
 module TYPECHECK = struct

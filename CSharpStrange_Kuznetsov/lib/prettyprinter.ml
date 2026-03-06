@@ -1,4 +1,4 @@
-(** Copyright 2025, Dmitrii Kuznetsov *)
+(** Copyright 2026, Dmitrii Kuznetsov *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
@@ -62,6 +62,7 @@ let pp_bin_op fmt = function
   | OpAssign -> fprintf fmt "="
 ;;
 
+(*TODO*)
 let pp_un_op fmt = function
   | OpNot -> fprintf fmt "!"
 ;;

@@ -1,4 +1,4 @@
-(** Copyright 2025, Dmitrii Kuznetsov *)
+(** Copyright 2026, Dmitrii Kuznetsov *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
@@ -24,22 +24,11 @@ let vardecl_to_type = function
   | Var (t, _) -> return (vartype_to_type t)
 ;;
 
-let name_to_obj_ctx n = read_local_el n
-
-let eq f e1 e2 =
-  match f e1 e2 with
-  | true -> return e1
-  | false -> fail (TCError TypeMismatch)
-;;
-
+let name_to_obj_ctx = read_local_el
+let eq f e1 e2 = if f e1 e2 then return e1 else fail (TCError TypeMismatch)
 let eq_type t1 t2 = eq equal__type t1 t2
 let eq_ident n1 n2 = eq equal_ident n1 n2
-
-let eq_ident_return_ctx n1 n2 m f =
-  match equal_ident n1 n2 with
-  | true -> Some (f m)
-  | false -> None
-;;
+let eq_ident_return_ctx n1 n2 m f = if equal_ident n1 n2 then Some (f m) else None
 
 let field_of_ast = function
   | VarField (mods, typ, id, init) ->
@@ -56,7 +45,7 @@ let field_of_ast = function
     ; field_init = init
     ; is_static
     }
-  | Method _ -> failwith "Expected field, got method"
+  | Method _ -> failwith "Expected field, got method" (* TODO *)
 ;;
 
 let method_of_ast = function
@@ -77,7 +66,7 @@ let method_of_ast = function
     ; is_static
     ; is_main
     }
-  | Ast.VarField _ -> failwith "Expected method, got field"
+  | Ast.VarField _ -> failwith "Expected method, got field" (* TODO *)
 ;;
 
 let get_class_memb id memb =
@@ -134,13 +123,13 @@ let typecheck_method_args (Params params) (Args args) expr_tc =
         | Var (t, _) -> vartype_to_type t)
       p
   in
-  let args_to_list_of_type a = map (fun x -> expr_tc x >>= fun x -> find_memb_type x) a in
+  let args_to_list_of_type a = map (fun x -> expr_tc x >>= find_memb_type) a in
   let compare_two_lists l1 l2 eq rez =
     match List.compare_lengths l1 l2 with
     | 0 ->
-      (match List.equal eq l1 l2 with
-       | true -> return rez
-       | false -> fail (TCError (OtherError "Method invocation check error")))
+      if List.equal eq l1 l2
+      then return rez
+      else fail (TCError (OtherError "Method invocation check error"))
     | _ -> fail (TCError (OtherError "Method invocation check error"))
   in
   args_to_list_of_type args
@@ -148,7 +137,7 @@ let typecheck_method_args (Params params) (Args args) expr_tc =
   compare_two_lists (params_to_list_of_type params) args equal__type params
 ;;
 
-let find_expr_type e expr_tc = expr_tc e >>= fun e -> find_memb_type e
+let find_expr_type e expr_tc = expr_tc e >>= find_memb_type
 
 let typecheck_bin_op b e1 e2 expr_tc =
   let compare_two_expr_type e1 e2 =
@@ -195,13 +184,13 @@ let tc_method_args (Params params) (Args args) expr_tc =
         | Var (t, _) -> vartype_to_type t)
       p
   in
-  let args_to_list_of_type a = map (fun x -> expr_tc x >>= fun x -> find_memb_type x) a in
+  let args_to_list_of_type a = map (fun x -> expr_tc x >>= find_memb_type) a in
   let compare_two_lists l1 l2 eq rez =
     match List.compare_lengths l1 l2 with
     | 0 ->
-      (match List.equal eq l1 l2 with
-       | true -> return rez
-       | false -> fail (TCError (OtherError "Method invocation check error")))
+      if List.equal eq l1 l2
+      then return rez
+      else fail (TCError (OtherError "Method invocation check error"))
     | _ -> fail (TCError (OtherError "Method invocation check error"))
   in
   args_to_list_of_type args
@@ -258,7 +247,7 @@ let typecheck_expr =
   tc_expr_
 ;;
 
-let typecheck_expr_with_type e = typecheck_expr e >>= fun x -> find_memb_type x
+let typecheck_expr_with_type e = typecheck_expr e >>= find_memb_type
 let eq_type_with_expr t e = typecheck_expr_with_type e >>= fun e_t -> eq_type e_t t
 
 let save_decl n ctx =
@@ -294,8 +283,7 @@ let rec typecheck_stmt =
       write_local_el n (TCLocalVar var_info)
     | Some _ -> fail (TCError (OtherError "This variable is already declared"))
   in
-  let typecheck_decl t n init_expr =
-    match init_expr with
+  let typecheck_decl t n = function
     | Some e -> eq_type_with_expr t e *> save_decl n t true *> return ()
     | None -> save_decl n t false *> return ()
   in
@@ -381,16 +369,19 @@ let tc_member mem class_fields =
     let m = method_of_ast (Method (mds, tp, id, pms, b)) in
     if m.is_main
     then (
-      match mds, pms, tp with
-      | [ MStatic ], Params [], TypeBase TypeInt | [ MStatic ], Params [], TypeVoid ->
-        tc_meth tp (Params []) b class_fields *> read_main_class
-        >>= (function
-         | None -> get_curr_class_name >>= fun n -> write_main_class (Some n)
-         | Some _ -> fail (TCError (OtherError "Main method already exists")))
-      | _, _, _ ->
-        fail
-          (TCError
-             (OtherError "Main must be static, non-async, no params, return int/void")))
+      let handle_main =
+        match mds, pms, tp with
+        | [ MStatic ], Params [], TypeBase TypeInt | [ MStatic ], Params [], TypeVoid ->
+          tc_meth tp (Params []) b class_fields *> read_main_class
+          >>= (function
+           | None -> get_curr_class_name >>= fun n -> write_main_class (Some n)
+           | Some _ -> fail (TCError (OtherError "Main method already exists")))
+        | _, _, _ ->
+          fail
+            (TCError
+               (OtherError "Main must be static, non-async, no params, return int/void"))
+      in
+      handle_main)
     else tc_meth tp pms b class_fields
   in
   match mem with
@@ -407,7 +398,7 @@ let save_global id ctx =
 
 let typecheck_obj cl =
   match cl with
-  | Class (mds, id, fields) ->
+  | Class (_, id, fields) ->
     let write_mems () =
       let f mem =
         match mem with

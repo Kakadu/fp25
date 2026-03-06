@@ -1,4 +1,4 @@
-(** Copyright 2025, Dmitrii Kuznetsov *)
+(** Copyright 2026, Dmitrii Kuznetsov *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
@@ -193,7 +193,8 @@ let parse_ops =
     let lv2 =
       many (choice [ ( ^!^ ); ( ^!-^ ) ])
       >>= fun ops ->
-      lv1 >>= fun e -> return (List.fold_right ops ~f:(fun op acc -> op acc) ~init:e)
+      let appl op acc = op acc in
+      lv1 >>= fun e -> return (List.fold_right ops ~f:appl ~init:e)
     in
     (* TODO: rewrite somehow + more ops *)
     let lv3 = chainl1 lv2 (choice [ ( ^*^ ); ( ^/^ ); ( ^%^ ) ]) in
