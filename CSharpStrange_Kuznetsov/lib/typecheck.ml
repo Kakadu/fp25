@@ -33,14 +33,17 @@ let field_of_ast = function
           | _ -> false)
         mods
     in
-    { field_modifiers = mods
-    ; field_type = typ
-    ; field_name = id
-    ; field_init = init
-    ; is_static
-    }
-  | Method _ -> failwith "Expected field, got method" (* TODO *)
+    Ok
+      { field_modifiers = mods
+      ; field_type = typ
+      ; field_name = id
+      ; field_init = init
+      ; is_static
+      }
+  | Method _ -> Error (TCError TypeMismatch)
 ;;
+
+(* Expected field, got method *)
 
 let method_of_ast = function
   | Ast.Method (mods, ret_type, id, pms, body) ->
@@ -52,23 +55,30 @@ let method_of_ast = function
         mods
     in
     let is_main = equal_ident id (Id "Main") in
-    { method_modifiers = mods
-    ; method_return = ret_type
-    ; method_name = id
-    ; method_params = pms
-    ; method_body = body
-    ; is_static
-    ; is_main
-    }
-  | Ast.VarField _ -> failwith "Expected method, got field" (* TODO *)
+    Ok
+      { method_modifiers = mods
+      ; method_return = ret_type
+      ; method_name = id
+      ; method_params = pms
+      ; method_body = body
+      ; is_static
+      ; is_main
+      }
+  | Ast.VarField _ -> Error (TCError TypeMismatch)
 ;;
+
+(* Expected method, got field *)
 
 let get_class_memb id memb =
   match memb with
   | VarField (_, _, f_id, _) when equal_ident f_id id ->
-    Some (TCField (field_of_ast memb))
+    (match field_of_ast memb with
+     | Ok f_info -> Some (TCField f_info)
+     | Error _ -> None)
   | Method (_, _, m_id, _, _) when equal_ident m_id id ->
-    Some (TCMethod (method_of_ast memb))
+    (match method_of_ast memb with
+     | Ok m_info -> Some (TCMethod m_info)
+     | Error _ -> None)
   | _ -> None
 ;;
 
@@ -336,28 +346,30 @@ let tc_member mem class_fields =
        *> typecheck_stmt body)
   in
   let tc_class_method (mds, tp, id, pms, b) class_fields =
-    let m = method_of_ast (Method (mds, tp, id, pms, b)) in
-    if m.is_main
-    then (
-      let is_valid_signature =
-        mds = [ MStatic ]
-        && pms = Params []
-        &&
-        match tp with
-        | TypeBase TypeInt | TypeVoid -> true
-        | _ -> false
-      in
-      if is_valid_signature
-      then
-        tc_meth tp (Params []) b class_fields *> read_main_class
-        >>= function
-        | None -> get_curr_class_name >>= fun n -> write_main_class (Some n)
-        | Some _ -> fail (TCError (OtherError "Main method already exists"))
-      else
-        fail
-          (TCError
-             (OtherError "Main must be static, non-async, no params, return int/void")))
-    else tc_meth tp pms b class_fields
+    match method_of_ast (Method (mds, tp, id, pms, b)) with
+    | Ok m ->
+      if m.is_main
+      then (
+        let is_valid_signature =
+          mds = [ MStatic ]
+          && pms = Params []
+          &&
+          match tp with
+          | TypeBase TypeInt | TypeVoid -> true
+          | _ -> false
+        in
+        if is_valid_signature
+        then
+          tc_meth tp (Params []) b class_fields *> read_main_class
+          >>= function
+          | None -> get_curr_class_name >>= fun n -> write_main_class (Some n)
+          | Some _ -> fail (TCError (OtherError "Main method already exists"))
+        else
+          fail
+            (TCError
+               (OtherError "Main must be static, non-async, no params, return int/void")))
+      else tc_meth tp pms b class_fields
+    | Error e -> fail e
   in
   match mem with
   | VarField (_, tp, _, e_opt) -> tc_class_field tp e_opt
@@ -378,11 +390,13 @@ let typecheck_obj cl =
       let f mem =
         match mem with
         | VarField (_, _, id, _) ->
-          let field_info = field_of_ast mem in
-          save_decl id (TCField field_info)
+          (match field_of_ast mem with
+           | Ok field_info -> save_decl id (TCField field_info)
+           | Error e -> fail e)
         | Method (_, _, id, _, _) ->
-          let method_info = method_of_ast mem in
-          save_decl id (TCMethod method_info)
+          (match method_of_ast mem with
+           | Ok method_info -> save_decl id (TCMethod method_info)
+           | Error e -> fail e)
       in
       iter f fields
     in

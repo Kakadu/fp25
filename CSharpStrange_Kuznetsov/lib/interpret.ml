@@ -619,10 +619,10 @@ let interpret str =
 
 (* TODO: error messages? *)
 (*
+Quicktests for parser
    TODO: lambdas + closures
    arrays (1D) + new
-   FIX BUGS (interpreter)
-   Quicktests for parser (if time permits)
+   
    pre/post increment/decrement
    LINQ (simple array queries)
    async/await (at least without lambdas)
