@@ -10,18 +10,18 @@
 
 (maintainers "Dmitrii Kuznetsov dmitrvlkuznetsov@gmail.com")
 
-(bug_reports "https://github.com/f1i3g3/fp2024")
+(bug_reports "https://github.com/f1i3g3/fp25")
 
-(homepage "https://github.com/f1i3g3/fp2024")
+(homepage "https://github.com/f1i3g3/fp25")
 
 (package
  (name CSharpStrange)
  (synopsis "An interpreter for strange subset of C# language")
  (description
-  "An interpreter for subset of C# language with async/await and LINQ (and some other stuff which will be added later)")
+  "An interpreter for subset of C# language (some stuff like  async/await and LINQ will be added later)")
  ; TODO: actual documentation (documentation "https://kakadu.github.io/fp2024/docs/Lambda")
  ; TODO: update old links
- (version 0.1)
+ (version 0.2)
  (depends
   dune
   angstrom
