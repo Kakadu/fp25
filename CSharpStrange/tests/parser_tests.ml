@@ -464,3 +464,25 @@ let%test "parse program with weird whitespace" =
       |}
   in
   match apply_parser parse_prog program with Ok _ -> true | Error _ -> false
+
+let%test "Parse checking fields" =
+  let program =
+    {|
+    class Program {
+      int b = 9;
+      int c = b * 67;
+      int a = (50 % 2) + b - c;
+      bool r = (a != b * c) || (a >= b) && (a == c +90);
+      string s = "ok";
+      char h = 'a';
+
+      void M() {
+        a = 5;
+        r = s!= "kkkk" && (190%22 == 100 * -2/5) ;
+      }
+    }
+  |}
+  in
+  match apply_parser parse_prog program with Ok _ -> true | Error _ -> false
+
+(* TODO: rewrite to normal *)

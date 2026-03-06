@@ -173,6 +173,7 @@ let ( ^=^ ) = parse_bin_op "=" OpAssign
 (* Unary operations *)
 let parse_un_op op typ = parse_op op typ >>| fun t a -> EUnOp (t, a)
 let ( ^!^ ) = parse_un_op "!" OpNot
+let ( ^!-^ ) = parse_un_op "-" OpNeg
 
 let parse_ops =
   fix (fun expr ->
@@ -180,7 +181,7 @@ let parse_ops =
         choice [ parens expr; parse_value; parse_call_expr expr; parse_id_expr ]
       in
       let lv2 =
-        many (choice [ ( ^!^ ) ]) >>= fun ops ->
+        many (choice [ ( ^!^ ); ( ^!-^ ) ]) >>= fun ops ->
         lv1 >>= fun e ->
         return (List.fold_right ops ~f:(fun op acc -> op acc) ~init:e)
       in
@@ -272,8 +273,10 @@ let parse_continue =
 let parse_block =
   fix (fun block ->
       let sc p = p <* skip_semicolons1 in
+      (* операторы, которые должны заканчиваться ; *)
       let op_sc p = p <* skip_semicolons in
 
+      (* операторы, которые могут не заканчиваться ; *)
       let body_step =
         choice ?failure_msg:(Some "Error in some block sentence")
           [
