@@ -62,9 +62,9 @@ let pp_bin_op fmt = function
   | OpAssign -> fprintf fmt "="
 ;;
 
-(*TODO*)
 let pp_un_op fmt = function
   | OpNot -> fprintf fmt "!"
+  | OpNeg -> fprintf fmt "-"
 ;;
 
 let pp_val_type fmt = function

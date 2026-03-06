@@ -34,7 +34,6 @@ end
 (** Typechecker-specific monad operations *)
 module TYPECHECK : sig
   open Ast
-  open Common.TypeCheck
 
   type 'a t = (TypeCheck.state, 'a) STATEERROR.t
 
