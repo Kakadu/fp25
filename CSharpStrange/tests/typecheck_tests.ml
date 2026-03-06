@@ -12,7 +12,7 @@ let show_wrap = function
       match typecheck x with
       | _, Result.Ok _ -> Format.print_string "Ok!\n"
       | _, Result.Error e -> Format.printf "%a\n%!" pp_error e)
-  | _ -> Format.print_string "Some error\n"
+  | _ -> Format.print_string "Parsing error\n"
 
 let print_tc p str = show_wrap (parse_option p str)
 let test_ast = print_tc parse_prog
@@ -62,7 +62,7 @@ let%expect_test "Already declared variable" =
   [%expect {|
     (TCError (OtherError "This variable is already declared")) |}]
 
-let%expect_test "Some types" =
+let%expect_test "Checking fields" =
   test_ast
     {| 
   class Program {
@@ -99,7 +99,7 @@ let%expect_test "While" =
     {| 
   class Program {
     static int Main() {
-      int counter = 0;
+      int count = 0;
       bool b = true;
       while(true) {
         if (count != 2) {
@@ -145,16 +145,13 @@ let%expect_test "For" =
 let%expect_test "Wrong main" =
   test_ast {| 
   class Program {
-    public virtual void Main() {}
+    public async void Main() {}
   }
   |};
   [%expect
     {|
     (TCError
-       (OtherError
-          "Main must be a static method, have no params and return only int and void")) |}]
-
-(* TODO: formatting???! *)
+       (OtherError "Main must be static, non-async, no params, return int/void")) |}]
 
 let%expect_test "Already declared function" =
   test_ast
@@ -173,11 +170,10 @@ let%expect_test "Function type mismatch" =
   class Program {
     public void a(int n, int m){
       return n+m;
-    };
+    }
   }|};
   [%expect {|
     (TCError TypeMismatch) |}]
-(* TODO: check formatting??!*)
 
 (* TODO: occurs check: smth like
    {|
