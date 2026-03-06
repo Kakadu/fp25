@@ -11,7 +11,7 @@ in the dune file
 
   $ ../bin/REPL.exe <<EOF
   > fun f -> x
-  TypeError: Tried to return non-integer
+  Success: val f = <fun>
 
   $ ../bin/REPL.exe <<EOF
   > ( fun x -> fun x -> x ) 1 2

@@ -122,7 +122,7 @@ end = struct
     match e with
     | VUnit -> M.return OUnit
     | VInt n -> M.return (OInt n)
-    | _ -> M.fail (TypeError "Tried to return non-integer")
+    | VClosure (name, _, _) -> M.return (OAbs name)
   ;;
 
   let run e steps =
@@ -139,7 +139,8 @@ let parse_and_run str steps =
      | Ok n ->
        (match n with
         | OUnit -> Printf.printf "Success: Unit"
-        | OInt n -> Printf.printf "Success: %d\n" n)
+        | OInt n -> Printf.printf "Success: %d\n" n
+        | OAbs n -> Printf.printf "Success: val %s = <fun>\n" n)
      | Error err ->
        (match err with
         | UnknownVariable x -> Format.eprintf "UnknownVariable: %s\n" x

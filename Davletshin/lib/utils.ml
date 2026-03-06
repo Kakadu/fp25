@@ -23,6 +23,7 @@ end
 type output =
   | OUnit
   | OInt of int
+  | OAbs of name
 
 type error =
   | UnknownVariable of string

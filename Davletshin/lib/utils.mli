@@ -6,6 +6,8 @@
 
 [@@@ocaml.text "/*"]
 
+open Ast
+
 (** Smart constructors *)
 
 val int_cons : int -> 'a Ast.t
@@ -22,6 +24,7 @@ end
 type output =
   | OUnit
   | OInt of int
+  | OAbs of name
 
 type error =
   | UnknownVariable of string
