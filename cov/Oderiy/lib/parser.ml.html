@@ -408,62 +408,62 @@
 open Angstrom
 
 let is_whitespace = function
-  | <span data-count="76990">'</span> ' -&gt; true
+  | <span data-count="80977">'</span> ' -&gt; true
   | <span data-count="0">'</span>\t' -&gt; true
   | <span data-count="143">'</span>\n' -&gt; true
   | <span data-count="0">'</span>\r' -&gt; true
-  | <span data-count="258078">_</span> -&gt; false
+  | <span data-count="274913">_</span> -&gt; false
 ;;
 
 let ws = skip_whil<span data-count="24">e</span> is_whitespace
 let ws1 = take_while<span data-count="24">1</span> is_whitespace *<span data-count="24">&gt;</span> retur<span data-count="24">n</span> ()
-let token p = <span data-count="755872">w</span>s *&gt; p
-let token_ws p = <span data-count="99865">w</span>s1 *&gt; p
+let token p = <span data-count="797457">w</span>s *&gt; p
+let token_ws p = <span data-count="105436">w</span>s1 *&gt; p
 
 let parse_ident =
   let* first_char =
     satisf<span data-count="24">y</span> (function
-      | <span data-count="7367">'</span>a' .. 'z' -&gt; true
+      | <span data-count="7759">'</span>a' .. 'z' -&gt; true
       | <span data-count="1">'</span>_' -&gt; true
-      | <span data-count="11187">_</span> -&gt; false)
+      | <span data-count="11965">_</span> -&gt; false)
   in
-  <span data-count="7368">l</span>et* rest =
-    take_whil<span data-count="7368">e</span> (function
-      | <span data-count="6548">'</span>a' .. 'z' -&gt; true
+  <span data-count="7760">l</span>et* rest =
+    take_whil<span data-count="7760">e</span> (function
+      | <span data-count="6983">'</span>a' .. 'z' -&gt; true
       | <span data-count="0">'</span>A' .. 'Z' -&gt; true
-      | <span data-count="400">'</span>0' .. '9' -&gt; true
-      | <span data-count="395">'</span>_' -&gt; true
+      | <span data-count="343">'</span>0' .. '9' -&gt; true
+      | <span data-count="362">'</span>_' -&gt; true
       | <span data-count="0">'</span>\'' -&gt; true
-      | <span data-count="7189">_</span> -&gt; false)
+      | <span data-count="7599">_</span> -&gt; false)
   in
-  <span data-count="7368">l</span>et id = String.mak<span data-count="7368">e</span> 1 first_char ^ rest in
+  <span data-count="7760">l</span>et id = String.mak<span data-count="7760">e</span> 1 first_char ^ rest in
   match id with
   | <span data-count="0">"</span>let" -&gt; fail "reserved keyword"
   | <span data-count="412">"</span>rec" -&gt; fail "reserved keyword"
-  | <span data-count="1221">"</span>in" -&gt; fail "reserved keyword"
+  | <span data-count="1290">"</span>in" -&gt; fail "reserved keyword"
   | <span data-count="0">"</span>if" -&gt; fail "reserved keyword"
-  | <span data-count="354">"</span>then" -&gt; fail "reserved keyword"
-  | <span data-count="355">"</span>else" -&gt; fail "reserved keyword"
+  | <span data-count="393">"</span>then" -&gt; fail "reserved keyword"
+  | <span data-count="394">"</span>else" -&gt; fail "reserved keyword"
   | <span data-count="0">"</span>fun" -&gt; fail "reserved keyword"
-  | <span data-count="5026">_</span> -&gt; return id
+  | <span data-count="5271">_</span> -&gt; return id
 ;;
 
 let parse_int =
   let* digits =
     take_while<span data-count="24">1</span> (function
-      | <span data-count="7841">'</span>0' .. '9' -&gt; true
-      | <span data-count="24726">_</span> -&gt; false)
+      | <span data-count="8054">'</span>0' .. '9' -&gt; true
+      | <span data-count="26163">_</span> -&gt; false)
   in
-  <span data-count="4193">i</span>f String.lengt<span data-count="4193">h</span> digits &gt; 1 &amp;&amp; <span data-count="3601">d</span>igits.[0] = '0'
+  <span data-count="4324">i</span>f String.lengt<span data-count="4324">h</span> digits &gt; 1 &amp;&amp; <span data-count="3684">d</span>igits.[0] = '0'
   then <span data-count="0">f</span>ail "leading zero"
   else
-    <span data-count="4193">l</span>et* next_char = peek_char in
-    <span data-count="4193">m</span>atch next_char with
+    <span data-count="4324">l</span>et* next_char = peek_char in
+    <span data-count="4324">m</span>atch next_char with
     | <span data-count="1">S</span>ome 'a' .. 'z' -&gt; fail "identifier cannot start with digit"
     | <span data-count="0">S</span>ome 'A' .. 'Z' -&gt; fail "identifier cannot start with digit"
     | <span data-count="0">S</span>ome '_' -&gt; fail "identifier cannot start with digit"
     | <span data-count="0">S</span>ome '\'' -&gt; fail "identifier cannot start with digit"
-    | <span data-count="4192">_</span> -&gt; return (int_of_strin<span data-count="4192">g</span> digits)
+    | <span data-count="4323">_</span> -&gt; return (int_of_strin<span data-count="4323">g</span> digits)
 ;;
 
 type error = [ `Parsing_error of string ]
@@ -473,15 +473,15 @@ let pp_error ppf = function
 ;;
 
 let left_assoc expr_parser op_parser =
-  <span data-count="168261">l</span>et rec loop left =
-    <span data-count="40106">o</span>p_parser
-    &gt;&gt;<span data-count="40106">=</span> (fun make_binop -&gt; <span data-count="1298">e</span>xpr_parser &gt;&gt;= fun right -&gt; <span data-count="1298">l</span>oop (make_bino<span data-count="1298">p</span> left right))
-    &lt;|&gt; retur<span data-count="40106">n</span> left
+  <span data-count="177432">l</span>et rec loop left =
+    <span data-count="42299">o</span>p_parser
+    &gt;&gt;<span data-count="42299">=</span> (fun make_binop -&gt; <span data-count="1305">e</span>xpr_parser &gt;&gt;= fun right -&gt; <span data-count="1305">l</span>oop (make_bino<span data-count="1305">p</span> left right))
+    &lt;|&gt; retur<span data-count="42299">n</span> left
   in
   expr_parser &gt;&gt;= loop
 ;;
 
-let make_fun params body = <span data-count="2304">L</span>ist.fold_right (fun p acc -&gt; <span data-count="1108">A</span>st.Fun (p, acc)) params body
+let make_fun params body = <span data-count="2502">L</span>ist.fold_right (fun p acc -&gt; <span data-count="1237">A</span>st.Fun (p, acc)) params body
 
 type parsers =
   { p_expr : parsers -&gt; string Ast.t t
@@ -495,81 +495,81 @@ type parsers =
 
 let miniml_parser =
   let p_primary self =
-    <span data-count="25276">f</span>ix (fun _ -&gt;
-      <span data-count="24487">c</span>hoice
-        [ (toke<span data-count="24487">n</span> parse_int &gt;&gt;<span data-count="24487">|</span> fun n -&gt; <span data-count="4192">A</span>st.Int n)
-        ; toke<span data-count="24487">n</span> (cha<span data-count="24487">r</span> '(') *<span data-count="24487">&gt;</span> self.p_exp<span data-count="24487">r</span> self &lt;<span data-count="24487">*</span> toke<span data-count="24487">n</span> (cha<span data-count="24487">r</span> ')')
-        ; (toke<span data-count="24487">n</span> (strin<span data-count="24487">g</span> "if") *<span data-count="24487">&gt;</span> token_w<span data-count="24487">s</span> (self.p_exp<span data-count="24487">r</span> self)
-           &gt;&gt;<span data-count="24487">=</span> fun cond -&gt;
-           <span data-count="354">t</span>oke<span data-count="354">n</span> (strin<span data-count="354">g</span> "then") *<span data-count="354">&gt;</span> token_w<span data-count="354">s</span> (self.p_exp<span data-count="354">r</span> self)
+    <span data-count="26730">f</span>ix (fun _ -&gt;
+      <span data-count="25843">c</span>hoice
+        [ (toke<span data-count="25843">n</span> parse_int &gt;&gt;<span data-count="25843">|</span> fun n -&gt; <span data-count="4323">A</span>st.Int n)
+        ; toke<span data-count="25843">n</span> (cha<span data-count="25843">r</span> '(') *<span data-count="25843">&gt;</span> self.p_exp<span data-count="25843">r</span> self &lt;<span data-count="25843">*</span> toke<span data-count="25843">n</span> (cha<span data-count="25843">r</span> ')')
+        ; (toke<span data-count="25843">n</span> (strin<span data-count="25843">g</span> "if") *<span data-count="25843">&gt;</span> token_w<span data-count="25843">s</span> (self.p_exp<span data-count="25843">r</span> self)
+           &gt;&gt;<span data-count="25843">=</span> fun cond -&gt;
+           <span data-count="393">t</span>oke<span data-count="393">n</span> (strin<span data-count="393">g</span> "then") *<span data-count="393">&gt;</span> token_w<span data-count="393">s</span> (self.p_exp<span data-count="393">r</span> self)
            &gt;&gt;= fun then_br -&gt;
-           <span data-count="354">t</span>oke<span data-count="354">n</span> (strin<span data-count="354">g</span> "else") *<span data-count="354">&gt;</span> token_w<span data-count="354">s</span> (self.p_exp<span data-count="354">r</span> self)
-           &gt;&gt;| fun else_br -&gt; <span data-count="354">A</span>st.If (cond, then_br, else_br))
-        ; (toke<span data-count="24487">n</span> (strin<span data-count="24487">g</span> "let") *<span data-count="24487">&gt;</span> token_w<span data-count="24487">s</span> parse_ident
-           &gt;&gt;<span data-count="24487">=</span> fun name -&gt;
-           <span data-count="797">m</span>an<span data-count="797">y</span> (toke<span data-count="797">n</span> parse_ident)
+           <span data-count="393">t</span>oke<span data-count="393">n</span> (strin<span data-count="393">g</span> "else") *<span data-count="393">&gt;</span> token_w<span data-count="393">s</span> (self.p_exp<span data-count="393">r</span> self)
+           &gt;&gt;| fun else_br -&gt; <span data-count="393">A</span>st.If (cond, then_br, else_br))
+        ; (toke<span data-count="25843">n</span> (strin<span data-count="25843">g</span> "let") *<span data-count="25843">&gt;</span> token_w<span data-count="25843">s</span> parse_ident
+           &gt;&gt;<span data-count="25843">=</span> fun name -&gt;
+           <span data-count="866">m</span>an<span data-count="866">y</span> (toke<span data-count="866">n</span> parse_ident)
            &gt;&gt;= fun params -&gt;
-           <span data-count="797">t</span>oke<span data-count="797">n</span> (cha<span data-count="797">r</span> '=') *<span data-count="797">&gt;</span> self.p_exp<span data-count="797">r</span> self
+           <span data-count="866">t</span>oke<span data-count="866">n</span> (cha<span data-count="866">r</span> '=') *<span data-count="866">&gt;</span> self.p_exp<span data-count="866">r</span> self
            &gt;&gt;= fun rhs -&gt;
-           <span data-count="797">t</span>oke<span data-count="797">n</span> (strin<span data-count="797">g</span> "in") *<span data-count="797">&gt;</span> token_w<span data-count="797">s</span> (self.p_exp<span data-count="797">r</span> self)
-           &gt;&gt;| fun body -&gt; <span data-count="797">A</span>st.Let (name, make_fu<span data-count="797">n</span> params rhs, body))
-        ; (toke<span data-count="24487">n</span> (strin<span data-count="24487">g</span> "let") *<span data-count="24487">&gt;</span> token_w<span data-count="24487">s</span> (strin<span data-count="24487">g</span> "rec") *<span data-count="24487">&gt;</span> token_w<span data-count="24487">s</span> parse_ident
-           &gt;&gt;<span data-count="24487">=</span> fun fname -&gt;
+           <span data-count="866">t</span>oke<span data-count="866">n</span> (strin<span data-count="866">g</span> "in") *<span data-count="866">&gt;</span> token_w<span data-count="866">s</span> (self.p_exp<span data-count="866">r</span> self)
+           &gt;&gt;| fun body -&gt; <span data-count="866">A</span>st.Let (name, make_fu<span data-count="866">n</span> params rhs, body))
+        ; (toke<span data-count="25843">n</span> (strin<span data-count="25843">g</span> "let") *<span data-count="25843">&gt;</span> token_w<span data-count="25843">s</span> (strin<span data-count="25843">g</span> "rec") *<span data-count="25843">&gt;</span> token_w<span data-count="25843">s</span> parse_ident
+           &gt;&gt;<span data-count="25843">=</span> fun fname -&gt;
            <span data-count="412">m</span>an<span data-count="412">y</span> (toke<span data-count="412">n</span> parse_ident)
            &gt;&gt;= fun params -&gt;
            <span data-count="412">t</span>oke<span data-count="412">n</span> (cha<span data-count="412">r</span> '=') *<span data-count="412">&gt;</span> self.p_exp<span data-count="412">r</span> self
            &gt;&gt;= fun fn_body -&gt;
            <span data-count="412">t</span>oke<span data-count="412">n</span> (strin<span data-count="412">g</span> "in") *<span data-count="412">&gt;</span> token_w<span data-count="412">s</span> (self.p_exp<span data-count="412">r</span> self)
            &gt;&gt;| fun body -&gt; <span data-count="412">A</span>st.LetRec (fname, make_fu<span data-count="412">n</span> params fn_body, body))
-        ; (toke<span data-count="24487">n</span> (strin<span data-count="24487">g</span> "fun") *<span data-count="24487">&gt;</span> many<span data-count="24487">1</span> (toke<span data-count="24487">n</span> parse_ident)
-           &gt;&gt;<span data-count="24487">=</span> fun params -&gt;
-           <span data-count="1095">t</span>oke<span data-count="1095">n</span> (strin<span data-count="1095">g</span> "-&gt;") *<span data-count="1095">&gt;</span> self.p_exp<span data-count="1095">r</span> self &gt;&gt;| fun body -&gt; <span data-count="1095">m</span>ake_fun params body)
-        ; (toke<span data-count="24487">n</span> parse_ident &gt;&gt;<span data-count="24487">|</span> fun v -&gt; <span data-count="2709">A</span>st.Var v)
+        ; (toke<span data-count="25843">n</span> (strin<span data-count="25843">g</span> "fun") *<span data-count="25843">&gt;</span> many<span data-count="25843">1</span> (toke<span data-count="25843">n</span> parse_ident)
+           &gt;&gt;<span data-count="25843">=</span> fun params -&gt;
+           <span data-count="1224">t</span>oke<span data-count="1224">n</span> (strin<span data-count="1224">g</span> "-&gt;") *<span data-count="1224">&gt;</span> self.p_exp<span data-count="1224">r</span> self &gt;&gt;| fun body -&gt; <span data-count="1224">m</span>ake_fun params body)
+        ; (toke<span data-count="25843">n</span> parse_ident &gt;&gt;<span data-count="25843">|</span> fun v -&gt; <span data-count="2756">A</span>st.Var v)
         ])
   in
   let p_app self =
-    <span data-count="12638">l</span>ift2
-      (fun hd tl -&gt; <span data-count="13753">L</span>ist.fold_left (fun f arg -&gt; <span data-count="795">A</span>st.App (f, arg)) hd tl)
-      (self.p_primar<span data-count="12638">y</span> self)
-      (man<span data-count="12638">y</span> (self.p_primar<span data-count="12638">y</span> self))
+    <span data-count="13365">l</span>ift2
+      (fun hd tl -&gt; <span data-count="14480">L</span>ist.fold_left (fun f arg -&gt; <span data-count="819">A</span>st.App (f, arg)) hd tl)
+      (self.p_primar<span data-count="13365">y</span> self)
+      (man<span data-count="13365">y</span> (self.p_primar<span data-count="13365">y</span> self))
   in
   let p_unary self =
-    <span data-count="81363">f</span>ix (fun _ -&gt;
-      <span data-count="12638">t</span>oke<span data-count="12638">n</span> (cha<span data-count="12638">r</span> '+') *<span data-count="12638">&gt;</span> self.p_unar<span data-count="12638">y</span> self
-      &lt;|<span data-count="12638">&gt;</span> (toke<span data-count="12638">n</span> (cha<span data-count="12638">r</span> '-') *<span data-count="12638">&gt;</span> self.p_unar<span data-count="12638">y</span> self &gt;&gt;<span data-count="12638">|</span> fun e -&gt; <span data-count="453">A</span>st.Neg e)
-      &lt;|&gt; self.p_ap<span data-count="12638">p</span> self)
+    <span data-count="85874">f</span>ix (fun _ -&gt;
+      <span data-count="13365">t</span>oke<span data-count="13365">n</span> (cha<span data-count="13365">r</span> '+') *<span data-count="13365">&gt;</span> self.p_unar<span data-count="13365">y</span> self
+      &lt;|<span data-count="13365">&gt;</span> (toke<span data-count="13365">n</span> (cha<span data-count="13365">r</span> '-') *<span data-count="13365">&gt;</span> self.p_unar<span data-count="13365">y</span> self &gt;&gt;<span data-count="13365">|</span> fun e -&gt; <span data-count="521">A</span>st.Neg e)
+      &lt;|&gt; self.p_ap<span data-count="13365">p</span> self)
   in
   let p_mul self =
-    <span data-count="56087">l</span>et ops =
+    <span data-count="59144">l</span>et ops =
       choice
-        [ toke<span data-count="56087">n</span> (cha<span data-count="56087">r</span> '*') *<span data-count="56087">&gt;</span> retur<span data-count="56087">n</span> (fun l r -&gt; <span data-count="237">A</span>st.Bin (Ast.Mul, l, r))
-        ; toke<span data-count="56087">n</span> (cha<span data-count="56087">r</span> '/') *<span data-count="56087">&gt;</span> retur<span data-count="56087">n</span> (fun l r -&gt; <span data-count="108">A</span>st.Bin (Ast.Div, l, r))
+        [ toke<span data-count="59144">n</span> (cha<span data-count="59144">r</span> '*') *<span data-count="59144">&gt;</span> retur<span data-count="59144">n</span> (fun l r -&gt; <span data-count="223">A</span>st.Bin (Ast.Mul, l, r))
+        ; toke<span data-count="59144">n</span> (cha<span data-count="59144">r</span> '/') *<span data-count="59144">&gt;</span> retur<span data-count="59144">n</span> (fun l r -&gt; <span data-count="101">A</span>st.Bin (Ast.Div, l, r))
         ]
     in
-    <span data-count="56087">l</span>eft_assoc (self.p_unar<span data-count="56087">y</span> self) ops
+    <span data-count="59144">l</span>eft_assoc (self.p_unar<span data-count="59144">y</span> self) ops
   in
   let p_add self =
-    <span data-count="56087">l</span>et ops =
+    <span data-count="59144">l</span>et ops =
       choice
-        [ toke<span data-count="56087">n</span> (cha<span data-count="56087">r</span> '+') *<span data-count="56087">&gt;</span> retur<span data-count="56087">n</span> (fun l r -&gt; <span data-count="246">A</span>st.Bin (Ast.Add, l, r))
-        ; toke<span data-count="56087">n</span> (cha<span data-count="56087">r</span> '-') *<span data-count="56087">&gt;</span> retur<span data-count="56087">n</span> (fun l r -&gt; <span data-count="217">A</span>st.Bin (Ast.Sub, l, r))
+        [ toke<span data-count="59144">n</span> (cha<span data-count="59144">r</span> '+') *<span data-count="59144">&gt;</span> retur<span data-count="59144">n</span> (fun l r -&gt; <span data-count="244">A</span>st.Bin (Ast.Add, l, r))
+        ; toke<span data-count="59144">n</span> (cha<span data-count="59144">r</span> '-') *<span data-count="59144">&gt;</span> retur<span data-count="59144">n</span> (fun l r -&gt; <span data-count="249">A</span>st.Bin (Ast.Sub, l, r))
         ]
     in
-    <span data-count="56087">l</span>eft_assoc (self.p_mu<span data-count="56087">l</span> self) ops
+    <span data-count="59144">l</span>eft_assoc (self.p_mu<span data-count="59144">l</span> self) ops
   in
   let p_comp self =
-    <span data-count="56087">l</span>et ops =
+    <span data-count="59144">l</span>et ops =
       choice
-        [ toke<span data-count="56087">n</span> (strin<span data-count="56087">g</span> "&lt;=") *<span data-count="56087">&gt;</span> retur<span data-count="56087">n</span> (fun l r -&gt; <span data-count="97">A</span>st.Bin (Ast.Leq, l, r))
-        ; toke<span data-count="56087">n</span> (cha<span data-count="56087">r</span> '&lt;') *<span data-count="56087">&gt;</span> retur<span data-count="56087">n</span> (fun l r -&gt; <span data-count="126">A</span>st.Bin (Ast.Lt, l, r))
-        ; toke<span data-count="56087">n</span> (strin<span data-count="56087">g</span> "&gt;=") *<span data-count="56087">&gt;</span> retur<span data-count="56087">n</span> (fun l r -&gt; <span data-count="107">A</span>st.Bin (Ast.Geq, l, r))
-        ; toke<span data-count="56087">n</span> (cha<span data-count="56087">r</span> '&gt;') *<span data-count="56087">&gt;</span> retur<span data-count="56087">n</span> (fun l r -&gt; <span data-count="83">A</span>st.Bin (Ast.Gt, l, r))
-        ; toke<span data-count="56087">n</span> (cha<span data-count="56087">r</span> '=') *<span data-count="56087">&gt;</span> retur<span data-count="56087">n</span> (fun l r -&gt; <span data-count="77">A</span>st.Bin (Ast.Eq, l, r))
+        [ toke<span data-count="59144">n</span> (strin<span data-count="59144">g</span> "&lt;=") *<span data-count="59144">&gt;</span> retur<span data-count="59144">n</span> (fun l r -&gt; <span data-count="100">A</span>st.Bin (Ast.Leq, l, r))
+        ; toke<span data-count="59144">n</span> (cha<span data-count="59144">r</span> '&lt;') *<span data-count="59144">&gt;</span> retur<span data-count="59144">n</span> (fun l r -&gt; <span data-count="110">A</span>st.Bin (Ast.Lt, l, r))
+        ; toke<span data-count="59144">n</span> (strin<span data-count="59144">g</span> "&gt;=") *<span data-count="59144">&gt;</span> retur<span data-count="59144">n</span> (fun l r -&gt; <span data-count="104">A</span>st.Bin (Ast.Geq, l, r))
+        ; toke<span data-count="59144">n</span> (cha<span data-count="59144">r</span> '&gt;') *<span data-count="59144">&gt;</span> retur<span data-count="59144">n</span> (fun l r -&gt; <span data-count="87">A</span>st.Bin (Ast.Gt, l, r))
+        ; toke<span data-count="59144">n</span> (cha<span data-count="59144">r</span> '=') *<span data-count="59144">&gt;</span> retur<span data-count="59144">n</span> (fun l r -&gt; <span data-count="87">A</span>st.Bin (Ast.Eq, l, r))
         ]
     in
-    <span data-count="56087">l</span>eft_assoc (self.p_ad<span data-count="56087">d</span> self) ops
+    <span data-count="59144">l</span>eft_assoc (self.p_ad<span data-count="59144">d</span> self) ops
   in
-  let p_expr self = <span data-count="56087">s</span>elf.p_comp self in
+  let p_expr self = <span data-count="59144">s</span>elf.p_comp self in
   { p_expr; p_comp; p_add; p_mul; p_unary; p_app; p_primary }
 ;;
 

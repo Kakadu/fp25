@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>interpret.ml &mdash; Coverage report</title>
-    <meta name="description" content="90.91% coverage in lib/interpret.ml">
+    <meta name="description" content="90.74% coverage in lib/interpret.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,7 +15,7 @@
           <span class="dirname">lib/</span>interpret.ml
         </a>
       </h1>
-      <h2>90.91%</h2>
+      <h2>90.74%</h2>
     </div>
     <div id="navbar">
       <span class="unvisited" style="top:13.10%"></span>
@@ -399,19 +399,19 @@ let pp_error ppf = function
 module StateResult = struct
   type ('a, 'e) t = int -&gt; (('a * int, 'e) result[@warning "-3"])
 
-  let return x : ('a, 'e) t = <span data-count="44681">f</span>un steps -&gt; <span data-count="44681">O</span>k (x, steps)
+  let return x : ('a, 'e) t = <span data-count="18671">f</span>un steps -&gt; <span data-count="18671">O</span>k (x, steps)
   let fail e : ('a, 'e) t = <span data-count="258">f</span>un _steps -&gt; <span data-count="258">E</span>rror e
 
   let bind (m : ('a, 'e) t) (f : 'a -&gt; ('b, 'e) t) : ('b, 'e) t =
-    <span data-count="92872">f</span>un steps -&gt;
-    <span data-count="92872">m</span>atch m steps with
-    | <span data-count="362">E</span>rror e -&gt; Error e
-    | <span data-count="92510">O</span>k (x, s') -&gt; f x s'
+    <span data-count="63227">f</span>un steps -&gt;
+    <span data-count="63227">m</span>atch m steps with
+    | <span data-count="363">E</span>rror e -&gt; Error e
+    | <span data-count="62864">O</span>k (x, s') -&gt; f x s'
   ;;
 
   let ( &gt;&gt;= ) = bind
-  let get_state : (int, 'e) t = fun steps -&gt; <span data-count="24865">O</span>k (steps, steps)
-  let put_state new_steps : (unit, 'e) t = <span data-count="24813">f</span>un _old_steps -&gt; <span data-count="24813">O</span>k ((), new_steps)
+  let get_state : (int, 'e) t = fun steps -&gt; <span data-count="23047">O</span>k (steps, steps)
+  let put_state new_steps : (unit, 'e) t = <span data-count="22995">f</span>un _old_steps -&gt; <span data-count="22995">O</span>k ((), new_steps)
 
   let run_computation (m : ('a, 'e) t) initial_steps =
     <span data-count="2107">m</span>atch m initial_steps with
@@ -431,19 +431,19 @@ and env = (string * value) list
 
 let rec find_var name = function
   | <span data-count="2">[</span>] -&gt; None
-  | <span data-count="15897">(</span>n, v) :: _ when String.equa<span data-count="15897">l</span> n name -&gt; <span data-count="10818">S</span>ome v
-  | <span data-count="5079">_</span> :: rest -&gt; find_var name rest
+  | <span data-count="14047">(</span>n, v) :: _ when String.equa<span data-count="14047">l</span> n name -&gt; <span data-count="9582">S</span>ome v
+  | <span data-count="4465">_</span> :: rest -&gt; find_var name rest
 ;;
 
 let run ?(output = <span data-count="57">S</span>tdlib.Printf.print<span data-count="57">f</span> "%d\n") limit expr =
   <span data-count="2107">l</span>et tick limit =
-    <span data-count="24865">l</span>et open StateResult in
+    <span data-count="23047">l</span>et open StateResult in
     get_state
     &gt;&gt;= fun steps -&gt;
-    <span data-count="24865">l</span>et new_steps = steps + 1 in
+    <span data-count="23047">l</span>et new_steps = steps + 1 in
     if new_steps &gt; limit
     then <span data-count="52">f</span>ail `Steps_exceeded
-    else <span data-count="24813">p</span>ut_stat<span data-count="24813">e</span> new_steps &gt;&gt;= fun () -&gt; <span data-count="24813">r</span>eturn ()
+    else <span data-count="22995">p</span>ut_state new_steps
   in
   let rec initial_env =
     [ ( "print"
@@ -462,37 +462,37 @@ let run ?(output = <span data-count="57">S</span>tdlib.Printf.print<span data-co
     Fun ("__x", App (App (Var "__f", App (Var "fix", Var "__f")), Var "__x"))
   in
   let rec interp limit bindings term =
-    <span data-count="24865">l</span>et open StateResult in
-    tic<span data-count="24865">k</span> limit
+    <span data-count="23047">l</span>et open StateResult in
+    tic<span data-count="23047">k</span> limit
     &gt;&gt;= fun () -&gt;
-    <span data-count="24813">m</span>atch term with
-    | <span data-count="4603">I</span>nt n -&gt; return (VNum n)
-    | <span data-count="10820">V</span>ar name -&gt;
+    <span data-count="22995">m</span>atch term with
+    | <span data-count="4614">I</span>nt n -&gt; return (VNum n)
+    | <span data-count="9584">V</span>ar name -&gt;
       (match find_var name bindings with
-       | <span data-count="10818">S</span>ome v -&gt; return v
+       | <span data-count="9582">S</span>ome v -&gt; return v
        | <span data-count="2">N</span>one -&gt; fail (`UnknownVariable name))
     | <span data-count="647">F</span>un (arg, body) -&gt; return (VFun (arg, body, bindings))
-    | <span data-count="5643">A</span>pp (fn, arg) -&gt;
-      inter<span data-count="5643">p</span> limit bindings fn
+    | <span data-count="5022">A</span>pp (fn, arg) -&gt;
+      inter<span data-count="5022">p</span> limit bindings fn
       &gt;&gt;= fun fn_val -&gt;
-      <span data-count="5620">i</span>nter<span data-count="5620">p</span> limit bindings arg
+      <span data-count="5006">i</span>nter<span data-count="5006">p</span> limit bindings arg
       &gt;&gt;= fun arg_val -&gt;
-      <span data-count="5610">(</span>match fn_val with
-       | <span data-count="5506">V</span>Fun (param, body, closure) -&gt; interp limit ((param, arg_val) :: closure) body
+      <span data-count="4988">(</span>match fn_val with
+       | <span data-count="4884">V</span>Fun (param, body, closure) -&gt; interp limit ((param, arg_val) :: closure) body
        | <span data-count="2">V</span>Builtin (_, f) -&gt; f arg_val
        | <span data-count="102">_</span> -&gt; fail (`Type_error "applying non-function"))
-    | <span data-count="137">N</span>eg expr -&gt;
-      inter<span data-count="137">p</span> limit bindings expr
+    | <span data-count="154">N</span>eg expr -&gt;
+      inter<span data-count="154">p</span> limit bindings expr
       &gt;&gt;= (function
-       | <span data-count="137">V</span>Num n -&gt; return (VNum (<span data-count="137">-</span>n))
+       | <span data-count="154">V</span>Num n -&gt; return (VNum (<span data-count="154">-</span>n))
        | <span data-count="0">_</span> -&gt; fail (`Type_error "negating non-number"))
-    | <span data-count="1933">B</span>in (op, e1, e2) -&gt;
-      inter<span data-count="1933">p</span> limit bindings e1
+    | <span data-count="1944">B</span>in (op, e1, e2) -&gt;
+      inter<span data-count="1944">p</span> limit bindings e1
       &gt;&gt;= fun v1 -&gt;
-      <span data-count="1917">i</span>nter<span data-count="1917">p</span> limit bindings e2
+      <span data-count="1928">i</span>nter<span data-count="1928">p</span> limit bindings e2
       &gt;&gt;= fun v2 -&gt;
-      <span data-count="1914">(</span>match v1, v2 with
-       | <span data-count="1914">V</span>Num a, VNum b -&gt; apply_binop op a b
+      <span data-count="1925">(</span>match v1, v2 with
+       | <span data-count="1925">V</span>Num a, VNum b -&gt; apply_binop op a b
        | <span data-count="0">_</span> -&gt; fail (`Type_error "binary op on non-numbers"))
     | <span data-count="218">L</span>et (name, rhs, body) -&gt;
       inter<span data-count="218">p</span> limit bindings rhs
@@ -508,11 +508,11 @@ let run ?(output = <span data-count="57">S</span>tdlib.Printf.print<span data-co
        | <span data-count="374">V</span>Num _ -&gt; interp limit bindings yes
        | <span data-count="0">_</span> -&gt; fail (`Type_error "condition must be number"))
   and apply_binop op x y =
-    <span data-count="1914">l</span>et open StateResult in
+    <span data-count="1925">l</span>et open StateResult in
     match op with
-    | <span data-count="510">A</span>dd -&gt; return (VNum (x + y))
-    | <span data-count="633">S</span>ub -&gt; return (VNum (x - y))
-    | <span data-count="308">M</span>ul -&gt; return (VNum (x * y))
+    | <span data-count="468">A</span>dd -&gt; return (VNum (x + y))
+    | <span data-count="650">S</span>ub -&gt; return (VNum (x - y))
+    | <span data-count="344">M</span>ul -&gt; return (VNum (x * y))
     | <span data-count="104">D</span>iv -&gt; if y = 0 then <span data-count="102">f</span>ail `Division_by_zero else <span data-count="2">r</span>eturn (VNum (x / y))
     | <span data-count="3">L</span>t -&gt; return (VNum (if x &lt; y then <span data-count="1">1</span> else <span data-count="2">0</span>))
     | <span data-count="332">L</span>eq -&gt; return (VNum (if x &lt;= y then <span data-count="157">1</span> else <span data-count="175">0</span>))
