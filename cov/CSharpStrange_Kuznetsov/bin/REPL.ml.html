@@ -174,7 +174,7 @@ let () =
       match interpret_program ast with
       | <span data-count="0">O</span>k (Some v) -&gt; print<span data-count="0">f</span> "Result: %s\n" (show_valu<span data-count="0">e</span> v)
       | <span data-count="0">O</span>k None -&gt; print<span data-count="0">f</span> "Result: void\n"
-      | <span data-count="0">E</span>rror _ -&gt; failwith (sprint<span data-count="0">f</span> "Interpretation error: %s" "TODO"))
+      | <span data-count="0">E</span>rror _ -&gt; failwith (sprint<span data-count="0">f</span> "Interpretation error"))
   | <span data-count="0">E</span>rror msg -&gt; failwith (sprint<span data-count="0">f</span> "Failed to parse file: %s" msg)
 ;;
 </code></pre>
