@@ -21,6 +21,13 @@
                  ])
             ));
           (Method ([MPublic; MStatic], TypeVoid, (Id "Main"), (Params []),
-             (SBlock [])))
+             (SBlock
+                [(SReturn
+                    (Some (EFuncCall ((EId (Id "Factorial")),
+                             (Args [(EValue (ValInt 5))])))))
+                  ])
+             ))
           ]
         )))
+  $ ../bin/REPL.exe -eval -filepath="../bin/factorial.cs" <<EOF
+  Result: (VInt 120)
