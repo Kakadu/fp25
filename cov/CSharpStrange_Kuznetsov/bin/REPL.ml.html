@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>REPL.ml &mdash; Coverage report</title>
-    <meta name="description" content="40.74% coverage in bin/REPL.ml">
+    <meta name="description" content="59.26% coverage in bin/REPL.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,15 +15,12 @@
           <span class="dirname">bin/</span>REPL.ml
         </a>
       </h1>
-      <h2>40.74%</h2>
+      <h2>59.26%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="bottom:46.81%"></span>
       <span class="unvisited" style="bottom:40.43%"></span>
       <span class="unvisited" style="bottom:38.30%"></span>
       <span class="unvisited" style="bottom:27.66%"></span>
-      <span class="unvisited" style="bottom:12.77%"></span>
-      <span class="unvisited" style="bottom:8.51%"></span>
       <span class="unvisited" style="bottom:6.38%"></span>
       <span class="unvisited" style="bottom:4.26%"></span>
       <span class="unvisited" style="bottom:2.13%"></span>
@@ -55,7 +52,7 @@
 <a id="L22"></a><span > </span>
 <a id="L23"></a><span class="visited"> </span>
 <a id="L24"></a><span > </span>
-<a id="L25"></a><span class="unvisited"> </span>
+<a id="L25"></a><span class="visited"> </span>
 <a id="L26"></a><span > </span>
 <a id="L27"></a><span > </span>
 <a id="L28"></a><span class="unvisited"> </span>
@@ -71,9 +68,9 @@
 <a id="L38"></a><span class="visited"> </span>
 <a id="L39"></a><span class="visited"> </span>
 <a id="L40"></a><span class="visited"> </span>
-<a id="L41"></a><span class="unvisited"> </span>
+<a id="L41"></a><span class="visited"> </span>
 <a id="L42"></a><span > </span>
-<a id="L43"></a><span class="unvisited"> </span>
+<a id="L43"></a><span class="visited"> </span>
 <a id="L44"></a><span class="unvisited"> </span>
 <a id="L45"></a><span class="unvisited"> </span>
 <a id="L46"></a><span class="unvisited"> </span>
@@ -152,27 +149,27 @@ let () =
     Arg.parse
       [ "-parseast", Arg.Unit (fun () -&gt; <span data-count="1">o</span>pts.dump_parse_tree &lt;- true), "\n"
       ; ( "-filepath"
-        , Arg.String (fun file_path -&gt; <span data-count="1">o</span>pts.file_path &lt;- Some file_path)
+        , Arg.String (fun file_path -&gt; <span data-count="2">o</span>pts.file_path &lt;- Some file_path)
         , "Input code in file\n" )
-      ; "-eval", Arg.Unit (fun () -&gt; <span data-count="0">o</span>pts.eval &lt;- true), "Run interpreter\n"
+      ; "-eval", Arg.Unit (fun () -&gt; <span data-count="1">o</span>pts.eval &lt;- true), "Run interpreter\n"
       ]
       (fun _ -&gt;
          <span data-count="0">S</span>tdlib.Format.eprintf "Something got wrong\n";
          <span data-count="0">S</span>tdlib.exit 1)
       "\n"
   in
-  <span data-count="1">l</span>et path =
+  <span data-count="2">l</span>et path =
     match opts.file_path with
     | <span data-count="0">N</span>one -&gt; String.tri<span data-count="0">m</span> @@ In_channel.input_al<span data-count="0">l</span> stdin
-    | <span data-count="1">S</span>ome path -&gt; String.tri<span data-count="1">m</span> @@ In_channel.read_al<span data-count="1">l</span> path
+    | <span data-count="2">S</span>ome path -&gt; String.tri<span data-count="2">m</span> @@ In_channel.read_al<span data-count="2">l</span> path
   in
   match apply_parser parse_prog path with
-  | <span data-count="1">O</span>k ast -&gt;
+  | <span data-count="2">O</span>k ast -&gt;
     if opts.dump_parse_tree then <span data-count="1">p</span>rint_endlin<span data-count="1">e</span> (show_progra<span data-count="1">m</span> ast);
-    <span data-count="1">i</span>f opts.eval
-    then <span data-count="0">(</span>
+    <span data-count="2">i</span>f opts.eval
+    then <span data-count="1">(</span>
       match interpret_program ast with
-      | <span data-count="0">O</span>k (Some v) -&gt; print<span data-count="0">f</span> "Result: %s\n" (show_valu<span data-count="0">e</span> v)
+      | <span data-count="1">O</span>k (Some v) -&gt; print<span data-count="1">f</span> "Result: %s\n" (show_valu<span data-count="1">e</span> v)
       | <span data-count="0">O</span>k None -&gt; print<span data-count="0">f</span> "Result: void\n"
       | <span data-count="0">E</span>rror _ -&gt; failwith (sprint<span data-count="0">f</span> "Interpretation error"))
   | <span data-count="0">E</span>rror msg -&gt; failwith (sprint<span data-count="0">f</span> "Failed to parse file: %s" msg)

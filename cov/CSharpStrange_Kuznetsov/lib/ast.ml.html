@@ -312,8 +312,8 @@
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
 (** Values types *)
-<span data-count="6">t</span>ype val_type =
-  <span data-count="0">|</span> ValInt of in<span data-count="3">t</span> (** Int value *)
+<span data-count="8">t</span>ype val_type =
+  <span data-count="0">|</span> ValInt of in<span data-count="4">t</span> (** Int value *)
   <span data-count="0">|</span> ValChar of cha<span data-count="0">r</span> (** Char value *)
   <span data-count="0">|</span> ValNull (** Null *)
   <span data-count="0">|</span> ValBool of boo<span data-count="0">l</span> (** Bool value *)
@@ -321,7 +321,7 @@
 [@@deriving eq, show { with_path = false }]
 
 (** Identidicator *)
-<span data-count="16">t</span>ype ident = <span data-count="40">I</span>d of strin<span data-count="8">g</span> [@@deriving eq, show { with_path = false }]
+<span data-count="18">t</span>ype ident = <span data-count="40">I</span>d of strin<span data-count="9">g</span> [@@deriving eq, show { with_path = false }]
 
 (** Basic types declarations *)
 <span data-count="0">t</span>ype base_type =
@@ -379,7 +379,7 @@
 [@@deriving eq, show { with_path = false }]
 
 (** Language expressions *)
-<span data-count="18">t</span>ype expr =
+<span data-count="23">t</span>ype expr =
   <span data-count="0">|</span> EValue of val_type (** Some value *)
   <span data-count="0">|</span> EBinOp of bin_op * expr * exp<span data-count="0">r</span> (** Binary operation *)
   <span data-count="0">|</span> EUnOp of un_op * exp<span data-count="0">r</span> (** Unary operation *)
@@ -389,17 +389,17 @@
   <span data-count="0">|</span> EAwait of expr (** [Await] expression *)
 [@@deriving eq, show { with_path = false }]
 
-<span data-count="2">a</span>nd args = <span data-count="0">A</span>rgs of <span data-count="5">e</span>xpr lis<span data-count="1">t</span> [@@deriving show { with_path = false }]
+<span data-count="4">a</span>nd args = <span data-count="0">A</span>rgs of <span data-count="10">e</span>xpr lis<span data-count="2">t</span> [@@deriving show { with_path = false }]
 
 (** Language statements *)
-<span data-count="13">t</span>ype stmt =
+<span data-count="15">t</span>ype stmt =
   <span data-count="0">|</span> SFor of <span data-count="0">s</span>tmt option * <span data-count="0">e</span>xpr optio<span data-count="0">n</span> * <span data-count="0">e</span>xpr optio<span data-count="0">n</span> * stm<span data-count="0">t</span>
   (** For cycle: [for] (int i = 0, j = 3; i &lt; 4; i++, j--) \{\} *)
   <span data-count="0">|</span> SIf of expr * stmt * <span data-count="4">s</span>tmt optio<span data-count="1">n</span>
   (** If condition: [if] (a) [then] \{ b \} ([else] \{ c \} ) *)
   <span data-count="0">|</span> SWhile of expr * stm<span data-count="0">t</span> (** While cycle: [while] (a) \{ \} *)
-  <span data-count="0">|</span> SReturn of <span data-count="6">e</span>xpr option (** Return: [return] (a) *)
-  <span data-count="0">|</span> SBlock of <span data-count="17">s</span>tmt lis<span data-count="4">t</span> (** Block of statements: \{ a \}; could be empty: \{\} *)
+  <span data-count="0">|</span> SReturn of <span data-count="9">e</span>xpr option (** Return: [return] (a) *)
+  <span data-count="0">|</span> SBlock of <span data-count="20">s</span>tmt lis<span data-count="4">t</span> (** Block of statements: \{ a \}; could be empty: \{\} *)
   <span data-count="0">|</span> SBreak (** Cycle [break] *)
   <span data-count="0">|</span> SContinue (** Cycle [continue] *)
   <span data-count="0">|</span> SExpr of expr (** Another expression *)
