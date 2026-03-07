@@ -161,12 +161,6 @@ let expr =
     choice [ let_expr; if_expr; fun_expr; comparison ])
 ;;
 
-type error = [ `Parse_error of string ]
-
-let parse (s : string) : (expr, [> error ]) result =
-  match
-    Angstrom.parse_string ~consume:Consume.All (ws *> expr <* ws <* end_of_input) s
-  with
-  | Ok e -> Ok e
-  | Error msg -> Error (`Parse_error msg)
+let parse (s : string) : (expr, string) result =
+  Angstrom.parse_string ~consume:Consume.All (ws *> expr <* ws <* end_of_input) s
 ;;

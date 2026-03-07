@@ -31,7 +31,8 @@
   ppx_expect
   ppx_deriving
   bisect_ppx
-  qcheck
+  (qcheck
+   (>= "0.18"))
   (odoc :with-doc)
   (ocamlformat
    (and

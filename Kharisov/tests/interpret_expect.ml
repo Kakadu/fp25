@@ -209,30 +209,80 @@ let%expect_test "pp_value for integers" =
 ;;
 
 let%expect_test "pp_value for closure" =
-  Format.printf
-    "%a"
-    Interpret.pp_value
-    (Interpret.VClosure ("x", Ast.EVar "x", Interpret.Env.empty));
+  Format.printf "%a" Interpret.pp_value (Interpret.VClosure ("x", Ast.EVar "x", []));
   [%expect {| <closure> |}]
 ;;
 
 let%expect_test "pp_value for builtin" =
-  Format.printf "%a" Interpret.pp_value (Interpret.VBuiltin "print");
-  [%expect {| <builtin:print> |}]
+  Format.printf
+    "%a"
+    Interpret.pp_value
+    (Interpret.VBuiltin (fun _ -> Interpret.return (Interpret.VInt 0)));
+  [%expect {| <builtin> |}]
 ;;
 
 let%expect_test "format_value for closure" =
-  print_endline
-    (Interpret.format_value (Interpret.VClosure ("x", Ast.EVar "x", Interpret.Env.empty)));
+  print_endline (Interpret.format_value (Interpret.VClosure ("x", Ast.EVar "x", [])));
   [%expect {| <fun> |}]
 ;;
 
 let%expect_test "format_value for builtin" =
-  print_endline (Interpret.format_value (Interpret.VBuiltin "print"));
+  print_endline
+    (Interpret.format_value
+       (Interpret.VBuiltin (fun _ -> Interpret.return (Interpret.VInt 0))));
   [%expect {| <fun> |}]
 ;;
 
 let%expect_test "pprint negative constant" =
   print_endline (Pprint.to_string (Ast.EConst (-5)));
   [%expect {| (-5) |}]
+;;
+
+let%expect_test "factorial via fix combinator" =
+  eval
+    {|
+    let fix = fun f ->
+      (fun x -> f (fun v -> x x v)) (fun x -> f (fun v -> x x v))
+    in
+    let fact = fix (fun self -> fun n ->
+      if n = 0 then 1 else n * self (n - 1))
+    in
+    fact 5
+  |};
+  [%expect {| 120 |}]
+;;
+
+let%expect_test "fibonacci via fix combinator" =
+  eval
+    {|
+    let fix = fun f ->
+      (fun x -> f (fun v -> x x v)) (fun x -> f (fun v -> x x v))
+    in
+    let fib = fix (fun self -> fun n ->
+      if n = 0 then 0
+      else if n = 1 then 1
+      else self (n - 1) + self (n - 2))
+    in
+    fib 10
+  |};
+  [%expect {| 55 |}]
+;;
+
+let%expect_test "shadow builtin print" =
+  eval "let print = fun x -> x + 1 in print 5";
+  [%expect {| 6 |}]
+;;
+
+let%expect_test "shadow builtin print restores after scope" =
+  eval
+    {|
+    let _ =
+      let print = fun x -> x * 2 in
+      print 10
+    in
+    let _ = print 42 in 0
+  |};
+  [%expect {|
+    42
+    0 |}]
 ;;

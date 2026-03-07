@@ -6,6 +6,4 @@
 
 [@@@ocaml.text "/*"]
 
-type error = [ `Parse_error of string ]
-
-val parse : string -> (Ast.expr, [> error ]) result
+val parse : string -> (Ast.expr, string) result

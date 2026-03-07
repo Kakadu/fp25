@@ -257,3 +257,42 @@ SPDX-License-Identifier: CC0-1.0
   > EOF
   Error: let rec requires a function on the right-hand side
   [1]
+
+  $ ../bin/REPL.exe <<'EOF'
+  > let fix = fun f ->
+  >   (fun x -> f (fun v -> x x v)) (fun x -> f (fun v -> x x v))
+  > in
+  > let fact = fix (fun self -> fun n ->
+  >   if n = 0 then 1 else n * self (n - 1))
+  > in
+  > fact 5
+  > EOF
+  120
+
+  $ ../bin/REPL.exe <<'EOF'
+  > let fix = fun f ->
+  >   (fun x -> f (fun v -> x x v)) (fun x -> f (fun v -> x x v))
+  > in
+  > let fib = fix (fun self -> fun n ->
+  >   if n = 0 then 0
+  >   else if n = 1 then 1
+  >   else self (n - 1) + self (n - 2))
+  > in
+  > fib 10
+  > EOF
+  55
+
+  $ ../bin/REPL.exe <<'EOF'
+  > let print = fun x -> x + 1 in print 5
+  > EOF
+  6
+
+  $ ../bin/REPL.exe <<'EOF'
+  > let _ =
+  >   let print = fun x -> x * 2 in
+  >   print 10
+  > in
+  > let _ = print 42 in 0
+  > EOF
+  42
+  0

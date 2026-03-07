@@ -1,13 +1,17 @@
 (test
  (name parser_qcheck)
  (libraries interpret_lib qcheck)
- (modules parser_qcheck))
+ (modules parser_qcheck)
+ (instrumentation
+  (backend bisect_ppx)))
 
 (library
  (name expect_tests)
  (libraries interpret_lib)
  (modules parser_expect interpret_expect)
  (inline_tests)
+ (instrumentation
+  (backend bisect_ppx))
  (preprocess
   (pps ppx_expect)))
 

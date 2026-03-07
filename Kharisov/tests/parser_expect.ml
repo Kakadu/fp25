@@ -11,7 +11,7 @@ open Interpret_lib
 let show s =
   match Parser.parse s with
   | Ok e -> print_endline (Pprint.to_string e)
-  | Error (`Parse_error msg) -> print_endline ("Parse error: " ^ msg)
+  | Error msg -> print_endline ("Parse error: " ^ msg)
 ;;
 
 let%expect_test "integer" =
