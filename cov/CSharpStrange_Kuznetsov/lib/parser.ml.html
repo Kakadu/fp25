@@ -1171,8 +1171,8 @@ let parse_prog : program t = parse_class &lt;<span data-count="7">*</span> skip_
 let apply_parser parser = <span data-count="84">p</span>arse_string ~consume:Consume.All parser
 
 let parse_option p str =
-  <span data-count="28">m</span>atch apply_parser p str with
-  | <span data-count="16">O</span>k x -&gt; Some x
+  <span data-count="29">m</span>atch apply_parser p str with
+  | <span data-count="17">O</span>k x -&gt; Some x
   | <span data-count="12">E</span>rror _ -&gt; None
 ;;
 </code></pre>

@@ -321,19 +321,19 @@
 [@@deriving eq, show { with_path = false }]
 
 (** Identidicator *)
-<span data-count="18">t</span>ype ident = <span data-count="40">I</span>d of strin<span data-count="9">g</span> [@@deriving eq, show { with_path = false }]
+<span data-count="18">t</span>ype ident = <span data-count="70">I</span>d of strin<span data-count="9">g</span> [@@deriving eq, show { with_path = false }]
 
 (** Basic types declarations *)
 <span data-count="0">t</span>ype base_type =
-  <span data-count="75">|</span> TypeInt (** Declaration of int *)
-  <span data-count="2">|</span> TypeChar (** Declaration of char *)
-  <span data-count="21">|</span> TypeBool (** Declaration of bool *)
-  <span data-count="5">|</span> TypeString (** Declaration of string *)
+  <span data-count="198">|</span> TypeInt (** Declaration of int *)
+  <span data-count="4">|</span> TypeChar (** Declaration of char *)
+  <span data-count="51">|</span> TypeBool (** Declaration of bool *)
+  <span data-count="8">|</span> TypeString (** Declaration of string *)
 [@@deriving eq, show { with_path = false }]
 
 (** Type delcaration *)
 <span data-count="4">t</span>ype _type =
-  <span data-count="105">|</span> TypeBase of base_type (** Declaration of basic type *)
+  <span data-count="263">|</span> TypeBase of base_type (** Declaration of basic type *)
   <span data-count="0">|</span> TypeVoid (** Declaration of void *)
 [@@deriving eq, show { with_path = false }]
 

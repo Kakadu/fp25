@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>monads.ml &mdash; Coverage report</title>
-    <meta name="description" content="94.94% coverage in lib/monads.ml">
+    <meta name="description" content="96.20% coverage in lib/monads.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,12 +15,11 @@
           <span class="dirname">lib/</span>monads.ml
         </a>
       </h1>
-      <h2>94.94%</h2>
+      <h2>96.20%</h2>
     </div>
     <div id="navbar">
       <span class="unvisited" style="top:23.12%"></span>
       <span class="unvisited" style="top:48.75%"></span>
-      <span class="unvisited" style="bottom:26.88%"></span>
       <span class="unvisited" style="bottom:5.62%"></span>
     </div>
     <div id="report">
@@ -142,7 +141,7 @@
 <a id="L114"></a><span > </span>
 <a id="L115"></a><span class="visited"> </span>
 <a id="L116"></a><span class="visited"> </span>
-<a id="L117"></a><span class="unvisited"> </span>
+<a id="L117"></a><span class="visited"> </span>
 <a id="L118"></a><span > </span>
 <a id="L119"></a><span > </span>
 <a id="L120"></a><span > </span>
@@ -360,63 +359,63 @@ open Common
 module STATEERROR = struct
   type ('st, 'a) t = 'st -&gt; 'st * ('a, error) Result.t
 
-  let return : 'a -&gt; ('st, 'a) t = fun x st -&gt; <span data-count="1554">s</span>t, Result.Ok x
-  let fail e st = <span data-count="49">s</span>t, Result.Error e
+  let return : 'a -&gt; ('st, 'a) t = fun x st -&gt; <span data-count="3573">s</span>t, Result.Ok x
+  let fail e st = <span data-count="74">s</span>t, Result.Error e
 
   let ( &gt;&gt;= ) : ('st, 'a) t -&gt; ('a -&gt; ('st, 'b) t) -&gt; ('st, 'b) t =
     fun x f st -&gt;
-    <span data-count="1609">l</span>et st, x = x st in
-    <span data-count="1609">m</span>atch x with
-    | <span data-count="1567">R</span>esult.Ok x -&gt; f x st
-    | <span data-count="42">R</span>esult.Error e -&gt; fail e st
+    <span data-count="3626">l</span>et st, x = x st in
+    <span data-count="3626">m</span>atch x with
+    | <span data-count="3561">R</span>esult.Ok x -&gt; f x st
+    | <span data-count="65">R</span>esult.Error e -&gt; fail e st
   ;;
 
   let ( let* ) = ( &gt;&gt;= )
-  let ( *&gt; ) : ('st, 'a) t -&gt; ('st, 'b) t -&gt; ('st, 'b) t = fun x1 x2 -&gt; <span data-count="472">x</span>1 &gt;&gt;= fun _ -&gt; <span data-count="403">x</span>2
+  let ( *&gt; ) : ('st, 'a) t -&gt; ('st, 'b) t -&gt; ('st, 'b) t = fun x1 x2 -&gt; <span data-count="978">x</span>1 &gt;&gt;= fun _ -&gt; <span data-count="895">x</span>2
 
   let ( &lt;|&gt; ) : ('st, 'a) t -&gt; ('st, 'a) t -&gt; ('st, 'a) t =
     fun x1 x2 st -&gt;
-    <span data-count="73">l</span>et st, x = x1 st in
-    <span data-count="73">m</span>atch x with
-    | <span data-count="72">R</span>esult.Ok x -&gt; return x st
-    | <span data-count="1">R</span>esult.Error _ -&gt; x2 st
+    <span data-count="185">l</span>et st, x = x1 st in
+    <span data-count="185">m</span>atch x with
+    | <span data-count="183">R</span>esult.Ok x -&gt; return x st
+    | <span data-count="2">R</span>esult.Error _ -&gt; x2 st
   ;;
 
   let ( &gt;&gt;| ) : ('st, 'a) t -&gt; ('a -&gt; 'b) -&gt; ('st, 'b) t =
     fun x f st -&gt;
-    <span data-count="9">l</span>et st, x = x st in
-    <span data-count="9">m</span>atch x with
-    | <span data-count="9">R</span>esult.Ok x -&gt; return (<span data-count="9">f</span> x) st
+    <span data-count="17">l</span>et st, x = x st in
+    <span data-count="17">m</span>atch x with
+    | <span data-count="17">R</span>esult.Ok x -&gt; return (<span data-count="17">f</span> x) st
     | <span data-count="0">R</span>esult.Error e -&gt; fail e st
   ;;
 
   let lift2 : ('a -&gt; 'b -&gt; 'c) -&gt; ('st, 'a) t -&gt; ('st, 'b) t -&gt; ('st, 'c) t =
-    fun f a b -&gt; <span data-count="8">a</span> &gt;&gt;= fun r_a -&gt; <span data-count="8">b</span> &gt;&gt;= fun r_b -&gt; <span data-count="7">r</span>eturn @@ <span data-count="7">f</span> r_a r_b
+    fun f a b -&gt; <span data-count="15">a</span> &gt;&gt;= fun r_a -&gt; <span data-count="15">b</span> &gt;&gt;= fun r_b -&gt; <span data-count="14">r</span>eturn @@ <span data-count="14">f</span> r_a r_b
   ;;
 
   let lift3
     : ('a -&gt; 'b -&gt; 'c -&gt; 'd) -&gt; ('st, 'a) t -&gt; ('st, 'b) t -&gt; ('st, 'c) t -&gt; ('st, 'd) t
     =
-    fun f a b c -&gt; <span data-count="8">l</span>ift<span data-count="8">2</span> f a b &gt;&gt;= fun f -&gt; <span data-count="7">c</span> &gt;&gt;| f
+    fun f a b c -&gt; <span data-count="15">l</span>ift<span data-count="15">2</span> f a b &gt;&gt;= fun f -&gt; <span data-count="14">c</span> &gt;&gt;| f
   ;;
 
-  let read : ('st, 'st) t = fun st -&gt; <span data-count="370">r</span>eturn st st
-  let write : 'st -&gt; ('st, unit) t = fun new_st _ -&gt; <span data-count="98">n</span>ew_st, Result.Ok ()
+  let read : ('st, 'st) t = fun st -&gt; <span data-count="809">r</span>eturn st st
+  let write : 'st -&gt; ('st, unit) t = fun new_st _ -&gt; <span data-count="197">n</span>ew_st, Result.Ok ()
 
   let map : ('a -&gt; ('st, 'b) t) -&gt; 'a list -&gt; ('st, 'b list) t =
     fun f list -&gt;
-    <span data-count="2">l</span>et f acc el = <span data-count="2">a</span>cc &gt;&gt;= fun acc -&gt; <span data-count="4">f</span> el &gt;&gt;= fun el -&gt; <span data-count="2">r</span>eturn (el :: acc) in
-    List.fold_lef<span data-count="2">t</span> f (retur<span data-count="2">n</span> []) list &gt;&gt;| List.rev
+    <span data-count="3">l</span>et f acc el = <span data-count="5">a</span>cc &gt;&gt;= fun acc -&gt; <span data-count="10">f</span> el &gt;&gt;= fun el -&gt; <span data-count="5">r</span>eturn (el :: acc) in
+    List.fold_lef<span data-count="3">t</span> f (retur<span data-count="3">n</span> []) list &gt;&gt;| List.rev
   ;;
 
   let iter : ('a -&gt; ('st, unit) t) -&gt; 'a list -&gt; ('st, unit) t =
     fun f list -&gt;
-    <span data-count="58">l</span>et f acc elem = <span data-count="98">a</span>cc *<span data-count="98">&gt;</span> <span data-count="98">f</span> elem *&gt; retur<span data-count="98">n</span> () in
-    List.fold_left f (retur<span data-count="58">n</span> ()) list
+    <span data-count="101">l</span>et f acc elem = <span data-count="192">a</span>cc *<span data-count="192">&gt;</span> <span data-count="192">f</span> elem *&gt; retur<span data-count="192">n</span> () in
+    List.fold_left f (retur<span data-count="101">n</span> ()) list
   ;;
 
   (*('st, 'a) t -&gt; 'st -&gt; 'st * ('a, error) Result.t *)
-  let run f = <span data-count="10">f</span>
+  let run f = <span data-count="16">f</span>
 end
 
 module TYPECHECK = struct
@@ -427,88 +426,88 @@ module TYPECHECK = struct
   type 'a t = (TypeCheck.state, 'a) STATEERROR.t
 
   let return_with_fail = function
-    | <span data-count="132">S</span>ome x -&gt; return x
+    | <span data-count="335">S</span>ome x -&gt; return x
     | <span data-count="0">N</span>one -&gt; fail (TCError OccursCheck)
   ;;
 
   let read_local : 'a IdMap.t t =
     read
-    &gt;&gt;<span data-count="5">=</span> function
-    | <span data-count="242">_</span>, l, _, _, _ -&gt; return l
+    &gt;&gt;<span data-count="7">=</span> function
+    | <span data-count="547">_</span>, l, _, _, _ -&gt; return l
   ;;
 
-  let read_local_el id f = <span data-count="164">r</span>ead_local &gt;&gt;= fun l -&gt; <span data-count="160">I</span>dMap.find_opt id l |&gt; <span data-count="160">f</span>
-  let read_local_el_opt id = <span data-count="28">r</span>ead_local_el id return
-  let read_local_el id = <span data-count="136">r</span>ead_local_el id return_with_fail
+  let read_local_el id f = <span data-count="392">r</span>ead_local &gt;&gt;= fun l -&gt; <span data-count="387">I</span>dMap.find_opt id l |&gt; <span data-count="387">f</span>
+  let read_local_el_opt id = <span data-count="54">r</span>ead_local_el id return
+  let read_local_el id = <span data-count="338">r</span>ead_local_el id return_with_fail
 
   let write_local n_l =
-    <span data-count="82">r</span>ead
+    <span data-count="160">r</span>ead
     &gt;&gt;= function
-    | <span data-count="70">g</span>, _, n, m, main -&gt; write (g, n_l, n, m, main)
+    | <span data-count="145">g</span>, _, n, m, main -&gt; write (g, n_l, n, m, main)
   ;;
 
   let write_local_el el_id el_ctx =
-    <span data-count="40">r</span>ead_local &gt;&gt;= fun l -&gt; <span data-count="38">w</span>rite_local (IdMap.ad<span data-count="38">d</span> el_id el_ctx l)
+    <span data-count="80">r</span>ead_local &gt;&gt;= fun l -&gt; <span data-count="78">w</span>rite_local (IdMap.ad<span data-count="78">d</span> el_id el_ctx l)
   ;;
 
   let write_meth_type_opt t =
-    <span data-count="9">r</span>ead
+    <span data-count="16">r</span>ead
     &gt;&gt;= function
-    | <span data-count="7">g</span>, l, n, _, main -&gt; write (g, l, n, t, main)
+    | <span data-count="14">g</span>, l, n, _, main -&gt; write (g, l, n, t, main)
   ;;
 
-  let write_meth_type t = <span data-count="9">w</span>rite_meth_type_opt (Some t)
+  let write_meth_type t = <span data-count="16">w</span>rite_meth_type_opt (Some t)
 
   let read_global : 'a IdMap.t t =
     read
-    &gt;&gt;<span data-count="5">=</span> function
-    | <span data-count="16">g</span>, _, _, _, _ -&gt; return g
+    &gt;&gt;<span data-count="7">=</span> function
+    | <span data-count="29">g</span>, _, _, _, _ -&gt; return g
   ;;
 
-  let read_global_el id f = <span data-count="10">r</span>ead_global &gt;&gt;= fun g -&gt; <span data-count="8">I</span>dMap.find_opt id g |&gt; <span data-count="8">f</span>
-  let read_global_el_opt id = <span data-count="10">r</span>ead_global_el id return
-  let read_global_el id = <span data-count="0">r</span>ead_global_el id return_with_fail
+  let read_global_el id f = <span data-count="17">r</span>ead_global &gt;&gt;= fun g -&gt; <span data-count="15">I</span>dMap.find_opt id g |&gt; <span data-count="15">f</span>
+  let read_global_el_opt id = <span data-count="16">r</span>ead_global_el id return
+  let read_global_el id = <span data-count="1">r</span>ead_global_el id return_with_fail
 
   let read_meth_type : _type option t =
     read
-    &gt;&gt;<span data-count="5">=</span> function
-    | <span data-count="8">_</span>, _, _, m_t, _ -&gt; return m_t
+    &gt;&gt;<span data-count="7">=</span> function
+    | <span data-count="19">_</span>, _, _, m_t, _ -&gt; return m_t
   ;;
 
   let read_main_class : class_with_main option t =
     read
-    &gt;&gt;<span data-count="5">=</span> function
-    | <span data-count="3">_</span>, _, _, _, main -&gt; return main
+    &gt;&gt;<span data-count="7">=</span> function
+    | <span data-count="8">_</span>, _, _, _, main -&gt; return main
   ;;
 
   let write_main_class main =
-    <span data-count="3">r</span>ead
+    <span data-count="8">r</span>ead
     &gt;&gt;= function
-    | <span data-count="3">g</span>, l, n, t, _ -&gt; write (g, l, n, t, main)
+    | <span data-count="8">g</span>, l, n, t, _ -&gt; write (g, l, n, t, main)
   ;;
 
   let write_global n_g =
-    <span data-count="8">r</span>ead
+    <span data-count="14">r</span>ead
     &gt;&gt;= function
-    | <span data-count="8">_</span>, l, n, m, main -&gt; write (n_g, l, n, m, main)
+    | <span data-count="14">_</span>, l, n, m, main -&gt; write (n_g, l, n, m, main)
   ;;
 
   let write_global_el el_id el_ctx =
-    <span data-count="8">r</span>ead_global &gt;&gt;= fun g -&gt; <span data-count="8">w</span>rite_global (IdMap.ad<span data-count="8">d</span> el_id el_ctx g)
+    <span data-count="14">r</span>ead_global &gt;&gt;= fun g -&gt; <span data-count="14">w</span>rite_global (IdMap.ad<span data-count="14">d</span> el_id el_ctx g)
   ;;
 
   let get_curr_class_name : curr_class t =
     read
-    &gt;&gt;<span data-count="5">=</span> function
-    | <span data-count="3">_</span>, _, Some n, _, _ -&gt; return n
+    &gt;&gt;<span data-count="7">=</span> function
+    | <span data-count="9">_</span>, _, Some n, _, _ -&gt; return n
     | <span data-count="0">_</span> -&gt;
       fail (TCError (ImpossibleResult "Current class can be 'none' only before running"))
   ;;
 
   let write_curr_class_name n =
-    <span data-count="10">r</span>ead
+    <span data-count="16">r</span>ead
     &gt;&gt;= function
-    | <span data-count="10">g</span>, l, _, t, main -&gt; write (g, l, Some n, t, main)
+    | <span data-count="16">g</span>, l, _, t, main -&gt; write (g, l, Some n, t, main)
   ;;
 end
 </code></pre>
