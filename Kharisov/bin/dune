@@ -1,0 +1,7 @@
+(executable
+ (name REPL)
+ (public_name Kharisov.REPL)
+ (modules REPL)
+ (libraries interpret_lib)
+ (instrumentation
+  (backend bisect_ppx)))

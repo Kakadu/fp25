@@ -1,0 +1,8 @@
+(library
+ (name interpret_lib)
+ (public_name Kharisov.Lib)
+ (modules Ast Interpret Parser Pprint)
+ (modules_without_implementation Ast)
+ (libraries angstrom)
+ (instrumentation
+  (backend bisect_ppx)))
