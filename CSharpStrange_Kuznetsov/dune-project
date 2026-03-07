@@ -1,0 +1,35 @@
+(lang dune 3.7)
+
+(generate_opam_files true)
+
+(cram enable)
+
+(license LGPL-3.0-or-later)
+
+(authors "Dmitrii Kuznetsov dmitrvlkuznetsov@gmail.com")
+
+(maintainers "Dmitrii Kuznetsov dmitrvlkuznetsov@gmail.com")
+
+(bug_reports "https://github.com/Kakadu/fp25")
+
+(homepage "https://github.com/Kakadu/fp25")
+
+(package
+ (name CSharpStrange_Kuznetsov)
+ (synopsis "An interpreter for strange subset of C# language")
+ (description
+  "An interpreter for subset of C# language (some stuff like  async/await and LINQ will be added later)")
+ (documentation "https://kakadu.github.io/fp25/docs/CSharpStrange_Kuznetsov")
+ (version 0.2)
+ (depends
+  dune
+  angstrom
+  (ppx_inline_test :with-test)
+  ppx_expect
+  ppx_deriving
+  bisect_ppx
+  (odoc :with-doc)
+  (ocamlformat :build)
+  base
+  ; After adding dependencies to 'dune' files add the same dependecies here too
+  ))
