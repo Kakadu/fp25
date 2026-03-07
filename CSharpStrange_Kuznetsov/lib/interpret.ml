@@ -5,6 +5,7 @@
 open Ast
 open Parser
 open Common
+open Typecheck
 
 let ( let* ) = Result.bind
 let return x = Ok x
@@ -594,10 +595,13 @@ let interpret_program = function
 ;;
 
 let interpret str =
-  (* TODO: add typecheck *)
   match apply_parser Parser.parse_prog str with
-  | Ok prog -> interpret_program prog
   | Error _ -> Error (IError (OtherError "Parsing error"))
+  | Ok (Program prog) ->
+    (match typecheck_main prog with
+     | _, Error e -> Error e
+     | Some _, Ok _ -> interpret_program (Program prog)
+     | None, Ok _ -> Error (TCError (OtherError "Main method not found")))
 ;;
 
 (* TODO: error messages? *)

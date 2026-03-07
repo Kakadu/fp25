@@ -142,18 +142,3 @@ let%expect_test "Functions 1" =
 ;;
 
 (* TODO: non static not allowed *)
-
-let%expect_test "Invalid value" =
-  show_wrap
-    {|
-    class Program {
-      static int Main() {
-        int a;
-        int b = a -1 + 4;
-        return b;
-      }
-    } |};
-  [%expect
-    {|
-  (IError (OtherError "Value is not initialized"))|}]
-;;

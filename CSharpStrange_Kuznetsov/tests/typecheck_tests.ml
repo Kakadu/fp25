@@ -68,6 +68,21 @@ let%expect_test "Already declared variable" =
     (TCError (OtherError "This variable is already declared")) |}]
 ;;
 
+let%expect_test "Invalid value" =
+  test_ast
+    {|
+    class Program {
+      static int Main() {
+        int a;
+        int b = a -1 + 4;
+        return b;
+      }
+    } |};
+  [%expect
+    {|
+  (TCError (OtherError "Variable not found: a"))|}]
+;;
+
 let%expect_test "Checking fields" =
   test_ast
     {| 
