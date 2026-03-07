@@ -46,7 +46,7 @@ end
 
 module AdrMap = Map.Make (Adr)
 
-type var_info =
+type tc_var_info =
   { var_type : var_type
   ; initialized : bool
   }
@@ -71,7 +71,7 @@ type method_info =
   }
 
 type obj_content =
-  | TCLocalVar of var_info
+  | TCLocalVar of tc_var_info
   | TCField of field_info
   | TCMethod of method_info
 

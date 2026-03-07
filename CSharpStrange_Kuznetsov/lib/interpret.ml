@@ -4,23 +4,11 @@
 
 open Ast
 open Parser
-
-type interpret_error =
-  | NotImplemented
-  | NoVariable of string
-  | AddressNotFound of int
-  | VarDeclared of string
-  | TypeMismatch
-  | ImpossibleResult of string
-  | OtherError of string
-[@@deriving show { with_path = false }]
-
-type error = IError of interpret_error [@@deriving show { with_path = false }]
+open Common
 
 let ( let* ) = Result.bind
 let return x = Ok x
 
-type 'a res = ('a, interpret_error) result
 type adr = Adr of int [@@deriving show { with_path = false }]
 
 module IdMap = Map.Make (struct
@@ -47,12 +35,12 @@ type func =
 
 type location = int
 
-type var_info =
+type rt_var_info =
   { loc : location
   ; initialized : bool
   }
 
-type env = var_info IdMap.t list
+type env = rt_var_info IdMap.t list
 type func_env = (ident * func) list
 
 type store =
@@ -113,22 +101,22 @@ let empty_runtime =
 let string_of_ident (Id s) = s
 
 let rec lookup_env id = function
-  | [] -> Error (NoVariable ("Variable not found: " ^ string_of_ident id))
+  | [] -> Error (IError (NoVariable ("Variable not found: " ^ string_of_ident id)))
   | scope :: rest ->
     (match IdMap.find_opt id scope with
      | Some var_info -> Ok var_info.loc
      | None -> lookup_env id rest)
 ;;
 
-let check_initialized id env =
+let check_initialized id (env : env) =
   let rec find_var = function
-    | [] -> Error (NoVariable (string_of_ident id))
+    | [] -> Error (IError (NoVariable (string_of_ident id)))
     | scope :: rest ->
       (match IdMap.find_opt id scope with
-       | Some var_info ->
+       | Some (var_info : rt_var_info) ->
          if var_info.initialized
          then Ok ()
-         else Error (OtherError "Value is not initialized")
+         else Error (IError (OtherError "Value is not initialized"))
        | None -> find_var rest)
   in
   find_var env
@@ -139,7 +127,7 @@ let mark_initialized id env =
     | [] -> []
     | scope :: rest ->
       (match IdMap.find_opt id scope with
-       | Some var_info ->
+       | Some (var_info : rt_var_info) ->
          let new_var_info = { var_info with initialized = true } in
          IdMap.add id new_var_info scope :: rest
        | None -> scope :: mark_in_scope rest)
@@ -156,7 +144,7 @@ let rec lookup_func_opt (id : ident) = function
 let lookup_store l store =
   match LocMap.find_opt l store.mem with
   | Some v -> Ok v
-  | None -> Error (AddressNotFound l)
+  | None -> Error (IError (AddressNotFound l))
 ;;
 
 let update_store l v store = { store with mem = LocMap.add l v store.mem }
@@ -192,14 +180,14 @@ let add_var (id : ident) (loc : location) (env : env) =
   | scope :: rest ->
     let var_info = { loc; initialized = false } in
     Ok (IdMap.add id var_info scope :: rest)
-  | [] -> Error (VarDeclared (string_of_ident id))
+  | [] -> Error (IError (VarDeclared (string_of_ident id)))
 ;;
 
 let push_scope env = Ok (IdMap.empty :: env)
 
 let pop_scope = function
   | _ :: rest -> Ok rest
-  | [] -> Error (OtherError "Cannot pop scope")
+  | [] -> Error (IError (OtherError "Cannot pop scope"))
 ;;
 
 let var_field_of_ast = function
@@ -231,11 +219,11 @@ let class_of_ast (Class (_, _, fields)) =
 
 let find_field obj_id field_id rt =
   match List.find_opt (fun o -> o.obj_id = obj_id) rt.objects with
-  | None -> Error (OtherError "Object not found")
+  | None -> Error (IError (OtherError "Object not found"))
   | Some obj ->
     (match List.find_opt (fun (id, _) -> id = field_id) obj.fields with
      | Some (_, v) -> Ok v
-     | None -> Error (OtherError "Field not found"))
+     | None -> Error (IError (OtherError "Field not found")))
 ;;
 
 let update_field obj_id field_id new_value rt =
@@ -283,7 +271,7 @@ let rec eval_expr (rt : runtime) = function
         | Ok v -> return (v, rt)
         | Error _ ->
           (match rt.curr_object with
-           | None -> Error (NoVariable (string_of_ident id))
+           | None -> Error (IError (NoVariable (string_of_ident id)))
            | Some obj_id ->
              (match find_field obj_id id rt with
               | Ok v -> return (v, rt)
@@ -305,11 +293,12 @@ let rec eval_expr (rt : runtime) = function
              return (v, rt2)
            | Error _ ->
              (match rt1.curr_object with
-              | None -> Error (OtherError ("Cannot assign to " ^ string_of_ident id))
+              | None ->
+                Error (IError (OtherError ("Cannot assign to " ^ string_of_ident id)))
               | Some obj_id ->
                 let rt2 = update_field obj_id id v rt1 in
                 return (v, rt2))))
-     | _ -> Error TypeMismatch)
+     | _ -> Error (IError TypeMismatch))
   | EBinOp (OpAnd, e1, e2) ->
     let* v1, rt1 = eval_expr rt e1 in
     (match v1 with
@@ -318,8 +307,8 @@ let rec eval_expr (rt : runtime) = function
        let* v2, rt2 = eval_expr rt1 e2 in
        (match v2 with
         | VBool b -> return (VBool b, rt2)
-        | _ -> Error TypeMismatch)
-     | _ -> Error TypeMismatch)
+        | _ -> Error (IError TypeMismatch))
+     | _ -> Error (IError TypeMismatch))
   | EBinOp (OpOr, e1, e2) ->
     let* v1, rt1 = eval_expr rt e1 in
     (match v1 with
@@ -328,8 +317,8 @@ let rec eval_expr (rt : runtime) = function
        let* v2, rt2 = eval_expr rt1 e2 in
        (match v2 with
         | VBool b -> return (VBool b, rt2)
-        | _ -> Error TypeMismatch)
-     | _ -> Error TypeMismatch)
+        | _ -> Error (IError TypeMismatch))
+     | _ -> Error (IError TypeMismatch))
   | EBinOp (op, e1, e2) ->
     let* v1, rt1 = eval_expr rt e1 in
     let* v2, rt2 = eval_expr rt1 e2 in
@@ -338,17 +327,18 @@ let rec eval_expr (rt : runtime) = function
     let* v, rt1 = eval_expr rt e in
     (match v with
      | VBool b -> return (VBool (not b), rt1)
-     | _ -> Error TypeMismatch)
+     | _ -> Error (IError TypeMismatch))
   | EUnOp (OpNeg, e) ->
     let* v, rt1 = eval_expr rt e in
     (match v with
      | VInt i -> return (VInt (-i), rt1)
-     | _ -> Error TypeMismatch)
+     | _ -> Error (IError TypeMismatch))
   | EFuncCall (fn_expr, Args args) ->
     (match fn_expr with
      | EId id ->
        (match lookup_func_opt id rt.fenv with
-        | None -> Error (OtherError ("Function not found: " ^ string_of_ident id))
+        | None ->
+          Error (IError (OtherError ("Function not found: " ^ string_of_ident id)))
         | Some f ->
           let rec eval_args rt = function
             | [] -> return ([], rt)
@@ -360,19 +350,19 @@ let rec eval_expr (rt : runtime) = function
           let* arg_vals, rt2 = eval_args rt args in
           let* v, rt3 = call_function rt2 f arg_vals in
           return (v, rt3))
-     | _ -> Error (OtherError "Invalid function call"))
-  | EArrayAccess _ -> Error NotImplemented
-  | EAwait _ -> Error NotImplemented
+     | _ -> Error (IError (OtherError "Invalid function call")))
+  | EArrayAccess _ -> Error (IError NotImplemented)
+  | EAwait _ -> Error (IError NotImplemented)
 
-and eval_binop op v1 v2 rt : (value * runtime) res =
+and eval_binop op v1 v2 rt =
   match op, v1, v2 with
   | OpAdd, VInt a, VInt b -> return (VInt (a + b), rt)
   | OpSub, VInt a, VInt b -> return (VInt (a - b), rt)
   | OpMul, VInt a, VInt b -> return (VInt (a * b), rt)
   | OpDiv, VInt a, VInt b when b <> 0 -> return (VInt (a / b), rt)
-  | OpDiv, VInt _, VInt 0 -> Error (ImpossibleResult "Div by zero")
+  | OpDiv, VInt _, VInt 0 -> Error (IError (ImpossibleResult "Div by zero"))
   | OpMod, VInt a, VInt b when b <> 0 -> return (VInt (a mod b), rt)
-  | OpMod, VInt _, VInt 0 -> Error (ImpossibleResult "Mod by zero")
+  | OpMod, VInt _, VInt 0 -> Error (IError (ImpossibleResult "Mod by zero"))
   | OpEqual, v1, v2 -> return (VBool (v1 = v2), rt)
   | OpNonEqual, v1, v2 -> return (VBool (v1 <> v2), rt)
   | OpLess, VInt a, VInt b -> return (VBool (a < b), rt)
@@ -381,7 +371,7 @@ and eval_binop op v1 v2 rt : (value * runtime) res =
   | OpMoreEqual, VInt a, VInt b -> return (VBool (a >= b), rt)
   | OpAnd, VBool a, VBool b -> return (VBool (a && b), rt)
   | OpOr, VBool a, VBool b -> return (VBool (a || b), rt)
-  | _ -> Error NotImplemented
+  | _ -> Error (IError (ImpossibleResult "Should not completed typecheck"))
 
 and call_function (rt : runtime) f args =
   let caller_env = rt.env in
@@ -395,10 +385,10 @@ and call_function (rt : runtime) f args =
       let* env2 =
         match env with
         | scope :: rest -> Ok (IdMap.add p var_info scope :: rest)
-        | [] -> Error (OtherError "Empty environment in bind_params")
+        | [] -> Error (IError (OtherError "Empty environment in bind_params"))
       in
       bind_params env2 ps vs rt1
-    | _ -> Error (OtherError "Argument mismatch")
+    | _ -> Error (IError (OtherError "Argument mismatch"))
   in
   let* rt_func, _ = bind_params [ IdMap.empty ] f.params args rt in
   let rt_with_this = { rt_func with curr_object = caller_obj } in
@@ -407,7 +397,7 @@ and call_function (rt : runtime) f args =
   match flow with
   | Return v -> return (v, restored_rt)
   | Normal -> return (VNull, restored_rt)
-  | Break | Continue -> Error (OtherError "Break/continue outside loop")
+  | Break | Continue -> Error (IError (OtherError "Break/continue outside loop"))
 
 and exec_stmt (rt : runtime) = function
   | SExpr e ->
@@ -437,7 +427,7 @@ and exec_stmt (rt : runtime) = function
        (match else_s with
         | None -> return (rt1, Normal)
         | Some s -> exec_stmt rt1 s)
-     | _ -> Error TypeMismatch)
+     | _ -> Error (IError TypeMismatch))
   | SWhile (cond, body) ->
     let rec loop rt =
       let* v, rt1 = eval_expr rt cond in
@@ -450,7 +440,7 @@ and exec_stmt (rt : runtime) = function
          | Break -> return (rt2, Normal)
          | Return v -> return (rt2, Return v))
       | VBool false -> return (rt1, Normal)
-      | _ -> Error TypeMismatch
+      | _ -> Error (IError TypeMismatch)
     in
     loop rt
   | SBlock stmts ->
@@ -476,7 +466,7 @@ and exec_stmt (rt : runtime) = function
         let* rt1, r = exec_stmt rt0 s in
         (match r with
          | Normal -> return rt1
-         | _ -> Error (OtherError "Invalid control flow in for init"))
+         | _ -> Error (IError (OtherError "Invalid control flow in for init")))
     in
     let rec loop rt =
       let* cond_val, rt1 =
@@ -500,7 +490,7 @@ and exec_stmt (rt : runtime) = function
                return rt
            in
            loop rt3)
-      | _ -> Error TypeMismatch
+      | _ -> Error (IError TypeMismatch)
     in
     let* rt2, flow = loop rt1 in
     let* env3 = pop_scope rt2.env in
@@ -598,20 +588,17 @@ let interpret_program = function
            | Some (_, main_func) ->
              let* v, _ = call_function rt main_func [] in
              Ok (Some v)
-           | None -> Error (OtherError "Main method not found"))
-        | None -> Error (OtherError "No class definition"))
+           | None -> Error (IError (OtherError "Main method not found")))
+        | None -> Error (IError (OtherError "No class definition")))
      | Error e -> Error e)
 ;;
 
 let interpret str =
+  (* TODO: add typecheck *)
   match apply_parser Parser.parse_prog str with
   | Ok prog -> interpret_program prog
-  | Error e -> Error (OtherError e)
+  | Error _ -> Error (IError (OtherError "Parsing error"))
 ;;
-
-(* TODO: combine repeated code into functions?
-   unwrap_return
-*)
 
 (* TODO: error messages? *)
 (*

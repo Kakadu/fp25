@@ -42,6 +42,6 @@ let () =
       match interpret_program ast with
       | Ok (Some v) -> printf "Result: %s\n" (show_value v)
       | Ok None -> printf "Result: void\n"
-      | Error _ -> failwith (sprintf "Interpretation error: %s" "TODO"))
+      | Error _ -> failwith (sprintf "Interpretation error"))
   | Error msg -> failwith (sprintf "Failed to parse file: %s" msg)
 ;;

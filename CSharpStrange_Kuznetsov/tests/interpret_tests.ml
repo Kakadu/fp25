@@ -3,6 +3,7 @@
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
 open C_sharp_strange_lib.Interpret
+open C_sharp_strange_lib.Common
 
 let show_wrap str =
   match interpret str with
@@ -10,7 +11,7 @@ let show_wrap str =
     (match x with
      | Some x -> Format.printf "Result: '%a'" pp_value x
      | None -> Format.print_string "Result: void\n")
-  | Result.Error er -> Format.printf "%a\n%!" pp_error (IError er)
+  | Result.Error er -> Format.printf "%a\n%!" pp_error er
 ;;
 
 (* TODO: include TC? *)

@@ -68,14 +68,14 @@ module AdrMap : sig
 end
 
 (* Variable information for type checker *)
-type var_info =
+type tc_var_info =
   { var_type : var_type
-  ; initialized : bool (** Whether the variable has been initialized *)
+  ; initialized : bool (* Whether the variable has been initialized *)
   }
 
-val pp_var_info : Format.formatter -> var_info -> unit
-val show_var_info : var_info -> string
-val equal_var_info : var_info -> var_info -> bool
+val pp_tc_var_info : Format.formatter -> tc_var_info -> unit
+val show_tc_var_info : tc_var_info -> string
+val equal_tc_var_info : tc_var_info -> tc_var_info -> bool
 
 (* Field information for type checker *)
 type field_info =
@@ -94,16 +94,16 @@ type method_info =
   ; method_params : params
   ; method_body : stmt
   ; is_static : bool
-  ; is_main : bool (** Whether this is the Main method *)
+  ; is_main : bool (* Whether this is the Main method *)
   }
 
 (* Type checker content types *)
 type obj_content =
-  | TCLocalVar of var_info (** Local variable *)
-  | TCField of field_info (** Class field *)
-  | TCMethod of method_info (** Class method *)
+  | TCLocalVar of tc_var_info (* Local variable *)
+  | TCField of field_info (* Class field *)
+  | TCMethod of method_info (* Class method *)
 
-(**Global context for type checker *)
+(* Global context for type checker *)
 type context = TCClass of c_sharp_class
 
 (* Type checker state module *)
