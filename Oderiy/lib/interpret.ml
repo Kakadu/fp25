@@ -69,7 +69,7 @@ let run ?(output = Stdlib.Printf.printf "%d\n") limit expr =
     let new_steps = steps + 1 in
     if new_steps > limit
     then fail `Steps_exceeded
-    else put_state new_steps >>= fun () -> return ()
+    else put_state new_steps
   in
   let rec initial_env =
     [ ( "print"
