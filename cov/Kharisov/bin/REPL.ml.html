@@ -118,7 +118,7 @@ let usage () =
 let () =
   let steps =
     match Array.length Sys.argv with
-    | <span data-count="46">1</span> -&gt; 10_000
+    | <span data-count="50">1</span> -&gt; 10_000
     | <span data-count="1">2</span> -&gt;
       (match int_of_string_opt Sys.argv.(1) with
        | <span data-count="1">S</span>ome n when n &gt; 0 -&gt; <span data-count="1">n</span>
@@ -126,10 +126,10 @@ let () =
     | <span data-count="0">_</span> -&gt; usag<span data-count="0">e</span> ()
   in
   let src = In_channel.input_all In_channel.stdin in
-  <span data-count="47">m</span>atch Interpret_lib.Interpret.run ~steps src with
-  | <span data-count="38">O</span>k (v, output) -&gt;
+  <span data-count="51">m</span>atch Interpret_lib.Interpret.run ~steps src with
+  | <span data-count="42">O</span>k (v, output) -&gt;
     List.iter print_endline output;
-    <span data-count="38">p</span>rint_endlin<span data-count="38">e</span> (Interpret_lib.Interpret.format_valu<span data-count="38">e</span> v)
+    <span data-count="42">p</span>rint_endlin<span data-count="42">e</span> (Interpret_lib.Interpret.format_valu<span data-count="42">e</span> v)
   | <span data-count="9">E</span>rror e -&gt;
     print_endline (Interpret_lib.Interpret.format_erro<span data-count="9">r</span> e);
     <span data-count="9">e</span>xi<span data-count="0">t</span> 1

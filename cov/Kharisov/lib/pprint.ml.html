@@ -120,32 +120,32 @@
 open Ast
 
 let pp_binop fmt = function
-  | <span data-count="65">A</span>dd -&gt; Format.fprintf fmt "+"
-  | <span data-count="76">S</span>ub -&gt; Format.fprintf fmt "-"
-  | <span data-count="119">M</span>ul -&gt; Format.fprintf fmt "*"
-  | <span data-count="45">D</span>iv -&gt; Format.fprintf fmt "/"
-  | <span data-count="50">E</span>q -&gt; Format.fprintf fmt "="
+  | <span data-count="59">A</span>dd -&gt; Format.fprintf fmt "+"
+  | <span data-count="94">S</span>ub -&gt; Format.fprintf fmt "-"
+  | <span data-count="41">M</span>ul -&gt; Format.fprintf fmt "*"
+  | <span data-count="63">D</span>iv -&gt; Format.fprintf fmt "/"
+  | <span data-count="98">E</span>q -&gt; Format.fprintf fmt "="
   | <span data-count="97">N</span>eq -&gt; Format.fprintf fmt "&lt;&gt;"
-  | <span data-count="109">L</span>t -&gt; Format.fprintf fmt "&lt;"
-  | <span data-count="74">L</span>e -&gt; Format.fprintf fmt "&lt;="
-  | <span data-count="73">G</span>t -&gt; Format.fprintf fmt "&gt;"
-  | <span data-count="61">G</span>e -&gt; Format.fprintf fmt "&gt;="
+  | <span data-count="133">L</span>t -&gt; Format.fprintf fmt "&lt;"
+  | <span data-count="68">L</span>e -&gt; Format.fprintf fmt "&lt;="
+  | <span data-count="85">G</span>t -&gt; Format.fprintf fmt "&gt;"
+  | <span data-count="115">G</span>e -&gt; Format.fprintf fmt "&gt;="
 ;;
 
 let pp_rec_flag fmt = function
-  | <span data-count="175">R</span>ec -&gt; Format.fprintf fmt "rec "
-  | <span data-count="176">N</span>onRec -&gt; ()
+  | <span data-count="205">R</span>ec -&gt; Format.fprintf fmt "rec "
+  | <span data-count="254">N</span>onRec -&gt; ()
 ;;
 
 let rec pp fmt = function
-  | <span data-count="2907">E</span>Const n when n &lt; 0 -&gt; <span data-count="602">F</span>ormat.fprintf fmt "(%d)" n
-  | <span data-count="2305">E</span>Const n -&gt; Format.fprintf fmt "%d" n
-  | <span data-count="2166">E</span>Var x -&gt; Format.fprintf fmt "%s" x
-  | <span data-count="769">E</span>Binop (op, l, r) -&gt; Format.fprintf fmt "(%a %a %a)" pp l pp_binop op pp r
-  | <span data-count="381">E</span>If (c, t, e) -&gt; Format.fprintf fmt "(if %a then %a else %a)" pp c pp t pp e
-  | <span data-count="555">E</span>Fun (x, body) -&gt; Format.fprintf fmt "(fun %s -&gt; %a)" x pp body
-  | <span data-count="354">E</span>App (f, arg) -&gt; Format.fprintf fmt "(%a %a)" pp f pp arg
-  | <span data-count="351">E</span>Let (rf, x, e1, e2) -&gt;
+  | <span data-count="3123">E</span>Const n when n &lt; 0 -&gt; <span data-count="602">F</span>ormat.fprintf fmt "(%d)" n
+  | <span data-count="2521">E</span>Const n -&gt; Format.fprintf fmt "%d" n
+  | <span data-count="2214">E</span>Var x -&gt; Format.fprintf fmt "%s" x
+  | <span data-count="853">E</span>Binop (op, l, r) -&gt; Format.fprintf fmt "(%a %a %a)" pp l pp_binop op pp r
+  | <span data-count="369">E</span>If (c, t, e) -&gt; Format.fprintf fmt "(if %a then %a else %a)" pp c pp t pp e
+  | <span data-count="567">E</span>Fun (x, body) -&gt; Format.fprintf fmt "(fun %s -&gt; %a)" x pp body
+  | <span data-count="450">E</span>App (f, arg) -&gt; Format.fprintf fmt "(%a %a)" pp f pp arg
+  | <span data-count="459">E</span>Let (rf, x, e1, e2) -&gt;
     Format.fprintf fmt "(let %a%s = %a in %a)" pp_rec_flag rf x pp e1 pp e2
 ;;
 

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>parser.ml &mdash; Coverage report</title>
-    <meta name="description" content="98.41% coverage in lib/parser.ml">
+    <meta name="description" content="97.86% coverage in lib/parser.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,10 +15,11 @@
           <span class="dirname">lib/</span>parser.ml
         </a>
       </h1>
-      <h2>98.41%</h2>
+      <h2>97.86%</h2>
     </div>
     <div id="navbar">
-      <span class="some-visited" style="top:22.09%"></span>
+      <span class="some-visited" style="top:10.84%"></span>
+      <span class="some-visited" style="top:22.89%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -40,7 +41,7 @@
 <a id="L15"></a><span > </span>
 <a id="L16"></a><span > </span>
 <a id="L17"></a><span > </span>
-<a id="L18"></a><span class="visited"> </span>
+<a id="L18"></a><span class="some-visited"> </span>
 <a id="L19"></a><span class="visited"> </span>
 <a id="L20"></a><span > </span>
 <a id="L21"></a><span > </span>
@@ -187,14 +188,8 @@
 <a id="L162"></a><span > </span>
 <a id="L163"></a><span > </span>
 <a id="L164"></a><span > </span>
-<a id="L165"></a><span > </span>
+<a id="L165"></a><span class="visited"> </span>
 <a id="L166"></a><span > </span>
-<a id="L167"></a><span class="visited"> </span>
-<a id="L168"></a><span class="visited"> </span>
-<a id="L169"></a><span > </span>
-<a id="L170"></a><span class="visited"> </span>
-<a id="L171"></a><span class="visited"> </span>
-<a id="L172"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -365,12 +360,6 @@
 <a href="#L164">164</a>
 <a href="#L165">165</a>
 <a href="#L166">166</a>
-<a href="#L167">167</a>
-<a href="#L168">168</a>
-<a href="#L169">169</a>
-<a href="#L170">170</a>
-<a href="#L171">171</a>
-<a href="#L172">172</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -384,150 +373,150 @@ open Angstrom
 open Ast
 
 let is_ws = function
-  | <span data-count="4539">'</span> ' | <span data-count="5">'</span>\t' | <span data-count="66">'</span>\n' | <span data-count="5">'</span>\r' -&gt; true
-  | <span data-count="87782">_</span> -&gt; false
+  | <span data-count="5310">'</span> ' | <span data-count="4">'</span>\t' | <span data-count="114">'</span>\n' | <span data-count="1">'</span>\r' -&gt; true
+  | <span data-count="95910">_</span> -&gt; false
 ;;
 
 let is_ident_char = function
-  | <span data-count="1993">'</span>a' .. 'z' | <span data-count="14">'</span>A' .. 'Z' | <span data-count="9">'</span>0' .. '9' | <span data-count="4">'</span>_' | <span data-count="1">'</span>\'' -&gt; true
-  | <span data-count="5025">_</span> -&gt; false
+  | <span data-count="2161">'</span>a' .. 'z' | <span data-count="9">'</span>A' .. 'Z' | <span data-count="7">'</span>0' .. '9' | <span data-count="5">'</span>_' | <span data-count="0">'</span>\'' -&gt; true
+  | <span data-count="5668">_</span> -&gt; false
 ;;
 
-let ws = skip_whil<span data-count="51">e</span> is_ws
-let token p = <span data-count="26422">w</span>s *<span data-count="26422">&gt;</span> p &lt;* ws
-let parens p = <span data-count="360">t</span>oke<span data-count="360">n</span> (cha<span data-count="360">r</span> '(') *<span data-count="360">&gt;</span> p &lt;* toke<span data-count="360">n</span> (cha<span data-count="360">r</span> ')')
-let symbol s = <span data-count="24389">t</span>oken (strin<span data-count="24389">g</span> s)
+let ws = skip_whil<span data-count="55">e</span> is_ws
+let token p = <span data-count="28268">w</span>s *<span data-count="28268">&gt;</span> p &lt;* ws
+let parens p = <span data-count="448">t</span>oke<span data-count="448">n</span> (cha<span data-count="448">r</span> '(') *<span data-count="448">&gt;</span> p &lt;* toke<span data-count="448">n</span> (cha<span data-count="448">r</span> ')')
+let symbol s = <span data-count="25883">t</span>oken (strin<span data-count="25883">g</span> s)
 
 let keyword k =
-  <span data-count="1161">t</span>oken
-    (strin<span data-count="1161">g</span> k
-     &gt;&gt;<span data-count="1161">=</span> fun _ -&gt;
-     <span data-count="1558">p</span>eek_char
+  <span data-count="1325">t</span>oken
+    (strin<span data-count="1325">g</span> k
+     &gt;&gt;<span data-count="1325">=</span> fun _ -&gt;
+     <span data-count="1761">p</span>eek_char
      &gt;&gt;= function
-     | <span data-count="1539">S</span>ome c when is_ident_cha<span data-count="1539">r</span> c -&gt; <span data-count="3">f</span>ail "not a keyword boundary"
-     | <span data-count="1555">_</span> -&gt; return ())
+     | <span data-count="1735">S</span>ome c when is_ident_cha<span data-count="1735">r</span> c -&gt; <span data-count="3">f</span>ail "not a keyword boundary"
+     | <span data-count="1758">_</span> -&gt; return ())
 ;;
 
 let is_keyword = function
-  | <span data-count="37">"</span>let" | <span data-count="0">"</span>rec" | <span data-count="239">"</span>in" | <span data-count="25">"</span>if" | <span data-count="233">"</span>then" | <span data-count="208">"</span>else" | <span data-count="14">"</span>fun" | <span data-count="0">"</span>true" | <span data-count="0">"</span>false" -&gt; true
-  | <span data-count="1900">_</span> -&gt; false
+  | <span data-count="47">"</span>let" | <span data-count="0">"</span>rec" | <span data-count="304">"</span>in" | <span data-count="16">"</span>if" | <span data-count="224">"</span>then" | <span data-count="208">"</span>else" | <span data-count="16">"</span>fun" | <span data-count="0">"</span>true" | <span data-count="0">"</span>false" -&gt; true
+  | <span data-count="2089">_</span> -&gt; false
 ;;
 
 let ident =
-  toke<span data-count="51">n</span>
+  toke<span data-count="55">n</span>
     (let* c =
-       satisf<span data-count="51">y</span> (function
-         | <span data-count="2563">'</span>a' .. 'z' | <span data-count="93">'</span>_' -&gt; true
-         | <span data-count="2733">_</span> -&gt; false)
+       satisf<span data-count="55">y</span> (function
+         | <span data-count="2794">'</span>a' .. 'z' | <span data-count="110">'</span>_' -&gt; true
+         | <span data-count="3075">_</span> -&gt; false)
      in
-     <span data-count="2656">l</span>et* rest = take_whil<span data-count="2656">e</span> is_ident_char in
-     <span data-count="2656">l</span>et name = String.mak<span data-count="2656">e</span> 1 c ^ rest in
-     if is_keyword name then <span data-count="756">f</span>ail "identifier is a keyword" else <span data-count="1900">r</span>eturn name)
+     <span data-count="2904">l</span>et* rest = take_whil<span data-count="2904">e</span> is_ident_char in
+     <span data-count="2904">l</span>et name = String.mak<span data-count="2904">e</span> 1 c ^ rest in
+     if is_keyword name then <span data-count="815">f</span>ail "identifier is a keyword" else <span data-count="2089">r</span>eturn name)
 ;;
 
 let digits =
-  toke<span data-count="51">n</span>
+  toke<span data-count="55">n</span>
     (let* s =
-       take_while<span data-count="51">1</span> (function
-         | <span data-count="2269">'</span>0' .. '9' -&gt; true
-         | <span data-count="5507">_</span> -&gt; false)
+       take_while<span data-count="55">1</span> (function
+         | <span data-count="2456">'</span>0' .. '9' -&gt; true
+         | <span data-count="6021">_</span> -&gt; false)
      in
-     <span data-count="1842">l</span>et* () =
+     <span data-count="1975">l</span>et* () =
        peek_char
-       &gt;&gt;<span data-count="1842">=</span> function
-       | <span data-count="1247">S</span>ome c when is_ident_cha<span data-count="1247">r</span> c -&gt; <span data-count="7">f</span>ail "digit followed by letter"
-       | <span data-count="1835">_</span> -&gt; return ()
+       &gt;&gt;<span data-count="1975">=</span> function
+       | <span data-count="1381">S</span>ome c when is_ident_cha<span data-count="1381">r</span> c -&gt; <span data-count="4">f</span>ail "digit followed by letter"
+       | <span data-count="1971">_</span> -&gt; return ()
      in
-     <span data-count="1835">m</span>atch int_of_string_opt s with
-     | <span data-count="1834">S</span>ome n -&gt; return n
+     <span data-count="1971">m</span>atch int_of_string_opt s with
+     | <span data-count="1970">S</span>ome n -&gt; return n
      | <span data-count="1">N</span>one -&gt; fail "integer literal overflow")
 ;;
 
-let integer = digits &gt;&gt;<span data-count="51">|</span> fun n -&gt; <span data-count="1531">E</span>Const n
+let integer = digits &gt;&gt;<span data-count="55">|</span> fun n -&gt; <span data-count="1667">E</span>Const n
 
 (* stolen from Angstrom README, only God knows who could create that *)
 let chainl1 e op =
-  <span data-count="100">l</span>et rec go acc = <span data-count="8759">l</span>ift<span data-count="8759">2</span> (fun f x -&gt; <span data-count="227">f</span> acc x) op e &gt;&gt;<span data-count="8759">=</span> go &lt;|&gt; retur<span data-count="8759">n</span> acc in
+  <span data-count="108">l</span>et rec go acc = <span data-count="9370">l</span>ift<span data-count="9370">2</span> (fun f x -&gt; <span data-count="218">f</span> acc x) op e &gt;&gt;<span data-count="9370">=</span> go &lt;|&gt; retur<span data-count="9370">n</span> acc in
   e &gt;&gt;= go
 ;;
 
 let expr =
-  fi<span data-count="51">x</span> (fun expr -&gt;
-    <span data-count="50">l</span>et atom =
+  fi<span data-count="55">x</span> (fun expr -&gt;
+    <span data-count="54">l</span>et atom =
       choice
-        [ paren<span data-count="50">s</span> expr
-        ; keywor<span data-count="50">d</span> "true" *<span data-count="50">&gt;</span> retur<span data-count="50">n</span> (EConst 1)
-        ; keywor<span data-count="50">d</span> "false" *<span data-count="50">&gt;</span> retur<span data-count="50">n</span> (EConst 0)
+        [ paren<span data-count="54">s</span> expr
+        ; keywor<span data-count="54">d</span> "true" *<span data-count="54">&gt;</span> retur<span data-count="54">n</span> (EConst 1)
+        ; keywor<span data-count="54">d</span> "false" *<span data-count="54">&gt;</span> retur<span data-count="54">n</span> (EConst 0)
         ; integer
-        ; (ident &gt;&gt;<span data-count="50">|</span> fun x -&gt; <span data-count="1334">E</span>Var x)
+        ; (ident &gt;&gt;<span data-count="54">|</span> fun x -&gt; <span data-count="1419">E</span>Var x)
         ]
     in
-    <span data-count="50">l</span>et app =
+    <span data-count="54">l</span>et app =
       let* f = atom in
-      <span data-count="4128">l</span>et* args = man<span data-count="4128">y</span> atom in
-      <span data-count="4128">r</span>eturn (List.fold_lef<span data-count="4128">t</span> (fun acc a -&gt; <span data-count="238">E</span>App (acc, a)) f args)
+      <span data-count="4421">l</span>et* args = man<span data-count="4421">y</span> atom in
+      <span data-count="4421">r</span>eturn (List.fold_lef<span data-count="4421">t</span> (fun acc a -&gt; <span data-count="336">E</span>App (acc, a)) f args)
     in
     let unary =
       let neg_literal = digits &gt;&gt;| fun n -&gt; <span data-count="303">E</span>Const (<span data-count="303">-</span>n) in
-      <span data-count="50">l</span>et neg_expr = app &gt;&gt;| fun e -&gt; <span data-count="1">E</span>Binop (Sub, EConst 0, e) in
-      <span data-count="50">t</span>oke<span data-count="50">n</span> (cha<span data-count="50">r</span> '-') *<span data-count="50">&gt;</span> (neg_literal &lt;|<span data-count="50">&gt;</span> neg_expr) &lt;|<span data-count="50">&gt;</span> app
+      <span data-count="54">l</span>et neg_expr = app &gt;&gt;| fun e -&gt; <span data-count="1">E</span>Binop (Sub, EConst 0, e) in
+      <span data-count="54">t</span>oke<span data-count="54">n</span> (cha<span data-count="54">r</span> '-') *<span data-count="54">&gt;</span> (neg_literal &lt;|<span data-count="54">&gt;</span> neg_expr) &lt;|<span data-count="54">&gt;</span> app
     in
     let mul_div =
       let op =
-        symbo<span data-count="50">l</span> "*" *<span data-count="50">&gt;</span> retur<span data-count="50">n</span> (fun a b -&gt; <span data-count="74">E</span>Binop (Mul, a, b))
-        &lt;|&gt; symbo<span data-count="50">l</span> "/" *<span data-count="50">&gt;</span> retur<span data-count="50">n</span> (fun a b -&gt; <span data-count="29">E</span>Binop (Div, a, b))
+        symbo<span data-count="54">l</span> "*" *<span data-count="54">&gt;</span> retur<span data-count="54">n</span> (fun a b -&gt; <span data-count="40">E</span>Binop (Mul, a, b))
+        &lt;|&gt; symbo<span data-count="54">l</span> "/" *<span data-count="54">&gt;</span> retur<span data-count="54">n</span> (fun a b -&gt; <span data-count="38">E</span>Binop (Div, a, b))
       in
-      <span data-count="50">c</span>hainl<span data-count="50">1</span> unary op
+      <span data-count="54">c</span>hainl<span data-count="54">1</span> unary op
     in
     let add_sub =
       let op =
-        symbo<span data-count="50">l</span> "+" *<span data-count="50">&gt;</span> retur<span data-count="50">n</span> (fun a b -&gt; <span data-count="72">E</span>Binop (Add, a, b))
-        &lt;|&gt; symbo<span data-count="50">l</span> "-" *<span data-count="50">&gt;</span> retur<span data-count="50">n</span> (fun a b -&gt; <span data-count="52">E</span>Binop (Sub, a, b))
+        symbo<span data-count="54">l</span> "+" *<span data-count="54">&gt;</span> retur<span data-count="54">n</span> (fun a b -&gt; <span data-count="73">E</span>Binop (Add, a, b))
+        &lt;|&gt; symbo<span data-count="54">l</span> "-" *<span data-count="54">&gt;</span> retur<span data-count="54">n</span> (fun a b -&gt; <span data-count="67">E</span>Binop (Sub, a, b))
       in
-      <span data-count="50">c</span>hainl<span data-count="50">1</span> mul_div op
+      <span data-count="54">c</span>hainl<span data-count="54">1</span> mul_div op
     in
     let comparison =
       let* lhs = add_sub in
-      <span data-count="3942">l</span>et cmp_op =
+      <span data-count="4171">l</span>et cmp_op =
         choice
-          [ symbo<span data-count="3942">l</span> "&lt;&gt;" *<span data-count="3942">&gt;</span> retur<span data-count="3942">n</span> Neq
-          ; symbo<span data-count="3942">l</span> "&lt;=" *<span data-count="3942">&gt;</span> retur<span data-count="3942">n</span> Le
-          ; symbo<span data-count="3942">l</span> "&gt;=" *<span data-count="3942">&gt;</span> retur<span data-count="3942">n</span> Ge
-          ; symbo<span data-count="3942">l</span> "&lt;" *<span data-count="3942">&gt;</span> retur<span data-count="3942">n</span> Lt
-          ; symbo<span data-count="3942">l</span> "&gt;" *<span data-count="3942">&gt;</span> retur<span data-count="3942">n</span> Gt
-          ; symbo<span data-count="3942">l</span> "=" *<span data-count="3942">&gt;</span> retur<span data-count="3942">n</span> Eq
+          [ symbo<span data-count="4171">l</span> "&lt;&gt;" *<span data-count="4171">&gt;</span> retur<span data-count="4171">n</span> Neq
+          ; symbo<span data-count="4171">l</span> "&lt;=" *<span data-count="4171">&gt;</span> retur<span data-count="4171">n</span> Le
+          ; symbo<span data-count="4171">l</span> "&gt;=" *<span data-count="4171">&gt;</span> retur<span data-count="4171">n</span> Ge
+          ; symbo<span data-count="4171">l</span> "&lt;" *<span data-count="4171">&gt;</span> retur<span data-count="4171">n</span> Lt
+          ; symbo<span data-count="4171">l</span> "&gt;" *<span data-count="4171">&gt;</span> retur<span data-count="4171">n</span> Gt
+          ; symbo<span data-count="4171">l</span> "=" *<span data-count="4171">&gt;</span> retur<span data-count="4171">n</span> Eq
           ]
       in
-      <span data-count="3942">(</span>let* op = cmp_op in
-       <span data-count="262">l</span>et* rhs = add_sub in
-       <span data-count="262">r</span>eturn (EBinop (op, lhs, rhs)))
-      &lt;|&gt; retur<span data-count="3942">n</span> lhs
+      <span data-count="4171">(</span>let* op = cmp_op in
+       <span data-count="335">l</span>et* rhs = add_sub in
+       <span data-count="335">r</span>eturn (EBinop (op, lhs, rhs)))
+      &lt;|&gt; retur<span data-count="4171">n</span> lhs
     in
-    let param = paren<span data-count="50">s</span> ident &lt;|&gt; ident in
-    <span data-count="50">l</span>et fun_expr =
-      let* _ = keywor<span data-count="50">d</span> "fun" in
-      <span data-count="303">l</span>et* params = many<span data-count="303">1</span> param in
-      <span data-count="289">l</span>et* _ = symbo<span data-count="289">l</span> "-&gt;" in
-      <span data-count="289">l</span>et* body = expr in
-      <span data-count="289">r</span>eturn (List.fold_righ<span data-count="289">t</span> (fun p acc -&gt; <span data-count="293">E</span>Fun (p, acc)) params body)
+    let param = paren<span data-count="54">s</span> ident &lt;|&gt; ident in
+    <span data-count="54">l</span>et fun_expr =
+      let* _ = keywor<span data-count="54">d</span> "fun" in
+      <span data-count="343">l</span>et* params = many<span data-count="343">1</span> param in
+      <span data-count="327">l</span>et* _ = symbo<span data-count="327">l</span> "-&gt;" in
+      <span data-count="327">l</span>et* body = expr in
+      <span data-count="327">r</span>eturn (List.fold_righ<span data-count="327">t</span> (fun p acc -&gt; <span data-count="331">E</span>Fun (p, acc)) params body)
     in
     let let_expr =
-      let* _ = keywor<span data-count="50">d</span> "let" in
-      <span data-count="260">l</span>et* rf = keywor<span data-count="260">d</span> "rec" *<span data-count="260">&gt;</span> retur<span data-count="260">n</span> Rec &lt;|<span data-count="260">&gt;</span> retur<span data-count="260">n</span> NonRec in
-      <span data-count="260">l</span>et* name = paren<span data-count="260">s</span> ident &lt;|<span data-count="260">&gt;</span> ident in
-      <span data-count="248">l</span>et* params = man<span data-count="248">y</span> param in
-      <span data-count="248">l</span>et* _ = symbo<span data-count="248">l</span> "=" in
-      <span data-count="248">l</span>et* rhs = expr in
-      <span data-count="223">l</span>et* _ = keywor<span data-count="223">d</span> "in" in
-      <span data-count="223">l</span>et* body = expr in
-      <span data-count="223">l</span>et rhs = List.fold_right (fun p acc -&gt; <span data-count="25">E</span>Fun (p, acc)) params rhs in
-      <span data-count="223">r</span>eturn (ELet (rf, name, rhs, body))
+      let* _ = keywor<span data-count="54">d</span> "let" in
+      <span data-count="340">l</span>et* rf = keywor<span data-count="340">d</span> "rec" *<span data-count="340">&gt;</span> retur<span data-count="340">n</span> Rec &lt;|<span data-count="340">&gt;</span> retur<span data-count="340">n</span> NonRec in
+      <span data-count="340">l</span>et* name = paren<span data-count="340">s</span> ident &lt;|<span data-count="340">&gt;</span> ident in
+      <span data-count="314">l</span>et* params = man<span data-count="314">y</span> param in
+      <span data-count="314">l</span>et* _ = symbo<span data-count="314">l</span> "=" in
+      <span data-count="314">l</span>et* rhs = expr in
+      <span data-count="293">l</span>et* _ = keywor<span data-count="293">d</span> "in" in
+      <span data-count="293">l</span>et* body = expr in
+      <span data-count="293">l</span>et rhs = List.fold_right (fun p acc -&gt; <span data-count="25">E</span>Fun (p, acc)) params rhs in
+      <span data-count="293">r</span>eturn (ELet (rf, name, rhs, body))
     in
     let if_expr =
-      let* _ = keywor<span data-count="50">d</span> "if" in
-      <span data-count="233">l</span>et* cond = expr in
-      <span data-count="220">l</span>et* _ = keywor<span data-count="220">d</span> "then" in
-      <span data-count="220">l</span>et* e1 = expr in
+      let* _ = keywor<span data-count="54">d</span> "if" in
+      <span data-count="224">l</span>et* cond = expr in
+      <span data-count="214">l</span>et* _ = keywor<span data-count="214">d</span> "then" in
+      <span data-count="214">l</span>et* e1 = expr in
       <span data-count="208">l</span>et* _ = keywor<span data-count="208">d</span> "else" in
       <span data-count="208">l</span>et* e2 = expr in
       <span data-count="208">r</span>eturn (EIf (cond, e1, e2))
@@ -535,14 +524,8 @@ let expr =
     choice [ let_expr; if_expr; fun_expr; comparison ])
 ;;
 
-type error = [ `Parse_error of string ]
-
-let parse (s : string) : (expr, [&gt; error ]) result =
-  <span data-count="2324">m</span>atch
-    Angstrom.parse_string ~consume:Consume.All (ws *<span data-count="2324">&gt;</span> expr &lt;<span data-count="2324">*</span> ws &lt;<span data-count="2324">*</span> end_of_input) s
-  with
-  | <span data-count="1723">O</span>k e -&gt; Ok e
-  | <span data-count="601">E</span>rror msg -&gt; Error (`Parse_error msg)
+let parse (s : string) : (expr, string) result =
+  <span data-count="2332">A</span>ngstrom.parse_string ~consume:Consume.All (ws *<span data-count="2332">&gt;</span> expr &lt;<span data-count="2332">*</span> ws &lt;<span data-count="2332">*</span> end_of_input) s
 ;;
 </code></pre>
       </div>
