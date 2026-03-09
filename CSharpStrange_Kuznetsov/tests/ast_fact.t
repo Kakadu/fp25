@@ -1,7 +1,7 @@
   $ ../bin/REPL.exe -parseast -filepath="../bin/factorial.cs"
   (Program
      (Class ([MPublic], (Id "Program"),
-        [(Method ([MPublic], (TypeBase TypeInt), (Id "Factorial"),
+        [(Method ([MPublic; MStatic], (TypeBase TypeInt), (Id "Factorial"),
             (Params [(Var ((TypeVar (TypeBase TypeInt)), (Id "n")))]),
             (SBlock
                [(SIf ((EBinOp (OpEqual, (EId (Id "n")), (EValue (ValInt 0)))),
@@ -20,7 +20,8 @@
                    ))
                  ])
             ));
-          (Method ([MPublic; MStatic], TypeVoid, (Id "Main"), (Params []),
+          (Method ([MPublic; MStatic], (TypeBase TypeInt), (Id "Main"),
+             (Params []),
              (SBlock
                 [(SReturn
                     (Some (EFuncCall ((EId (Id "Factorial")),
@@ -29,5 +30,7 @@
              ))
           ]
         )))
+  $ mcs ../bin/factorial.cs && mono ../bin/factorial.exe <<EOF
+  [120]
   $ ../bin/REPL.exe -eval -filepath="../bin/factorial.cs" <<EOF
-  Result: (VInt 120)
+  (VInt 120)
