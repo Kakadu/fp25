@@ -9,8 +9,8 @@ let show_wrap str =
   match interpret str with
   | Result.Ok x ->
     (match x with
-     | Some x -> Format.printf "Result: '%a'" pp_value x
-     | None -> Format.print_string "Result: void\n")
+     | Some x -> Format.printf "%a" pp_value x
+     | None -> Format.print_string "void\n")
   | Result.Error er -> Format.printf "%a\n%!" pp_error er
 ;;
 
@@ -38,7 +38,7 @@ let%expect_test "Main 1" =
   } |};
   [%expect
     {|
-    Result: '-58' |}]
+    -58 |}]
 ;;
 
 (* TODO: Access to non-static fields from static methods is prohibited
@@ -63,7 +63,7 @@ let%expect_test "Main 2" =
   } |};
   [%expect
     {|
-    Result: '870' |}]
+    870 |}]
 ;;
 
 (* TODO: n without static *)
@@ -97,7 +97,7 @@ let%expect_test "Main 3" =
   } |};
   [%expect
     {|
-    Result: '141' |}]
+    141 |}]
 ;;
 
 let%expect_test "Main 4" =
@@ -116,7 +116,7 @@ let%expect_test "Main 4" =
   } |};
   [%expect
     {|
-    Result: '18' |}]
+    18 |}]
 ;;
 
 let%expect_test "Functions 1" =
@@ -138,7 +138,7 @@ let%expect_test "Functions 1" =
   } |};
   [%expect
     {|
-    Result: '1' |}]
+    1 |}]
 ;;
 
 (* TODO: non static not allowed *)
