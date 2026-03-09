@@ -10,5 +10,9 @@
   (pps ppx_expect)))
 
 (cram
- (applies_to ast_fact)
+ (applies_to fact)
  (deps ../bin/REPL.exe ../bin/factorial.cs))
+
+(cram
+ (applies_to fib)
+ (deps ../bin/REPL.exe ../bin/fib.cs))
