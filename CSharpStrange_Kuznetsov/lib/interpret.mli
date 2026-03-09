@@ -18,6 +18,8 @@ type value =
 val pp_value : Format.formatter -> value -> unit
 val show_value : value -> string
 
+type return_code = int
+
 (* Main funtions *)
-val interpret_program : program -> (value option, error) result
-val interpret : string -> (value option, error) result
+val interpret_program : program -> (return_code option, error) result
+val interpret : string -> (return_code option, error) result

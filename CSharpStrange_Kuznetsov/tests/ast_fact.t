@@ -23,14 +23,18 @@
           (Method ([MPublic; MStatic], (TypeBase TypeInt), (Id "Main"),
              (Params []),
              (SBlock
-                [(SReturn
-                    (Some (EFuncCall ((EId (Id "Factorial")),
-                             (Args [(EValue (ValInt 5))])))))
-                  ])
+                [(SExpr
+                    (EFuncCall ((EId (Id "System.Console.WriteLine")),
+                       (Args
+                          [(EFuncCall ((EId (Id "Factorial")),
+                              (Args [(EValue (ValInt 5))])))
+                            ])
+                       )));
+                  (SReturn (Some (EValue (ValInt 0))))])
              ))
           ]
         )))
   $ mcs ../bin/factorial.cs && mono ../bin/factorial.exe <<EOF
-  [120]
+  120
   $ ../bin/REPL.exe -eval -filepath="../bin/factorial.cs" <<EOF
-  (VInt 120)
+  120

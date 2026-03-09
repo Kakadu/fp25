@@ -82,12 +82,32 @@ let get_class_memb id memb =
   | _ -> None
 ;;
 
+let builtin_methods =
+  (* TODO: запрет для других функций с точкой/ начальный namespace ? *)
+  [ ( Id "System.Console.WriteLine"
+    , { method_modifiers = [ MStatic ]
+      ; method_return = TypeVoid
+      ; method_name = Id "System.Console.WriteLine"
+      ; method_params = Params [ Var (TypeVar (TypeBase TypeInt), Id "value") ]
+      ; method_body = SBlock [] (* TODO: making definition here? *)
+      ; is_static = true
+      ; is_main = false
+      } )
+  ]
+;;
+
 let find_memb_from_obj obj_id id =
   let find_memb b id f = List.find_map (f id) b in
   let find_class_memb b id = find_memb b id get_class_memb in
   read_global_el obj_id
   >>= function
-  | TCClass (Class (_, _, b)) -> find_class_memb b id |> return
+  | TCClass (Class (_, _, b)) ->
+    (match find_class_memb b id with
+     | Some memb -> return (Some memb)
+     | None ->
+       List.find_opt (fun (builtin_id, _) -> equal_ident builtin_id id) builtin_methods
+       |> Option.map (fun (_, info) -> TCMethod info)
+       |> return)
 ;;
 
 let find_memb_type = function
@@ -378,11 +398,14 @@ let tc_obj cl =
       in
       iter f fields
     in
+    let add_builtins =
+      iter (fun (id, method_info) -> save_decl id (TCMethod method_info)) builtin_methods
+    in
     let tc_member_with_fields mem = tc_member mem fields in
     let tc_mems = iter tc_member_with_fields fields in
     let save_class = save_global id (TCClass cl) in
     write_curr_class_name id
-    *> apply_local (write_mems () *> save_class *> tc_mems)
+    *> apply_local (write_mems () *> add_builtins *> save_class *> tc_mems)
     *> return ()
 ;;
 

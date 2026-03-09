@@ -5,11 +5,11 @@
 open C_sharp_strange_lib.Interpret
 open C_sharp_strange_lib.Common
 
-let show_wrap str =
+let test_interpret str =
   match interpret str with
   | Result.Ok x ->
     (match x with
-     | Some x -> Format.printf "%a" pp_value x
+     | Some _ -> ()
      | None -> Format.print_string "void\n")
   | Result.Error er -> Format.printf "%a\n%!" pp_error er
 ;;
@@ -17,7 +17,7 @@ let show_wrap str =
 (* TODO: include TC? *)
 
 let%expect_test "Main 1" =
-  show_wrap
+  test_interpret
     {| 
   class Program {
     static int b = 9;
@@ -32,6 +32,7 @@ let%expect_test "Main 1" =
       a = (50 % 2) + b - c;
       r = s != "kkkk" && (190%22 == 100 * -2/5);
       t = (a != b * c) || (a >= b) && (a == c +90);
+   System.Console.WriteLine(a);
       return a;
     }
 
@@ -47,7 +48,7 @@ let%expect_test "Main 1" =
 *)
 
 let%expect_test "Main 2" =
-  show_wrap
+  test_interpret
     {| 
   class Program {
     static int n = 10;
@@ -58,6 +59,8 @@ let%expect_test "Main 2" =
           res = res + i *j;
         }
       }
+
+      System.Console.WriteLine(res);
       return res;
     }
   } |};
@@ -69,7 +72,7 @@ let%expect_test "Main 2" =
 (* TODO: n without static *)
 
 let%expect_test "Main 3" =
-  show_wrap
+  test_interpret
     {| 
   class Program {
     static bool t;
@@ -86,6 +89,7 @@ let%expect_test "Main 3" =
         }
         else if( a == b) {
           a = c*67 + 7;
+ System.Console.WriteLine(a);
           return a;
       }
       }
@@ -101,7 +105,7 @@ let%expect_test "Main 3" =
 ;;
 
 let%expect_test "Main 4" =
-  show_wrap
+  test_interpret
     {| 
   class Program {
     static int x = 189;
@@ -111,6 +115,7 @@ let%expect_test "Main 4" =
           s = s + x % 10;
           x = x/ 10;
       }
+   System.Console.WriteLine(s);
       return s;
     }
   } |};
@@ -120,7 +125,7 @@ let%expect_test "Main 4" =
 ;;
 
 let%expect_test "Functions 1" =
-  show_wrap
+  test_interpret
     {| 
   class Program {
     public static int is_right_triangle(int a, int b, int c) {
@@ -133,12 +138,37 @@ let%expect_test "Functions 1" =
       }
     }
     static int Main() {
-      return is_right_triangle(3,4,5);
+   System.Console.WriteLine(is_right_triangle(3,4,5));
+      return;
     }
   } |};
   [%expect
     {|
-    1 |}]
+    (TCError TypeMismatch) |}]
+;;
+
+let%expect_test "Factorial with writeline" =
+  test_interpret
+    {|
+    class Program {
+      int Fac(int num) {
+        if (num == 1) {
+          return 1;
+        }
+        else 
+        {
+          return num * Fac(num - 1);
+        }
+      }
+      static int Main() {
+       int result = Fac(5);
+       System.Console.WriteLine(result);
+        return result;
+      }
+    } |};
+  [%expect
+    {|
+    120 |}]
 ;;
 
 (* TODO: non static not allowed *)

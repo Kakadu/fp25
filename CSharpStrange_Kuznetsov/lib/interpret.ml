@@ -6,6 +6,7 @@ open Ast
 open Parser
 open Common
 open Typecheck
+(* TODO: monad refactoring *)
 
 let ( let* ) = Result.bind
 let return x = Ok x
@@ -57,7 +58,7 @@ type object_state =
   ; fields : (ident * field_value) list
   }
 
-(*TODO name*)
+(*TODO name?*)
 type class_def =
   { fields : (ident * _type * expr option * bool) list
   ; methods : (ident * func) list
@@ -73,6 +74,10 @@ type runtime =
   ; static_fields : (ident * value) list
   }
 
+type return_code = int
+
+(* Printers *)
+(* TODO: not need pp? *)
 let pp_value fmt = function
   | VInt i -> Format.fprintf fmt "%d" i
   | VBool b -> Format.fprintf fmt "%b" b
@@ -80,6 +85,11 @@ let pp_value fmt = function
   | VString s -> Format.fprintf fmt "\"%S\"" s
   | VNull -> Format.fprintf fmt "null"
   | VObject (Adr a) -> Format.fprintf fmt "object@%d" a
+;;
+
+let value_to_exit_code = function
+  | VInt i -> i
+  | _ -> 0
 ;;
 
 type exec_result =
@@ -349,7 +359,7 @@ let rec eval_expr (rt : runtime) = function
               return (v :: vs, rt2)
           in
           let* arg_vals, rt2 = eval_args rt args in
-          let* v, rt3 = call_function rt2 f arg_vals in
+          let* v, rt3 = call_function rt2 f id arg_vals in
           return (v, rt3))
      | _ -> Error (IError (OtherError "Invalid function call")))
   | EArrayAccess _ -> Error (IError NotImplemented)
@@ -374,31 +384,57 @@ and eval_binop op v1 v2 rt =
   | OpOr, VBool a, VBool b -> return (VBool (a || b), rt)
   | _ -> Error (IError (ImpossibleResult "Should not completed typecheck"))
 
-and call_function (rt : runtime) f args =
+and call_function (rt : runtime) f id args =
   let caller_env = rt.env in
   let caller_obj = rt.curr_object in
-  let rec bind_params env params args rt =
-    match params, args with
-    | [], [] -> return ({ rt with env }, rt)
-    | p :: ps, v :: vs ->
-      let loc, rt1 = alloc_r v rt in
-      let var_info = { loc; initialized = true } in
-      let* env2 =
-        match env with
-        | scope :: rest -> Ok (IdMap.add p var_info scope :: rest)
-        | [] -> Error (IError (OtherError "Empty environment in bind_params"))
-      in
-      bind_params env2 ps vs rt1
-    | _ -> Error (IError (OtherError "Argument mismatch"))
-  in
-  let* rt_func, _ = bind_params [ IdMap.empty ] f.params args rt in
-  let rt_with_this = { rt_func with curr_object = caller_obj } in
-  let* rt2, flow = exec_stmt rt_with_this f.body in
-  let restored_rt = { rt2 with env = caller_env; curr_object = caller_obj } in
-  match flow with
-  | Return v -> return (v, restored_rt)
-  | Normal -> return (VNull, restored_rt)
-  | Break | Continue -> Error (IError (OtherError "Break/continue outside loop"))
+  match id with
+  | Id "System.Console.WriteLine" ->
+    (* Return null *)
+    let writeline = function
+      | [] ->
+        let _ = Format.printf "\n" in
+        return (VNull, rt)
+      | [ VInt i ] ->
+        let _ = Format.printf "%d\n" i in
+        return (VNull, rt)
+      | [ VChar c ] ->
+        let _ = Format.printf "%c\n" c in
+        return (VNull, rt)
+      | [ VString s ] ->
+        let _ = Format.printf "%S\n" s in
+        return (VNull, rt)
+      | [ VNull ] ->
+        let _ = Format.printf "null\n" in
+        return (VNull, rt)
+      | [ VObject (Adr a) ] ->
+        let _ = Format.printf "object@%d\n" a in
+        return (VNull, rt)
+      | _ -> Error (IError TypeMismatch)
+    in
+    writeline args
+  | _ ->
+    let rec bind_params env params args rt =
+      match params, args with
+      | [], [] -> return ({ rt with env }, rt)
+      | p :: ps, v :: vs ->
+        let loc, rt1 = alloc_r v rt in
+        let var_info = { loc; initialized = true } in
+        let* env2 =
+          match env with
+          | scope :: rest -> Ok (IdMap.add p var_info scope :: rest)
+          | [] -> Error (IError (OtherError "Empty environment in bind_params"))
+        in
+        bind_params env2 ps vs rt1
+      | _ -> Error (IError (OtherError "Argument mismatch"))
+    in
+    let* rt_func, _ = bind_params [ IdMap.empty ] f.params args rt in
+    let rt_with_this = { rt_func with curr_object = caller_obj } in
+    let* rt2, flow = exec_stmt rt_with_this f.body in
+    let restored_rt = { rt2 with env = caller_env; curr_object = caller_obj } in
+    (match flow with
+     | Return v -> return (v, restored_rt)
+     | Normal -> return (VNull, restored_rt)
+     | Break | Continue -> Error (IError (OtherError "Break/continue outside loop")))
 
 and exec_stmt (rt : runtime) = function
   | SExpr e ->
@@ -555,10 +591,21 @@ let rec init_instance_fields rt fields acc =
 let init_program (Class (_, name, fields)) =
   let class_def = class_of_ast (Class ([], name, fields)) in
   let rt = { empty_runtime with class_def = Some class_def } in
-  let rt_with_methods =
+  let builtin_functions =
+    [ Id "System.Console.WriteLine", { params = [ Id "value" ]; body = SBlock [] }
+      (* TODO: change from call_function and typecheck to some common space *)
+    ]
+  in
+  let rt_with_builtins =
     List.fold_left
       (fun rt (id, func) -> { rt with fenv = (id, func) :: rt.fenv })
       rt
+      builtin_functions
+  in
+  let rt_with_methods =
+    List.fold_left
+      (fun rt (id, func) -> { rt with fenv = (id, func) :: rt.fenv })
+      rt_with_builtins
       class_def.methods
   in
   let static_fields =
@@ -587,8 +634,8 @@ let interpret_program = function
         | Some class_def ->
           (match List.find_opt (fun (id, _) -> id = Id "Main") class_def.methods with
            | Some (_, main_func) ->
-             let* v, _ = call_function rt main_func [] in
-             Ok (Some v)
+             let* v, _ = call_function rt main_func (Id "Main") [] in
+             Ok (Some (value_to_exit_code v))
            | None -> Error (IError (OtherError "Main method not found")))
         | None -> Error (IError (OtherError "No class definition")))
      | Error e -> Error e)

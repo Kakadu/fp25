@@ -14,6 +14,7 @@ public class Program
 
     public static int Main()
     {
-        return Factorial(5);
+        System.Console.WriteLine(Factorial (5));
+        return 0;
     }
 }

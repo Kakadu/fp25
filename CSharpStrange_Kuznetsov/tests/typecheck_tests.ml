@@ -209,6 +209,30 @@ let%expect_test "Function type mismatch" =
     (TCError TypeMismatch) |}]
 ;;
 
+let%expect_test "Factorial with writeline" =
+  test_ast
+    {|
+    class Program {
+      int Fac(int num) {
+        if (num == 1) {
+          return 1;
+        }
+        else 
+        {
+          return num * Fac(num - 1);
+        }
+      }
+      static int Main() {
+       int result = Fac(5);
+       System.Console.WriteLine(result);
+        return result;
+      }
+    } |};
+  [%expect
+    {|
+    Ok! |}]
+;;
+
 (* TODO: occurs check test: smth like
    {|
    class Program {

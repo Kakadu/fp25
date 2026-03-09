@@ -51,7 +51,8 @@ let is_space = function
 ;;
 
 let is_token_sym = function
-  | 'a' .. 'z' | '0' .. '9' | 'A' .. 'Z' | '_' -> true
+  (* TODO: think about . (could be initial namespace) *)
+  | 'a' .. 'z' | '0' .. '9' | 'A' .. 'Z' | '.' | '_' -> true
   | _ -> false
 ;;
 

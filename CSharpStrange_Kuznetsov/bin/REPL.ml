@@ -40,7 +40,7 @@ let () =
     if opts.eval
     then (
       match interpret_program ast with
-      | Ok (Some v) -> printf "%s\n" (show_value v)
+      | Ok (Some v) -> exit v
       | Ok None -> printf "void\n"
       | Error _ -> failwith (sprintf "Interpretation error"))
   | Error msg -> failwith (sprintf "Failed to parse file: %s" msg)
