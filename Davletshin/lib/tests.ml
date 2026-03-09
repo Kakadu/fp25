@@ -142,17 +142,17 @@ let%expect_test "application with parentheses" =
 
 let%expect_test "unary minus literal" =
   Format.printf "%a" pp (parse_optimistically "-1");
-  [%expect {| (Unop (Neg, (Int 1))) |}]
+  [%expect {| (Neg (Int 1)) |}]
 ;;
 
 let%expect_test "unary minus variable" =
   Format.printf "%a" pp (parse_optimistically "-x");
-  [%expect {| (Unop (Neg, (Var x))) |}]
+  [%expect {| (Neg (Var x)) |}]
 ;;
 
 let%expect_test "unary minus precedence" =
   Format.printf "%a" pp (parse_optimistically "-x * y");
-  [%expect {| (Binop (Times, (Unop (Neg, (Var x))), (Var y))) |}]
+  [%expect {| (Binop (Times, (Neg (Var x)), (Var y))) |}]
 ;;
 
 (* ---------- arithmetic precedence ---------- *)

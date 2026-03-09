@@ -11,11 +11,6 @@ type flag = Ast.flag =
   | Nonrec
 [@@deriving show { with_path = false }]
 
-type uop = Ast.uop =
-  | Pos
-  | Neg
-[@@deriving show { with_path = false }]
-
 type bop = Ast.bop =
   | Plus
   | Minus
@@ -35,7 +30,7 @@ type 'name t = 'name Ast.t =
   | Abs of 'name * 'name t
   | App of 'name t * 'name t
   | Binop of bop * 'name t * 'name t
-  | Unop of uop * 'name t
+  | Neg of 'name t
   | If of 'name t * 'name t * 'name t
   | Let of flag * 'name * 'name t * 'name t
   | Fix of 'name t

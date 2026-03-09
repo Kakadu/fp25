@@ -42,7 +42,7 @@ let rec gen_ast depth =
              gen_binop
              (gen_ast (depth - 1))
              (gen_ast (depth - 1))
-         ; map (fun e -> Unop (Neg, e)) (gen_ast (depth - 1))
+         ; map (fun e -> Neg e) (gen_ast (depth - 1))
          ; map3
              (fun c t e -> If (c, t, e))
              (gen_ast (depth - 1))

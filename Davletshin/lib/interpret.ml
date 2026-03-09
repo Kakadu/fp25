@@ -36,7 +36,7 @@ end = struct
       | Abs (x, b) -> vclosure x b env
       | App (l, r) -> eval_app env l r steps
       | Binop (op, l, r) -> eval_binop env op l r steps
-      | Unop (op, e) -> eval_unop env op e steps
+      | Neg e -> eval_neg env e steps
       | If (c, t, e) -> eval_if env c t e steps
       | Let (Nonrec, n, e1, e2) -> eval_let env n e1 e2 steps
       | Let (Rec, n, b, e2) -> eval_letrec env n b e2 steps
@@ -77,11 +77,10 @@ end = struct
     | Ge, VInt a, VInt b -> vint (if a >= b then 1 else 0)
     | _ -> M.fail (TypeError "Invalid binary operation")
 
-  and eval_unop env op e steps =
+  and eval_neg env e steps =
     let* v = eval env e (steps - 1) in
-    match op, v with
-    | Pos, VInt a -> vint (+a)
-    | Neg, VInt a -> vint (-a)
+    match v with
+    | VInt a -> vint (-a)
     | _ -> M.fail (TypeError "Invalid unary operation")
 
   and eval_if env c t e steps =

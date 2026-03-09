@@ -98,12 +98,10 @@ let parser =
       | [] -> fail "bad syntax"
       | x :: xs -> return @@ List.fold_left (fun l r -> App (l, r)) x xs
     in
-    let unary =
-      spaces *> (char '-' *> spaces *> apps >>| fun e -> Unop (Neg, e)) <|> apps
-    in
+    let negative = spaces *> (char '-' *> spaces *> apps >>| fun e -> Neg e) <|> apps in
     let multiplicative =
       chain_left
-        unary
+        negative
         (conde
            [ spaces *> char '*' *> return Times; spaces *> char '/' *> return Divide ])
     in

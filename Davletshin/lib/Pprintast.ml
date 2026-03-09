@@ -32,13 +32,7 @@ let pp =
         | Ge -> ">="
       in
       fprintf fmt "(%a %s %a)" pp l bop pp r
-    | Unop (op, e) ->
-      let uop =
-        match op with
-        | Pos -> "+"
-        | Neg -> "-"
-      in
-      fprintf fmt "(%s%a)" uop pp e
+    | Neg e -> fprintf fmt "(-%a)" pp e
     | If (c, t, e) -> fprintf fmt "(if %a then %a else %a)" pp c pp t pp e
     | Let (Nonrec, n, e1, e2) -> fprintf fmt "(let %s = %a in %a)" n pp e1 pp e2
     | Let (Rec, n, e1, e2) -> fprintf fmt "(let rec %s = %a in %a)" n pp e1 pp e2

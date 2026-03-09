@@ -10,8 +10,8 @@ you could put it into separate file. Thise will need stanza `(cram (deps demo_in
 in the dune file
 
   $ ../bin/REPL.exe <<EOF
-  > fun f -> x
-  Success: val f = <fun>
+  > fun x -> x
+  Success: fun x -> x
 
   $ ../bin/REPL.exe <<EOF
   > ( fun x -> fun x -> x ) 1 2
