@@ -10,10 +10,10 @@ open Ast
 
 (** Smart constructors *)
 
-val int_cons : int -> 'a Ast.t
-val var : 'a -> 'a Ast.t
-val abs : 'a -> 'a Ast.t -> 'a Ast.t
-val app : 'a Ast.t -> 'a Ast.t -> 'a Ast.t
+val int_cons : int -> 'a t
+val var : 'a -> 'a t
+val abs : 'a -> 'a t -> 'a t
+val app : 'a t -> 'a t -> 'a t
 
 module type MONAD_FAIL = sig
   include Base.Monad.S2
@@ -24,7 +24,8 @@ end
 type output =
   | OUnit
   | OInt of int
-  | OAbs of name
+  | OAbs of name * name t
+  | OBuiltin of name
 
 type error =
   | UnknownVariable of string

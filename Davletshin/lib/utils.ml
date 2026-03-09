@@ -23,7 +23,8 @@ end
 type output =
   | OUnit
   | OInt of int
-  | OAbs of name
+  | OAbs of name * name t
+  | OBuiltin of name
 
 type error =
   | UnknownVariable of string

@@ -8,6 +8,7 @@
 
 open Ast
 open Utils
+open Pprintast
 
 module Interpret (M : MONADERROR) : sig
   val run : name Ast.t -> int -> output M.t
@@ -116,8 +117,8 @@ end = struct
     match e with
     | VUnit -> M.return OUnit
     | VInt n -> M.return (OInt n)
-    | VClosure (name, _, _) -> M.return (OAbs name)
-    | VBuiltin _ -> M.return (OAbs "print")
+    | VClosure (name, body, _) -> M.return (OAbs (name, body))
+    | VBuiltin _ -> M.return (OBuiltin "print")
   ;;
 
   let builtin_print =
@@ -127,7 +128,7 @@ end = struct
           print_int n;
           print_newline ();
           M.return VUnit
-        | _ -> M.fail (TypeError ""))
+        | _ -> M.fail (TypeError "Tried to print not an integer"))
   ;;
 
   let initial_env = [ "print", builtin_print ]
@@ -147,7 +148,8 @@ let parse_and_run str steps =
        (match n with
         | OUnit -> Printf.printf "Success: Unit\n"
         | OInt n -> Printf.printf "Success: %d\n" n
-        | OAbs n -> Printf.printf "Success: val %s = <fun>\n" n)
+        | OAbs (p, b) -> Printf.printf "Success: fun %s -> %s\n" p (ast_to_string b)
+        | OBuiltin n -> Printf.printf "Success: val %s = <fun>\n" n)
      | Error err ->
        (match err with
         | UnknownVariable x -> Printf.eprintf "UnknownVariable: %s\n%!" x

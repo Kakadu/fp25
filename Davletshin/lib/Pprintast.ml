@@ -48,3 +48,4 @@ let pp =
 ;;
 
 let pp_hum = pp
+let ast_to_string expr = Format.asprintf "%a" pp expr
