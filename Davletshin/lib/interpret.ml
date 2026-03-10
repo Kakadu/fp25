@@ -99,7 +99,7 @@ end = struct
     | Abs (x, body) ->
       let rec env' = (n, VClosure (x, body, env')) :: env in
       eval env' e2 (steps - 1)
-    | body -> eval env body (steps - 1)
+    | body -> eval_let env n body e2 (steps - 1)
 
   and eval_fix env e steps =
     let* v = eval env e (steps - 1) in
