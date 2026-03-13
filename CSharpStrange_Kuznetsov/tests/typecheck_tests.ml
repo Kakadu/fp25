@@ -16,10 +16,10 @@ let show_wrap = function
 ;;
 
 let print_tc p str = show_wrap (parse_option p str)
-let test_ast = print_tc parse_prog
+let test_typecheck = print_tc parse_prog
 
 let%expect_test "Factorial" =
-  test_ast
+  test_typecheck
     {|
     class Program {
       int Fac(int num) {
@@ -41,7 +41,7 @@ let%expect_test "Factorial" =
 ;;
 
 let%expect_test "Wrong factorial" =
-  test_ast
+  test_typecheck
     {|
     class Program {
       int Fac(int num) {
@@ -56,7 +56,7 @@ let%expect_test "Wrong factorial" =
 ;;
 
 let%expect_test "Already declared variable" =
-  test_ast
+  test_typecheck
     {| 
   class Program {
     int a = 5;
@@ -69,7 +69,7 @@ let%expect_test "Already declared variable" =
 ;;
 
 let%expect_test "Invalid value" =
-  test_ast
+  test_typecheck
     {|
     class Program {
       static int Main() {
@@ -84,7 +84,7 @@ let%expect_test "Invalid value" =
 ;;
 
 let%expect_test "Checking fields" =
-  test_ast
+  test_typecheck
     {| 
   class Program {
     int b = 9;
@@ -107,7 +107,7 @@ let%expect_test "Checking fields" =
 (* TODO: parser check! *)
 
 let%expect_test "String + int" =
-  test_ast
+  test_typecheck
     {| 
   class Program {
     string a = "5";
@@ -121,7 +121,7 @@ let%expect_test "String + int" =
 (* TODO: string! *)
 
 let%expect_test "While" =
-  test_ast
+  test_typecheck
     {| 
   class Program {
     static int Main() {
@@ -147,7 +147,7 @@ let%expect_test "While" =
 ;;
 
 let%expect_test "For" =
-  test_ast
+  test_typecheck
     {| 
   class Program {
     int n = 10;
@@ -171,7 +171,7 @@ let%expect_test "For" =
 ;;
 
 let%expect_test "Wrong main" =
-  test_ast
+  test_typecheck
     {| 
   class Program {
     public async void Main() {}
@@ -184,7 +184,7 @@ let%expect_test "Wrong main" =
 ;;
 
 let%expect_test "Already declared function" =
-  test_ast
+  test_typecheck
     {| 
   class Program {
     void Test() {}
@@ -197,7 +197,7 @@ let%expect_test "Already declared function" =
 ;;
 
 let%expect_test "Function type mismatch" =
-  test_ast
+  test_typecheck
     {| 
   class Program {
     public void a(int n, int m){
@@ -210,7 +210,7 @@ let%expect_test "Function type mismatch" =
 ;;
 
 let%expect_test "Factorial with writeline" =
-  test_ast
+  test_typecheck
     {|
     class Program {
       int Fac(int num) {
@@ -232,6 +232,43 @@ let%expect_test "Factorial with writeline" =
     {|
     Ok! |}]
 ;;
+
+(*
+   let%expect_test "Typecheck local variable shadows built-in" =
+  test_typecheck
+    {|
+    public static class Program {
+      public static int Main() {
+        int System = 42;
+        System.Console.WriteLine(10);  // Error: System is int
+        return System;
+      }
+    } |};
+  [%expect {| (TCError ) |}]
+;;
+
+(* TODO: think about forbidden names *)
+
+(* 2. Параметр функции перекрывает встроенную функцию *)
+let%expect_test "TC: parameter shadows built-in" =
+  test_typecheck
+    {|
+    public class Program {
+      public static int Print(int Console) {
+        Console.WriteLine("Hello");  // Error: Console is int
+        return Console * 2;
+      }
+      public static int Main() {
+        return Print(21);
+      }
+    } |};
+  [%expect
+    {|
+    (TCError
+       (OtherError "Cannot call a variable as a method")) |}]
+;;
+(* TODO: parsing error *)
+*)
 
 (* TODO: occurs check test: smth like
    {|
