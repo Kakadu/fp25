@@ -2,8 +2,9 @@
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-open C_sharp_strange_lib.Prettyprinter
-open C_sharp_strange_lib.Parser
+open C_sharp_strange_lib
+open Prettyprinter
+open Parser
 open Format
 
 (* Debug (TODO remove later) 

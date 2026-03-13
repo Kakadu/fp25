@@ -75,10 +75,11 @@ let pp_val_type fmt = function
   | ValString s -> fprintf fmt {|%S|} s
 ;;
 
+(* TODO: priorities *)
 let rec pp_expr fmt = function
   | EValue v -> pp_val_type fmt v
-  | EBinOp (op, e1, e2) -> fprintf fmt "(%a %a %a)" pp_expr e1 pp_bin_op op pp_expr e2
-  | EUnOp (op, e) -> fprintf fmt "(%a%a)" pp_un_op op pp_expr e
+  | EBinOp (op, e1, e2) -> fprintf fmt "%a %a %a" pp_expr e1 pp_bin_op op pp_expr e2
+  | EUnOp (op, e) -> fprintf fmt "%a%a" pp_un_op op pp_expr e
   | EId id -> pp_ident fmt id
   | EArrayAccess (e1, e2) -> fprintf fmt "%a[%a]" pp_expr e1 pp_expr e2
   | EFuncCall (e, Args args) -> fprintf fmt "%a(%a)" pp_expr e (pp_list pp_expr ", ") args
@@ -89,7 +90,7 @@ let rec pp_stmt fmt = function
   | SFor (init, cond, incr, body) ->
     fprintf
       fmt
-      "@[<v 4>for (%a; %a; %a) {@ %a@]@ }"
+      "@[<v 4>for (%a; %a; %a) { %a@] }"
       (pp_option pp_stmt)
       init
       (pp_option pp_expr)
@@ -119,7 +120,7 @@ let rec pp_stmt fmt = function
 
 and pp_sblock fmt = function
   | [] -> fprintf fmt ""
-  | stmts -> fprintf fmt "@[<v>%a@]" (pp_list pp_stmt "@ ") stmts
+  | stmts -> fprintf fmt "@[<v>%a@]" (pp_list pp_stmt " ") stmts
 ;;
 
 let pp_field fmt = function
