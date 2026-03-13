@@ -17,6 +17,7 @@ val parse_val_string : val_type t
 val parse_modifiers : modifier list t
 val parse_ops : expr t
 val parse_decl : stmt t
+val parse_stmt_ops : stmt t
 val parse_return : stmt t
 val parse_break : stmt t
 val parse_continue : stmt t

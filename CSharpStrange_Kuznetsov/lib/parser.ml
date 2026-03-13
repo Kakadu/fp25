@@ -160,6 +160,11 @@ let parse_call_args id (arg : expr t) =
   parse_args_list arg >>= fun args -> return @@ EFuncCall (id, Args args)
 ;;
 
+let parse_params =
+  parens (sep_by (skip_spaces *> char ',' <* skip_spaces) parse_var)
+  >>= fun exp -> return (Params exp)
+;;
+
 let parse_call_expr (arg : expr t) = parse_call_id >>= fun id -> parse_call_args id arg
 
 (* Operations *)
@@ -326,16 +331,12 @@ let parse_method_type =
 ;;
 
 let parse_method_sign =
-  let parse_args =
-    parens (sep_by (skip_spaces *> char ',' <* skip_spaces) parse_var)
-    >>= fun exp -> return (Params exp)
-  in
   lift4
     (fun m_modif m_type m_id m_params -> m_modif, m_type, m_id, m_params)
     (skip_spaces *> parse_modifiers)
     (skip_spaces *> parse_method_type)
     (skip_spaces *> parse_id)
-    (skip_spaces *> parse_args)
+    (skip_spaces *> parse_params)
 ;;
 
 let parse_method_member =
@@ -381,3 +382,5 @@ let parse_option p str =
   | Ok x -> Some x
   | Error _ -> None
 ;;
+
+(* TODO: lambda parsing??? *)
