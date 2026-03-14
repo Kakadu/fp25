@@ -112,7 +112,7 @@ let rec repl () =
   | <span data-count="37">e</span>xception End_of_file -&gt; ()
   | <span data-count="37">l</span>ine -&gt;
     let text = String.trim line in
-    <span data-count="37">i</span>f not (String.equa<span data-count="37">l</span> text "") then <span data-count="37">I</span>nterpret.parse_and_ru<span data-count="37">n</span> text 1000000;
+    <span data-count="37">i</span>f not (String.equa<span data-count="37">l</span> text "") then <span data-count="37">I</span>nterpret.parse_and_ru<span data-count="37">n</span> text 10000;
     <span data-count="37">r</span>epl ()
 ;;
 

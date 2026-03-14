@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>ast.ml &mdash; Coverage report</title>
-    <meta name="description" content="59.18% coverage in lib/ast.ml">
+    <meta name="description" content="60.47% coverage in lib/ast.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,22 +15,19 @@
           <span class="dirname">lib/</span>ast.ml
         </a>
       </h1>
-      <h2>59.18%</h2>
+      <h2>60.47%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="top:20.83%"></span>
-      <span class="unvisited" style="top:33.33%"></span>
-      <span class="unvisited" style="top:35.42%"></span>
-      <span class="unvisited" style="top:45.83%"></span>
-      <span class="unvisited" style="bottom:20.83%"></span>
-      <span class="some-visited" style="bottom:18.75%"></span>
-      <span class="some-visited" style="bottom:14.58%"></span>
-      <span class="some-visited" style="bottom:12.50%"></span>
-      <span class="some-visited" style="bottom:10.42%"></span>
-      <span class="some-visited" style="bottom:8.33%"></span>
-      <span class="some-visited" style="bottom:6.25%"></span>
-      <span class="some-visited" style="bottom:4.17%"></span>
-      <span class="some-visited" style="bottom:2.08%"></span>
+      <span class="unvisited" style="top:24.39%"></span>
+      <span class="unvisited" style="top:39.02%"></span>
+      <span class="unvisited" style="bottom:21.95%"></span>
+      <span class="some-visited" style="bottom:19.51%"></span>
+      <span class="some-visited" style="bottom:14.63%"></span>
+      <span class="some-visited" style="bottom:12.20%"></span>
+      <span class="some-visited" style="bottom:9.76%"></span>
+      <span class="some-visited" style="bottom:7.32%"></span>
+      <span class="some-visited" style="bottom:4.88%"></span>
+      <span class="some-visited" style="bottom:2.44%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -51,38 +48,31 @@
 <a id="L14"></a><span > </span>
 <a id="L15"></a><span > </span>
 <a id="L16"></a><span class="unvisited"> </span>
-<a id="L17"></a><span class="unvisited"> </span>
+<a id="L17"></a><span class="visited"> </span>
 <a id="L18"></a><span class="visited"> </span>
-<a id="L19"></a><span > </span>
-<a id="L20"></a><span > </span>
-<a id="L21"></a><span > </span>
-<a id="L22"></a><span class="unvisited"> </span>
+<a id="L19"></a><span class="visited"> </span>
+<a id="L20"></a><span class="visited"> </span>
+<a id="L21"></a><span class="visited"> </span>
+<a id="L22"></a><span class="visited"> </span>
 <a id="L23"></a><span class="visited"> </span>
 <a id="L24"></a><span class="visited"> </span>
 <a id="L25"></a><span class="visited"> </span>
 <a id="L26"></a><span class="visited"> </span>
-<a id="L27"></a><span class="visited"> </span>
-<a id="L28"></a><span class="visited"> </span>
-<a id="L29"></a><span class="visited"> </span>
-<a id="L30"></a><span class="visited"> </span>
-<a id="L31"></a><span class="visited"> </span>
-<a id="L32"></a><span class="visited"> </span>
-<a id="L33"></a><span > </span>
-<a id="L34"></a><span > </span>
-<a id="L35"></a><span > </span>
-<a id="L36"></a><span > </span>
-<a id="L37"></a><span > </span>
-<a id="L38"></a><span class="unvisited"> </span>
+<a id="L27"></a><span > </span>
+<a id="L28"></a><span > </span>
+<a id="L29"></a><span > </span>
+<a id="L30"></a><span > </span>
+<a id="L31"></a><span > </span>
+<a id="L32"></a><span class="unvisited"> </span>
+<a id="L33"></a><span class="some-visited"> </span>
+<a id="L34"></a><span class="visited"> </span>
+<a id="L35"></a><span class="some-visited"> </span>
+<a id="L36"></a><span class="some-visited"> </span>
+<a id="L37"></a><span class="some-visited"> </span>
+<a id="L38"></a><span class="some-visited"> </span>
 <a id="L39"></a><span class="some-visited"> </span>
-<a id="L40"></a><span class="visited"> </span>
-<a id="L41"></a><span class="some-visited"> </span>
-<a id="L42"></a><span class="some-visited"> </span>
-<a id="L43"></a><span class="some-visited"> </span>
-<a id="L44"></a><span class="some-visited"> </span>
-<a id="L45"></a><span class="some-visited"> </span>
-<a id="L46"></a><span class="some-visited"> </span>
-<a id="L47"></a><span class="some-visited"> </span>
-<a id="L48"></a><span > </span>
+<a id="L40"></a><span class="some-visited"> </span>
+<a id="L41"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -128,13 +118,6 @@
 <a href="#L39">39</a>
 <a href="#L40">40</a>
 <a href="#L41">41</a>
-<a href="#L42">42</a>
-<a href="#L43">43</a>
-<a href="#L44">44</a>
-<a href="#L45">45</a>
-<a href="#L46">46</a>
-<a href="#L47">47</a>
-<a href="#L48">48</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -146,43 +129,36 @@
 
 (** recursive and not recursive flag *)
 <span data-count="0">t</span>ype flag =
-  <span data-count="782">|</span> Rec (** Recursive *)
-  <span data-count="803">|</span> Nonrec (** Non recursive *)
-[@@deriving eq, show]
-
-(** unary operators *)
-<span data-count="0">t</span>ype uop =
-  <span data-count="0">|</span> Pos (** Positive *)
-  <span data-count="780">|</span> Neg (** Negative *)
+  <span data-count="866">|</span> Rec (** Recursive *)
+  <span data-count="856">|</span> Nonrec (** Non recursive *)
 [@@deriving eq, show]
 
 (** binary operators *)
 <span data-count="0">t</span>ype bop =
-  <span data-count="75">|</span> Plus (** Addition [+] *)
-  <span data-count="77">|</span> Minus (** Subtraction [-] *)
-  <span data-count="79">|</span> Times (** Multiplication [*] *)
-  <span data-count="99">|</span> Divide (** Division [/] *)
+  <span data-count="91">|</span> Plus (** Addition [+] *)
+  <span data-count="84">|</span> Minus (** Subtraction [-] *)
+  <span data-count="86">|</span> Times (** Multiplication [*] *)
+  <span data-count="86">|</span> Divide (** Division [/] *)
   <span data-count="87">|</span> Eq (** Equal [=] *)
-  <span data-count="69">|</span> Neq (** Not equal [&lt;&gt;] *)
-  <span data-count="70">|</span> Lt (** Less than [&lt;] *)
-  <span data-count="85">|</span> Gt (** Greater than [&gt;] *)
-  <span data-count="92">|</span> Le (** Less or equal [&lt;=] *)
-  <span data-count="86">|</span> Ge (** Greater or equal [&gt;=] *)
+  <span data-count="93">|</span> Neq (** Not equal [&lt;&gt;] *)
+  <span data-count="87">|</span> Lt (** Less than [&lt;] *)
+  <span data-count="91">|</span> Gt (** Greater than [&gt;] *)
+  <span data-count="79">|</span> Le (** Less or equal [&lt;=] *)
+  <span data-count="80">|</span> Ge (** Greater or equal [&gt;=] *)
 [@@deriving eq, show]
 
 type name = string
 
 (** The main type for our abstract syntax tree *)
 <span data-count="0">t</span>ype 'name t =
-  <span data-count="5882">|</span> Int of in<span data-count="0">t</span> (** Integer literal [] *)
-  <span data-count="2921">|</span> Var of 'name (** Variable [x] *)
-  <span data-count="3158">|</span> Abs of 'name * <span data-count="0">'</span>name <span data-count="3158">t</span> (** Abstraction [fun x -&gt; t] *)
-  <span data-count="1708">|</span> App of <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="2562">t</span> (** Application [f g] *)
-  <span data-count="2457">|</span> Binop of bop * <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="3276">t</span> (** Binary operator [a op b] *)
-  <span data-count="1560">|</span> Unop of uop * <span data-count="0">'</span>name <span data-count="1560">t</span> (** Unary operator [op e] *)
-  <span data-count="2406">|</span> If of <span data-count="0">'</span>name t * <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="4010">t</span> (** Condition [if c then t else e] *)
-  <span data-count="6340">|</span> Let of flag * <span data-count="0">'</span>nam<span data-count="0">e</span> * <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="7925">t</span> (** Let binding [let [rec] p = e1 in e2] *)
-  <span data-count="727">|</span> Fix of <span data-count="0">'</span>name <span data-count="727">t</span> (** Fix-point combinator [fix (fun self -&gt; e)]*)
+  <span data-count="6088">|</span> Int of in<span data-count="0">t</span> (** Integer literal [] *)
+  <span data-count="3128">|</span> Var of 'name (** Variable [x] *)
+  <span data-count="3424">|</span> Abs of 'name * <span data-count="0">'</span>name <span data-count="3424">t</span> (** Abstraction [fun x -&gt; t] *)
+  <span data-count="1696">|</span> App of <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="2544">t</span> (** Application [f g] *)
+  <span data-count="2592">|</span> Binop of bop * <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="3456">t</span> (** Binary operator [a op b] *)
+  <span data-count="903">|</span> Neg of <span data-count="0">'</span>name <span data-count="903">t</span> (** Negative operator [-e] *)
+  <span data-count="2607">|</span> If of <span data-count="0">'</span>name t * <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="4345">t</span> (** Condition [if c then t else e] *)
+  <span data-count="6888">|</span> Let of flag * <span data-count="0">'</span>nam<span data-count="0">e</span> * <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="8610">t</span> (** Let binding [let [rec] p = e1 in e2] *)
 [@@deriving eq, show]
 </code></pre>
       </div>

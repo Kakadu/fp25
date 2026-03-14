@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>parser.ml &mdash; Coverage report</title>
-    <meta name="description" content="95.40% coverage in lib/parser.ml">
+    <meta name="description" content="95.27% coverage in lib/parser.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,15 +15,15 @@
           <span class="dirname">lib/</span>parser.ml
         </a>
       </h1>
-      <h2>95.40%</h2>
+      <h2>95.27%</h2>
     </div>
     <div id="navbar">
-      <span class="some-visited" style="top:6.72%"></span>
-      <span class="some-visited" style="top:11.94%"></span>
-      <span class="unvisited" style="top:35.07%"></span>
-      <span class="unvisited" style="top:40.30%"></span>
-      <span class="unvisited" style="bottom:26.87%"></span>
-      <span class="unvisited" style="bottom:0.75%"></span>
+      <span class="some-visited" style="top:6.87%"></span>
+      <span class="some-visited" style="top:12.21%"></span>
+      <span class="unvisited" style="top:35.88%"></span>
+      <span class="unvisited" style="top:41.22%"></span>
+      <span class="unvisited" style="bottom:25.95%"></span>
+      <span class="unvisited" style="bottom:0.76%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -119,49 +119,46 @@
 <a id="L89"></a><span > </span>
 <a id="L90"></a><span class="visited"> </span>
 <a id="L91"></a><span class="visited"> </span>
-<a id="L92"></a><span class="visited"> </span>
+<a id="L92"></a><span > </span>
 <a id="L93"></a><span > </span>
-<a id="L94"></a><span > </span>
+<a id="L94"></a><span class="visited"> </span>
 <a id="L95"></a><span class="visited"> </span>
-<a id="L96"></a><span class="visited"> </span>
-<a id="L97"></a><span > </span>
-<a id="L98"></a><span class="unvisited"> </span>
-<a id="L99"></a><span class="visited"> </span>
-<a id="L100"></a><span > </span>
+<a id="L96"></a><span > </span>
+<a id="L97"></a><span class="unvisited"> </span>
+<a id="L98"></a><span class="visited"> </span>
+<a id="L99"></a><span > </span>
+<a id="L100"></a><span class="visited"> </span>
 <a id="L101"></a><span class="visited"> </span>
-<a id="L102"></a><span class="visited"> </span>
+<a id="L102"></a><span > </span>
 <a id="L103"></a><span > </span>
 <a id="L104"></a><span class="visited"> </span>
-<a id="L105"></a><span > </span>
+<a id="L105"></a><span class="visited"> </span>
 <a id="L106"></a><span > </span>
 <a id="L107"></a><span class="visited"> </span>
-<a id="L108"></a><span class="visited"> </span>
+<a id="L108"></a><span > </span>
 <a id="L109"></a><span > </span>
 <a id="L110"></a><span class="visited"> </span>
 <a id="L111"></a><span > </span>
-<a id="L112"></a><span > </span>
-<a id="L113"></a><span class="visited"> </span>
+<a id="L112"></a><span class="visited"> </span>
+<a id="L113"></a><span > </span>
 <a id="L114"></a><span > </span>
 <a id="L115"></a><span class="visited"> </span>
-<a id="L116"></a><span > </span>
-<a id="L117"></a><span > </span>
+<a id="L116"></a><span class="visited"> </span>
+<a id="L117"></a><span class="visited"> </span>
 <a id="L118"></a><span class="visited"> </span>
 <a id="L119"></a><span class="visited"> </span>
 <a id="L120"></a><span class="visited"> </span>
 <a id="L121"></a><span class="visited"> </span>
-<a id="L122"></a><span class="visited"> </span>
-<a id="L123"></a><span class="visited"> </span>
+<a id="L122"></a><span > </span>
+<a id="L123"></a><span > </span>
 <a id="L124"></a><span class="visited"> </span>
 <a id="L125"></a><span > </span>
 <a id="L126"></a><span > </span>
-<a id="L127"></a><span class="visited"> </span>
-<a id="L128"></a><span > </span>
-<a id="L129"></a><span > </span>
-<a id="L130"></a><span > </span>
-<a id="L131"></a><span class="visited"> </span>
-<a id="L132"></a><span class="visited"> </span>
-<a id="L133"></a><span class="unvisited"> </span>
-<a id="L134"></a><span > </span>
+<a id="L127"></a><span > </span>
+<a id="L128"></a><span class="visited"> </span>
+<a id="L129"></a><span class="visited"> </span>
+<a id="L130"></a><span class="unvisited"> </span>
+<a id="L131"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -297,9 +294,6 @@
 <a href="#L129">129</a>
 <a href="#L130">130</a>
 <a href="#L131">131</a>
-<a href="#L132">132</a>
-<a href="#L133">133</a>
-<a href="#L134">134</a>
 </pre>
 <pre><code class="ocaml">(** Copyright 2021-2026, Kakadu and contributors *)
 
@@ -309,39 +303,39 @@ open Angstrom
 open Ast
 
 let is_space = function
-  | <span data-count="56848">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\n' | <span data-count="0">'</span>\r' -&gt; true
-  | <span data-count="229359">_</span> -&gt; false
+  | <span data-count="58507">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\n' | <span data-count="0">'</span>\r' -&gt; true
+  | <span data-count="226837">_</span> -&gt; false
 ;;
 
 let spaces = skip_whil<span data-count="41">e</span> is_space
 
 let is_keyword = function
-  | <span data-count="1608">"</span>let" | <span data-count="0">"</span>rec" | <span data-count="1620">"</span>in" | <span data-count="1616">"</span>fun" | <span data-count="826">"</span>if" | <span data-count="826">"</span>then" | <span data-count="831">"</span>else" | <span data-count="729">"</span>fix" -&gt; true
-  | <span data-count="6291">_</span> -&gt; false
+  | <span data-count="1745">"</span>let" | <span data-count="0">"</span>rec" | <span data-count="1755">"</span>in" | <span data-count="1749">"</span>fun" | <span data-count="893">"</span>if" | <span data-count="893">"</span>then" | <span data-count="898">"</span>else" -&gt; true
+  | <span data-count="6770">_</span> -&gt; false
 ;;
 
 let first_letter = function
-  | <span data-count="14347">'</span>a' .. 'z' -&gt; true
-  | <span data-count="26318">_</span> -&gt; false
+  | <span data-count="14703">'</span>a' .. 'z' -&gt; true
+  | <span data-count="25890">_</span> -&gt; false
 ;;
 
 let not_first_letter = function
-  | <span data-count="35258">'</span>a' .. 'z' | <span data-count="19661">'</span>A' .. 'Z' | <span data-count="19674">'</span>0' .. '9' | <span data-count="19477">'</span>_' -&gt; true
-  | <span data-count="14233">_</span> -&gt; false
+  | <span data-count="36298">'</span>a' .. 'z' | <span data-count="21042">'</span>A' .. 'Z' | <span data-count="21292">'</span>0' .. '9' | <span data-count="21349">'</span>_' -&gt; true
+  | <span data-count="14569">_</span> -&gt; false
 ;;
 
 let varname =
   satisf<span data-count="41">y</span> first_letter
   &gt;&gt;<span data-count="41">=</span> fun first_c -&gt;
-  <span data-count="14347">t</span>ake_whil<span data-count="14347">e</span> not_first_letter
+  <span data-count="14703">t</span>ake_whil<span data-count="14703">e</span> not_first_letter
   &gt;&gt;= fun rest -&gt;
-  <span data-count="14347">l</span>et name = String.mak<span data-count="14347">e</span> 1 first_c ^ rest in
-  if is_keyword name then <span data-count="8056">f</span>ail "keyword used as an identifier" else <span data-count="6291">r</span>eturn name
+  <span data-count="14703">l</span>et name = String.mak<span data-count="14703">e</span> 1 first_c ^ rest in
+  if is_keyword name then <span data-count="7933">f</span>ail "keyword used as an identifier" else <span data-count="6770">r</span>eturn name
 ;;
 
 let is_digit = function
-  | <span data-count="5244">'</span>0' .. '9' -&gt; true
-  | <span data-count="31022">_</span> -&gt; false
+  | <span data-count="5481">'</span>0' .. '9' -&gt; true
+  | <span data-count="30177">_</span> -&gt; false
 ;;
 
 let number = take_while<span data-count="41">1</span> is_digit &gt;&gt;<span data-count="41">|</span> int_of_string
@@ -360,53 +354,50 @@ let pp_error ppf = function
 let chain_left term op =
   <span data-count="117">t</span>erm
   &gt;&gt;= fun first -&gt;
-  <span data-count="50131">m</span>an<span data-count="50131">y</span> (op &gt;&gt;<span data-count="50131">=</span> fun o -&gt; <span data-count="891">t</span>erm &gt;&gt;| fun right -&gt; <span data-count="891">o</span>, right)
+  <span data-count="49163">m</span>an<span data-count="49163">y</span> (op &gt;&gt;<span data-count="49163">=</span> fun o -&gt; <span data-count="936">t</span>erm &gt;&gt;| fun right -&gt; <span data-count="936">o</span>, right)
   &gt;&gt;| fun rest -&gt;
-  <span data-count="50131">L</span>ist.fold_left (fun left (o, right) -&gt; <span data-count="891">B</span>inop (o, left, right)) first rest
+  <span data-count="49163">L</span>ist.fold_left (fun left (o, right) -&gt; <span data-count="936">B</span>inop (o, left, right)) first rest
 ;;
 
-let desugar_abs args body = <span data-count="3224">L</span>ist.fold_right (fun arg acc -&gt; <span data-count="1626">A</span>bs (arg, acc)) args body
+let desugar_abs args body = <span data-count="3494">L</span>ist.fold_right (fun arg acc -&gt; <span data-count="1759">A</span>bs (arg, acc)) args body
 
 let parser =
   fi<span data-count="41">x</span> (fun parser -&gt;
     <span data-count="39">l</span>et single =
       conde
-        [ (varname &lt;<span data-count="39">*</span> spaces &gt;&gt;<span data-count="39">=</span> fun var -&gt; <span data-count="3057">r</span>eturn (Var var))
-        ; (number &lt;<span data-count="39">*</span> spaces &gt;&gt;<span data-count="39">=</span> fun n -&gt; <span data-count="3081">r</span>eturn (Int n))
+        [ (varname &lt;<span data-count="39">*</span> spaces &gt;&gt;<span data-count="39">=</span> fun var -&gt; <span data-count="3266">r</span>eturn (Var var))
+        ; (number &lt;<span data-count="39">*</span> spaces &gt;&gt;<span data-count="39">=</span> fun n -&gt; <span data-count="3184">r</span>eturn (Int n))
         ; cha<span data-count="39">r</span> '(' *<span data-count="39">&gt;</span> parser &lt;<span data-count="39">*</span> cha<span data-count="39">r</span> ')'
         ; (strin<span data-count="39">g</span> "if" *<span data-count="39">&gt;</span> parser
            &gt;&gt;<span data-count="39">=</span> fun c -&gt;
-           <span data-count="826">s</span>paces *<span data-count="826">&gt;</span> strin<span data-count="826">g</span> "then" *<span data-count="826">&gt;</span> parser
-           &gt;&gt;= fun t -&gt; <span data-count="826">s</span>paces *<span data-count="826">&gt;</span> strin<span data-count="826">g</span> "else" *<span data-count="826">&gt;</span> parser &gt;&gt;| fun e -&gt; <span data-count="826">I</span>f (c, t, e))
+           <span data-count="893">s</span>paces *<span data-count="893">&gt;</span> strin<span data-count="893">g</span> "then" *<span data-count="893">&gt;</span> parser
+           &gt;&gt;= fun t -&gt; <span data-count="893">s</span>paces *<span data-count="893">&gt;</span> strin<span data-count="893">g</span> "else" *<span data-count="893">&gt;</span> parser &gt;&gt;| fun e -&gt; <span data-count="893">I</span>f (c, t, e))
         ; (strin<span data-count="39">g</span> "fun" *<span data-count="39">&gt;</span> spaces *<span data-count="39">&gt;</span> many<span data-count="39">1</span> (varname &lt;<span data-count="39">*</span> spaces)
            &lt;<span data-count="39">*</span> spaces
            &lt;<span data-count="39">*</span> strin<span data-count="39">g</span> "-&gt;"
-           &gt;&gt;<span data-count="39">=</span> fun args -&gt; <span data-count="1616">p</span>arser &gt;&gt;= fun body -&gt; <span data-count="1616">r</span>eturn (desugar_ab<span data-count="1616">s</span> args body))
+           &gt;&gt;<span data-count="39">=</span> fun args -&gt; <span data-count="1749">p</span>arser &gt;&gt;= fun body -&gt; <span data-count="1749">r</span>eturn (desugar_ab<span data-count="1749">s</span> args body))
         ; (strin<span data-count="39">g</span> "let" *<span data-count="39">&gt;</span> optio<span data-count="39">n</span> Nonrec (spaces *<span data-count="39">&gt;</span> strin<span data-count="39">g</span> "rec" *<span data-count="39">&gt;</span> retur<span data-count="39">n</span> Rec)
            &gt;&gt;<span data-count="39">=</span> fun flag -&gt;
-           <span data-count="1608">s</span>paces *<span data-count="1608">&gt;</span> varname
+           <span data-count="1745">s</span>paces *<span data-count="1745">&gt;</span> varname
            &gt;&gt;= fun name -&gt;
-           <span data-count="1608">m</span>an<span data-count="1608">y</span> (spaces *<span data-count="1608">&gt;</span> varname)
+           <span data-count="1745">m</span>an<span data-count="1745">y</span> (spaces *<span data-count="1745">&gt;</span> varname)
            &gt;&gt;= fun args -&gt;
-           <span data-count="1608">s</span>paces *<span data-count="1608">&gt;</span> cha<span data-count="1608">r</span> '=' *<span data-count="1608">&gt;</span> parser
+           <span data-count="1745">s</span>paces *<span data-count="1745">&gt;</span> cha<span data-count="1745">r</span> '=' *<span data-count="1745">&gt;</span> parser
            &gt;&gt;= fun bind -&gt;
-           <span data-count="1608">s</span>paces *<span data-count="1608">&gt;</span> strin<span data-count="1608">g</span> "in" *<span data-count="1608">&gt;</span> parser
-           &gt;&gt;| fun body -&gt; <span data-count="1608">L</span>et (flag, name, desugar_ab<span data-count="1608">s</span> args bind, body))
-        ; (strin<span data-count="39">g</span> "fix" *<span data-count="39">&gt;</span> parser &gt;&gt;<span data-count="39">|</span> fun f -&gt; <span data-count="729">F</span>ix f)
+           <span data-count="1745">s</span>paces *<span data-count="1745">&gt;</span> strin<span data-count="1745">g</span> "in" *<span data-count="1745">&gt;</span> parser
+           &gt;&gt;| fun body -&gt; <span data-count="1745">L</span>et (flag, name, desugar_ab<span data-count="1745">s</span> args bind, body))
         ]
     in
     <span data-count="39">l</span>et apps =
       many<span data-count="39">1</span> (spaces *<span data-count="39">&gt;</span> single)
       &gt;&gt;= function
       | <span data-count="0">[</span>] -&gt; fail "bad syntax"
-      | <span data-count="17203">x</span> :: xs -&gt; return @@ List.fold_lef<span data-count="17203">t</span> (fun l r -&gt; <span data-count="912">A</span>pp (l, r)) x xs
+      | <span data-count="16899">x</span> :: xs -&gt; return @@ List.fold_lef<span data-count="16899">t</span> (fun l r -&gt; <span data-count="908">A</span>pp (l, r)) x xs
     in
-    <span data-count="39">l</span>et unary =
-      spaces *<span data-count="39">&gt;</span> (cha<span data-count="39">r</span> '-' *<span data-count="39">&gt;</span> spaces *<span data-count="39">&gt;</span> apps &gt;&gt;<span data-count="39">|</span> fun e -&gt; <span data-count="785">U</span>nop (Neg, e)) &lt;|&gt; apps
-    in
+    <span data-count="39">l</span>et negative = spaces *<span data-count="39">&gt;</span> (cha<span data-count="39">r</span> '-' *<span data-count="39">&gt;</span> spaces *<span data-count="39">&gt;</span> apps &gt;&gt;<span data-count="39">|</span> fun e -&gt; <span data-count="908">N</span>eg e) &lt;|&gt; apps in
     <span data-count="39">l</span>et multiplicative =
       chain_left
-        unary
+        negative
         (cond<span data-count="39">e</span>
            [ spaces *<span data-count="39">&gt;</span> cha<span data-count="39">r</span> '*' *<span data-count="39">&gt;</span> retur<span data-count="39">n</span> Times; spaces *<span data-count="39">&gt;</span> cha<span data-count="39">r</span> '/' *<span data-count="39">&gt;</span> retur<span data-count="39">n</span> Divide ])
     in

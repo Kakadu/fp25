@@ -721,17 +721,17 @@ let%expect_test "application with parentheses" =
 
 let%expect_test "unary minus literal" =
   <span data-count="1">F</span>ormat.printf "%a" pp (parse_optimisticall<span data-count="1">y</span> "-1");
-  <span data-count="1">[</span>%expect {| (Unop (Neg, (Int 1))) |}<span data-count="5">]</span>
+  <span data-count="1">[</span>%expect {| (Neg (Int 1)) |}<span data-count="5">]</span>
 ;;
 
 let%expect_test "unary minus variable" =
   <span data-count="1">F</span>ormat.printf "%a" pp (parse_optimisticall<span data-count="1">y</span> "-x");
-  <span data-count="1">[</span>%expect {| (Unop (Neg, (Var x))) |}<span data-count="5">]</span>
+  <span data-count="1">[</span>%expect {| (Neg (Var x)) |}<span data-count="5">]</span>
 ;;
 
 let%expect_test "unary minus precedence" =
   <span data-count="1">F</span>ormat.printf "%a" pp (parse_optimisticall<span data-count="1">y</span> "-x * y");
-  <span data-count="1">[</span>%expect {| (Binop (Times, (Unop (Neg, (Var x))), (Var y))) |}<span data-count="5">]</span>
+  <span data-count="1">[</span>%expect {| (Binop (Times, (Neg (Var x)), (Var y))) |}<span data-count="5">]</span>
 ;;
 
 (* ---------- arithmetic precedence ---------- *)
