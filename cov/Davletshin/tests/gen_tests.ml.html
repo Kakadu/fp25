@@ -214,37 +214,37 @@ let gen_varname =
 let gen_binop = Gen.(oneof_lis<span data-count="1">t</span> [ Plus; Minus; Times; Divide; Eq; Neq; Lt; Gt; Le; Ge ])
 
 let rec gen_ast depth =
-  <span data-count="134388942">l</span>et open Gen in
-  let base = [ ma<span data-count="134388942">p</span> (fun v -&gt; <span data-count="3128">V</span>ar v) gen_varname; ma<span data-count="134388942">p</span> (fun i -&gt; <span data-count="3044">I</span>nt i) nat ] in
+  <span data-count="126848838">l</span>et open Gen in
+  let base = [ ma<span data-count="126848838">p</span> (fun v -&gt; <span data-count="3142">V</span>ar v) gen_varname; ma<span data-count="126848838">p</span> (fun i -&gt; <span data-count="2971">I</span>nt i) nat ] in
   if depth = 0
-  then <span data-count="124051408">o</span>neof base
+  then <span data-count="117091312">o</span>neof base
   else
-    <span data-count="10337534">o</span>neof
+    <span data-count="9757526">o</span>neof
       (base
-       @ [ map<span data-count="10337534">2</span> (fun x t -&gt; <span data-count="846">A</span>bs (x, t)) gen_varname (gen_as<span data-count="10337534">t</span> (depth - 1))
-         ; map<span data-count="10337534">2</span> (fun f g -&gt; <span data-count="848">A</span>pp (f, g)) (gen_as<span data-count="10337534">t</span> (depth - 1)) (gen_as<span data-count="10337534">t</span> (depth - 1))
-         ; map<span data-count="10337534">3</span>
-             (fun op a b -&gt; <span data-count="864">B</span>inop (op, a, b))
+       @ [ map<span data-count="9757526">2</span> (fun x t -&gt; <span data-count="905">A</span>bs (x, t)) gen_varname (gen_as<span data-count="9757526">t</span> (depth - 1))
+         ; map<span data-count="9757526">2</span> (fun f g -&gt; <span data-count="843">A</span>pp (f, g)) (gen_as<span data-count="9757526">t</span> (depth - 1)) (gen_as<span data-count="9757526">t</span> (depth - 1))
+         ; map<span data-count="9757526">3</span>
+             (fun op a b -&gt; <span data-count="849">B</span>inop (op, a, b))
              gen_binop
-             (gen_as<span data-count="10337534">t</span> (depth - 1))
-             (gen_as<span data-count="10337534">t</span> (depth - 1))
-         ; ma<span data-count="10337534">p</span> (fun e -&gt; <span data-count="903">N</span>eg e) (gen_as<span data-count="10337534">t</span> (depth - 1))
-         ; map<span data-count="10337534">3</span>
-             (fun c t e -&gt; <span data-count="869">I</span>f (c, t, e))
-             (gen_as<span data-count="10337534">t</span> (depth - 1))
-             (gen_as<span data-count="10337534">t</span> (depth - 1))
-             (gen_as<span data-count="10337534">t</span> (depth - 1))
-         ; map<span data-count="10337534">3</span>
-             (fun p e1 e2 -&gt; <span data-count="856">L</span>et (Nonrec, p, e1, e2))
+             (gen_as<span data-count="9757526">t</span> (depth - 1))
+             (gen_as<span data-count="9757526">t</span> (depth - 1))
+         ; ma<span data-count="9757526">p</span> (fun e -&gt; <span data-count="865">N</span>eg e) (gen_as<span data-count="9757526">t</span> (depth - 1))
+         ; map<span data-count="9757526">3</span>
+             (fun c t e -&gt; <span data-count="861">I</span>f (c, t, e))
+             (gen_as<span data-count="9757526">t</span> (depth - 1))
+             (gen_as<span data-count="9757526">t</span> (depth - 1))
+             (gen_as<span data-count="9757526">t</span> (depth - 1))
+         ; map<span data-count="9757526">3</span>
+             (fun p e1 e2 -&gt; <span data-count="883">L</span>et (Nonrec, p, e1, e2))
              gen_varname
-             (gen_as<span data-count="10337534">t</span> (depth - 1))
-             (gen_as<span data-count="10337534">t</span> (depth - 1))
-         ; map<span data-count="10337534">4</span>
-             (fun n x b e2 -&gt; <span data-count="866">L</span>et (Rec, n, Abs (x, b), e2))
+             (gen_as<span data-count="9757526">t</span> (depth - 1))
+             (gen_as<span data-count="9757526">t</span> (depth - 1))
+         ; map<span data-count="9757526">4</span>
+             (fun n x b e2 -&gt; <span data-count="816">L</span>et (Rec, n, Abs (x, b), e2))
              gen_varname
              gen_varname
-             (gen_as<span data-count="10337534">t</span> (depth - 1))
-             (gen_as<span data-count="10337534">t</span> (depth - 1))
+             (gen_as<span data-count="9757526">t</span> (depth - 1))
+             (gen_as<span data-count="9757526">t</span> (depth - 1))
          ])
 ;;
 

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>interpret.ml &mdash; Coverage report</title>
-    <meta name="description" content="72.38% coverage in lib/interpret.ml">
+    <meta name="description" content="72.82% coverage in lib/interpret.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,7 +15,7 @@
           <span class="dirname">lib/</span>interpret.ml
         </a>
       </h1>
-      <h2>72.38%</h2>
+      <h2>72.82%</h2>
     </div>
     <div id="navbar">
       <span class="unvisited" style="top:19.62%"></span>
@@ -32,7 +32,6 @@
       <span class="unvisited" style="bottom:36.08%"></span>
       <span class="unvisited" style="bottom:31.65%"></span>
       <span class="unvisited" style="bottom:25.32%"></span>
-      <span class="unvisited" style="bottom:19.62%"></span>
       <span class="unvisited" style="bottom:6.33%"></span>
       <span class="unvisited" style="bottom:4.43%"></span>
       <span class="unvisited" style="bottom:3.80%"></span>
@@ -166,10 +165,10 @@
 <a id="L121"></a><span > </span>
 <a id="L122"></a><span > </span>
 <a id="L123"></a><span > </span>
-<a id="L124"></a><span class="visited"> </span>
+<a id="L124"></a><span > </span>
 <a id="L125"></a><span > </span>
 <a id="L126"></a><span > </span>
-<a id="L127"></a><span class="unvisited"> </span>
+<a id="L127"></a><span > </span>
 <a id="L128"></a><span > </span>
 <a id="L129"></a><span > </span>
 <a id="L130"></a><span > </span>
@@ -389,18 +388,18 @@ end = struct
 
   let ( let* ) = M.( let* )
   let vint n = <span data-count="134379436">M</span>.return (VInt n)
-  let vclosure n e env = <span data-count="23">M</span>.return (VClosure (n, e, env))
+  let vclosure n e env = <span data-count="87">M</span>.return (VClosure (n, e, env))
 
   (** [eval env e] is the [&lt;env, e&gt; ==&gt; v] relation. *)
   let rec eval env e steps =
-    <span data-count="298618648">i</span>f steps &lt;= 0
+    <span data-count="298618914">i</span>f steps &lt;= 0
     then <span data-count="0">M</span>.fail ProgramFreeze
-    else <span data-count="298618648">(</span>
+    else <span data-count="298618914">(</span>
       match e with
       | <span data-count="59724554">I</span>nt n -&gt; vint n
-      | <span data-count="104515644">V</span>ar x -&gt; eval_var env x
-      | <span data-count="23">A</span>bs (x, b) -&gt; vclosure x b env
-      | <span data-count="29861772">A</span>pp (l, r) -&gt; eval_app env l r steps
+      | <span data-count="104515758">V</span>ar x -&gt; eval_var env x
+      | <span data-count="87">A</span>bs (x, b) -&gt; vclosure x b env
+      | <span data-count="29861860">A</span>pp (l, r) -&gt; eval_app env l r steps
       | <span data-count="74654881">B</span>inop (op, l, r) -&gt; eval_binop env op l r steps
       | <span data-count="2">N</span>eg e -&gt; eval_neg env e steps
       | <span data-count="29861754">I</span>f (c, t, e) -&gt; eval_if env c t e steps
@@ -409,20 +408,20 @@ end = struct
 
   (** [eval_var env x] is the [v] such that [&lt;env, x&gt; ==&gt; v]. *)
   and eval_var env x =
-    <span data-count="134377411">m</span>atch env with
+    <span data-count="134377611">m</span>atch env with
     | <span data-count="0">[</span>] -&gt; M.fail (UnknownVariable x)
-    | <span data-count="134377411">(</span>y, v) :: rest -&gt; if y = x then <span data-count="104515644">M</span>.return v else <span data-count="29861767">e</span>val_var rest x
+    | <span data-count="134377611">(</span>y, v) :: rest -&gt; if y = x then <span data-count="104515758">M</span>.return v else <span data-count="29861853">e</span>val_var rest x
 
   (** [eval_app env e1 e2] is the [v] such that [&lt;env, e1 e2&gt; ==&gt; v]. *)
   and eval_app env e1 e2 steps =
-    <span data-count="29861772">l</span>et* v1 = eva<span data-count="29861772">l</span> env e1 (steps - 1) in
-    <span data-count="29861772">m</span>atch v1 with
-    | <span data-count="29861763">V</span>Closure (n, body, defenv) -&gt;
-      let* v2 = eva<span data-count="29861763">l</span> env e2 (steps - 1) in
-      <span data-count="29861763">e</span>val ((n, v2) :: defenv) body (steps - 1)
-    | <span data-count="9">V</span>Builtin f -&gt;
-      let* v2 = eva<span data-count="9">l</span> env e2 (steps - 1) in
-      <span data-count="9">f</span> v2
+    <span data-count="29861860">l</span>et* v1 = eva<span data-count="29861860">l</span> env e1 (steps - 1) in
+    <span data-count="29861860">m</span>atch v1 with
+    | <span data-count="29861853">V</span>Closure (n, body, defenv) -&gt;
+      let* v2 = eva<span data-count="29861853">l</span> env e2 (steps - 1) in
+      <span data-count="29861853">e</span>val ((n, v2) :: defenv) body (steps - 1)
+    | <span data-count="7">V</span>Builtin f -&gt;
+      let* v2 = eva<span data-count="7">l</span> env e2 (steps - 1) in
+      <span data-count="7">f</span> v2
     | <span data-count="0">_</span> -&gt; M.fail (TypeError "Tried to apply non-function")
 
   and eval_binop env op e1 e2 steps =
@@ -485,12 +484,12 @@ end = struct
   ;;
 
   let builtin_fix =
-    VBuiltin
-      (function
-        | <span data-count="2">V</span>Closure (self, Abs (arg, body), defenv) -&gt;
-          let rec new_closure = VClosure (arg, body, (self, new_closure) :: defenv) in
-          M.return new_closure
-        | <span data-count="0">_</span> -&gt; M.fail (TypeError "Unsafe fix"))
+    VClosure
+      ( "f"
+      , App
+          ( Abs ("x", App (Var "f", Abs ("v", App (App (Var "x", Var "x"), Var "v"))))
+          , Abs ("x", App (Var "f", Abs ("v", App (App (Var "x", Var "x"), Var "v")))) )
+      , [] )
   ;;
 
   let initial_env = [ "print", builtin_print; "fix", builtin_fix ]

@@ -129,36 +129,36 @@
 
 (** recursive and not recursive flag *)
 <span data-count="0">t</span>ype flag =
-  <span data-count="866">|</span> Rec (** Recursive *)
-  <span data-count="856">|</span> Nonrec (** Non recursive *)
+  <span data-count="816">|</span> Rec (** Recursive *)
+  <span data-count="883">|</span> Nonrec (** Non recursive *)
 [@@deriving eq, show]
 
 (** binary operators *)
 <span data-count="0">t</span>ype bop =
-  <span data-count="91">|</span> Plus (** Addition [+] *)
-  <span data-count="84">|</span> Minus (** Subtraction [-] *)
-  <span data-count="86">|</span> Times (** Multiplication [*] *)
-  <span data-count="86">|</span> Divide (** Division [/] *)
-  <span data-count="87">|</span> Eq (** Equal [=] *)
-  <span data-count="93">|</span> Neq (** Not equal [&lt;&gt;] *)
-  <span data-count="87">|</span> Lt (** Less than [&lt;] *)
-  <span data-count="91">|</span> Gt (** Greater than [&gt;] *)
-  <span data-count="79">|</span> Le (** Less or equal [&lt;=] *)
-  <span data-count="80">|</span> Ge (** Greater or equal [&gt;=] *)
+  <span data-count="87">|</span> Plus (** Addition [+] *)
+  <span data-count="65">|</span> Minus (** Subtraction [-] *)
+  <span data-count="82">|</span> Times (** Multiplication [*] *)
+  <span data-count="83">|</span> Divide (** Division [/] *)
+  <span data-count="100">|</span> Eq (** Equal [=] *)
+  <span data-count="92">|</span> Neq (** Not equal [&lt;&gt;] *)
+  <span data-count="81">|</span> Lt (** Less than [&lt;] *)
+  <span data-count="81">|</span> Gt (** Greater than [&gt;] *)
+  <span data-count="81">|</span> Le (** Less or equal [&lt;=] *)
+  <span data-count="97">|</span> Ge (** Greater or equal [&gt;=] *)
 [@@deriving eq, show]
 
 type name = string
 
 (** The main type for our abstract syntax tree *)
 <span data-count="0">t</span>ype 'name t =
-  <span data-count="6088">|</span> Int of in<span data-count="0">t</span> (** Integer literal [] *)
-  <span data-count="3128">|</span> Var of 'name (** Variable [x] *)
-  <span data-count="3424">|</span> Abs of 'name * <span data-count="0">'</span>name <span data-count="3424">t</span> (** Abstraction [fun x -&gt; t] *)
-  <span data-count="1696">|</span> App of <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="2544">t</span> (** Application [f g] *)
-  <span data-count="2592">|</span> Binop of bop * <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="3456">t</span> (** Binary operator [a op b] *)
-  <span data-count="903">|</span> Neg of <span data-count="0">'</span>name <span data-count="903">t</span> (** Negative operator [-e] *)
-  <span data-count="2607">|</span> If of <span data-count="0">'</span>name t * <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="4345">t</span> (** Condition [if c then t else e] *)
-  <span data-count="6888">|</span> Let of flag * <span data-count="0">'</span>nam<span data-count="0">e</span> * <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="8610">t</span> (** Let binding [let [rec] p = e1 in e2] *)
+  <span data-count="5942">|</span> Int of in<span data-count="0">t</span> (** Integer literal [] *)
+  <span data-count="3142">|</span> Var of 'name (** Variable [x] *)
+  <span data-count="3442">|</span> Abs of 'name * <span data-count="0">'</span>name <span data-count="3442">t</span> (** Abstraction [fun x -&gt; t] *)
+  <span data-count="1686">|</span> App of <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="2529">t</span> (** Application [f g] *)
+  <span data-count="2547">|</span> Binop of bop * <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="3396">t</span> (** Binary operator [a op b] *)
+  <span data-count="865">|</span> Neg of <span data-count="0">'</span>name <span data-count="865">t</span> (** Negative operator [-e] *)
+  <span data-count="2583">|</span> If of <span data-count="0">'</span>name t * <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="4305">t</span> (** Condition [if c then t else e] *)
+  <span data-count="6796">|</span> Let of flag * <span data-count="0">'</span>nam<span data-count="0">e</span> * <span data-count="0">'</span>name t * <span data-count="0">'</span>name <span data-count="8495">t</span> (** Let binding [let [rec] p = e1 in e2] *)
 [@@deriving eq, show]
 </code></pre>
       </div>

@@ -199,12 +199,12 @@ end
 module RESULT : MONADERROR with type 'a t = ('a, error) Result.t = struct
   type 'a t = ('a, error) Result.t
 
-  let return x = <span data-count="238895148">O</span>k x
+  let return x = <span data-count="238895324">O</span>k x
   let fail x = <span data-count="1">E</span>rror x
 
   let ( let* ) m f =
-    <span data-count="238895113">m</span>atch m with
-    | <span data-count="238895112">O</span>k x -&gt; f x
+    <span data-count="238895289">m</span>atch m with
+    | <span data-count="238895288">O</span>k x -&gt; f x
     | <span data-count="1">E</span>rror e -&gt; Error e
   ;;
 end
