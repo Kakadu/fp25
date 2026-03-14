@@ -33,7 +33,6 @@ type 'name t = 'name Ast.t =
   | Neg of 'name t
   | If of 'name t * 'name t * 'name t
   | Let of flag * 'name * 'name t * 'name t
-  | Fix of 'name t
 [@@deriving show { with_path = false }]
 
 let pp_named = pp Format.pp_print_string

@@ -13,7 +13,7 @@ let is_space = function
 let spaces = skip_while is_space
 
 let is_keyword = function
-  | "let" | "rec" | "in" | "fun" | "if" | "then" | "else" | "fix" -> true
+  | "let" | "rec" | "in" | "fun" | "if" | "then" | "else" -> true
   | _ -> false
 ;;
 
@@ -89,7 +89,6 @@ let parser =
            >>= fun bind ->
            spaces *> string "in" *> parser
            >>| fun body -> Let (flag, name, desugar_abs args bind, body))
-        ; (string "fix" *> parser >>| fun f -> Fix f)
         ]
     in
     let apps =

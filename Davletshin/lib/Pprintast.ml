@@ -36,7 +36,6 @@ let pp =
     | If (c, t, e) -> fprintf fmt "(if %a then %a else %a)" pp c pp t pp e
     | Let (Nonrec, n, e1, e2) -> fprintf fmt "(let %s = %a in %a)" n pp e1 pp e2
     | Let (Rec, n, e1, e2) -> fprintf fmt "(let rec %s = %a in %a)" n pp e1 pp e2
-    | Fix f -> fprintf fmt "(fix %a)" pp f
   in
   pp
 ;;

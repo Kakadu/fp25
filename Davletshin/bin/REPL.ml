@@ -16,7 +16,7 @@ let rec repl () =
   | exception End_of_file -> ()
   | line ->
     let text = String.trim line in
-    if not (String.equal text "") then Interpret.parse_and_run text 1000000;
+    if not (String.equal text "") then Interpret.parse_and_run text 10000;
     repl ()
 ;;
 

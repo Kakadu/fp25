@@ -39,8 +39,7 @@ end = struct
       | Neg e -> eval_neg env e steps
       | If (c, t, e) -> eval_if env c t e steps
       | Let (Nonrec, n, e1, e2) -> eval_let env n e1 e2 steps
-      | Let (Rec, n, b, e2) -> eval_letrec env n b e2 steps
-      | Fix e -> eval_fix env e steps)
+      | Let (Rec, n, b, e2) -> eval_letrec env n b e2 steps)
 
   (** [eval_var env x] is the [v] such that [<env, x> ==> v]. *)
   and eval_var env x =
@@ -101,23 +100,12 @@ end = struct
       eval env' e2 (steps - 1)
     | body -> eval_let env n body e2 (steps - 1)
 
-  and eval_fix env e steps =
-    let* v = eval env e (steps - 1) in
-    match v with
-    | VClosure (self, body, defenv) ->
-      (match body with
-       | Abs (param, b) ->
-         let rec new_closure = VClosure (param, b, (self, new_closure) :: defenv) in
-         M.return new_closure
-       | b -> eval env b (steps - 1))
-    | _ -> M.fail (TypeError "Tried to apply fix to not a function")
-
   and print (e : value) =
     match e with
     | VUnit -> M.return OUnit
     | VInt n -> M.return (OInt n)
     | VClosure (name, body, _) -> M.return (OAbs (name, body))
-    | VBuiltin _ -> M.return (OBuiltin "print")
+    | VBuiltin _ -> M.return (OBuiltin "")
   ;;
 
   let builtin_print =
@@ -130,7 +118,16 @@ end = struct
         | _ -> M.fail (TypeError "Tried to print not an integer"))
   ;;
 
-  let initial_env = [ "print", builtin_print ]
+  let builtin_fix =
+    VBuiltin
+      (function
+        | VClosure (self, Abs (arg, body), defenv) ->
+          let rec new_closure = VClosure (arg, body, (self, new_closure) :: defenv) in
+          M.return new_closure
+        | _ -> M.fail (TypeError "Unsafe fix"))
+  ;;
+
+  let initial_env = [ "print", builtin_print; "fix", builtin_fix ]
 
   let run e steps =
     let* v = eval initial_env e steps in
@@ -148,7 +145,7 @@ let parse_and_run str steps =
         | OUnit -> Printf.printf "Success: Unit\n"
         | OInt n -> Printf.printf "Success: %d\n" n
         | OAbs (p, b) -> Printf.printf "Success: fun %s -> %s\n" p (ast_to_string b)
-        | OBuiltin n -> Printf.printf "Success: val %s = <fun>\n" n)
+        | OBuiltin _ -> Printf.printf "Success: <builtin_fun>\n")
      | Error err ->
        (match err with
         | UnknownVariable x -> Printf.eprintf "UnknownVariable: %s\n%!" x
