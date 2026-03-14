@@ -1,0 +1,41 @@
+(lang dune 3.7)
+
+(generate_opam_files true)
+
+(cram enable)
+
+(license "LGPL-3.0-or-later WITH OCaml-LGPL-linking-exception")
+
+(authors "Vyacheslav Davletshin <anymeshnik2.1@gmail.com>")
+
+(maintainers "Vyacheslav Davletshin <anymeshnik2.1@gmail.com>")
+
+(bug_reports "https://github.com/Kakadu/fp25")
+
+(homepage "https://github.com/Kakadu/fp25")
+
+(package
+ (name Davletshin) ; FIXME and regenerate .opam file using 'dune build @install'
+ (synopsis "An interpreter for miniML")
+ (description
+  "An interpreter for the miniML language.\n  Supports CBV evaluation, recursion via fix/let rec, and includes testing via QuickCheck and cram.")
+ (documentation "https://kakadu.github.io/fp25/docs/Davletshin")
+ (version 0.1)
+ (depends
+  (dune
+   (= "3.19.1"))
+  (angstrom
+   (= "0.16.0"))
+  base
+  (ppx_inline_test :with-test)
+  ppx_expect
+  ppx_deriving
+  bisect_ppx
+  (odoc :with-doc)
+  (ocamlformat
+   (and
+    :build
+    (= "0.26.2")))
+  ; base
+  ; After adding dependencies to 'dune' files add the same dependecies here too
+  ))

@@ -1,0 +1,44 @@
+[@@@ocaml.text "/*"]
+
+(** Copyright 2021-2026, Kakadu and contributors *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+[@@@ocaml.text "/*"]
+
+(* Pretty printer goes here *)
+
+open Ast
+
+let pp =
+  let open Format in
+  let rec pp fmt = function
+    | Int n -> fprintf fmt "%d" n
+    | Var s -> fprintf fmt "%s" s
+    | App (l, r) -> fprintf fmt "(%a %a)" pp l pp r
+    | Abs (x, t) -> fprintf fmt "(fun %s -> %a)" x pp t
+    | Binop (op, l, r) ->
+      let bop =
+        match op with
+        | Plus -> "+"
+        | Minus -> "-"
+        | Times -> "*"
+        | Divide -> "/"
+        | Eq -> "="
+        | Neq -> "<>"
+        | Lt -> "<"
+        | Gt -> ">"
+        | Le -> "<="
+        | Ge -> ">="
+      in
+      fprintf fmt "(%a %s %a)" pp l bop pp r
+    | Neg e -> fprintf fmt "(-%a)" pp e
+    | If (c, t, e) -> fprintf fmt "(if %a then %a else %a)" pp c pp t pp e
+    | Let (Nonrec, n, e1, e2) -> fprintf fmt "(let %s = %a in %a)" n pp e1 pp e2
+    | Let (Rec, n, e1, e2) -> fprintf fmt "(let rec %s = %a in %a)" n pp e1 pp e2
+  in
+  pp
+;;
+
+let pp_hum = pp
+let ast_to_string expr = Format.asprintf "%a" pp expr
