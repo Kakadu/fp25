@@ -119,12 +119,12 @@ end = struct
   ;;
 
   let builtin_fix =
-    VBuiltin
-      (function
-        | VClosure (self, Abs (arg, body), defenv) ->
-          let rec new_closure = VClosure (arg, body, (self, new_closure) :: defenv) in
-          M.return new_closure
-        | _ -> M.fail (TypeError "Unsafe fix"))
+    VClosure
+      ( "f"
+      , App
+          ( Abs ("x", App (Var "f", Abs ("v", App (App (Var "x", Var "x"), Var "v"))))
+          , Abs ("x", App (Var "f", Abs ("v", App (App (Var "x", Var "x"), Var "v")))) )
+      , [] )
   ;;
 
   let initial_env = [ "print", builtin_print; "fix", builtin_fix ]
