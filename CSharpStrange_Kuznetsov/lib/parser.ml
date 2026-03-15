@@ -293,9 +293,7 @@ let parse_continue =
 let parse_block =
   fix (fun block ->
     let sc p = p <* skip_semicolons1 in
-    (* операторы, которые должны заканчиваться ; *)
     let op_sc p = p <* skip_semicolons in
-    (* операторы, которые могут не заканчиваться ; *)
     let body_step =
       choice
         ?failure_msg:(Some "Error in some block sentence")

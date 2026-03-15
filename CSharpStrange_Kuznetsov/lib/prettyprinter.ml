@@ -72,7 +72,7 @@ let pp_val_type fmt = function
   | ValChar c -> fprintf fmt "'%c'" c
   | ValNull -> fprintf fmt "null"
   | ValBool b -> fprintf fmt "%b" b
-  | ValString s -> fprintf fmt {|"%s"|} s
+  | ValString s -> fprintf fmt {|%S|} s
 ;;
 
 let rec pp_expr fmt = function

@@ -15,7 +15,7 @@
  (libraries c_sharp_strange_lib qcheck tests)
  (preprocess
   (pps ppx_expect))
-  (instrumentation
+ (instrumentation
   (backend bisect_ppx)))
 
 (cram

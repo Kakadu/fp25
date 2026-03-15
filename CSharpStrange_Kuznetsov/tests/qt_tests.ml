@@ -722,8 +722,7 @@ and gen_break_continue_stmt = Gen.oneof [ return SBreak; return SContinue ]
 (* Class and program generators *)
 (* =========================================================================== *)
 
-let rec has_return stmt =
-  match stmt with
+let rec has_return = function
   | SReturn _ -> true
   | SBlock stmts -> List.exists has_return stmts
   | SIf (_, then_stmt, Some else_stmt) -> has_return then_stmt || has_return else_stmt
