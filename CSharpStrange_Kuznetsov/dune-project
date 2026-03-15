@@ -20,7 +20,7 @@
  (description
   "An interpreter for subset of C# language (some stuff like  async/await and LINQ will be added later)")
  (documentation "https://kakadu.github.io/fp25/docs/CSharpStrange_Kuznetsov")
- (version 0.2)
+ (version 0.3)
  (depends
   dune
   angstrom

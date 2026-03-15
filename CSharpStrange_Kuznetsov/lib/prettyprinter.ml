@@ -17,7 +17,7 @@ let pp_list : 'a. (formatter -> 'a -> unit) -> string -> formatter -> 'a list ->
 
 let pp_option : 'a. (formatter -> 'a -> unit) -> formatter -> 'a option -> unit =
   fun pp fmt -> function
-  | None -> fprintf fmt ""
+  | None -> ()
   | Some x -> pp fmt x
 ;;
 
@@ -72,14 +72,17 @@ let pp_val_type fmt = function
   | ValChar c -> fprintf fmt "'%c'" c
   | ValNull -> fprintf fmt "null"
   | ValBool b -> fprintf fmt "%b" b
-  | ValString s -> fprintf fmt {|%S|} s
+  | ValString s -> fprintf fmt {|"%s"|} s
 ;;
 
-(* TODO: priorities *)
 let rec pp_expr fmt = function
   | EValue v -> pp_val_type fmt v
-  | EBinOp (op, e1, e2) -> fprintf fmt "%a %a %a" pp_expr e1 pp_bin_op op pp_expr e2
-  | EUnOp (op, e) -> fprintf fmt "%a%a" pp_un_op op pp_expr e
+  | EBinOp (OpAssign, EId id, e) -> fprintf fmt "%a = %a" pp_ident id pp_expr e
+  | EBinOp (op, e1, e2) -> fprintf fmt "(%a %a %a)" pp_expr e1 pp_bin_op op pp_expr e2
+  | EUnOp (op, e) ->
+    (match e with
+     | EValue _ | EId _ -> fprintf fmt "%a%a" pp_un_op op pp_expr e
+     | _ -> fprintf fmt "(%a%a)" pp_un_op op pp_expr e)
   | EId id -> pp_ident fmt id
   | EArrayAccess (e1, e2) -> fprintf fmt "%a[%a]" pp_expr e1 pp_expr e2
   | EFuncCall (e, Args args) -> fprintf fmt "%a(%a)" pp_expr e (pp_list pp_expr ", ") args
@@ -88,35 +91,75 @@ let rec pp_expr fmt = function
 
 let rec pp_stmt fmt = function
   | SFor (init, cond, incr, body) ->
+    let pp_init fmt = function
+      | None -> fprintf fmt ""
+      | Some stmt ->
+        (match stmt with
+         | SDecl (vd, e) ->
+           fprintf
+             fmt
+             "%a%a"
+             pp_var_decl
+             vd
+             (fun fmt -> function
+                | None -> ()
+                | Some expr -> fprintf fmt " = %a" pp_expr expr)
+             e
+         | SExpr e -> pp_expr fmt e
+         | _ -> pp_stmt fmt stmt)
+    in
     fprintf
       fmt
-      "@[<v 4>for (%a; %a; %a) { %a@] }"
-      (pp_option pp_stmt)
+      "@[<v 4>for (%a%a%a) {@ %a@]@ }"
+      pp_init
       init
-      (pp_option pp_expr)
+      (fun fmt -> function
+         | None -> fprintf fmt ";"
+         | Some e -> fprintf fmt "; %a" pp_expr e)
       cond
-      (pp_option pp_expr)
+      (fun fmt -> function
+         | None -> fprintf fmt ";"
+         | Some e -> fprintf fmt "; %a" pp_expr e)
       incr
       pp_stmt
       body
   | SIf (cond, then_branch, else_branch) ->
-    fprintf
-      fmt
-      "@[<v 4>if (%a) {@ %a@]@ }%a"
-      pp_expr
-      cond
-      pp_stmt
-      then_branch
-      (pp_option (fun fmt -> fprintf fmt "@ @[<v 4>else {@ %a@]@ }" pp_stmt))
-      else_branch
+    (match else_branch with
+     | None -> fprintf fmt "@[<v 4>if (%a) {@ %a@]@ }" pp_expr cond pp_stmt then_branch
+     | Some else_stmt ->
+       fprintf
+         fmt
+         "@[<v 4>if (%a) {@ %a@]@ }@ @[<v 4>else {@ %a@]@ }@ "
+         pp_expr
+         cond
+         pp_stmt
+         then_branch
+         pp_stmt
+         else_stmt)
   | SWhile (cond, body) ->
     fprintf fmt "@[<v 4>while (%a) {@ %a@]@ }" pp_expr cond pp_stmt body
-  | SReturn e -> fprintf fmt "return %a;" (pp_option pp_expr) e
+  | SReturn e ->
+    fprintf
+      fmt
+      "return%a;"
+      (fun fmt -> function
+         | None -> ()
+         | Some expr -> fprintf fmt " %a" pp_expr expr)
+      e
   | SBlock stmts -> pp_sblock fmt stmts
   | SBreak -> fprintf fmt "break;"
   | SContinue -> fprintf fmt "continue;"
   | SExpr e -> fprintf fmt "%a;" pp_expr e
-  | SDecl (vd, e) -> fprintf fmt "%a = %a;" pp_var_decl vd (pp_option pp_expr) e
+  | SDecl (vd, e) ->
+    fprintf
+      fmt
+      "%a%a;"
+      pp_var_decl
+      vd
+      (fun fmt -> function
+         | None -> ()
+         | Some expr -> fprintf fmt " = %a" pp_expr expr)
+      e
 
 and pp_sblock fmt = function
   | [] -> fprintf fmt ""
@@ -127,14 +170,22 @@ let pp_field fmt = function
   | VarField (mods, t, id, e) ->
     fprintf
       fmt
-      "@[<v 4>%a %a %a = %a;@]"
+      "%a %a %a%a;"
       (pp_list pp_modifier " ")
       mods
       pp_var_type
       t
       pp_ident
       id
-      (pp_option pp_expr)
+      (fun fmt -> function
+         | None -> ()
+         | Some expr ->
+           let init_expr =
+             match expr with
+             | EBinOp (OpAssign, _, e) -> e
+             | _ -> expr
+           in
+           fprintf fmt " = %a" pp_expr init_expr)
       e
   | Method (mods, t, id, Params params, body) ->
     fprintf
