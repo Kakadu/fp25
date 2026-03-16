@@ -31,7 +31,7 @@ let%expect_test "Factorial" =
           return num * Fac(num - 1);
         }
       }
-      static int Main() {
+      public static int Main() {
         return Fac(5);
       }
     } |};
@@ -72,7 +72,7 @@ let%expect_test "Invalid value" =
   test_typecheck
     {|
     class Program {
-      static int Main() {
+      public static int Main() {
         int a;
         int b = a -1 + 4;
         return b;
@@ -124,7 +124,7 @@ let%expect_test "While" =
   test_typecheck
     {| 
   class Program {
-    static int Main() {
+    public static int Main() {
       int count = 0;
       bool b = true;
       while(true) {
@@ -152,7 +152,7 @@ let%expect_test "For" =
   class Program {
     int n = 10;
     int count = 7% 2*67;
-    static int Main() {
+    public static int Main() {
       for (int i = 0; i < n; i=i+1) {
         for (int j = 1;;) {
           for (;j != n; j = j + 2) {
@@ -222,7 +222,7 @@ let%expect_test "Factorial with writeline" =
           return num * Fac(num - 1);
         }
       }
-      static int Main() {
+      public static int Main() {
        int result = Fac(5);
        System.Console.WriteLine(result);
         return result;

@@ -28,7 +28,7 @@ let%expect_test "Main 1" =
     static char h = 'a';
     static bool t;
 
-    static int Main() { 
+    public static int Main() { 
       a = (50 % 2) + b - c;
       r = s != "kkkk" && (190%22 == 100 * -2/5);
       t = (a != b * c) || (a >= b) && (a == c +90);
@@ -52,7 +52,7 @@ let%expect_test "Main 2" =
     {| 
   class Program {
     static int n = 10;
-    static int Main() {
+    public static int Main() {
       int res = 0;
       for(int i = 0; i < n; i = i+1) {
         for(int j = 0; j < i; j = j+1) {
@@ -78,7 +78,7 @@ let%expect_test "Main 3" =
     static bool t;
     static int a = 5;
 
-    static int Main() {
+    public static int Main() {
       int b = 5;
       int c = 2;
       t = true;
@@ -110,7 +110,7 @@ let%expect_test "Main 4" =
   class Program {
     static int x = 189;
     static int s = 0;
-    static int Main() {
+    public static int Main() {
       while (x != 0) {
           s = s + x % 10;
           x = x/ 10;
@@ -137,7 +137,7 @@ let%expect_test "Functions 1" =
           return 2;
       }
     }
-    static int Main() {
+    public static int Main() {
    System.Console.WriteLine(is_right_triangle(3,4,5));
       return;
     }
@@ -160,7 +160,7 @@ let%expect_test "Factorial with writeline" =
           return num * Fac(num - 1);
         }
       }
-      static int Main() {
+      public static int Main() {
        int result = Fac(5);
        System.Console.WriteLine(result);
         return result;

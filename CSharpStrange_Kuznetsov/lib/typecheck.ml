@@ -105,9 +105,31 @@ let find_memb_from_obj obj_id id =
     (match find_class_memb b id with
      | Some memb -> return (Some memb)
      | None ->
-       List.find_opt (fun (builtin_id, _) -> equal_ident builtin_id id) builtin_methods
-       |> Option.map (fun (_, info) -> TCMethod info)
-       |> return)
+       read_global_el obj_id
+       >>= (function
+        | TCClass (Class (_, _, fields)) ->
+          let static_fields =
+            List.filter_map
+              (function
+                | VarField (mods, typ, fid, init)
+                  when List.exists
+                         (function
+                           | MStatic -> true
+                           | _ -> false)
+                         mods
+                       && equal_ident fid id ->
+                  Some (field_of_ast (VarField (mods, typ, fid, init)))
+                | _ -> None)
+              fields
+          in
+          (match static_fields with
+           | [ Ok field_info ] -> return (Some (TCField field_info))
+           | _ ->
+             List.find_opt
+               (fun (builtin_id, _) -> equal_ident builtin_id id)
+               builtin_methods
+             |> Option.map (fun (_, info) -> TCMethod info)
+             |> return)))
 ;;
 
 let find_memb_type = function
@@ -327,12 +349,19 @@ let tc_member mem class_fields =
     apply_local
       (let add_field_to_env = function
          | VarField (mods, field_typ, id, init) ->
+           let is_static =
+             List.exists
+               (function
+                 | MStatic -> true
+                 | _ -> false)
+               mods
+           in
            let field_info =
              { field_modifiers = mods
              ; field_type = field_typ
              ; field_name = id
              ; field_init = init
-             ; is_static = false
+             ; is_static
              }
            in
            write_local_el id (TCField field_info)
@@ -349,7 +378,7 @@ let tc_member mem class_fields =
       if m.is_main
       then (
         let is_valid_signature =
-          mds = [ MStatic ]
+          mds = [ MPublic; MStatic ]
           && pms = Params []
           &&
           match tp with

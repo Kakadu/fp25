@@ -2,9 +2,12 @@
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-open C_sharp_strange_lib.Ast
-open C_sharp_strange_lib.Parser
-open C_sharp_strange_lib.Interpret
+open C_sharp_strange_lib
+open Ast
+open Parser
+open Common
+open Typecheck
+open Interpret
 open Printf
 open Stdio
 
@@ -39,9 +42,15 @@ let () =
     if opts.dump_parse_tree then print_endline (show_program ast);
     if opts.eval
     then (
-      match interpret_program ast with
-      | Ok (Some v) -> exit v
-      | Ok None -> printf "void\n"
-      | Error _ -> failwith (sprintf "Interpretation error"))
-  | Error msg -> failwith (sprintf "Failed to parse file: %s" msg)
+      match ast with
+      | Program cls ->
+        (match typecheck_main cls with
+         | Some _, Ok _ ->
+           (match interpret_program ast with
+            | Ok (Some v) -> exit v
+            | Ok None -> printf "void\n"
+            | Error e -> failwith (sprintf "Interpretation error: %s" (show_error e)))
+         | None, Ok _ -> failwith "Interpretation error: Main method not found"
+         | _, Error e -> failwith (sprintf "Typecheck error: %s" (show_error e))))
+  | Error msg -> failwith (sprintf "Parser error: Failed to parse file: %s" msg)
 ;;
