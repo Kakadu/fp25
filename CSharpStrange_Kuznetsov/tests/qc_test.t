@@ -1,4 +1,4 @@
-  $ ./qt_tests.exe --seed 42
+  $ ./qc_tests.exe --seed 42
   random seed: 42
   ================================================================================
   success (ran 5 tests)
