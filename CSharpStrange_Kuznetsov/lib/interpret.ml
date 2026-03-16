@@ -21,13 +21,14 @@ module IdMap = Map.Make (struct
 
 module LocMap = Map.Make (Int)
 
+(** Runtime values during interpretation *)
 type value =
-  | VInt of int
-  | VBool of bool
-  | VChar of char
-  | VString of string
-  | VNull
-  | VObject of adr
+  | VInt of int (** Integer value (corresponds to C# int) *)
+  | VBool of bool (** Boolean value (corresponds to C# bool) *)
+  | VChar of char (** Character value (corresponds to C# char) *)
+  | VString of string (** String value (corresponds to C# string) *)
+  | VNull (** Null reference (corresponds to C# null) *)
+  | VObject of adr (** Object reference stored at given address in memory *)
 [@@deriving show { with_path = false }]
 
 type func =

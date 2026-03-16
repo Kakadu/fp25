@@ -4,28 +4,35 @@
 
 open Ast
 
+(** Type checking errors *)
 type tc_error =
-  | NotImplemented
+  | NotImplemented (** Feature not implemented in the type checker *)
   | OccursCheck
+  (** Occurs check failed during type unification (typically for recursive types) *)
   | AccessError
+  (** Invalid access to a member (e.g., accessing private member from outside) *)
   | ImpossibleResult of string
-  | TypeMismatch
-  | OtherError of string
+  (** Type checking encountered an impossible state with additional context *)
+  | TypeMismatch (** Expected type does not match actual type *)
+  | OtherError of string (** Other type checking error with description *)
 [@@deriving show { with_path = false }]
 
+(** Runtime interpretation errors *)
 type interpret_error =
-  | NotImplemented
-  | NoVariable of string
-  | AddressNotFound of int
-  | VarDeclared of string
-  | TypeMismatch
+  | NotImplemented (** Feature not implemented in the interpreter *)
+  | NoVariable of string (** Variable not found in current scope *)
+  | AddressNotFound of int (** Memory address not found in store *)
+  | VarDeclared of string (** Variable already declared in current scope *)
+  | TypeMismatch (** Type mismatch during runtime operation *)
   | ImpossibleResult of string
-  | OtherError of string
+  (** Interpreter encountered an impossible state with additional context *)
+  | OtherError of string (** Other runtime error with description *)
 [@@deriving show { with_path = false }]
 
+(** Union type for all possible errors *)
 type error =
-  | TCError of tc_error
-  | IError of interpret_error
+  | TCError of tc_error (** Type checking error *)
+  | IError of interpret_error (** Runtime interpretation error *)
 [@@deriving show { with_path = false }]
 
 module Id = struct
