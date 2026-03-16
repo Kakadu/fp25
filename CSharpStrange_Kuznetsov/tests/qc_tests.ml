@@ -178,7 +178,7 @@ let rec gen_expr env expected_type =
        | _ -> gen_funcall env' TypeVoid)
     | TypeBase _ ->
       Gen.oneof_weighted
-        [ 3, gen_binop_expr env' expected_type
+        [ 3, gen_binop_expr expected_type env'
         ; 2, gen_unop_expr env' expected_type
         ; 2, gen_funcall env' expected_type
         ; 1, gen_id_expr env expected_type
@@ -197,7 +197,7 @@ and gen_expr_no_assign env expected_type =
        | _ -> gen_funcall env' TypeVoid)
     | TypeBase _ ->
       Gen.oneof_weighted
-        [ 3, gen_binop_expr_no_assign env' expected_type
+        [ 3, gen_binop_expr_no_assign expected_type env'
         ; 2, gen_unop_expr_no_assign env' expected_type
         ; 2, gen_funcall env' expected_type
         ; 1, gen_id_expr_no_assign env expected_type
@@ -258,7 +258,8 @@ and gen_id_expr env expected_type =
       gen_expr_no_assign env var_type >>= fun e -> return (EBinOp (OpAssign, EId id, e)))
 
 (* Binary operations *)
-and gen_binop_expr env = function
+and gen_binop_expr expected_type env =
+  match expected_type with
   | TypeBase TypeInt ->
     let int_ops = [ OpAdd; OpSub; OpMul; OpDiv; OpMod ] in
     let op_gen = Gen.oneof (List.map return int_ops) in
@@ -408,7 +409,8 @@ and gen_unop_expr_no_assign env expected_type =
   | _ -> gen_expr_no_assign env expected_type
 
 (* Binary operations without assignment *)
-and gen_binop_expr_no_assign env = function
+and gen_binop_expr_no_assign expected_type env =
+  match expected_type with
   | TypeBase TypeInt ->
     let int_ops = [ OpAdd; OpSub; OpMul; OpDiv; OpMod ] in
     let op_gen = Gen.oneof (List.map return int_ops) in

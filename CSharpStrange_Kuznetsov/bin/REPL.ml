@@ -8,7 +8,6 @@ open Parser
 open Common
 open Typecheck
 open Interpret
-open Printf
 open Stdio
 
 type opts =
