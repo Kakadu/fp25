@@ -1,0 +1,55 @@
+(** Copyright 2026, Dmitrii Kuznetsov *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+open C_sharp_strange_lib
+open Ast
+open Parser
+open Common
+open Typecheck
+open Interpret
+open Stdio
+
+type opts =
+  { mutable dump_parse_tree : bool
+  ; mutable file_path : string option
+  ; mutable eval : bool
+  }
+
+let () =
+  let opts = { dump_parse_tree = false; file_path = None; eval = false } in
+  let _ =
+    Arg.parse
+      [ "-parseast", Arg.Unit (fun () -> opts.dump_parse_tree <- true), "\n"
+      ; ( "-filepath"
+        , Arg.String (fun file_path -> opts.file_path <- Some file_path)
+        , "Input code in file\n" )
+      ; "-eval", Arg.Unit (fun () -> opts.eval <- true), "Run interpreter\n"
+      ]
+      (fun _ ->
+         let () = Stdlib.Format.eprintf "Something got wrong\n" in
+         Stdlib.exit 1)
+      "\n"
+  in
+  let path =
+    match opts.file_path with
+    | None -> String.trim @@ In_channel.input_all stdin
+    | Some path -> String.trim @@ In_channel.read_all path
+  in
+  match apply_parser parse_prog path with
+  | Ok ast ->
+    let () = if opts.dump_parse_tree then print_endline (show_program ast) in
+    if opts.eval
+    then (
+      match ast with
+      | Program cls ->
+        (match typecheck_main cls with
+         | Some _, Ok _ ->
+           (match interpret_program ast with
+            | Ok (Some v) -> exit v
+            | Ok None -> printf "void\n"
+            | Error e -> printf "Interpretation error: %s" (show_error e))
+         | None, Ok _ -> printf "Interpretation error: Main method not found"
+         | _, Error e -> printf "Typecheck error: %s" (show_error e)))
+  | Error msg -> printf "Parser error: Failed to parse file: %s" msg
+;;

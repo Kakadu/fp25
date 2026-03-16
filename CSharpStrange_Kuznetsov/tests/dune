@@ -1,0 +1,31 @@
+(library
+ (name tests)
+ (public_name CSharpStrange_Kuznetsov.Lib.Tests)
+ (modules Parser_tests Pp_tests Typecheck_tests Interpret_tests)
+ (libraries angstrom c_sharp_strange_lib)
+ (inline_tests)
+ (instrumentation
+  (backend bisect_ppx))
+ (preprocess
+  (pps ppx_expect)))
+
+(executable
+ (name qc_tests)
+ (modules Qc_tests)
+ (libraries c_sharp_strange_lib qcheck tests)
+ (preprocess
+  (pps ppx_expect))
+ (instrumentation
+  (backend bisect_ppx)))
+
+(cram
+ (applies_to fact)
+ (deps ../bin/REPL.exe ../bin/factorial.cs))
+
+(cram
+ (applies_to fib)
+ (deps ../bin/REPL.exe ../bin/fib.cs))
+
+(cram
+ (applies_to qc_test)
+ (deps qc_tests.exe))

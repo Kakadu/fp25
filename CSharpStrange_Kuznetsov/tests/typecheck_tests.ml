@@ -1,0 +1,230 @@
+(** Copyright 2026, Dmitrii Kuznetsov *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+open C_sharp_strange_lib.Typecheck
+open C_sharp_strange_lib.Parser
+open C_sharp_strange_lib.Ast
+open C_sharp_strange_lib.Common
+
+let show_wrap = function
+  | Some (Program x) ->
+    (match typecheck x with
+     | _, Result.Ok _ -> Format.print_string "Ok!\n"
+     | _, Result.Error e -> Format.printf "%a\n%!" pp_error e)
+  | _ -> Format.print_string "Parsing error\n"
+;;
+
+let print_tc p str = show_wrap (parse_option p str)
+let test_typecheck = print_tc parse_prog
+
+let%expect_test "Factorial" =
+  test_typecheck
+    {|
+    class Program {
+      int Fac(int num) {
+        if (num == 1) {
+          return 1;
+        }
+        else 
+        {
+          return num * Fac(num - 1);
+        }
+      }
+      public static int Main() {
+        return Fac(5);
+      }
+    } |};
+  [%expect
+    {|
+    Ok! |}]
+;;
+
+let%expect_test "Wrong factorial" =
+  test_typecheck
+    {|
+    class Program {
+      int Fac(int num) {
+        if (num == 1) {
+          return "one";
+        }
+      }
+    } |};
+  [%expect
+    {|
+    (TCError (OtherError "Returned type does not match the function type")) |}]
+;;
+
+let%expect_test "Already declared variable" =
+  test_typecheck
+    {| 
+  class Program {
+    int a = 5;
+    int b = 9;
+    int a = 9;
+  } |};
+  [%expect
+    {|
+    (TCError (OtherError "This variable is already declared")) |}]
+;;
+
+let%expect_test "Invalid value" =
+  test_typecheck
+    {|
+    class Program {
+      public static int Main() {
+        int a;
+        int b = a -1 + 4;
+        return b;
+      }
+    } |};
+  [%expect
+    {|
+  (TCError (OtherError "Variable not found: a"))|}]
+;;
+
+let%expect_test "Checking fields" =
+  test_typecheck
+    {| 
+  class Program {
+    int b = 9;
+    int c = b * 67;
+    int a = (50 % 2) + b - c;
+    bool r = (a != b * c) || (a >= b) && (a == c +90);
+    string s = "ok";
+    char h = 'a';
+
+    void M() {
+      a = 5;
+      r = s != "kkkk" && (190%22 == 100 * -2/5);
+    }
+  } |};
+  [%expect
+    {|
+    Ok! |}]
+;;
+
+let%expect_test "String + int" =
+  test_typecheck
+    {| 
+  class Program {
+    string a = "5";
+    int c = 9 + a;
+  } |};
+  [%expect
+    {|
+    (TCError TypeMismatch) |}]
+;;
+
+let%expect_test "While" =
+  test_typecheck
+    {| 
+  class Program {
+    public static int Main() {
+      int count = 0;
+      bool b = true;
+      while(true) {
+        if (count != 2) {
+          count = count + 1;
+          b = b && false;
+        }
+        else if (b == false){
+          return -1;
+        }
+        else {
+          return 0;
+        }
+      }
+    }
+  } |};
+  [%expect
+    {|
+    Ok! |}]
+;;
+
+let%expect_test "For" =
+  test_typecheck
+    {| 
+  class Program {
+    int n = 10;
+    int count = 7% 2*67;
+    public static int Main() {
+      for (int i = 0; i < n; i=i+1) {
+        for (int j = 1;;) {
+          for (;j != n; j = j + 2) {
+            for (;;) {
+              count = count + i + j;
+            }
+          }
+        }
+      }
+      return count;
+    }
+  } |};
+  [%expect
+    {|
+    Ok! |}]
+;;
+
+let%expect_test "Wrong main" =
+  test_typecheck
+    {| 
+  class Program {
+    public async void Main() {}
+  }
+  |};
+  [%expect
+    {|
+    (TCError
+       (OtherError "Main must be static, non-async, no params, return int/void")) |}]
+;;
+
+let%expect_test "Already declared function" =
+  test_typecheck
+    {| 
+  class Program {
+    void Test() {}
+    int a = 9;
+    void Test() {}
+  } |};
+  [%expect
+    {|
+    (TCError (OtherError "This variable is already declared")) |}]
+;;
+
+let%expect_test "Function type mismatch" =
+  test_typecheck
+    {| 
+  class Program {
+    public void a(int n, int m){
+      return n+m;
+    }
+  }|};
+  [%expect
+    {|
+    (TCError TypeMismatch) |}]
+;;
+
+let%expect_test "Factorial with writeline" =
+  test_typecheck
+    {|
+    class Program {
+      int Fac(int num) {
+        if (num == 1) {
+          return 1;
+        }
+        else 
+        {
+          return num * Fac(num - 1);
+        }
+      }
+      public static int Main() {
+       int result = Fac(5);
+       System.Console.WriteLine(result);
+        return result;
+      }
+    } |};
+  [%expect
+    {|
+    Ok! |}]
+;;
