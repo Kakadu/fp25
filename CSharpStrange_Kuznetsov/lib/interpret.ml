@@ -6,7 +6,6 @@ open Ast
 open Parser
 open Common
 open Typecheck
-(* TODO: monad refactoring *)
 
 let ( let* ) = Result.bind
 let return x = Ok x
@@ -59,7 +58,6 @@ type object_state =
   ; fields : (ident * field_value) list
   }
 
-(*TODO name?*)
 type class_def =
   { fields : (ident * _type * expr option * bool) list
   ; methods : (ident * func) list
@@ -78,7 +76,6 @@ type runtime =
 type return_code = int
 
 (* Printers *)
-(* TODO: not need pp? *)
 let pp_value fmt = function
   | VInt i -> Format.fprintf fmt "%d" i
   | VBool b -> Format.fprintf fmt "%b" b
@@ -593,9 +590,7 @@ let init_program (Class (_, name, fields)) =
   let class_def = class_of_ast (Class ([], name, fields)) in
   let rt = { empty_runtime with class_def = Some class_def } in
   let builtin_functions =
-    [ Id "System.Console.WriteLine", { params = [ Id "value" ]; body = SBlock [] }
-      (* TODO: change from call_function and typecheck to some common space *)
-    ]
+    [ Id "System.Console.WriteLine", { params = [ Id "value" ]; body = SBlock [] } ]
   in
   let rt_with_builtins =
     List.fold_left
@@ -651,14 +646,3 @@ let interpret str =
      | Some _, Ok _ -> interpret_program (Program prog)
      | None, Ok _ -> Error (TCError (OtherError "Main method not found")))
 ;;
-
-(* TODO: error messages? *)
-(*
-Quicktests for parser
-   TODO: lambdas + closures
-   arrays (1D) + new
-   
-   pre/post increment/decrement
-   LINQ (simple array queries)
-   async/await (at least without lambdas)
-*)

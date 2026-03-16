@@ -104,8 +104,6 @@ let%expect_test "Checking fields" =
     Ok! |}]
 ;;
 
-(* TODO: parser check! *)
-
 let%expect_test "String + int" =
   test_typecheck
     {| 
@@ -117,8 +115,6 @@ let%expect_test "String + int" =
     {|
     (TCError TypeMismatch) |}]
 ;;
-
-(* TODO: string! *)
 
 let%expect_test "While" =
   test_typecheck
@@ -232,49 +228,3 @@ let%expect_test "Factorial with writeline" =
     {|
     Ok! |}]
 ;;
-
-(*
-   let%expect_test "Typecheck local variable shadows built-in" =
-  test_typecheck
-    {|
-    public static class Program {
-      public static int Main() {
-        int System = 42;
-        System.Console.WriteLine(10);  // Error: System is int
-        return System;
-      }
-    } |};
-  [%expect {| (TCError ) |}]
-;;
-
-(* TODO: think about forbidden names *)
-
-(* 2. Параметр функции перекрывает встроенную функцию *)
-let%expect_test "TC: parameter shadows built-in" =
-  test_typecheck
-    {|
-    public class Program {
-      public static int Print(int Console) {
-        Console.WriteLine("Hello");  // Error: Console is int
-        return Console * 2;
-      }
-      public static int Main() {
-        return Print(21);
-      }
-    } |};
-  [%expect
-    {|
-    (TCError
-       (OtherError "Cannot call a variable as a method")) |}]
-;;
-(* TODO: parsing error *)
-*)
-
-(* TODO: occurs check test: smth like
-   {|
-   class Program {
-     public void f() {
-       bool a = new Ob();
-     };
-   }|}
-*)

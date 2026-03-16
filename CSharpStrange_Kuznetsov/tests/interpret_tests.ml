@@ -14,8 +14,6 @@ let test_interpret str =
   | Result.Error er -> Format.printf "%a\n%!" pp_error er
 ;;
 
-(* TODO: include TC? *)
-
 let%expect_test "Main 1" =
   test_interpret
     {| 
@@ -42,11 +40,6 @@ let%expect_test "Main 1" =
     -58 |}]
 ;;
 
-(* TODO: Access to non-static fields from static methods is prohibited
-   Static classes can only have static methods, but static cannot be the program entry point
-   Maybe add class check inside main, but won't have time
-*)
-
 let%expect_test "Main 2" =
   test_interpret
     {| 
@@ -68,8 +61,6 @@ let%expect_test "Main 2" =
     {|
     870 |}]
 ;;
-
-(* TODO: n without static *)
 
 let%expect_test "Main 3" =
   test_interpret
@@ -170,5 +161,3 @@ let%expect_test "Factorial with writeline" =
     {|
     120 |}]
 ;;
-
-(* TODO: non static not allowed *)

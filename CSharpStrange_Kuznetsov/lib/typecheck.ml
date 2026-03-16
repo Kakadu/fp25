@@ -328,8 +328,6 @@ let rec tc_stmt =
   | SBreak | SContinue -> return () (* Will check execution in interpreter *)
 ;;
 
-(* TODO Break TC *)
-
 let tc_member mem class_fields =
   let tc_class_field f_type = function
     | Some e -> eq_type_with_expr (vartype_to_type f_type) e *> return ()
@@ -438,5 +436,3 @@ let tc_obj cl =
 
 let typecheck prog = run (tc_obj prog) (IdMap.empty, IdMap.empty, None, None, None)
 let typecheck_main prog = typecheck prog |> fun ((_, _, _, _, main), res) -> main, res
-
-(* TODO: unify with interpret *)

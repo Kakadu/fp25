@@ -1,14 +1,13 @@
-(* qt_tests.ml *)
-(* TODO: refactor + add to README *)
+(** Copyright 2026, Dmitrii Kuznetsov *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
 open C_sharp_strange_lib
 open QCheck
 open Gen
 open Ast
 
-(* =========================================================================== *)
 (* Basic generators *)
-(* =========================================================================== *)
 
 (* Basic characters and strings *)
 let gen_alpha = Gen.(oneof [ char_range 'a' 'z'; char_range 'A' 'Z' ])
@@ -134,9 +133,7 @@ let gen_ident =
   Gen.map (fun name -> if List.mem name reserved then Id "x" else Id name) gen_name
 ;;
 
-(* =========================================================================== *)
 (* Types and values *)
-(* =========================================================================== *)
 
 let gen_base_type =
   Gen.oneof [ return TypeInt; return TypeChar; return TypeBool; return TypeString ]
@@ -149,9 +146,7 @@ let gen_full_type =
 let gen_modifier = Gen.oneof [ return MPublic; return MStatic; return MAsync ]
 let gen_modifiers = Gen.(list_size (0 -- 2) gen_modifier)
 
-(* =========================================================================== *)
 (* Expression generator with type support *)
-(* =========================================================================== *)
 
 type type_env =
   { variables : (ident * _type) list
@@ -167,9 +162,7 @@ let gen_safe_string =
     (Gen.list_size (Gen.int_bound 10) gen_safe_char)
 ;;
 
-(* =========================================================================== *)
 (* Expression generator (full, including assignments) *)
-(* =========================================================================== *)
 
 let rec gen_expr env expected_type =
   if env.depth <= 0
@@ -340,9 +333,7 @@ and gen_funcall env expected_type =
 and gen_args env expected_type =
   Gen.(int_bound 2 >>= fun count -> list_size (return count) (gen_expr env expected_type))
 
-(* =========================================================================== *)
 (* Expression generator WITHOUT assignments (for initializers) *)
-(* =========================================================================== *)
 
 (* Base expressions WITHOUT assignments for shallow depth *)
 and gen_base_expr_no_assign _ = function
@@ -456,17 +447,13 @@ and gen_binop_expr_no_assign env expected_type =
   | TypeVoid -> gen_expr_no_assign env TypeVoid
 ;;
 
-(* =========================================================================== *)
 (* Type for assignment result *)
-(* =========================================================================== *)
 
 type assign_result =
   | AssignExpr of expr
   | AssignBlock of stmt
 
-(* =========================================================================== *)
 (* Statement generator *)
-(* =========================================================================== *)
 
 let rec gen_stmt env return_type =
   if env.depth <= 0
@@ -640,9 +627,7 @@ and gen_block_stmt env return_type =
 
 and gen_break_continue_stmt = Gen.oneof [ return SBreak; return SContinue ]
 
-(* =========================================================================== *)
 (* Class and program generators *)
-(* =========================================================================== *)
 
 let rec has_return = function
   | SReturn _ -> true
@@ -764,9 +749,7 @@ let gen_class depth =
 
 let gen_program depth = Gen.map (fun cls -> Program cls) (gen_class depth)
 
-(* =========================================================================== *)
 (* Helper functions *)
-(* =========================================================================== *)
 
 let expr_to_code_string expr = Format.asprintf "%a" Prettyprinter.pp_expr expr
 let program_to_code_string prog = Format.asprintf "%a" Prettyprinter.pp_prog prog
@@ -788,9 +771,7 @@ let compare_expr_structure e1 e2 =
   | _ -> false
 ;;
 
-(* =========================================================================== *)
 (* QCheck generators *)
-(* =========================================================================== *)
 
 let test_count = 200
 
@@ -810,9 +791,7 @@ let expr_arbitrary depth =
 
 let program_arbitrary depth = QCheck.make ~print:show_program (gen_program depth)
 
-(* =========================================================================== *)
 (* Tests *)
-(* =========================================================================== *)
 
 let prop_roundtrip_expr =
   Test.make
@@ -970,9 +949,7 @@ let prop_parse_no_crash =
          true)
 ;;
 
-(* =========================================================================== *)
 (* Test runner with command line argument handling *)
-(* =========================================================================== *)
 
 let tests =
   [ prop_parse_no_crash
@@ -995,5 +972,3 @@ let () =
   let exit_code = run () in
   if exit_code <> 0 then exit exit_code
 ;;
-
-(* TODO: remove printf for debugging *)

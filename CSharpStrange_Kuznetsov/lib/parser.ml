@@ -51,7 +51,6 @@ let is_space = function
 ;;
 
 let is_token_sym = function
-  (* TODO: think about . (could be initial namespace) *)
   | 'a' .. 'z' | '0' .. '9' | 'A' .. 'Z' | '.' | '_' -> true
   | _ -> false
 ;;
@@ -201,7 +200,6 @@ let parse_ops =
       let appl op = op in
       lv1 >>= fun e -> return (List.fold_right ops ~f:appl ~init:e)
     in
-    (* TODO: rewrite somehow + more ops *)
     let lv3 = chainl1 lv2 (choice [ ( ^*^ ); ( ^/^ ); ( ^%^ ) ]) in
     let lv4 = chainl1 lv3 (choice [ ( ^+^ ); ( ^-^ ) ]) in
     let lv5 = chainl1 lv4 (choice [ ( ^<=^ ); ( ^>=^ ); ( ^<^ ); ( ^>^ ) ]) in
@@ -380,5 +378,3 @@ let parse_option p str =
   | Ok x -> Some x
   | Error _ -> None
 ;;
-
-(* TODO: lambda parsing??? *)

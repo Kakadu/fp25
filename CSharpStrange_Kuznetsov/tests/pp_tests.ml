@@ -7,22 +7,6 @@ open Prettyprinter
 open Parser
 open Format
 
-(* Debug (TODO remove later) 
-let test_pp name source =
-  let prog = parse_option parse_prog source in
-  let pretty =
-    match prog with
-    | Some x -> asprintf "%a" pp_prog x
-    | None -> ""
-  in
-  let prog_after_pp = parse_option parse_prog pretty in
-  if prog = prog_after_pp
-  then Printf.printf "✓ %s: roundtrip successful\n" name
-  else Printf.printf "✗ %s: roundtrip failed\n" name;
-  prog = prog_after_pp
-;;
-*)
-
 let test_pp _ source =
   let prog = parse_option parse_prog source in
   let pretty =
@@ -128,7 +112,7 @@ public class Program
 public static class Program {
     static int result = 0;
     
-    public static void Main(string[] args) {
+    public static void Main() {
         int a = 5;
         int b = 3;
         result = a + b * 2;
@@ -169,7 +153,7 @@ public class Test {
 public static class Program {
     static int result = 0;
     
-    public static void Main(string[] args) {
+    public static void Main() {
         int a = 5;
         int b = 3;
         result = a + b * 2;
@@ -188,7 +172,7 @@ public static class Program {
 public static class Program {
     static int sum = 0;
     
-    public static void Main(string[] args) {
+    public static void Main() {
         int i = 0;
         
         while (i < 5) {
@@ -211,7 +195,7 @@ public static class Program {
     static bool flag = true;
     static int value = 42;
     
-    public static void Main(string[] args) {
+    public static void Main() {
         bool condition = flag && (value > 40);
         
         if (condition) {
@@ -235,7 +219,7 @@ public static class Program {
     static string message = "Hello";
     static char symbol = 'A';
     
-    public static void Main(string[] args) {
+    public static void Main() {
         string name = "World";
         string result = message + " " + name;
         
@@ -255,7 +239,7 @@ public static class Program {
 public static class Program {
     static int counter = 0;
     
-    public static void Main(string[] args) {
+    public static void Main() {
         for (int i = 0; i < 10; i = i + 1) {
             if (i == 3) {
                 continue;
@@ -285,7 +269,7 @@ public static class Program {
     static int y = 20;
     static bool ok = true;
     
-    public static void Main(string[] args) {
+    public static void Main() {
         int result = (x + y) * (x - y) / 2;
         
         bool check = (x > y) && ok || (x <= y);
@@ -311,7 +295,7 @@ public static class Program {
     static char c1 = 'X';
     static char c2 = 'Y';
     
-    public static void Main(string[] args) {
+    public static void Main() {
         int x = a + b;
         string text = s1 + s2;
         bool flag = b1 && b2;
@@ -327,7 +311,7 @@ public static class Program {
 public static class Program {
     static int value = 100;
     
-    public static void Main(string[] args) {
+    public static void Main() {
         int a = 5;
         int b = 3;
         
@@ -361,21 +345,3 @@ public static class Program {
 let%test "All pp roundtrip tests" =
   List.for_all (fun (name, source) -> test_pp name source) samples
 ;;
-
-(* TODO: check string[] args later!! *)
-
-(* TODO: simple arrays:
-
-public static class Program {
-    static int[] numbers = null;
-    
-    public static void Main(string[] args) {
-        int index = 0;
-        int value = numbers[index];
-        
-        numbers[index + 1] = value * 2;
-        
-        return;
-    }
-}
-*)

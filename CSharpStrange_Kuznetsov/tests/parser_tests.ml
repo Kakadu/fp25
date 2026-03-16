@@ -427,7 +427,7 @@ let%test "Parse factorial" =
               ] )))
 ;;
 
-let%test "parse program with weird whitespace" =
+let%test "Short: Parse program with weird whitespace" =
   let program =
     {|
       class Program     
@@ -448,7 +448,7 @@ let%test "parse program with weird whitespace" =
   | Error _ -> false
 ;;
 
-let%test "Parse checking fields" =
+let%test "Short: Parse checking fields" =
   let program =
     {|
     class Program {
@@ -470,5 +470,3 @@ let%test "Parse checking fields" =
   | Ok _ -> true
   | Error _ -> false
 ;;
-
-(* TODO: rewrite to normal *)
