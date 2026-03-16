@@ -28,7 +28,7 @@ let () =
       ; "-eval", Arg.Unit (fun () -> opts.eval <- true), "Run interpreter\n"
       ]
       (fun _ ->
-         Stdlib.Format.eprintf "Something got wrong\n";
+         let () = Stdlib.Format.eprintf "Something got wrong\n" in
          Stdlib.exit 1)
       "\n"
   in
@@ -39,7 +39,7 @@ let () =
   in
   match apply_parser parse_prog path with
   | Ok ast ->
-    if opts.dump_parse_tree then print_endline (show_program ast);
+    let () = if opts.dump_parse_tree then print_endline (show_program ast) in
     if opts.eval
     then (
       match ast with
@@ -49,8 +49,8 @@ let () =
            (match interpret_program ast with
             | Ok (Some v) -> exit v
             | Ok None -> printf "void\n"
-            | Error e -> failwith (sprintf "Interpretation error: %s" (show_error e)))
-         | None, Ok _ -> failwith "Interpretation error: Main method not found"
-         | _, Error e -> failwith (sprintf "Typecheck error: %s" (show_error e))))
-  | Error msg -> failwith (sprintf "Parser error: Failed to parse file: %s" msg)
+            | Error e -> printf "Interpretation error: %s" (show_error e))
+         | None, Ok _ -> printf "Interpretation error: Main method not found"
+         | _, Error e -> printf "Typecheck error: %s" (show_error e)))
+  | Error msg -> printf "Parser error: Failed to parse file: %s" msg
 ;;

@@ -3,6 +3,7 @@
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
 open C_sharp_strange_lib
+open Parser
 open QCheck
 open Gen
 open Ast
@@ -257,8 +258,7 @@ and gen_id_expr env expected_type =
       gen_expr_no_assign env var_type >>= fun e -> return (EBinOp (OpAssign, EId id, e)))
 
 (* Binary operations *)
-and gen_binop_expr env expected_type =
-  match expected_type with
+and gen_binop_expr env = function
   | TypeBase TypeInt ->
     let int_ops = [ OpAdd; OpSub; OpMul; OpDiv; OpMod ] in
     let op_gen = Gen.oneof (List.map return int_ops) in
@@ -408,8 +408,7 @@ and gen_unop_expr_no_assign env expected_type =
   | _ -> gen_expr_no_assign env expected_type
 
 (* Binary operations without assignment *)
-and gen_binop_expr_no_assign env expected_type =
-  match expected_type with
+and gen_binop_expr_no_assign env = function
   | TypeBase TypeInt ->
     let int_ops = [ OpAdd; OpSub; OpMul; OpDiv; OpMod ] in
     let op_gen = Gen.oneof (List.map return int_ops) in
@@ -575,9 +574,7 @@ and gen_expr_stmt env : stmt Gen.t =
           | AssignBlock stmt -> return stmt )
       ; (4, gen_funcall env TypeVoid >>= fun e -> return (SExpr e))
       ; ( 2
-        , if
-            List.length (List.filter (fun (_, (_, ret)) -> ret <> TypeVoid) env.functions)
-            > 0
+        , if List.exists (fun (_, (_, ret)) -> ret <> TypeVoid) env.functions
           then gen_funcall_ignore_return env >>= fun e -> return (SExpr e)
           else
             gen_assign_expr env
@@ -800,29 +797,19 @@ let prop_roundtrip_expr =
     (expr_arbitrary 2)
     (fun expr ->
        let code_str = expr_to_code_string expr in
-       match
-         Angstrom.parse_string ~consume:Angstrom.Consume.All Parser.parse_ops code_str
-       with
+       match Angstrom.parse_string ~consume:Angstrom.Consume.All parse_ops code_str with
        | Ok expr' ->
          let code_str' = expr_to_code_string expr' in
-         if code_str = code_str'
-         then true
-         else (
+         code_str = code_str'
+       | Error e ->
+         let () =
            Format.eprintf
              "\n\
-              @[<v2>Expression roundtrip failed:@ Input AST: %s@ Output code: %s@ Parsed \
-              back AST: %s@ Final code: %s@]"
+              @[<v2>Expression parse failed:@ Input AST: %s@ Output code: %s@ Error: %s@]"
              (show_expr expr)
              code_str
-             (show_expr expr')
-             code_str';
-           false)
-       | Error e ->
-         Format.eprintf
-           "\n@[<v2>Expression parse failed:@ Input AST: %s@ Output code: %s@ Error: %s@]"
-           (show_expr expr)
-           code_str
-           e;
+             e
+         in
          false)
 ;;
 
@@ -833,29 +820,18 @@ let prop_roundtrip_program =
     (program_arbitrary 1)
     (fun prog ->
        let code_str = program_to_code_string prog in
-       match
-         Angstrom.parse_string ~consume:Angstrom.Consume.All Parser.parse_prog code_str
-       with
+       match Angstrom.parse_string ~consume:Angstrom.Consume.All parse_prog code_str with
        | Ok prog' ->
          let code_str' = program_to_code_string prog' in
-         if code_str = code_str'
-         then true
-         else (
+         code_str = code_str'
+       | Error e ->
+         let () =
            Format.eprintf
-             "\n\
-              @[<v2>Program roundtrip failed:@ Input AST: %s@ Output code: %s@ Parsed \
-              back AST: %s@ Final code: %s@]"
+             "\n@[<v2>Program parse failed:@ Input AST: %s@ Output code: %s@ Error: %s@]"
              (show_program prog)
              code_str
-             (show_program prog')
-             code_str';
-           false)
-       | Error e ->
-         Format.eprintf
-           "\n@[<v2>Program parse failed:@ Input AST: %s@ Output code: %s@ Error: %s@]"
-           (show_program prog)
-           code_str
-           e;
+             e
+         in
          false)
 ;;
 
@@ -866,29 +842,18 @@ let prop_operator_precedence =
     (expr_arbitrary 2)
     (fun expr ->
        let code_str = expr_to_code_string expr in
-       match
-         Angstrom.parse_string ~consume:Angstrom.Consume.All Parser.parse_ops code_str
-       with
-       | Ok expr' ->
-         if compare_expr_structure expr expr'
-         then true
-         else (
+       match Angstrom.parse_string ~consume:Angstrom.Consume.All parse_ops code_str with
+       | Ok expr' -> compare_expr_structure expr expr'
+       | Error e ->
+         let () =
            Format.eprintf
              "\n\
-              @[<v2>Precedence failed:@ Original AST: %s@ Original code: %s@ Parsed AST: \
-              %s@ Types differ@]"
+              @[<v2>Precedence test parse failed:@ Expression AST: %s@ Code: %s@ Error: \
+              %s@]"
              (show_expr expr)
              code_str
-             (show_expr expr');
-           false)
-       | Error e ->
-         Format.eprintf
-           "\n\
-            @[<v2>Precedence test parse failed:@ Expression AST: %s@ Code: %s@ Error: \
-            %s@]"
-           (show_expr expr)
-           code_str
-           e;
+             e
+         in
          false)
 ;;
 
@@ -915,7 +880,7 @@ let prop_parse_errors =
     ~count:test_count
     (QCheck.make ~print:(fun s -> s) gen_invalid)
     (fun str ->
-       match Angstrom.parse_string ~consume:Angstrom.Consume.All Parser.parse_ops str with
+       match Angstrom.parse_string ~consume:Angstrom.Consume.All parse_ops str with
        | Error _ -> true
        | Ok expr ->
          Format.eprintf
@@ -934,9 +899,7 @@ let prop_parse_no_crash =
     (expr_arbitrary 2)
     (fun expr ->
        let code_str = expr_to_code_string expr in
-       match
-         Angstrom.parse_string ~consume:Angstrom.Consume.All Parser.parse_ops code_str
-       with
+       match Angstrom.parse_string ~consume:Angstrom.Consume.All parse_ops code_str with
        | Ok _ -> true
        | Error e ->
          Format.eprintf
