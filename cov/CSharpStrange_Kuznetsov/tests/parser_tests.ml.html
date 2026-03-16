@@ -18,8 +18,8 @@
       <h2>98.02%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="bottom:5.49%"></span>
-      <span class="unvisited" style="bottom:0.63%"></span>
+      <span class="unvisited" style="bottom:5.08%"></span>
+      <span class="unvisited" style="bottom:0.21%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -496,8 +496,6 @@
 <a id="L470"></a><span class="visited"> </span>
 <a id="L471"></a><span class="unvisited"> </span>
 <a id="L472"></a><span > </span>
-<a id="L473"></a><span > </span>
-<a id="L474"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -974,8 +972,6 @@
 <a href="#L470">470</a>
 <a href="#L471">471</a>
 <a href="#L472">472</a>
-<a href="#L473">473</a>
-<a href="#L474">474</a>
 </pre>
 <pre><code class="ocaml">(** Copyright 2026, Dmitrii Kuznetsov *)
 
@@ -1406,7 +1402,7 @@ let%test "Parse factorial" =
               ] )))
 ;;
 
-let%test "parse program with weird whitespace" =
+let%test "Short: Parse program with weird whitespace" =
   <span data-count="1">l</span>et program =
     {|
       class Program     
@@ -1427,7 +1423,7 @@ let%test "parse program with weird whitespace" =
   | <span data-count="0">E</span>rror _ -&gt; false
 ;;
 
-let%test "Parse checking fields" =
+let%test "Short: Parse checking fields" =
   <span data-count="1">l</span>et program =
     {|
     class Program {
@@ -1449,8 +1445,6 @@ let%test "Parse checking fields" =
   | <span data-count="1">O</span>k _ -&gt; true
   | <span data-count="0">E</span>rror _ -&gt; false
 ;;
-
-(* TODO: rewrite to normal *)
 </code></pre>
       </div>
     </div>
