@@ -11,7 +11,7 @@ let value_to_type = function
   | ValChar _ -> TypeBase TypeChar
   | ValBool _ -> TypeBase TypeBool
   | ValString _ -> TypeBase TypeString
-  | ValNull -> TypeBase TypeInt (* TODO separately? *)
+  | ValNull -> TypeBase TypeInt
 ;;
 
 let string_of_ident (Id s) = s
@@ -83,13 +83,12 @@ let get_class_memb id memb =
 ;;
 
 let builtin_methods =
-  (* TODO: запрет для других функций с точкой/ начальный namespace ? *)
   [ ( Id "System.Console.WriteLine"
     , { method_modifiers = [ MStatic ]
       ; method_return = TypeVoid
       ; method_name = Id "System.Console.WriteLine"
       ; method_params = Params [ Var (TypeVar (TypeBase TypeInt), Id "value") ]
-      ; method_body = SBlock [] (* TODO: making definition here? *)
+      ; method_body = SBlock []
       ; is_static = true
       ; is_main = false
       } )
@@ -216,7 +215,6 @@ let tc_method_invoke e args expr_tc =
 ;;
 
 let check_initialized n =
-  (* TODO: refactor to locals ?? *)
   read_local_el n
   >>= function
   | TCLocalVar v when v.initialized -> return ()
@@ -327,7 +325,7 @@ let rec tc_stmt =
   | SFor (init, cond, iter, b) -> apply_local (tc_for_state init cond iter *> tc_stmt b)
   | SIf (e, b, s_opt) -> apply_local (tc_if_state e b s_opt tc_stmt)
   | SBlock st_l -> apply_local (iter tc_stmt st_l)
-  | SBreak | SContinue -> fail (TCError NotImplemented)
+  | SBreak | SContinue -> return () (* Will check execution in interpreter *)
 ;;
 
 (* TODO Break TC *)
