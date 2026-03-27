@@ -1,0 +1,13 @@
+(library
+ (name tests)
+ (modules ast_tests parser_tests)
+ (libraries mini_ml_lib qcheck)
+ (inline_tests)
+ (preprocess
+  (pps ppx_expect ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx)))
+
+(cram
+ (applies_to interpreter)
+ (deps ../bin/REPL.exe))
