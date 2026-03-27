@@ -126,7 +126,7 @@ let%test "Application operator 3" =
 
 (* QCheck tests *)
 
-let gen_name =
+let gen_real_name =
   let open Gen in
   let capital_alpha = char_range 'A' 'Z' in
   let alphanum = oneof [ char_range 'a' 'z'; char_range 'A' 'Z'; char_numeral ] in
@@ -138,6 +138,12 @@ let gen_name =
        return (first :: rest))
   in
   map (fun s -> Ast.Real s) ident
+;;
+
+let gen_any_name =
+  let open Gen in
+  let wildcard = return Ast.Wildcard in
+  oneof [ gen_real_name; wildcard ]
 ;;
 
 let gen_unary_operation = Gen.oneof [ Gen.return Ast.Neg; Gen.return Ast.Not ]
@@ -173,7 +179,7 @@ let gen_ast_depth =
         [ return Ast.Unit
         ; map (fun i -> Ast.Int i) (int_range 0 100000)
         ; map (fun b -> Ast.Bool b) bool
-        ; map (fun n -> Ast.Var n) gen_name
+        ; map (fun n -> Ast.Var n) gen_real_name
         ]
     else (
       let sub = gen (size / 2) in
@@ -182,7 +188,7 @@ let gen_ast_depth =
       oneof_weighted
         [ 1, map (fun i -> Ast.Int i) (int_range 0 100000)
         ; 1, map (fun b -> Ast.Bool b) bool
-        ; 1, map (fun n -> Ast.Var n) gen_name
+        ; 1, map (fun n -> Ast.Var n) gen_real_name
         ; 2, map2 (fun op expr -> Ast.UnaryOp (op, expr)) gen_unary_operation sub
         ; ( 4
           , map3
@@ -196,7 +202,7 @@ let gen_ast_depth =
               sub_tiny
               sub_tiny
               (list_size (int_range 0 5) sub_tiny) )
-        ; 4, map2 (fun arg expr -> Ast.Abstraction (arg, expr)) gen_name sub
+        ; 4, map2 (fun arg expr -> Ast.Abstraction (arg, expr)) gen_any_name sub
         ; 4, map2 (fun func arg -> Ast.Application (func, arg)) sub_small sub
         ; ( 2
           , map3
@@ -208,7 +214,7 @@ let gen_ast_depth =
           , map4
               (fun rf name expr1 expr2 -> Ast.LetExpr (rf, name, expr1, expr2))
               gen_rec_flag
-              gen_name
+              gen_any_name
               sub_small
               sub )
         ]))
