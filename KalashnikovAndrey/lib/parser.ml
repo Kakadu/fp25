@@ -35,6 +35,12 @@ let chainl1 e op =
   e >>= l
 
 let sym s = string s <* ws
+let kw s =
+  let* _ = string s in
+  let* next = peek_char in
+  match next with
+  | Some c when var_and_digit c -> fail "keyword"
+  | _ -> ws
 let parse_minus_op = 
   let* _ = sym "-" in                 
   ws *> return (fun left right -> BinOp (Sub, left, right))
@@ -72,11 +78,12 @@ let parse_int =
   let* n =  (take_while1 is_digit >>| int_of_string <* ws) in 
   return (Const n)
 let parse_ident = 
-  let* head = take_while1 var in 
+  let* head = satisfy (function 'a'..'z' | '_' -> true | _ -> false) in
   let* tail = take_while var_and_digit in
-  let s = (head ^ tail) in 
+  let s = String.make 1 head ^ tail in
   if List.mem s keys then fail "keyword"
   else return s <* ws
+
 let parse_var = let* v = parse_ident  <* ws in 
   return (Var v)
 let parse_fun_helper params body = 
@@ -108,18 +115,18 @@ and parse_app () =
 and parse_arithmetic () = chainl1 (parse_terms()) (parse_add_op <|> parse_minus_op)
 
 and parse_let () = 
-  let* _ = sym "let" in 
-  let* rec_flag = (string "rec" *> ws *> return Rec) <|> return Val in
+  let* _ = kw "let" in 
+  let* rec_flag = (kw "rec" *> return Rec) <|> return Val in
   let* name = parse_ident <* ws in
   let* args = many (parse_ident <* ws) in
   let* _ = sym "=" in
   let* let_expr = parse_expr() in 
-  let* _ = sym "in" in 
+  let* _ = kw "in" in 
   let* body = parse_expr() in 
   return (Let(rec_flag, name, parse_fun_helper args let_expr, body ))
 
 and parse_fix () = 
-  let* _ = sym "fix" in
+  let* _ = kw "fix" in
   let* _ = sym "(" in
   let* arg = parse_expr () in 
   let* _ = sym ")" in 
@@ -127,16 +134,16 @@ and parse_fix () =
 
 
 and parse_if () = 
-  let* _ = sym "if" in 
+  let* _ = kw "if" in 
   let* cond = parse_expr() in
-  let* _ = sym "then" in 
+  let* _ = kw "then" in 
   let* then_body = parse_expr() in 
-  let* _ = sym "else" in 
+  let* _ = kw "else" in 
   let* else_body = parse_expr() in 
   return (If (cond, then_body, else_body))
 
 and parse_fun () = 
-  let* _ = sym "fun" in
+  let* _ = kw "fun" in
   let* args = many1 (parse_ident <* ws) in
   let* _ = sym "->" in
   let* body = parse_expr() in 
@@ -156,4 +163,3 @@ let parse str =
   | Ok x -> Ok x
   | Error er -> Error (`Parsing_error er)
 ;;
-
