@@ -12,12 +12,15 @@ open Parser
 type error = 
   | Division_by_zero 
   | Var_unbound of string
+  | Out_of_steps
   | Type_error of string 
 let pp_error ppf = function
   | Division_by_zero ->
       Format.fprintf ppf "Division by zero"
   | Var_unbound s -> 
       Format.fprintf ppf "Unbound variable '%s'" s
+  | Out_of_steps ->
+      Format.fprintf ppf "Out of steps"
   | Type_error s -> 
       Format.fprintf ppf "Type error: %s" s
 
@@ -38,7 +41,8 @@ module StateError = struct
     match res with
     | Ok x -> f x steps'          
     | Error e -> (Error e, steps') 
-  let step steps = (Ok (), steps + 1)
+  let step steps = if steps <= 0 then (Error Out_of_steps, steps) else 
+    (Ok (), steps - 1)
   let fail err steps = (Error err, steps)
 end
 
@@ -126,5 +130,18 @@ let rec eval (env : env) (e : expr) : value StateError.t=
            StateError.return (VClosure (arg, fn_body, fix_env))
        | _ -> StateError.fail (Type_error "Fix expects a function that returns a function"))
 
-(**let run_eval expr step*)
+let pp_value ppf = function
+  | VInt n -> Format.fprintf ppf "%d" n
+  | VClosure _ -> Format.fprintf ppf "<closure>"
+
+let run_eval input step =
+  match parse input with
+  | Error err ->
+      Format.printf "Parse error: %a\n%!" Parser.pp_error err
+  | Ok ast ->
+      match eval [] ast step with
+      | Ok value, steps ->
+          Format.printf "Value: %a\nSteps: %d\n%!" pp_value value steps
+      | Error err, steps ->
+          Format.printf "Error: %a\nSteps: %d\n%!" pp_error err steps
  
