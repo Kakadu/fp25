@@ -24,15 +24,6 @@ let pp_error ppf = function
   | Type_error s -> 
       Format.fprintf ppf "Type error: %s" s
 
-
-      
-type value = 
-  | VInt of int
-  | VClosure of string * expr * env 
-and env = (string * value) list
-
-
-
 module StateError = struct
   type 'a t = int -> ('a, error) result * int
   let return x steps = (Ok x, steps)
@@ -46,10 +37,24 @@ module StateError = struct
   let fail err steps = (Error err, steps)
 end
 
+type value = 
+  | VInt of int
+  | VClosure of string * expr * env 
+  | VBuiltin of (value -> value StateError.t)
+and env = (string * value) list
+
 let ( let* ) = StateError.bind
 
 let return x = Ok x
 let fail e = Error e 
+
+let builtin_print = function
+  | VInt n ->
+      Format.printf "%d\n%!" n;
+      StateError.return (VInt n)
+  | _ -> StateError.fail (Type_error "print expects an integer")
+
+let initial_env = [ "print", VBuiltin builtin_print ]
 
 let rec check_env key env  : value StateError.t = 
   match env with
@@ -106,6 +111,8 @@ let rec eval (env : env) (e : expr) : value StateError.t=
        | VClosure (param, body, closure_env) ->
            let new_env = (param, arg_val) :: closure_env in
            eval new_env body
+       | VBuiltin f ->
+           f arg_val
        | _ -> StateError.fail (Type_error "Application of non-function"))
 
   | Let (rec_flag, name, expr, body) ->
@@ -133,15 +140,15 @@ let rec eval (env : env) (e : expr) : value StateError.t=
 let pp_value ppf = function
   | VInt n -> Format.fprintf ppf "%d" n
   | VClosure _ -> Format.fprintf ppf "<closure>"
+  | VBuiltin _ -> Format.fprintf ppf "<builtin>"
 
 let run_eval input step =
   match parse input with
   | Error err ->
       Format.printf "Parse error: %a\n%!" Parser.pp_error err
   | Ok ast ->
-      match eval [] ast step with
+      match eval initial_env ast step with
       | Ok value, steps ->
           Format.printf "Value: %a\nSteps: %d\n%!" pp_value value steps
       | Error err, steps ->
           Format.printf "Error: %a\nSteps: %d\n%!" pp_error err steps
- 
