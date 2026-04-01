@@ -8,6 +8,7 @@
 
 open Ast
 open Parser
+open Printer
 
 type error = 
   | Division_by_zero 
@@ -142,13 +143,16 @@ let pp_value ppf = function
   | VClosure _ -> Format.fprintf ppf "<closure>"
   | VBuiltin _ -> Format.fprintf ppf "<builtin>"
 
-let run_eval input step =
+let run_eval input step printer_flag =
   match parse input with
   | Error err ->
       Format.printf "Parse error: %a\n%!" Parser.pp_error err
-  | Ok ast ->
+  | Ok ast -> 
       match eval initial_env ast step with
-      | Ok value, steps ->
+        | Ok value, steps when printer_flag ->
+          Format.printf "Ast: %a\n%!" pp ast;
           Format.printf "Value: %a\nSteps: %d\n%!" pp_value value steps
-      | Error err, steps ->
+        | Ok value, steps ->
+          Format.printf "Value: %a\nSteps: %d\n%!" pp_value value steps
+        | Error err, steps ->
           Format.printf "Error: %a\nSteps: %d\n%!" pp_error err steps

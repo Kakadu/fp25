@@ -32,4 +32,4 @@ and env = (string * value) list
 
 val eval : env -> expr -> value StateError.t
 
-val run_eval : string -> int -> unit
+val run_eval : string -> int -> bool -> unit
