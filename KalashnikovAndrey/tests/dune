@@ -1,0 +1,7 @@
+(test
+ (name parser_printer_tests)
+ (libraries lambda_lib qcheck-core qcheck-core.runner))
+
+(cram
+ (applies_to interpret_tests)
+ (deps ../bin/REPL.exe))

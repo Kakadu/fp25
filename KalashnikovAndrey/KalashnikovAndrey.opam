@@ -11,6 +11,12 @@ doc: "https://kakadu.github.io/fp25/docs/Lambda"
 bug-reports: "https://github.com/Kakadu/fp25"
 depends: [
   "dune" {>= "3.7" & = "3.19.1"}
+  "angstrom" {= "0.16.0"}
+  "base"
+  "qcheck-core" {with-test}
+  "ppx_inline_test" {with-test}
+  "ppx_expect"
+  "ppx_deriving"
   "bisect_ppx"
   "odoc" {with-doc}
   "ocamlformat" {build & = "0.26.2"}
