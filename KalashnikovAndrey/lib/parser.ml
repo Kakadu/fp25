@@ -1,7 +1,10 @@
+[@@@ocaml.text "/*"]
+
 (** Copyright 2021-2023, Kakadu and contributors *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
+[@@@ocaml.text "/*"]
 
 open Angstrom
 
@@ -23,7 +26,7 @@ let parens p = char '(' *> p  <* char ')' <* ws
 let is_digit = function '0' .. '9' -> true | _ -> false
 let var = function 'A'..'Z' | 'a'..'z' | '_' -> true | _ -> false
 let var_and_digit c  = var c  || is_digit c 
-let keys = ["then"; "if"; "else"; "let"; "rec"; "in"; "fun"; "true"; "false"; "fix"]
+let keys = ["then"; "if"; "else"; "let"; "rec"; "in"; "fun"; "true"; "false"]
 
 let chainl1 e op =
   let rec l acc =
@@ -96,7 +99,6 @@ choice [
 ]
 and parse_factor () = choice [
   (let* _ = sym "-" in parse_factor () >>| fun e -> Neg e);
-  parse_fix ();
   parse_atom ();
 ]
 and parse_terms () = chainl1 (parse_app()) (parse_mul_op <|> parse_div_op)
@@ -118,19 +120,13 @@ and parse_let () =
   let* _ = kw "let" in 
   let* rec_flag = (kw "rec" *> return Rec) <|> return Val in
   let* name = parse_ident <* ws in
-  let* args = many (parse_ident <* ws) in
-  let* _ = sym "=" in
-  let* let_expr = parse_expr() in 
-  let* _ = kw "in" in 
-  let* body = parse_expr() in 
+    let* args = many (parse_ident <* ws) in
+    let* _ = sym "=" in
+    let* let_expr = parse_expr() in 
+    let* _ = kw "in" in 
+    let* body = parse_expr() in 
   return (Let(rec_flag, name, parse_fun_helper args let_expr, body ))
 
-and parse_fix () = 
-  let* _ = kw "fix" in
-  let* _ = sym "(" in
-  let* arg = parse_expr () in 
-  let* _ = sym ")" in 
-  return (Fix(arg))
 
 
 and parse_if () = 
