@@ -28,4 +28,3 @@ type  expr =
 | App of expr * expr 
 | Fun of string * expr 
 | Neg of expr
-| Fix of expr

@@ -129,15 +129,6 @@ let rec eval (env : env) (e : expr) : value StateError.t=
               eval new_env body
           | _ -> StateError.fail (Type_error "Let rec expects a function"))
 
-  | Fix expr ->
-      let* _ = StateError.step in
-      let* v = eval env expr in
-      (match v with
-       | VClosure (f, Fun (arg, fn_body), cl_env) ->
-           let rec fix_env = (f, VClosure (arg, fn_body, fix_env)) :: cl_env in
-           StateError.return (VClosure (arg, fn_body, fix_env))
-       | _ -> StateError.fail (Type_error "Fix expects a function that returns a function"))
-
 let pp_value ppf = function
   | VInt n -> Format.fprintf ppf "%d" n
   | VClosure _ -> Format.fprintf ppf "<closure>"

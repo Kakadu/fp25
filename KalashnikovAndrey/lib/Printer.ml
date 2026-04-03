@@ -24,8 +24,6 @@ let rec pp fmt = function
       Format.fprintf fmt "(%a %a)" pp func pp arg
   | Fun (arg_name, body) ->
       Format.fprintf fmt "(fun %s -> %a)" arg_name pp body
-  | Fix e ->
-      Format.fprintf fmt "(fix (%a))" pp e
   | Let (rec_flag, name, e1, e2) ->
       let rec_str =
         match rec_flag with
