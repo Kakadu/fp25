@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Printer.ml &mdash; Coverage report</title>
+    <meta name="description" content="100.00% coverage in lib/Printer.ml">
+    <link rel="stylesheet" href="../coverage.css"/>
+    <script src="../highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </head>
+  <body>
+    <div id="header">
+      <h1>
+        <a href="../index.html">
+          <span class="dirname">lib/</span>Printer.ml
+        </a>
+      </h1>
+      <h2>100.00%</h2>
+    </div>
+    <div id="navbar">
+    </div>
+    <div id="report">
+      <div id="lines-layer">
+        <pre>
+<a id="L1"></a><span > </span>
+<a id="L2"></a><span > </span>
+<a id="L3"></a><span > </span>
+<a id="L4"></a><span class="visited"> </span>
+<a id="L5"></a><span class="visited"> </span>
+<a id="L6"></a><span class="visited"> </span>
+<a id="L7"></a><span class="visited"> </span>
+<a id="L8"></a><span class="visited"> </span>
+<a id="L9"></a><span class="visited"> </span>
+<a id="L10"></a><span class="visited"> </span>
+<a id="L11"></a><span > </span>
+<a id="L12"></a><span > </span>
+<a id="L13"></a><span > </span>
+<a id="L14"></a><span class="visited"> </span>
+<a id="L15"></a><span class="visited"> </span>
+<a id="L16"></a><span class="visited"> </span>
+<a id="L17"></a><span class="visited"> </span>
+<a id="L18"></a><span class="visited"> </span>
+<a id="L19"></a><span class="visited"> </span>
+<a id="L20"></a><span class="visited"> </span>
+<a id="L21"></a><span class="visited"> </span>
+<a id="L22"></a><span class="visited"> </span>
+<a id="L23"></a><span > </span>
+<a id="L24"></a><span > </span>
+<a id="L25"></a><span class="visited"> </span>
+<a id="L26"></a><span class="visited"> </span>
+<a id="L27"></a><span > </span>
+<a id="L28"></a><span > </span>
+<a id="L29"></a><span > </span>
+</pre>
+      </div>
+      <div id="text-layer">
+        <pre id="line-numbers">
+<a href="#L1"> 1</a>
+<a href="#L2"> 2</a>
+<a href="#L3"> 3</a>
+<a href="#L4"> 4</a>
+<a href="#L5"> 5</a>
+<a href="#L6"> 6</a>
+<a href="#L7"> 7</a>
+<a href="#L8"> 8</a>
+<a href="#L9"> 9</a>
+<a href="#L10">10</a>
+<a href="#L11">11</a>
+<a href="#L12">12</a>
+<a href="#L13">13</a>
+<a href="#L14">14</a>
+<a href="#L15">15</a>
+<a href="#L16">16</a>
+<a href="#L17">17</a>
+<a href="#L18">18</a>
+<a href="#L19">19</a>
+<a href="#L20">20</a>
+<a href="#L21">21</a>
+<a href="#L22">22</a>
+<a href="#L23">23</a>
+<a href="#L24">24</a>
+<a href="#L25">25</a>
+<a href="#L26">26</a>
+<a href="#L27">27</a>
+<a href="#L28">28</a>
+<a href="#L29">29</a>
+</pre>
+<pre><code class="ocaml">open Ast
+
+let op_to_string = function
+  | <span data-count="454">A</span>dd -&gt; "+"
+  | <span data-count="474">S</span>ub -&gt; "-"
+  | <span data-count="493">M</span>ul -&gt; "*"
+  | <span data-count="468">D</span>iv -&gt; "/"
+  | <span data-count="465">L</span>t -&gt; "&lt;"
+  | <span data-count="503">E</span>q -&gt; "="
+  | <span data-count="479">M</span>t -&gt; "&gt;"
+;;
+
+let rec pp fmt = function
+  | <span data-count="8422">C</span>onst n -&gt; Format.fprintf fmt "%d" n
+  | <span data-count="8606">V</span>ar x -&gt; Format.fprintf fmt "%s" x
+  | <span data-count="3454">N</span>eg e -&gt; Format.fprintf fmt "(-%a)" pp e
+  | <span data-count="3336">B</span>inOp (op, left, right) -&gt;
+    Format.fprintf fmt "(%a %s %a)" pp left (op_to_strin<span data-count="3336">g</span> op) pp right
+  | <span data-count="3339">I</span>f (cond, t, e) -&gt; Format.fprintf fmt "(if %a then %a else %a)" pp cond pp t pp e
+  | <span data-count="3343">A</span>pp (func, arg) -&gt; Format.fprintf fmt "(%a %a)" pp func pp arg
+  | <span data-count="3441">F</span>un (arg_name, body) -&gt; Format.fprintf fmt "(fun %s -&gt; %a)" arg_name pp body
+  | <span data-count="3369">L</span>et (rec_flag, name, e1, e2) -&gt;
+    let rec_str =
+      match rec_flag with
+      | <span data-count="1719">R</span>ec -&gt; "rec "
+      | <span data-count="1650">V</span>al -&gt; ""
+    in
+    Format.fprintf fmt "(let %s%s = %a in %a)" rec_str name pp e1 pp e2
+;;
+</code></pre>
+      </div>
+    </div>
+    <script src="../coverage.js"></script>
+  </body>
+</html>
