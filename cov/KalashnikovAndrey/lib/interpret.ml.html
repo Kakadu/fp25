@@ -417,14 +417,14 @@ let rec eval (env : env) (e : expr) : value StateError.t =
     <span data-count="120">l</span>et* v2 = eva<span data-count="120">l</span> env r in
     <span data-count="120">(</span>match v1, v2 with
      | <span data-count="120">V</span>Int i1, VInt i2 -&gt;
-          (match op with
-           | <span data-count="24">A</span>dd -&gt; StateError.return (VInt (i1 + i2))
-           | <span data-count="44">S</span>ub -&gt; StateError.return (VInt (i1 - i2))
-           | <span data-count="5">M</span>ul -&gt; StateError.return (VInt (i1 * i2))
-           | <span data-count="1">D</span>iv -&gt;
-             if i2 = 0
-             then <span data-count="1">S</span>tateError.fail (Division_by_zero : error)
-             else <span data-count="0">S</span>tateError.return (VInt (i1 / i2))
+       (match op with
+        | <span data-count="24">A</span>dd -&gt; StateError.return (VInt (i1 + i2))
+        | <span data-count="44">S</span>ub -&gt; StateError.return (VInt (i1 - i2))
+        | <span data-count="5">M</span>ul -&gt; StateError.return (VInt (i1 * i2))
+        | <span data-count="1">D</span>iv -&gt;
+          if i2 = 0
+          then <span data-count="1">S</span>tateError.fail (Division_by_zero : error)
+          else <span data-count="0">S</span>tateError.return (VInt (i1 / i2))
         | <span data-count="46">L</span>t -&gt; StateError.return (VInt (if i1 &lt; i2 then <span data-count="22">1</span> else <span data-count="24">0</span>))
         | <span data-count="0">E</span>q -&gt; StateError.return (VInt (if i1 = i2 then <span data-count="0">1</span> else <span data-count="0">0</span>))
         | <span data-count="0">M</span>t -&gt; StateError.return (VInt (if i1 &gt; i2 then <span data-count="0">1</span> else <span data-count="0">0</span>)))

@@ -448,179 +448,179 @@ let pp_error ppf = function
 ;;
 
 let is_whitespace = function
-  | <span data-count="55695">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\r' | <span data-count="0">'</span>\n' -&gt; true
-  | <span data-count="98210">_</span> -&gt; false
+  | <span data-count="39590">'</span> ' | <span data-count="0">'</span>\t' | <span data-count="0">'</span>\r' | <span data-count="0">'</span>\n' -&gt; true
+  | <span data-count="69857">_</span> -&gt; false
 ;;
 
 let ws = skip_whil<span data-count="10">e</span> is_whitespace
-let parens p = <span data-count="71577">c</span>ha<span data-count="71577">r</span> '(' *<span data-count="71577">&gt;</span> p &lt;<span data-count="71577">*</span> cha<span data-count="71577">r</span> ')' &lt;* ws
+let parens p = <span data-count="51209">c</span>ha<span data-count="51209">r</span> '(' *<span data-count="51209">&gt;</span> p &lt;<span data-count="51209">*</span> cha<span data-count="51209">r</span> ')' &lt;* ws
 
 let is_digit = function
-  | <span data-count="16077">'</span>0' .. '9' -&gt; true
-  | <span data-count="108404">_</span> -&gt; false
+  | <span data-count="11518">'</span>0' .. '9' -&gt; true
+  | <span data-count="77399">_</span> -&gt; false
 ;;
 
 let var = function
-  | <span data-count="0">'</span>A' .. 'Z' | <span data-count="16996">'</span>a' .. 'z' | <span data-count="0">'</span>_' -&gt; true
-  | <span data-count="47443">_</span> -&gt; false
+  | <span data-count="0">'</span>A' .. 'Z' | <span data-count="12014">'</span>a' .. 'z' | <span data-count="0">'</span>_' -&gt; true
+  | <span data-count="33917">_</span> -&gt; false
 ;;
 
-let var_and_digit c = <span data-count="64439">v</span>a<span data-count="64439">r</span> <span data-count="16996">c</span> || is_digit c
+let var_and_digit c = <span data-count="45931">v</span>a<span data-count="45931">r</span> <span data-count="12014">c</span> || is_digit c
 let keys = [ "then"; "if"; "else"; "let"; "rec"; "in"; "fun"; "true"; "false" ]
 
 let chainl1 e op =
-  <span data-count="122472">l</span>et rec l acc =
-    <span data-count="99155">(</span>let* f = op in
-     <span data-count="3348">l</span>et* x = e in
-     <span data-count="3348">l</span> (<span data-count="3348">f</span> acc x))
-    &lt;|&gt; retur<span data-count="99155">n</span> acc
+  <span data-count="87627">l</span>et rec l acc =
+    <span data-count="70949">(</span>let* f = op in
+     <span data-count="2333">l</span>et* x = e in
+     <span data-count="2333">l</span> (<span data-count="2333">f</span> acc x))
+    &lt;|&gt; retur<span data-count="70949">n</span> acc
   in
   e &gt;&gt;= l
 ;;
 
-let sym s = <span data-count="51167">s</span>trin<span data-count="51167">g</span> s &lt;* ws
+let sym s = <span data-count="36559">s</span>trin<span data-count="36559">g</span> s &lt;* ws
 
 let kw s =
-  <span data-count="135909">l</span>et* _ = strin<span data-count="135909">g</span> s in
-  <span data-count="22948">l</span>et* next = peek_char in
-  <span data-count="22948">m</span>atch next with
-  | <span data-count="22948">S</span>ome c when var_and_digi<span data-count="22948">t</span> c -&gt; <span data-count="1003">f</span>ail "keyword"
-  | <span data-count="21945">_</span> -&gt; ws
+  <span data-count="97228">l</span>et* _ = strin<span data-count="97228">g</span> s in
+  <span data-count="16396">l</span>et* next = peek_char in
+  <span data-count="16396">m</span>atch next with
+  | <span data-count="16396">S</span>ome c when var_and_digi<span data-count="16396">t</span> c -&gt; <span data-count="727">f</span>ail "keyword"
+  | <span data-count="15669">_</span> -&gt; ws
 ;;
 
 let parse_minus_op =
   let* _ = sy<span data-count="10">m</span> "-" in
-  <span data-count="477">w</span>s *&gt; retur<span data-count="477">n</span> (fun left right -&gt; <span data-count="477">B</span>inOp (Sub, left, right))
+  <span data-count="332">w</span>s *&gt; retur<span data-count="332">n</span> (fun left right -&gt; <span data-count="332">B</span>inOp (Sub, left, right))
 ;;
 
 let parse_add_op =
   let* _ = sy<span data-count="10">m</span> "+" in
-  <span data-count="458">w</span>s *&gt; retur<span data-count="458">n</span> (fun left right -&gt; <span data-count="458">B</span>inOp (Add, left, right))
+  <span data-count="348">w</span>s *&gt; retur<span data-count="348">n</span> (fun left right -&gt; <span data-count="348">B</span>inOp (Add, left, right))
 ;;
 
 let parse_mul_op =
   let* _ = sy<span data-count="10">m</span> "*" in
-  <span data-count="495">w</span>s *&gt; retur<span data-count="495">n</span> (fun left right -&gt; <span data-count="495">B</span>inOp (Mul, left, right))
+  <span data-count="340">w</span>s *&gt; retur<span data-count="340">n</span> (fun left right -&gt; <span data-count="340">B</span>inOp (Mul, left, right))
 ;;
 
 let parse_div_op =
   let* _ = sy<span data-count="10">m</span> "/" in
-  <span data-count="469">w</span>s *&gt; retur<span data-count="469">n</span> (fun left right -&gt; <span data-count="469">B</span>inOp (Div, left, right))
+  <span data-count="315">w</span>s *&gt; retur<span data-count="315">n</span> (fun left right -&gt; <span data-count="315">B</span>inOp (Div, left, right))
 ;;
 
 let parse_lt_op =
   let* _ = sy<span data-count="10">m</span> "&lt;" in
-  <span data-count="467">w</span>s *&gt; retur<span data-count="467">n</span> (fun left right -&gt; <span data-count="467">B</span>inOp (Lt, left, right))
+  <span data-count="313">w</span>s *&gt; retur<span data-count="313">n</span> (fun left right -&gt; <span data-count="313">B</span>inOp (Lt, left, right))
 ;;
 
 let parse_eq_op =
   let* _ = sy<span data-count="10">m</span> "=" in
-  <span data-count="503">w</span>s *&gt; retur<span data-count="503">n</span> (fun left right -&gt; <span data-count="503">B</span>inOp (Eq, left, right))
+  <span data-count="345">w</span>s *&gt; retur<span data-count="345">n</span> (fun left right -&gt; <span data-count="345">B</span>inOp (Eq, left, right))
 ;;
 
 let parse_mt_op =
   let* _ = sy<span data-count="10">m</span> "&gt;" in
-  <span data-count="479">w</span>s *&gt; retur<span data-count="479">n</span> (fun left right -&gt; <span data-count="479">B</span>inOp (Mt, left, right))
+  <span data-count="340">w</span>s *&gt; retur<span data-count="340">n</span> (fun left right -&gt; <span data-count="340">B</span>inOp (Mt, left, right))
 ;;
 
 let is_keyword_next_helper input key =
-  <span data-count="279310">l</span>et k_len = String.length key in
-  <span data-count="279310">i</span>f not (String.starts_wit<span data-count="279310">h</span> ~prefix:key input)
-  then <span data-count="269085">f</span>alse
-  else <span data-count="10225">i</span>f String.lengt<span data-count="10225">h</span> input == k_len
+  <span data-count="199594">l</span>et k_len = String.length key in
+  <span data-count="199594">i</span>f not (String.starts_wit<span data-count="199594">h</span> ~prefix:key input)
+  then <span data-count="192229">f</span>alse
+  else <span data-count="7365">i</span>f String.lengt<span data-count="7365">h</span> input == k_len
   then <span data-count="0">t</span>rue
-  else <span data-count="10225">n</span>ot (var_and_digi<span data-count="10225">t</span> input.[k_len])
+  else <span data-count="7365">n</span>ot (var_and_digi<span data-count="7365">t</span> input.[k_len])
 ;;
 
 let is_keyword_next =
   let* n = available in
-  <span data-count="37359">l</span>et* s = peek_strin<span data-count="37359">g</span> (mi<span data-count="37359">n</span> n 10) in
-  <span data-count="37359">r</span>eturn (List.exist<span data-count="37359">s</span> (is_keyword_next_helpe<span data-count="37359">r</span> s) keys)
+  <span data-count="26744">l</span>et* s = peek_strin<span data-count="26744">g</span> (mi<span data-count="26744">n</span> n 10) in
+  <span data-count="26744">r</span>eturn (List.exist<span data-count="26744">s</span> (is_keyword_next_helpe<span data-count="26744">r</span> s) keys)
 ;;
 
 let parse_int =
   let* n = take_while<span data-count="10">1</span> is_digit &gt;&gt;<span data-count="10">|</span> int_of_string &lt;<span data-count="10">*</span> ws in
-  <span data-count="8447">r</span>eturn (Const n)
+  <span data-count="6060">r</span>eturn (Const n)
 ;;
 
 let parse_ident =
   let* head =
     satisf<span data-count="10">y</span> (function
-      | <span data-count="14344">'</span>a' .. 'z' | <span data-count="1115">'</span>_' -&gt; true
-      | <span data-count="50732">_</span> -&gt; false)
+      | <span data-count="10260">'</span>a' .. 'z' | <span data-count="794">'</span>_' -&gt; true
+      | <span data-count="36005">_</span> -&gt; false)
   in
-  <span data-count="15459">l</span>et* tail = take_whil<span data-count="15459">e</span> var_and_digit in
-  <span data-count="15459">l</span>et s = String.mak<span data-count="15459">e</span> 1 head ^ tail in
-  if List.mem s keys then <span data-count="7">f</span>ail "keyword" else <span data-count="15452">r</span>etur<span data-count="15452">n</span> s &lt;* ws
+  <span data-count="11054">l</span>et* tail = take_whil<span data-count="11054">e</span> var_and_digit in
+  <span data-count="11054">l</span>et s = String.mak<span data-count="11054">e</span> 1 head ^ tail in
+  if List.mem s keys then <span data-count="7">f</span>ail "keyword" else <span data-count="11047">r</span>etur<span data-count="11047">n</span> s &lt;* ws
 ;;
 
 let parse_var =
   let* v = parse_ident &lt;<span data-count="10">*</span> ws in
-  <span data-count="8630">r</span>eturn (Var v)
+  <span data-count="6247">r</span>eturn (Var v)
 ;;
 
 let parse_fun_helper params body =
-  <span data-count="6817">L</span>ist.fold_right (fun param acc -&gt; <span data-count="3445">F</span>un (param, acc)) params body
+  <span data-count="4795">L</span>ist.fold_right (fun param acc -&gt; <span data-count="2426">F</span>un (param, acc)) params body
 ;;
 
 let rec parse_atom () =
-  <span data-count="71577">c</span>hoice [ parse_int; parse_var; paren<span data-count="71577">s</span> (retur<span data-count="71577">n</span> () &gt;&gt;<span data-count="71577">=</span> fun () -&gt; <span data-count="20282">p</span>arse_expr ()) ]
+  <span data-count="51209">c</span>hoice [ parse_int; parse_var; paren<span data-count="51209">s</span> (retur<span data-count="51209">n</span> () &gt;&gt;<span data-count="51209">=</span> fun () -&gt; <span data-count="14437">p</span>arse_expr ()) ]
 
 and parse_factor () =
-  <span data-count="44278">c</span>hoice
-    [ (let* _ = sy<span data-count="44278">m</span> "-" in
-       <span data-count="3454">p</span>arse_facto<span data-count="3454">r</span> () &gt;&gt;| fun e -&gt; <span data-count="3454">N</span>eg e)
-    ; parse_ato<span data-count="44278">m</span> ()
+  <span data-count="31692">c</span>hoice
+    [ (let* _ = sy<span data-count="31692">m</span> "-" in
+       <span data-count="2483">p</span>arse_facto<span data-count="2483">r</span> () &gt;&gt;| fun e -&gt; <span data-count="2483">N</span>eg e)
+    ; parse_ato<span data-count="31692">m</span> ()
     ]
 
-and parse_terms () = <span data-count="40824">c</span>hainl1 (parse_ap<span data-count="40824">p</span> ()) (parse_mul_op &lt;|<span data-count="40824">&gt;</span> parse_div_op)
+and parse_terms () = <span data-count="29209">c</span>hainl1 (parse_ap<span data-count="29209">p</span> ()) (parse_mul_op &lt;|<span data-count="29209">&gt;</span> parse_div_op)
 
 and parse_compare () =
-  <span data-count="40824">c</span>hainl1 (parse_arithmeti<span data-count="40824">c</span> ()) (parse_eq_op &lt;|<span data-count="40824">&gt;</span> parse_lt_op &lt;|<span data-count="40824">&gt;</span> parse_mt_op)
+  <span data-count="29209">c</span>hainl1 (parse_arithmeti<span data-count="29209">c</span> ()) (parse_eq_op &lt;|<span data-count="29209">&gt;</span> parse_lt_op &lt;|<span data-count="29209">&gt;</span> parse_mt_op)
 
 and parse_app () =
-  <span data-count="40824">l</span>et* head = parse_facto<span data-count="40824">r</span> () in
-  <span data-count="34006">l</span>et rec loop acc =
-    <span data-count="37359">l</span>et* is_kwd = is_keyword_next in
-    <span data-count="37359">i</span>f is_kwd
-    then <span data-count="10060">r</span>eturn acc
+  <span data-count="29209">l</span>et* head = parse_facto<span data-count="29209">r</span> () in
+  <span data-count="24313">l</span>et rec loop acc =
+    <span data-count="26744">l</span>et* is_kwd = is_keyword_next in
+    <span data-count="26744">i</span>f is_kwd
+    then <span data-count="7227">r</span>eturn acc
     else
-      <span data-count="27299">(</span>let* arg = parse_ato<span data-count="27299">m</span> () in
-       <span data-count="3353">l</span>oop (App (acc, arg)))
-      &lt;|&gt; retur<span data-count="27299">n</span> acc
+      <span data-count="19517">(</span>let* arg = parse_ato<span data-count="19517">m</span> () in
+       <span data-count="2431">l</span>oop (App (acc, arg)))
+      &lt;|&gt; retur<span data-count="19517">n</span> acc
   in
   loop head
 
-and parse_arithmetic () = <span data-count="40824">c</span>hainl1 (parse_term<span data-count="40824">s</span> ()) (parse_add_op &lt;|<span data-count="40824">&gt;</span> parse_minus_op)
+and parse_arithmetic () = <span data-count="29209">c</span>hainl1 (parse_term<span data-count="29209">s</span> ()) (parse_add_op &lt;|<span data-count="29209">&gt;</span> parse_minus_op)
 
 and parse_let () =
-  <span data-count="40824">l</span>et* _ = k<span data-count="40824">w</span> "let" in
-  <span data-count="3377">l</span>et* rec_flag = k<span data-count="3377">w</span> "rec" *<span data-count="3377">&gt;</span> retur<span data-count="3377">n</span> Rec &lt;|<span data-count="3377">&gt;</span> retur<span data-count="3377">n</span> Val in
-  <span data-count="3377">l</span>et* name = parse_ident &lt;<span data-count="3377">*</span> ws in
-  <span data-count="3377">l</span>et* args = man<span data-count="3377">y</span> (parse_ident &lt;<span data-count="3377">*</span> ws) in
-  <span data-count="3377">l</span>et* _ = sy<span data-count="3377">m</span> "=" in
-  <span data-count="3377">l</span>et* let_expr = parse_exp<span data-count="3377">r</span> () in
-  <span data-count="3375">l</span>et* _ = k<span data-count="3375">w</span> "in" in
-  <span data-count="3375">l</span>et* body = parse_exp<span data-count="3375">r</span> () in
-  <span data-count="3375">r</span>eturn (Let (rec_flag, name, parse_fun_helpe<span data-count="3375">r</span> args let_expr, body))
+  <span data-count="29209">l</span>et* _ = k<span data-count="29209">w</span> "let" in
+  <span data-count="2374">l</span>et* rec_flag = k<span data-count="2374">w</span> "rec" *<span data-count="2374">&gt;</span> retur<span data-count="2374">n</span> Rec &lt;|<span data-count="2374">&gt;</span> retur<span data-count="2374">n</span> Val in
+  <span data-count="2374">l</span>et* name = parse_ident &lt;<span data-count="2374">*</span> ws in
+  <span data-count="2374">l</span>et* args = man<span data-count="2374">y</span> (parse_ident &lt;<span data-count="2374">*</span> ws) in
+  <span data-count="2374">l</span>et* _ = sy<span data-count="2374">m</span> "=" in
+  <span data-count="2374">l</span>et* let_expr = parse_exp<span data-count="2374">r</span> () in
+  <span data-count="2372">l</span>et* _ = k<span data-count="2372">w</span> "in" in
+  <span data-count="2372">l</span>et* body = parse_exp<span data-count="2372">r</span> () in
+  <span data-count="2372">r</span>eturn (Let (rec_flag, name, parse_fun_helpe<span data-count="2372">r</span> args let_expr, body))
 
 and parse_if () =
-  <span data-count="40824">l</span>et* _ = k<span data-count="40824">w</span> "if" in
-  <span data-count="3343">l</span>et* cond = parse_exp<span data-count="3343">r</span> () in
-  <span data-count="3343">l</span>et* _ = k<span data-count="3343">w</span> "then" in
-  <span data-count="3343">l</span>et* then_body = parse_exp<span data-count="3343">r</span> () in
-  <span data-count="3342">l</span>et* _ = k<span data-count="3342">w</span> "else" in
-  <span data-count="3342">l</span>et* else_body = parse_exp<span data-count="3342">r</span> () in
-  <span data-count="3342">r</span>eturn (If (cond, then_body, else_body))
+  <span data-count="29209">l</span>et* _ = k<span data-count="29209">w</span> "if" in
+  <span data-count="2428">l</span>et* cond = parse_exp<span data-count="2428">r</span> () in
+  <span data-count="2428">l</span>et* _ = k<span data-count="2428">w</span> "then" in
+  <span data-count="2428">l</span>et* then_body = parse_exp<span data-count="2428">r</span> () in
+  <span data-count="2427">l</span>et* _ = k<span data-count="2427">w</span> "else" in
+  <span data-count="2427">l</span>et* else_body = parse_exp<span data-count="2427">r</span> () in
+  <span data-count="2427">r</span>eturn (If (cond, then_body, else_body))
 
 and parse_fun () =
-  <span data-count="40824">l</span>et* _ = k<span data-count="40824">w</span> "fun" in
-  <span data-count="3443">l</span>et* args = many<span data-count="3443">1</span> (parse_ident &lt;<span data-count="3443">*</span> ws) in
-  <span data-count="3442">l</span>et* _ = sy<span data-count="3442">m</span> "-&gt;" in
-  <span data-count="3442">l</span>et* body = parse_exp<span data-count="3442">r</span> () in
-  <span data-count="3442">r</span>eturn (parse_fun_helpe<span data-count="3442">r</span> args body)
+  <span data-count="29209">l</span>et* _ = k<span data-count="29209">w</span> "fun" in
+  <span data-count="2424">l</span>et* args = many<span data-count="2424">1</span> (parse_ident &lt;<span data-count="2424">*</span> ws) in
+  <span data-count="2423">l</span>et* _ = sy<span data-count="2423">m</span> "-&gt;" in
+  <span data-count="2423">l</span>et* body = parse_exp<span data-count="2423">r</span> () in
+  <span data-count="2423">r</span>eturn (parse_fun_helpe<span data-count="2423">r</span> args body)
 
-and parse_expr () = <span data-count="40824">c</span>hoice [ parse_le<span data-count="40824">t</span> (); parse_i<span data-count="40824">f</span> (); parse_fu<span data-count="40824">n</span> (); parse_compar<span data-count="40824">e</span> () ]
+and parse_expr () = <span data-count="29209">c</span>hoice [ parse_le<span data-count="29209">t</span> (); parse_i<span data-count="29209">f</span> (); parse_fu<span data-count="29209">n</span> (); parse_compar<span data-count="29209">e</span> () ]
 
 let parse str =
   <span data-count="320">m</span>atch parse_string ~consume:Consume.All (parse_exp<span data-count="320">r</span> ()) str with

@@ -88,29 +88,29 @@
 <pre><code class="ocaml">open Ast
 
 let op_to_string = function
-  | <span data-count="454">A</span>dd -&gt; "+"
-  | <span data-count="474">S</span>ub -&gt; "-"
-  | <span data-count="493">M</span>ul -&gt; "*"
-  | <span data-count="468">D</span>iv -&gt; "/"
-  | <span data-count="465">L</span>t -&gt; "&lt;"
-  | <span data-count="503">E</span>q -&gt; "="
-  | <span data-count="479">M</span>t -&gt; "&gt;"
+  | <span data-count="344">A</span>dd -&gt; "+"
+  | <span data-count="329">S</span>ub -&gt; "-"
+  | <span data-count="338">M</span>ul -&gt; "*"
+  | <span data-count="314">D</span>iv -&gt; "/"
+  | <span data-count="311">L</span>t -&gt; "&lt;"
+  | <span data-count="345">E</span>q -&gt; "="
+  | <span data-count="340">M</span>t -&gt; "&gt;"
 ;;
 
 let rec pp fmt = function
-  | <span data-count="8422">C</span>onst n -&gt; Format.fprintf fmt "%d" n
-  | <span data-count="8606">V</span>ar x -&gt; Format.fprintf fmt "%s" x
-  | <span data-count="3454">N</span>eg e -&gt; Format.fprintf fmt "(-%a)" pp e
-  | <span data-count="3336">B</span>inOp (op, left, right) -&gt;
-    Format.fprintf fmt "(%a %s %a)" pp left (op_to_strin<span data-count="3336">g</span> op) pp right
-  | <span data-count="3339">I</span>f (cond, t, e) -&gt; Format.fprintf fmt "(if %a then %a else %a)" pp cond pp t pp e
-  | <span data-count="3343">A</span>pp (func, arg) -&gt; Format.fprintf fmt "(%a %a)" pp func pp arg
-  | <span data-count="3441">F</span>un (arg_name, body) -&gt; Format.fprintf fmt "(fun %s -&gt; %a)" arg_name pp body
-  | <span data-count="3369">L</span>et (rec_flag, name, e1, e2) -&gt;
+  | <span data-count="6035">C</span>onst n -&gt; Format.fprintf fmt "%d" n
+  | <span data-count="6223">V</span>ar x -&gt; Format.fprintf fmt "%s" x
+  | <span data-count="2483">N</span>eg e -&gt; Format.fprintf fmt "(-%a)" pp e
+  | <span data-count="2321">B</span>inOp (op, left, right) -&gt;
+    Format.fprintf fmt "(%a %s %a)" pp left (op_to_strin<span data-count="2321">g</span> op) pp right
+  | <span data-count="2424">I</span>f (cond, t, e) -&gt; Format.fprintf fmt "(if %a then %a else %a)" pp cond pp t pp e
+  | <span data-count="2421">A</span>pp (func, arg) -&gt; Format.fprintf fmt "(%a %a)" pp func pp arg
+  | <span data-count="2422">F</span>un (arg_name, body) -&gt; Format.fprintf fmt "(fun %s -&gt; %a)" arg_name pp body
+  | <span data-count="2366">L</span>et (rec_flag, name, e1, e2) -&gt;
     let rec_str =
       match rec_flag with
-      | <span data-count="1719">R</span>ec -&gt; "rec "
-      | <span data-count="1650">V</span>al -&gt; ""
+      | <span data-count="1213">R</span>ec -&gt; "rec "
+      | <span data-count="1153">V</span>al -&gt; ""
     in
     Format.fprintf fmt "(let %s%s = %a in %a)" rec_str name pp e1 pp e2
 ;;
