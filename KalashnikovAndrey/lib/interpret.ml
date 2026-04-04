@@ -60,7 +60,8 @@ let initial_env = [ "print", VBuiltin builtin_print ]
 
 let rec check_env key : env -> value StateError.t = function
   | [] -> StateError.fail (Var_unbound key)
-  | (k, v) :: rest -> if k = key then StateError.return v else check_env key rest
+  | (k, v) :: _ when k = key -> StateError.return v
+  | _ :: rest -> check_env key rest
 ;;
 
 let rec eval (env : env) (e : expr) : value StateError.t =
