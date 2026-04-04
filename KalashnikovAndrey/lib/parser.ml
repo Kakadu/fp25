@@ -95,11 +95,8 @@ let parse_mt_op =
 
 let is_keyword_next_helper input key =
   let k_len = String.length key in
-  if not (String.starts_with ~prefix:key input)
-  then false
-  else if String.length input == k_len
-  then true
-  else not (var_and_digit input.[k_len])
+  String.starts_with ~prefix:key input
+  && (String.length input = k_len || not (var_and_digit input.[k_len]))
 ;;
 
 let is_keyword_next =

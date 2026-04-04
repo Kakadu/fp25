@@ -125,3 +125,14 @@ Keyword boundaries stay correct:
   > Error: Unbound variable 'ifx'
   Steps: 1000
   > 
+User-defined `fix` works as an ordinary recursive function name:
+
+  $ ../bin/REPL.exe <<'EOF'
+  > 1000
+  > false
+  > let rec fix f x = f (fix f) x in let fact = fix (fun self n -> if n < 2 then 1 else n * self (n - 1)) in fact 5
+  > :q
+  > EOF
+  max steps> ast printer> > Value: 120
+  Steps: 936
+  > 
