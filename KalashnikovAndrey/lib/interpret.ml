@@ -16,7 +16,8 @@ type error =
   | Out_of_steps
   | Type_error of string
 
-let pp_error ppf = function
+let pp_error ppf (err : error) =
+  match err with
   | Division_by_zero -> Format.fprintf ppf "Division by zero"
   | Var_unbound s -> Format.fprintf ppf "Unbound variable '%s'" s
   | Out_of_steps -> Format.fprintf ppf "Out of steps"
@@ -47,8 +48,6 @@ type value =
 and env = (string * value) list
 
 let ( let* ) = StateError.bind
-let return x = Ok x
-let fail e = Error e
 
 let builtin_print = function
   | VInt n ->
@@ -83,14 +82,14 @@ let rec eval (env : env) (e : expr) : value StateError.t =
     let* v2 = eval env r in
     (match v1, v2 with
      | VInt i1, VInt i2 ->
-       (match op with
-        | Add -> StateError.return (VInt (i1 + i2))
-        | Sub -> StateError.return (VInt (i1 - i2))
-        | Mul -> StateError.return (VInt (i1 * i2))
-        | Div ->
-          if i2 = 0
-          then StateError.fail Division_by_zero
-          else StateError.return (VInt (i1 / i2))
+          (match op with
+           | Add -> StateError.return (VInt (i1 + i2))
+           | Sub -> StateError.return (VInt (i1 - i2))
+           | Mul -> StateError.return (VInt (i1 * i2))
+           | Div ->
+             if i2 = 0
+             then StateError.fail (Division_by_zero : error)
+             else StateError.return (VInt (i1 / i2))
         | Lt -> StateError.return (VInt (if i1 < i2 then 1 else 0))
         | Eq -> StateError.return (VInt (if i1 = i2 then 1 else 0))
         | Mt -> StateError.return (VInt (if i1 > i2 then 1 else 0)))

@@ -3,14 +3,16 @@ open QCheck
 
 let print_expr expr = Format.asprintf "%a" Printer.pp expr
 
+let oneof_values values = Gen.oneof (List.map Gen.return values)
+
 let gen_ident =
-  Gen.oneofl
+  oneof_values
     [ "x"; "y"; "z"; "f"; "g"; "h"; "n"; "m"; "_x"; "foo"; "bar"; "ifx"; "recx"; "funny" ]
 ;;
 
-let gen_op = Gen.oneofl [ Ast.Add; Sub; Mul; Div; Lt; Eq; Mt ]
-let gen_rec_flag = Gen.oneofl [ Ast.Val; Rec ]
-let gen_const = Gen.map (fun n -> Ast.Const (abs n)) Gen.small_signed_int
+let gen_op = oneof_values [ Ast.Add; Sub; Mul; Div; Lt; Eq; Mt ]
+let gen_rec_flag = oneof_values [ Ast.Val; Rec ]
+let gen_const = Gen.map (fun n -> Ast.Const n) (Gen.int_bound 100)
 
 let rec gen_expr size =
   let open Gen in
