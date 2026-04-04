@@ -154,47 +154,47 @@ open Lambda_lib
 let prompt = "&gt; "
 
 let read_max_steps () =
-  <span data-count="9">p</span>rint_string "max steps&gt; ";
-  <span data-count="9">f</span>lush stdout;
-  <span data-count="9">m</span>atch read_line () with
+  <span data-count="10">p</span>rint_string "max steps&gt; ";
+  <span data-count="10">f</span>lush stdout;
+  <span data-count="10">m</span>atch read_line () with
   | <span data-count="0">e</span>xception End_of_file -&gt; 1000
-  | <span data-count="9">l</span>ine -&gt;
+  | <span data-count="10">l</span>ine -&gt;
     let line = String.trim line in
-    <span data-count="9">(</span>match int_of_string_opt line with
-     | <span data-count="9">S</span>ome n when n &gt; 0 -&gt; <span data-count="9">n</span>
+    <span data-count="10">(</span>match int_of_string_opt line with
+     | <span data-count="10">S</span>ome n when n &gt; 0 -&gt; <span data-count="10">n</span>
      | <span data-count="0">_</span> -&gt; 1000)
 ;;
 
 let read_printer_flag () =
-  <span data-count="9">p</span>rint_string "ast printer&gt; ";
-  <span data-count="9">f</span>lush stdout;
-  <span data-count="9">m</span>atch read_line () with
+  <span data-count="10">p</span>rint_string "ast printer&gt; ";
+  <span data-count="10">f</span>lush stdout;
+  <span data-count="10">m</span>atch read_line () with
   | <span data-count="0">e</span>xception End_of_file -&gt; false
-  | <span data-count="9">l</span>ine -&gt;
+  | <span data-count="10">l</span>ine -&gt;
     let line = String.trim line in
-    <span data-count="9">(</span>match bool_of_string_opt line with
+    <span data-count="10">(</span>match bool_of_string_opt line with
      | <span data-count="2">S</span>ome true -&gt; true
-     | <span data-count="7">_</span> -&gt; false)
+     | <span data-count="8">_</span> -&gt; false)
 ;;
 
 let rec repl max_steps printer_flag =
-  <span data-count="23">p</span>rint_string prompt;
-  <span data-count="23">f</span>lush stdout;
-  <span data-count="23">m</span>atch read_line () with
+  <span data-count="25">p</span>rint_string prompt;
+  <span data-count="25">f</span>lush stdout;
+  <span data-count="25">m</span>atch read_line () with
   | <span data-count="0">e</span>xception End_of_file -&gt; print_newline ()
-  | <span data-count="23">l</span>ine -&gt;
+  | <span data-count="25">l</span>ine -&gt;
     let line = String.trim line in
-    <span data-count="23">i</span>f line = ":q"
-    then <span data-count="9">(</span>)
-    else <span data-count="14">(</span>
-      if line &lt;&gt; "" then <span data-count="14">I</span>nterpret.run_eva<span data-count="14">l</span> line max_steps printer_flag;
-      <span data-count="14">r</span>epl max_steps printer_flag)
+    <span data-count="25">i</span>f line = ":q"
+    then <span data-count="10">(</span>)
+    else <span data-count="15">(</span>
+      if line &lt;&gt; "" then <span data-count="15">I</span>nterpret.run_eva<span data-count="15">l</span> line max_steps printer_flag;
+      <span data-count="15">r</span>epl max_steps printer_flag)
 ;;
 
 let () =
   let max_steps = read_max_steps () in
-  <span data-count="9">l</span>et printer_flag = read_printer_flag () in
-  <span data-count="9">r</span>ep<span data-count="9">l</span> max_steps printer_flag
+  <span data-count="10">l</span>et printer_flag = read_printer_flag () in
+  <span data-count="10">r</span>ep<span data-count="10">l</span> max_steps printer_flag
 ;;
 </code></pre>
       </div>
