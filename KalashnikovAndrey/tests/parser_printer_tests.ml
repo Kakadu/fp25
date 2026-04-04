@@ -1,5 +1,4 @@
 open Lambda_lib
-
 open QCheck
 
 let print_expr expr = Format.asprintf "%a" Printer.pp expr
@@ -26,7 +25,12 @@ let rec gen_expr size =
       ; map3 (fun c t e -> Ast.If (c, t, e)) sub sub sub
       ; map2 (fun f a -> Ast.App (f, a)) sub sub
       ; map2 (fun arg body -> Ast.Fun (arg, body)) gen_ident sub
-      ; map4 (fun rec_flag name value body -> Ast.Let (rec_flag, name, value, body)) gen_rec_flag gen_ident sub sub
+      ; map4
+          (fun rec_flag name value body -> Ast.Let (rec_flag, name, value, body))
+          gen_rec_flag
+          gen_ident
+          sub
+          sub
       ])
 ;;
 
@@ -68,4 +72,4 @@ let parser_boundary_tests =
   ]
 ;;
 
-let () = QCheck_base_runner.run_tests_main (roundtrip_test   :: parser_boundary_tests)
+let () = QCheck_base_runner.run_tests_main (roundtrip_test :: parser_boundary_tests)
