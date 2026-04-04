@@ -82,14 +82,14 @@ let rec eval (env : env) (e : expr) : value StateError.t =
     let* v2 = eval env r in
     (match v1, v2 with
      | VInt i1, VInt i2 ->
-          (match op with
-           | Add -> StateError.return (VInt (i1 + i2))
-           | Sub -> StateError.return (VInt (i1 - i2))
-           | Mul -> StateError.return (VInt (i1 * i2))
-           | Div ->
-             if i2 = 0
-             then StateError.fail (Division_by_zero : error)
-             else StateError.return (VInt (i1 / i2))
+       (match op with
+        | Add -> StateError.return (VInt (i1 + i2))
+        | Sub -> StateError.return (VInt (i1 - i2))
+        | Mul -> StateError.return (VInt (i1 * i2))
+        | Div ->
+          if i2 = 0
+          then StateError.fail (Division_by_zero : error)
+          else StateError.return (VInt (i1 / i2))
         | Lt -> StateError.return (VInt (if i1 < i2 then 1 else 0))
         | Eq -> StateError.return (VInt (if i1 = i2 then 1 else 0))
         | Mt -> StateError.return (VInt (if i1 > i2 then 1 else 0)))

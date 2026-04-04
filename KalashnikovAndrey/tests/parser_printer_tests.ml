@@ -2,7 +2,6 @@ open Lambda_lib
 open QCheck
 
 let print_expr expr = Format.asprintf "%a" Printer.pp expr
-
 let oneof_values values = Gen.oneof (List.map Gen.return values)
 
 let gen_ident =
