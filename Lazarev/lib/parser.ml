@@ -267,9 +267,9 @@ let wrap_result = function
   | ParseError _ as e -> e
 ;;
 
-let parse_one string =
-  let atom = ws0 *> atom <* ws0 in
-  chars_of_string string |> atom |> wrap_result
+let parse_line line =
+  let expr = ws0 *> atom <* ws0 in
+  chars_of_string line |> expr |> wrap_result
 ;;
 
 let show_error = function

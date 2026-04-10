@@ -47,13 +47,12 @@ type t =
   | UnaryOp of unary_operation * t (** Unary operation [..y] *)
   | BinaryOp of binary_operation * t * t (** Binary operation [x .. y] *)
   | IfThenElse of t * t * t (** If-then-else expression [if ... then ... else ...] *)
-  | LetStatement of let_mnemonic * name * t (** Let statement [let x = ...] *)
   | LetExpr of let_mnemonic * name * t * t (** Let expression [let x = ... in ...] *)
   | Abstraction of name * t (** Lambda abstraction [fun x -> ...] *)
   | Application of t * t (** Application [(f x)] *)
 
 (** Shows AST in verbose format *)
-val show_ast : t -> string
+val show_ast_verbose : t -> string
 
 (** Shows AST in human readable format *)
-val show_pretty_ast : t -> string
+val show_ast : t -> string

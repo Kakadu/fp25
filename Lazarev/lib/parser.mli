@@ -17,11 +17,11 @@ type 'a result =
   | Parsed of 'a * char list
   | ParseError of error
 
+(** Parses one expression *)
+val parse_line : string -> Ast.t result
+
 (** Shows error in human readable format *)
 val show_error : error -> string
 
 (** Shows result in human readable format *)
 val show_result : Ast.t result -> string
-
-(** Parse expression *)
-val parse_one : string -> Ast.t result

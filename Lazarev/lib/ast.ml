@@ -45,7 +45,6 @@ type t =
   | UnaryOp of unary_operation * t
   | BinaryOp of binary_operation * t * t
   | IfThenElse of t * t * t
-  | LetStatement of let_mnemonic * name * t
   | LetExpr of let_mnemonic * name * t * t
   | Abstraction of name * t
   | Application of t * t
@@ -55,7 +54,7 @@ let show_name = function
   | Real name -> name
 ;;
 
-let rec show_ast = function
+let rec show_ast_verbose = function
   | Unit -> "unit"
   | Int value -> string_of_int value
   | Bool value -> string_of_bool value
@@ -63,37 +62,32 @@ let rec show_ast = function
   | Tuple (first, second, rest) ->
     Format.sprintf
       "Tuple(%s)"
-      (String.concat ", " (List.map show_ast (first :: second :: rest)))
+      (String.concat ", " (List.map show_ast_verbose (first :: second :: rest)))
   | UnaryOp (op, expr) ->
-    Format.sprintf "%s(%s)" (show_unary_operation op) (show_ast expr)
+    Format.sprintf "%s(%s)" (show_unary_operation op) (show_ast_verbose expr)
   | BinaryOp (op, left, right) ->
     Format.sprintf
       "%s(%s, %s)"
       (show_binary_operation op)
-      (show_ast left)
-      (show_ast right)
+      (show_ast_verbose left)
+      (show_ast_verbose right)
   | IfThenElse (cond, then_expr, else_expr) ->
     Format.sprintf
       "IfThenElse(%s, %s, %s)"
-      (show_ast cond)
-      (show_ast then_expr)
-      (show_ast else_expr)
-  | LetStatement (rf, name, statement) ->
-    Format.sprintf
-      "%s(%s, %s)"
-      (show_let_mnemonic rf)
-      (show_name name)
-      (show_ast statement)
+      (show_ast_verbose cond)
+      (show_ast_verbose then_expr)
+      (show_ast_verbose else_expr)
   | LetExpr (rf, name, lhs, rhs) ->
     Format.sprintf
       "%s(%s, %s, %s)"
       (show_let_mnemonic rf)
       (show_name name)
-      (show_ast lhs)
-      (show_ast rhs)
+      (show_ast_verbose lhs)
+      (show_ast_verbose rhs)
   | Abstraction (name, expr) ->
-    Format.sprintf "Abs(%s, %s)" (show_name name) (show_ast expr)
-  | Application (lhs, rhs) -> Format.sprintf "App(%s, %s)" (show_ast lhs) (show_ast rhs)
+    Format.sprintf "Abs(%s, %s)" (show_name name) (show_ast_verbose expr)
+  | Application (lhs, rhs) ->
+    Format.sprintf "App(%s, %s)" (show_ast_verbose lhs) (show_ast_verbose rhs)
 ;;
 
 let show_pretty_unary_operation = function
@@ -122,7 +116,7 @@ let show_pretty_rec_flag = function
   | LetRec -> "let rec"
 ;;
 
-let rec show_pretty_ast = function
+let rec show_ast = function
   | Unit -> "()"
   | Int value -> string_of_int value
   | Bool value -> string_of_bool value
@@ -130,36 +124,29 @@ let rec show_pretty_ast = function
   | Tuple (first, second, rest) ->
     Format.sprintf
       "(%s)"
-      (String.concat ", " (List.map show_pretty_ast (first :: second :: rest)))
+      (String.concat ", " (List.map show_ast (first :: second :: rest)))
   | UnaryOp (op, expr) ->
-    Format.sprintf "%s(%s)" (show_pretty_unary_operation op) (show_pretty_ast expr)
+    Format.sprintf "%s(%s)" (show_pretty_unary_operation op) (show_ast expr)
   | BinaryOp (op, left, right) ->
     Format.sprintf
       "(%s %s %s)"
-      (show_pretty_ast left)
+      (show_ast left)
       (show_pretty_binary_operation op)
-      (show_pretty_ast right)
+      (show_ast right)
   | IfThenElse (cond, then_expr, else_expr) ->
     Format.sprintf
       "if (%s) then (%s) else (%s)"
-      (show_pretty_ast cond)
-      (show_pretty_ast then_expr)
-      (show_pretty_ast else_expr)
-  | LetStatement (rf, name, statement) ->
-    Format.sprintf
-      "%s %s = (%s)"
-      (show_pretty_rec_flag rf)
-      (show_name name)
-      (show_pretty_ast statement)
+      (show_ast cond)
+      (show_ast then_expr)
+      (show_ast else_expr)
   | LetExpr (rf, name, lhs, rhs) ->
     Format.sprintf
       "%s %s = (%s) in (%s)"
       (show_pretty_rec_flag rf)
       (show_name name)
-      (show_pretty_ast lhs)
-      (show_pretty_ast rhs)
+      (show_ast lhs)
+      (show_ast rhs)
   | Abstraction (var, expr) ->
-    Format.sprintf "fun %s -> %s" (show_name var) (show_pretty_ast expr)
-  | Application (lhs, rhs) ->
-    Format.sprintf "((%s) (%s))" (show_pretty_ast lhs) (show_pretty_ast rhs)
+    Format.sprintf "fun %s -> %s" (show_name var) (show_ast expr)
+  | Application (lhs, rhs) -> Format.sprintf "((%s) (%s))" (show_ast lhs) (show_ast rhs)
 ;;

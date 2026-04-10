@@ -7,12 +7,13 @@
 [@@@ocaml.text "/*"]
 
 type error =
-  | ExhaustedSteps
+  | LimitError
   | ZeroDivision
   | InvalidApplication
   | InvalidLet
   | UnboundVariable of Ast.name
-  | TypeMismatch of string * string
+  | TypeMismatch of string
+  | TypesMismatch of string * string
 
 type 'a result =
   | Eval of 'a
@@ -48,53 +49,63 @@ module State : Utils.STATE_MONAD = struct
   let run func state = func state
 end
 
-let show_value_type = function
+let rec show_value_type = function
   | Unit -> "unit"
   | Int _ -> "int"
   | Bool _ -> "bool"
-  | Tuple _ -> ""
+  | Tuple (t1, t2, ts) -> String.concat " * " (List.map show_value_type (t1 :: t2 :: ts))
   | Closure _ -> "<closure>"
   | BuiltinAbstraction _ -> "<built-in>"
 ;;
 
-let show_value = function
+let rec show_value = function
   | Unit -> "()"
   | Int int -> string_of_int int
   | Bool bool -> string_of_bool bool
+  | Tuple (v1, v2, vs) -> String.concat " * " (List.map show_value (v1 :: v2 :: vs))
   | _ -> ""
 ;;
 
-module Eval (M : Utils.STATE_MONAD) = struct
-  let return x = M.return (Eval x)
-  let fail e = M.return (EvalError e)
+module Interpreter (ST : Utils.STATE_MONAD) = struct
+  let return x = ST.return (Eval x)
+  let fail e = ST.return (EvalError e)
 
-  let bind x transform =
-    M.bind x (function
+  (* Two different bind operators here *)
+  (* '>>=' is used for State *)
+  (* 'let*' is used for Eval *)
+
+  let ( >>= ) = ST.bind
+
+  let ( let* ) x transform =
+    ST.bind x (function
       | Eval x -> transform x
-      | EvalError e -> M.return (EvalError e))
+      | EvalError e -> ST.return (EvalError e))
   ;;
 
-  let get_vars = M.bind M.read (fun env -> M.return (fst env))
-  let set_vars vars = M.bind M.read (fun env -> M.write (vars, snd env))
-  let get_limit = M.bind M.read (fun env -> M.return (snd env))
+  let get_vars = ST.bind ST.read (fun env -> ST.return (fst env))
+  let get_limit = ST.bind ST.read (fun env -> ST.return (snd env))
 
-  let decrease_limit =
-    M.bind M.read (fun st ->
+  let update_vars var value =
+    ST.bind ST.read (fun (vars, limit) -> ST.write ((var, value) :: vars, limit))
+  ;;
+
+  let set_vars vars = ST.bind ST.read (fun env -> ST.write (vars, snd env))
+
+  let update_limit =
+    ST.bind ST.read (fun st ->
       match st with
-      | _, Unlimited -> M.return ()
-      | env, Limited n when n > 0 -> M.write (env, Limited (n - 1))
-      | _ -> M.return ())
+      | _, Unlimited -> ST.return Unlimited
+      | env, Limited n when n > 0 ->
+        ST.write (env, Limited (n - 1)) >>= fun _ -> ST.return (Limited (n - 1))
+      | _, Limited n -> ST.return (Limited n))
   ;;
-
-  let ( >>= ) = M.bind
-  let ( let* ) = bind
 
   let eval_unop operator expr =
     match operator, expr with
     | Ast.Neg, Int e -> return (Int (-e))
-    | Ast.Neg, _ -> fail (TypeMismatch ("int", show_value_type expr))
+    | Ast.Neg, _ -> fail (TypeMismatch (show_value_type expr))
     | Ast.Not, Bool e -> return (Bool (not e))
-    | Ast.Not, _ -> fail (TypeMismatch ("bool", show_value_type expr))
+    | Ast.Not, _ -> fail (TypeMismatch (show_value_type expr))
   ;;
 
   let eval_binop operator lhs rhs =
@@ -116,7 +127,7 @@ module Eval (M : Utils.STATE_MONAD) = struct
     | Ast.LessEqual, Int l, Int r -> return (Bool (l <= r))
     | Ast.Greater, Int l, Int r -> return (Bool (l > r))
     | Ast.GreaterEqual, Int l, Int r -> return (Bool (l >= r))
-    | _, _, _ -> fail (TypeMismatch (show_value_type lhs, show_value_type rhs))
+    | _, _, _ -> fail (TypesMismatch (show_value_type lhs, show_value_type rhs))
   ;;
 
   let rec lookup name vars =
@@ -130,12 +141,10 @@ module Eval (M : Utils.STATE_MONAD) = struct
   ;;
 
   let rec eval expr =
-    decrease_limit
-    >>= fun _ ->
-    get_limit
+    update_limit
     >>= fun limit ->
     (match limit with
-     | Limited 0 -> fail ExhaustedSteps
+     | Limited 0 -> fail LimitError
      | _ -> return ())
     >>= fun _ ->
     match expr with
@@ -171,27 +180,27 @@ module Eval (M : Utils.STATE_MONAD) = struct
       (match vcond with
        | Bool true -> eval e1
        | Bool false -> eval e2
-       | _ -> fail (TypeMismatch ("bool", show_value_type vcond)))
+       | _ -> fail (TypeMismatch (show_value_type vcond)))
     | Ast.LetExpr (Ast.Let, name, e1, e2) ->
       let* v1 = eval e1 in
       get_vars
-      >>= fun vars ->
-      set_vars ((name, v1) :: vars)
+      >>= fun saved_vars ->
+      update_vars name v1
       >>= fun _ ->
       let* v2 = eval e2 in
-      get_vars >>= fun _ -> set_vars vars >>= fun _ -> return v2
+      get_vars >>= fun _ -> set_vars saved_vars >>= fun _ -> return v2
     | Ast.LetExpr (Ast.LetRec, name, e1, e2) ->
       (match e1 with
        | Ast.Abstraction _ ->
          get_limit
          >>= fun limit ->
          get_vars
-         >>= fun vars ->
-         let rec v = Closure (e1, ((name, v) :: vars, limit)) in
-         set_vars ((name, v) :: vars)
-         >>= fun () ->
+         >>= fun saved_vars ->
+         let rec v = Closure (e1, ((name, v) :: saved_vars, limit)) in
+         update_vars name v
+         >>= fun _ ->
          let* v2 = eval e2 in
-         get_vars >>= fun _ -> set_vars vars >>= fun () -> return v2
+         get_vars >>= fun _ -> set_vars saved_vars >>= fun _ -> return v2
        | _ -> fail InvalidLet)
     | Ast.Abstraction _ as abs ->
       get_limit
@@ -202,11 +211,11 @@ module Eval (M : Utils.STATE_MONAD) = struct
       (match v1 with
        | Closure (Ast.Abstraction (arg, expr), env) ->
          get_vars
-         >>= fun saved ->
+         >>= fun saved_vars ->
          set_vars ((arg, v2) :: fst env)
          >>= fun _ ->
          let* result = eval expr in
-         get_vars >>= fun _ -> set_vars saved >>= fun _ -> return result
+         get_vars >>= fun _ -> set_vars saved_vars >>= fun _ -> return result
        | BuiltinAbstraction f ->
          (match f v2 with
           | Eval v -> return v
@@ -214,3 +223,39 @@ module Eval (M : Utils.STATE_MONAD) = struct
        | _ -> fail InvalidApplication)
   ;;
 end
+
+let initial_env ?(steps = Unlimited) =
+  let print =
+    BuiltinAbstraction
+      (function
+        | Unit ->
+          print_string "()";
+          Eval Unit
+        | Int int ->
+          print_int int;
+          Eval Unit
+        | Bool bool ->
+          print_string (string_of_bool bool);
+          Eval Unit
+        | _ -> EvalError InvalidApplication)
+  in
+  let first =
+    BuiltinAbstraction
+      (function
+        | Tuple (v1, _, _) -> Eval v1
+        | _ -> EvalError InvalidApplication)
+  in
+  let second =
+    BuiltinAbstraction
+      (function
+        | Tuple (_, v1, vs) when vs = [] -> Eval v1
+        | Tuple (_, v1, v2 :: vs) -> Eval (Tuple (v1, v2, vs))
+        | _ -> EvalError InvalidApplication)
+  in
+  [ "print", print; "fst", first; "snd", second ], steps
+;;
+
+let run env expr =
+  let module E = Interpreter (State) in
+  State.run (E.eval expr) env |> snd
+;;

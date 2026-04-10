@@ -6,22 +6,6 @@
 
 [@@@ocaml.text "*/*"]
 
-module type MONAD = sig
-  type 'a t
-
-  val return : 'a -> 'a t
-  val bind : 'a t -> ('a -> 'b t) -> 'b t
-end
-
-module type MONAD_ERROR = sig
-  type ('e, 'a) t
-
-  val return : 'a -> ('e, 'a) t
-  val bind : ('e, 'a) t -> ('a -> ('e, 'b) t) -> ('e, 'b) t
-  val fail : 'e -> ('e, 'a) t
-  val catch : ('e, 'a) t -> ('e -> ('e, 'a) t) -> ('e, 'a) t
-end
-
 module type READER_MONAD = sig
   type ('s, 'a) t
 
@@ -42,7 +26,7 @@ end
 
 module type STATE_MONAD = sig
   include READER_MONAD
-  include WRITER_MONAD with type ('s, 'a) t := ('s, 'a) t
 
+  val write : 's -> ('s, unit) t
   val run : ('st, 'a) t -> 'st -> 'st * 'a
 end

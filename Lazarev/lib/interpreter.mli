@@ -8,12 +8,13 @@
 
 (** Type for interpreter's error *)
 type error =
-  | ExhaustedSteps (** When step limit is reached *)
+  | LimitError (** When step limit is reached *)
   | ZeroDivision (** When divider has been evaluated to zero *)
   | InvalidApplication (** When application is not valid *)
   | InvalidLet (** When recursive let statement is used wrongly *)
   | UnboundVariable of Ast.name (** When provided name is not a variable *)
-  | TypeMismatch of string * string (** When expected type differs from evaluated type *)
+  | TypeMismatch of string (** When type is invalid *)
+  | TypesMismatch of string * string (** When pair of types is invalid *)
 
 (** Type for evaluation result *)
 type 'a result =
@@ -38,7 +39,13 @@ type value =
 and env = (Ast.name * value) list * step_limit
 
 (** Obtain empty enviropment with built-in functions *)
-val empty_env : env
+val initial_env : ?steps:step_limit -> env
 
-val show_value_type : value -> string
-val show_value : value -> string
+(** Runs the interpreter *)
+val run : env -> Ast.t -> value result
+
+(** Shows result in human-readable format *)
+val show_result : value result -> string
+
+(** Shows error in human-readable format *)
+val show_error : error -> string
