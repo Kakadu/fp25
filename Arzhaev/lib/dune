@@ -1,0 +1,5 @@
+(library
+ (name parserlib)
+ (preprocess (pps ppx_show))
+ (modules Ast Parseexpr Typeinfer Utils Lambdared) 
+ (libraries ppx_show.runtime))
