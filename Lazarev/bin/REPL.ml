@@ -7,7 +7,6 @@
 [@@@ocaml.text "*/*"]
 
 module Arg = Stdlib.Arg
-module Ast = Mini_ml_lib.Ast
 module Interpreter = Mini_ml_lib.Interpreter
 module Parser = Mini_ml_lib.Parser
 

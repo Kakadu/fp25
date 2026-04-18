@@ -33,8 +33,6 @@ and value =
   | Closure of Ast.t * env
   | BuiltinAbstraction of (value -> value result)
 
-type variables = (Ast.name * value) list
-
 module InterpreterState : Utils.STATE_MONAD = struct
   type ('s, 'a) t = 's -> 's * 'a
 
