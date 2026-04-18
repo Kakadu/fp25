@@ -1,10 +1,10 @@
-[@@@ocaml.text "/*"]
+[@@@ocaml.text "*/*"]
 
 (** Copyright 2021-2024, Kakadu and contributors *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-[@@@ocaml.text "/*"]
+[@@@ocaml.text "*/*"]
 
 (** Type for interpreter's error *)
 type error =
@@ -38,11 +38,14 @@ type value =
 (** Type for interpreter's enviropment *)
 and env = (Ast.name * value) list * step_limit
 
-(** Obtain empty enviropment with built-in functions *)
-val initial_env : ?steps:step_limit -> env
+(** Returns empty enviropment with built-in functions *)
+val new_env : env
+
+(** Returns empty enviropment with steps limit and built-in functions *)
+val new_env_limited : int -> env
 
 (** Runs the interpreter *)
-val run : env -> Ast.t -> value result
+val run : env -> Ast.t -> env * value result
 
 (** Shows result in human-readable format *)
 val show_result : value result -> string
