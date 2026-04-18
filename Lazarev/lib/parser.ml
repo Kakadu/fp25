@@ -34,8 +34,7 @@ let ( let* ) = bind
 let string_of_chars chars = chars |> List.to_seq |> String.of_seq
 let chars_of_string string = string |> String.to_seq |> List.of_seq
 
-let satisfy predicate chars =
-  match chars with
+let satisfy predicate = function
   | h :: tl when predicate h -> return h tl
   | h :: tl -> fail (SyntaxError (string_of_chars (h :: tl))) tl
   | [] -> fail UnexpectedEnd []
@@ -102,8 +101,7 @@ let chars string =
   | c :: rest -> List.fold_left ( *> ) (char c) (List.map char rest)
 ;;
 
-let reserved str =
-  match str with
+let reserved = function
   | "let" -> true
   | "rec" -> true
   | "in" -> true

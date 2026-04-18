@@ -45,7 +45,7 @@ module InterpreterState : Utils.STATE_MONAD = struct
 
   let read : ('st, 'st) t = fun state -> state, state
   let write : 'st -> ('st, unit) t = fun s _ -> s, ()
-  let run func state = func state
+  let run func = func
 end
 
 let rec show_value_type = function
@@ -83,8 +83,7 @@ module Interpreter (ST : Utils.STATE_MONAD) = struct
   let set_vars vars = ST.bind ST.read (fun env -> ST.write (vars, snd env))
 
   let update_limit =
-    ST.bind ST.read (fun st ->
-      match st with
+    ST.bind ST.read (function
       | _, Unlimited -> ST.return ()
       | env, Limited n when n > 0 -> ST.write (env, Limited (n - 1))
       | _, Limited _ -> ST.return ())
