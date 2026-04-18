@@ -49,7 +49,7 @@ let () =
   let args =
     [ ( "--steps"
       , Arg.Int (fun n -> options.env <- Interpreter.new_env_limited n)
-      , "Set maximum number of evaluation steps (default: 1000)" )
+      , "Set maximum number of evaluation steps" )
     ; ( "--multiline"
       , Arg.Unit (fun _ -> options.multiline <- true)
       , "Enable multiline input for read eval print loop" )

@@ -13,7 +13,7 @@ Test with no input
 
   $ ../bin/REPL.exe --help <<EOF
   An interpreter for ML-like language
-    --steps Set maximum number of evaluation steps (default: 1000)
+    --steps Set maximum number of evaluation steps
     --multiline Enable multiline input for read eval print loop
     -help  Display this list of options
     --help  Display this list of options
@@ -84,10 +84,6 @@ Test logical & compare operations
   > !42
   Error: Type mismatch: 'int'
 
-  $ ../bin/REPL.exe --steps 1 <<EOF
-  > !(true || false && false && true)
-  Error: Steps limit exceeded
-
   $ ../bin/REPL.exe <<EOF
   > 2 > 1 <> false
   bool: true
@@ -107,6 +103,14 @@ Test logical & compare operations
   $ ../bin/REPL.exe <<EOF
   > if (true <> false) then -42 else 42
   int: -42
+
+  $ ../bin/REPL.exe --steps 3 <<EOF
+  > !(true || false && false && true)
+  Error: Steps limit exceeded
+
+  $ ../bin/REPL.exe <<EOF
+  > !(false || -true)
+  Error: Type mismatch: 'bool'
 
 Test variables
 
@@ -151,6 +155,10 @@ Test abstraction & application
   <built-in>: ?
   <built-in>: ?
   <built-in> * <built-in>: ?, ?
+
+  $ ../bin/REPL.exe <<EOF
+  > (print_int true)
+  Error: Invalid application
 
   $ ../bin/REPL.exe --multiline <<EOF
   > (print_hoho 100)
@@ -198,7 +206,19 @@ Test if-then-else statement
   > if () then true else false
   Error: Type mismatch: 'unit'
 
-Test non-recursive let statement & builtin abstraction
+Test non-recursive let statement & built-in abstraction
+
+  $ ../bin/REPL.exe --steps 100000 <<EOF
+  > let letrec = 123 in let ifthen = 321 in ((letrec + ifthen), (ifthen - letrec))
+  int * int: 444, 198
+
+  $ ../bin/REPL.exe <<EOF
+  > let x = 12000 in let y = -12000 in ((fun x y -> (x + y)) x y)
+  int: 0
+
+  $ ../bin/REPL.exe --steps 100000 <<EOF
+  > let print_int = 123 in print_int
+  int: 123
 
   $ ../bin/REPL.exe <<EOF
   > let a = 512 * 2 - 24 in (print_int a)
@@ -231,34 +251,38 @@ Test non-recursive let statement & builtin abstraction
   > let a = 1 in a + b
   Error: Unbound variable 'b'
 
+  $ ../bin/REPL.exe <<EOF
+  > let rec a = 1 in let rec b = 2 in (a = b)
+  Error: Invalid let-statement
+
 Test recursive let statement
 
   $ ../bin/REPL.exe <<EOF
-  > let rec sum = fun n -> if (n = 0) then 0 else (n + (sum (n - 1))) in (sum 100)
+  > let rec sum = fun n -> if n = 0 then 0 else (n + (sum (n - 1))) in (sum 100)
   int: 5050
 
   $ ../bin/REPL.exe <<EOF
-  > let rec fact = fun n -> (if (n = 0) then 1 else (n * (fact (n - 1)))) in (fact 6)
+  > let rec fact = fun n -> (if n = 0 then 1 else (n * (fact (n - 1)))) in (fact 6)
   int: 720
 
   $ ../bin/REPL.exe --steps 10 <<EOF
-  > let rec fact = fun n -> (if (n = 0) then 1 else (n * (fact (n - 1)))) in (fact 6)
+  > let rec fact = fun n -> (if n = 0 then 1 else (n * (fact (n - 1)))) in (fact 6)
   Error: Steps limit exceeded
 
-  $ ../bin/REPL.exe --steps 500 <<EOF
-  > let rec fact = fun n -> (if (n = 0) then 1 else (n * (fact (n - 1)))) in (fact 6)
-  int: 720
-
-  $ ../bin/REPL.exe <<EOF
-  > let rec fix = fun f s -> (f (fix f) s) in (fix (fun self n -> if (n <= 1) then 1 else (n * (self (n - 1)))) 7)
+  $ ../bin/REPL.exe --steps 100 <<EOF
+  > let rec fact = fun n -> (if n = 0 then 1 else (n * (fact (n - 1)))) in (fact 7)
   int: 5040
 
   $ ../bin/REPL.exe <<EOF
-  > let rec fib = fun n -> if (n <= 2) then 1 else ((fib (n - 1)) + (fib (n - 2))) in (fib 8)
+  > let rec fix = fun f s -> (f (fix f) s) in let fac = fun n -> (fix (fun self n -> if n <= 1 then 1 else (n * (self (n - 1)))) n) in (fac 7)
+  int: 5040
+
+  $ ../bin/REPL.exe <<EOF
+  > let rec fib = fun n -> if n <= 2 then 1 else ((fib (n - 1)) + (fib (n - 2))) in (fib 8)
   int: 21
 
   $ ../bin/REPL.exe <<EOF
-  > let rec fib = fun n -> if (n <= 2) then 1 else ((fib (n - 1)) + (fib (n - 2))) in (fib 20)
+  > let rec fib = fun n -> if n <= 2 then 1 else ((fib (n - 1)) + (fib (n - 2))) in (fib 20)
   int: 6765
 
 Test some infinite recursions
