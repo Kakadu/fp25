@@ -272,8 +272,8 @@ let parse_line line =
 
 let show_error = function
   | UnexpectedEnd -> "Unexpected end of input"
-  | UnexpectedRest s -> Format.sprintf {|Unparsed symbols: "%s"|} s
-  | SyntaxError s -> Format.sprintf {|Syntax error: "%s"|} s
+  | UnexpectedRest s -> Format.sprintf {|Unparsed symbols: %S|} s
+  | SyntaxError s -> Format.sprintf {|Syntax error: %S|} s
 ;;
 
 let show_result = function
