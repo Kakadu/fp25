@@ -56,7 +56,6 @@ let () =
     ]
   in
   Arg.parse args (fun _ -> ()) "An interpreter for ML-like language";
-  match options.multiline with
-  | false -> run_one options.env
-  | true -> run_many options.env
+  let env = options.env in
+  if options.multiline then run_one env else run_many env
 ;;
