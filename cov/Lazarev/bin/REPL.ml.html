@@ -168,19 +168,19 @@ type opts =
   }
 
 let get_input () =
-  <span data-count="66">t</span>ry Some (read_lin<span data-count="60">e</span> ()) with
+  <span data-count="72">t</span>ry Some (read_lin<span data-count="66">e</span> ()) with
   | <span data-count="6">E</span>nd_of_file -&gt; None
 ;;
 
 let run_one env =
-  <span data-count="53">l</span>et line = get_input () in
-  <span data-count="53">m</span>atch line with
+  <span data-count="59">l</span>et line = get_input () in
+  <span data-count="59">m</span>atch line with
   | <span data-count="2">N</span>one -&gt; print_endline "No input"
-  | <span data-count="51">S</span>ome input -&gt;
+  | <span data-count="57">S</span>ome input -&gt;
     (match Parser.parse_line input with
      | <span data-count="0">P</span>arser.ParseError error -&gt; Parser.show_error error |&gt; <span data-count="0">p</span>rint_endline
-     | <span data-count="51">P</span>arser.Parsed (ast, _) -&gt;
-       Interpreter.run env ast |&gt; <span data-count="51">s</span>nd |&gt; <span data-count="51">I</span>nterpreter.show_result |&gt; <span data-count="51">p</span>rint_endline)
+     | <span data-count="57">P</span>arser.Parsed (ast, _) -&gt;
+       Interpreter.run env ast |&gt; <span data-count="57">s</span>nd |&gt; <span data-count="57">I</span>nterpreter.show_result |&gt; <span data-count="57">p</span>rint_endline)
 ;;
 
 let rec run_many env =
@@ -200,15 +200,15 @@ let () =
   let options = { env = Interpreter.new_env; multiline = false } in
   let args =
     [ ( "--steps"
-      , Arg.Int (fun n -&gt; <span data-count="9">o</span>ptions.env &lt;- Interpreter.new_env_limite<span data-count="9">d</span> n)
-      , "Set maximum number of evaluation steps (default: 1000)" )
+      , Arg.Int (fun n -&gt; <span data-count="11">o</span>ptions.env &lt;- Interpreter.new_env_limite<span data-count="11">d</span> n)
+      , "Set maximum number of evaluation steps" )
     ; ( "--multiline"
       , Arg.Unit (fun _ -&gt; <span data-count="4">o</span>ptions.multiline &lt;- true)
       , "Enable multiline input for read eval print loop" )
     ]
   in
   Arg.parse args (fun _ -&gt; <span data-count="0">(</span>)) "An interpreter for ML-like language";
-  <span data-count="57">i</span>f options.multiline then <span data-count="4">r</span>un_man<span data-count="4">y</span> options.env else <span data-count="53">r</span>un_on<span data-count="53">e</span> options.env
+  <span data-count="63">i</span>f options.multiline then <span data-count="4">r</span>un_man<span data-count="4">y</span> options.env else <span data-count="59">r</span>un_on<span data-count="59">e</span> options.env
 ;;
 </code></pre>
       </div>
