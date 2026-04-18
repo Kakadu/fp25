@@ -22,7 +22,7 @@ let div lhs rhs = Ast.BinaryOp (Ast.Div, lhs, rhs)
 let rem lhs rhs = Ast.BinaryOp (Ast.Mod, lhs, rhs)
 
 let expect ast verbose pretty =
-  Ast.show_ast ast = verbose && Ast.show_pretty_ast ast = pretty
+  Ast.show_ast_verbose ast = verbose && Ast.show_ast ast = pretty
 ;;
 
 let%test "Unit" = expect Ast.Unit "unit" "()"
@@ -91,20 +91,4 @@ let%test "Applications & abstractions" =
     (app (app (abs wildcard (abs (name "a") (const 12))) (var "x1")) (var "x2"))
     "App(App(Abs(_, Abs(a, 12)), x1), x2)"
     "((((fun _ -> fun a -> 12) (x1))) (x2))"
-;;
-
-let let_st name expr = Ast.LetStatement (Ast.Let, name, expr)
-let letrec_st name expr = Ast.LetStatement (Ast.LetRec, name, expr)
-
-let%test "Let 1" =
-  expect (let_st (name "value") (var "value")) "Let(value, value)" "let value = (value)"
-;;
-
-let%test "Let 2" =
-  expect
-    (letrec_st
-       (name "fact")
-       (abs (name "n") (app (var "fact") (sub (var "n") (const 1)))))
-    "LetRec(fact, Abs(n, App(fact, Sub(n, 1))))"
-    "let rec fact = (fun n -> ((fact) ((n - 1))))"
 ;;

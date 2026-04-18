@@ -1,18 +1,18 @@
-[@@@ocaml.text "/*"]
+[@@@ocaml.text "*/*"]
 
 (** Copyright 2021-2024, Kakadu and contributors *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-[@@@ocaml.text "/*"]
+[@@@ocaml.text "*/*"]
 
 open QCheck
 module Parser = Mini_ml_lib.Parser
 module Ast = Mini_ml_lib.Ast
 
 let parse_and_print input =
-  (match Parser.parse_one input with
-   | Parsed (a, _) -> Ast.show_ast a
+  (match Parser.parse_line input with
+   | Parsed (a, _) -> Ast.show_ast_verbose a
    | ParseError e -> Parser.show_error e)
   |> print_endline
 ;;
@@ -92,10 +92,10 @@ let%expect_test "Invalid expressions" =
 ;;
 
 let same lhs rhs =
-  match Parser.parse_one lhs with
+  match Parser.parse_line lhs with
   | ParseError _ -> false
   | Parsed (a, _) ->
-    (match Parser.parse_one rhs with
+    (match Parser.parse_line rhs with
      | ParseError _ -> false
      | Parsed (b, _) -> a = b)
 ;;
@@ -221,16 +221,16 @@ let gen_ast_depth =
 ;;
 
 let gen_ast limit = Gen.sized (fun size -> gen_ast_depth (min size limit))
-let gen_expr = Gen.map Ast.show_pretty_ast (gen_ast 5)
+let gen_expr = Gen.map Ast.show_ast (gen_ast 5)
 
 let roundtrip_test_1 =
   Test.make
     ~name:"Parser round-trip 1"
     ~count:50
-    (make ~print:Ast.show_pretty_ast (gen_ast 7))
+    (make ~print:Ast.show_ast (gen_ast 7))
     (fun ast ->
-      let string = Ast.show_pretty_ast ast in
-      match Parser.parse_one string with
+      let string = Ast.show_ast ast in
+      match Parser.parse_line string with
       | Parsed (a, _) -> ast = a
       | ParseError _ -> false)
 ;;
@@ -241,8 +241,8 @@ let roundtrip_test_2 =
     ~count:50
     (make ~print:Fun.id gen_expr)
     (fun expr ->
-       match Parser.parse_one expr with
-       | Parsed (a, _) -> expr = Ast.show_pretty_ast a
+       match Parser.parse_line expr with
+       | Parsed (a, _) -> expr = Ast.show_ast a
        | ParseError _ -> false)
 ;;
 
@@ -252,8 +252,8 @@ let parser_idempotent_test =
     ~count:20
     (make ~print:Fun.id gen_expr)
     (fun expr ->
-       let ast1 = Parser.parse_one expr in
-       let ast2 = Parser.parse_one expr in
+       let ast1 = Parser.parse_line expr in
+       let ast2 = Parser.parse_line expr in
        ast1 = ast2)
 ;;
 
@@ -261,10 +261,10 @@ let printer_idempotent_test =
   Test.make
     ~name:"Printer idempotence"
     ~count:20
-    (make ~print:Ast.show_pretty_ast (gen_ast 10))
+    (make ~print:Ast.show_ast (gen_ast 10))
     (fun ast ->
-      let string1 = Ast.show_pretty_ast ast in
-      let string2 = Ast.show_pretty_ast ast in
+      let string1 = Ast.show_ast ast in
+      let string2 = Ast.show_ast ast in
       string1 = string2)
 ;;
 
