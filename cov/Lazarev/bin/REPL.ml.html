@@ -18,9 +18,9 @@
       <h2>85.29%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="top:46.77%"></span>
-      <span class="unvisited" style="bottom:35.48%"></span>
-      <span class="unvisited" style="bottom:6.45%"></span>
+      <span class="unvisited" style="top:48.33%"></span>
+      <span class="unvisited" style="bottom:33.33%"></span>
+      <span class="unvisited" style="bottom:3.33%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -84,9 +84,7 @@
 <a id="L57"></a><span > </span>
 <a id="L58"></a><span class="unvisited"> </span>
 <a id="L59"></a><span class="visited"> </span>
-<a id="L60"></a><span class="visited"> </span>
-<a id="L61"></a><span class="visited"> </span>
-<a id="L62"></a><span > </span>
+<a id="L60"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -151,8 +149,6 @@
 <a href="#L58">58</a>
 <a href="#L59">59</a>
 <a href="#L60">60</a>
-<a href="#L61">61</a>
-<a href="#L62">62</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "*/*"]
 
@@ -212,9 +208,7 @@ let () =
     ]
   in
   Arg.parse args (fun _ -&gt; <span data-count="0">(</span>)) "An interpreter for ML-like language";
-  <span data-count="57">m</span>atch options.multiline with
-  | <span data-count="53">f</span>alse -&gt; run_on<span data-count="53">e</span> options.env
-  | <span data-count="4">t</span>rue -&gt; run_man<span data-count="4">y</span> options.env
+  <span data-count="57">i</span>f options.multiline then <span data-count="4">r</span>un_man<span data-count="4">y</span> options.env else <span data-count="53">r</span>un_on<span data-count="53">e</span> options.env
 ;;
 </code></pre>
       </div>
