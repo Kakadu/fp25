@@ -135,8 +135,7 @@ module Interpreter (ST : Utils.STATE_MONAD) = struct
   let rec eval expr =
     let* _ =
       get_limit
-      >>= fun limit ->
-      match limit with
+      >>= function
       | Limited 0 -> fail LimitError
       | _ -> return ()
     in
