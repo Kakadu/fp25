@@ -56,3 +56,6 @@ val show_ast_verbose : t -> string
 
 (** Shows AST in human readable format *)
 val show_ast : t -> string
+
+(** Shows name of any named entity in AST *)
+val show_name : name -> string

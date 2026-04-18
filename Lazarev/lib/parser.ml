@@ -1,10 +1,10 @@
-[@@@ocaml.text "*/*"]
+[@@@ocaml.text "/*"]
 
 (** Copyright 2021-2024, Kakadu and contributors *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-[@@@ocaml.text "*/*"]
+[@@@ocaml.text "/*"]
 
 type error =
   | UnexpectedEnd
@@ -128,7 +128,7 @@ let identifier =
   in
   let real =
     let* x = alpha in
-    let* xs = zero_many (alpha <|> digit) in
+    let* xs = zero_many (alpha <|> digit <|> char '_') in
     let name = string_of_chars (x :: xs) in
     if reserved name then fail (SyntaxError name) else return (Ast.Real name)
   in

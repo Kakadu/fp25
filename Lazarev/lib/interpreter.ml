@@ -1,10 +1,10 @@
-[@@@ocaml.text "*/*"]
+[@@@ocaml.text "/*"]
 
 (** Copyright 2021-2024, Kakadu and contributors *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-[@@@ocaml.text "*/*"]
+[@@@ocaml.text "/*"]
 
 type error =
   | LimitError
@@ -262,7 +262,7 @@ let show_error = function
   | ZeroDivision -> "Division by zero"
   | InvalidApplication -> "Invalid application"
   | InvalidLet -> "Invalid let-statement"
-  | UnboundVariable name -> Format.sprintf "Unbodund variable '%s'" (Ast.show_name name)
+  | UnboundVariable name -> Format.sprintf "Unbound variable '%s'" (Ast.show_name name)
   | TypeMismatch typ -> Format.sprintf "Type mismatch: '%s'" typ
   | TypesMismatch (typ1, typ2) -> Format.sprintf "Types mismatch: '%s' and '%s'" typ1 typ2
 ;;
