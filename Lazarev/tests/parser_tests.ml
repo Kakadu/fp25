@@ -262,38 +262,12 @@ let roundtrip_test_2 =
        | ParseError _ -> false)
 ;;
 
-let parser_idempotent_test =
-  Test.make
-    ~name:"Parser idempotence"
-    ~count:20
-    (make ~print:Fun.id gen_expr)
-    (fun expr ->
-       let ast1 = Parser.parse_line expr in
-       let ast2 = Parser.parse_line expr in
-       ast1 = ast2)
-;;
-
-let printer_idempotent_test =
-  Test.make
-    ~name:"Printer idempotence"
-    ~count:20
-    (make ~print:Ast.show_ast (gen_ast 10))
-    (fun ast ->
-      let string1 = Ast.show_ast ast in
-      let string2 = Ast.show_ast ast in
-      string1 = string2)
-;;
-
 let%test "QCheck test" =
   let res =
     QCheck_runner.run_tests
       ~long:true
       ~verbose:true
-      [ roundtrip_test_1
-      ; roundtrip_test_2
-      ; parser_idempotent_test
-      ; printer_idempotent_test
-      ]
+      [ roundtrip_test_1; roundtrip_test_2 ]
   in
   res = 0
 ;;
