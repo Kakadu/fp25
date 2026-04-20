@@ -692,280 +692,280 @@ type 'a result =
   | Parsed of 'a * char list
   | ParseError of error
 
-let return res chars = <span data-count="1570529">P</span>arsed (res, chars)
-let fail error _ = <span data-count="2060490">P</span>arseError error
+let return res chars = <span data-count="1058053">P</span>arsed (res, chars)
+let fail error _ = <span data-count="1362981">P</span>arseError error
 
 let fix =
-  let rec fix f s = <span data-count="66733">f</span> (fi<span data-count="66733">x</span> f) s in
+  let rec fix f s = <span data-count="43811">f</span> (fi<span data-count="43811">x</span> f) s in
   fix
 ;;
 
 let bind parser transform chars =
-  <span data-count="2783628">m</span>atch parser chars with
-  | <span data-count="823933">P</span>arsed (a, rest) -&gt; transform a rest
-  | <span data-count="1959695">P</span>arseError _ as e -&gt; e
+  <span data-count="1842693">m</span>atch parser chars with
+  | <span data-count="557666">P</span>arsed (a, rest) -&gt; transform a rest
+  | <span data-count="1285027">P</span>arseError _ as e -&gt; e
 ;;
 
 let ( &gt;&gt;= ) = bind
 let ( let* ) = bind
-let string_of_chars chars = <span data-count="1904546">c</span>hars |&gt; List.to_seq |&gt; <span data-count="1904546">S</span>tring.of_seq
-let chars_of_string string = <span data-count="516148">s</span>tring |&gt; String.to_seq |&gt; <span data-count="516148">L</span>ist.of_seq
+let string_of_chars chars = <span data-count="1252903">c</span>hars |&gt; List.to_seq |&gt; <span data-count="1252903">S</span>tring.of_seq
+let chars_of_string string = <span data-count="339276">s</span>tring |&gt; String.to_seq |&gt; <span data-count="339276">L</span>ist.of_seq
 
 let satisfy predicate = function
-  | <span data-count="2203156">h</span> :: tl when predicat<span data-count="2203156">e</span> h -&gt; <span data-count="321835">r</span>eturn h tl
-  | <span data-count="1881321">h</span> :: tl -&gt; fail (SyntaxError (string_of_char<span data-count="1881321">s</span> (h :: tl))) tl
-  | <span data-count="14259">[</span>] -&gt; fail UnexpectedEnd []
+  | <span data-count="1464011">h</span> :: tl when predicat<span data-count="1464011">e</span> h -&gt; <span data-count="225159">r</span>eturn h tl
+  | <span data-count="1238852">h</span> :: tl -&gt; fail (SyntaxError (string_of_char<span data-count="1238852">s</span> (h :: tl))) tl
+  | <span data-count="14261">[</span>] -&gt; fail UnexpectedEnd []
 ;;
 
-let char c = <span data-count="1819523">s</span>atisfy (( = ) c)
+let char c = <span data-count="1194253">s</span>atisfy (( = ) c)
 
 let ( &lt;*&gt; ) parser_func parser chars =
-  <span data-count="287564">m</span>atch parser_func chars with
-  | <span data-count="928">P</span>arseError _ as e -&gt; e
-  | <span data-count="286636">P</span>arsed (f, tail) -&gt;
+  <span data-count="190488">m</span>atch parser_func chars with
+  | <span data-count="1090">P</span>arseError _ as e -&gt; e
+  | <span data-count="189398">P</span>arsed (f, tail) -&gt;
     (match parser tail with
-     | <span data-count="928">P</span>arseError _ as e -&gt; e
-     | <span data-count="285708">P</span>arsed (a, tl) -&gt; return (<span data-count="285708">f</span> a) tl)
+     | <span data-count="1090">P</span>arseError _ as e -&gt; e
+     | <span data-count="188308">P</span>arsed (a, tl) -&gt; return (<span data-count="188308">f</span> a) tl)
 ;;
 
 let ( &lt;|&gt; ) left right chars =
-  <span data-count="2157091">m</span>atch left chars with
-  | <span data-count="1501872">P</span>arseError _ -&gt; right chars
-  | <span data-count="655219">P</span>arsed _ as res -&gt; res
+  <span data-count="1442091">m</span>atch left chars with
+  | <span data-count="991942">P</span>arseError _ -&gt; right chars
+  | <span data-count="450149">P</span>arsed _ as res -&gt; res
 ;;
 
 let ( &gt;&gt;| ) parser transform chars =
-  <span data-count="71941">m</span>atch parser chars with
-  | <span data-count="67329">P</span>arseError _ as e -&gt; e
-  | <span data-count="4612">P</span>arsed (x, tl) -&gt; return (transfor<span data-count="4612">m</span> x) tl
+  <span data-count="46393">m</span>atch parser chars with
+  | <span data-count="42352">P</span>arseError _ as e -&gt; e
+  | <span data-count="4041">P</span>arsed (x, tl) -&gt; return (transfor<span data-count="4041">m</span> x) tl
 ;;
 
-let choice parsers = <span data-count="10507371">L</span>ist.fold_left ( &lt;|&gt; ) (fai<span data-count="10507371">l</span> UnexpectedEnd) parsers
-let ( *&gt; ) left right = <span data-count="47374945">l</span>eft &gt;&gt;= fun _ -&gt; <span data-count="445517">r</span>ight
-let ( &lt;* ) left right = <span data-count="87737">l</span>eft &gt;&gt;= fun a -&gt; <span data-count="18832">r</span>ight &gt;&gt;= fun _ -&gt; <span data-count="18827">r</span>eturn a
+let choice parsers = <span data-count="6763919">L</span>ist.fold_left ( &lt;|&gt; ) (fai<span data-count="6763919">l</span> UnexpectedEnd) parsers
+let ( *&gt; ) left right = <span data-count="30509159">l</span>eft &gt;&gt;= fun _ -&gt; <span data-count="303811">r</span>ight
+let ( &lt;* ) left right = <span data-count="58283">l</span>eft &gt;&gt;= fun a -&gt; <span data-count="12022">r</span>ight &gt;&gt;= fun _ -&gt; <span data-count="12017">r</span>eturn a
 
 let rec zero_many parser chars =
-  <span data-count="727998">m</span>atch parser chars with
-  | <span data-count="558602">P</span>arseError _ -&gt; return [] chars
-  | <span data-count="169396">P</span>arsed (a, rest) -&gt;
-    (let* a_tail = zero_man<span data-count="169396">y</span> parser in
-     <span data-count="169396">r</span>eturn (a :: a_tail))
+  <span data-count="489419">m</span>atch parser chars with
+  | <span data-count="371023">P</span>arseError _ -&gt; return [] chars
+  | <span data-count="118396">P</span>arsed (a, rest) -&gt;
+    (let* a_tail = zero_man<span data-count="118396">y</span> parser in
+     <span data-count="118396">r</span>eturn (a :: a_tail))
       rest
 ;;
 
 let one_many parser =
-  <span data-count="22576">l</span>et* x = parser in
-  <span data-count="22656">l</span>et* xs = zero_man<span data-count="22656">y</span> parser in
-  <span data-count="22656">r</span>eturn (x :: xs)
+  <span data-count="14603">l</span>et* x = parser in
+  <span data-count="15555">l</span>et* xs = zero_man<span data-count="15555">y</span> parser in
+  <span data-count="15555">r</span>eturn (x :: xs)
 ;;
 
 let capital_alpha =
   satisf<span data-count="73">y</span> (function
-    | <span data-count="301">'</span>A' .. 'Z' -&gt; true
+    | <span data-count="164">'</span>A' .. 'Z' -&gt; true
     | <span data-count="1">_</span> -&gt; false)
 ;;
 
 let alpha =
   satisf<span data-count="73">y</span> (function
-    | <span data-count="36932">'</span>a' .. 'z' -&gt; true
-    | <span data-count="30132">'</span>A' .. 'Z' -&gt; true
-    | <span data-count="52303">_</span> -&gt; false)
+    | <span data-count="22948">'</span>a' .. 'z' -&gt; true
+    | <span data-count="16387">'</span>A' .. 'Z' -&gt; true
+    | <span data-count="31797">_</span> -&gt; false)
 ;;
 
 let digit =
   satisf<span data-count="73">y</span> (function
-    | <span data-count="48272">'</span>0' .. '9' -&gt; true
-    | <span data-count="60219">_</span> -&gt; false)
+    | <span data-count="30397">'</span>0' .. '9' -&gt; true
+    | <span data-count="38282">_</span> -&gt; false)
 ;;
 
 let chars string =
-  <span data-count="515888">m</span>atch chars_of_string string with
+  <span data-count="339016">m</span>atch chars_of_string string with
   | <span data-count="0">[</span>] -&gt; fail UnexpectedEnd
-  | <span data-count="515888">c</span> :: rest -&gt; List.fold_left ( *&gt; ) (cha<span data-count="515888">r</span> c) (List.ma<span data-count="515888">p</span> char rest)
+  | <span data-count="339016">c</span> :: rest -&gt; List.fold_left ( *&gt; ) (cha<span data-count="339016">r</span> c) (List.ma<span data-count="339016">p</span> char rest)
 ;;
 
 let reserved = function
-  | <span data-count="962">"</span>let" -&gt; true
-  | <span data-count="143">"</span>rec" -&gt; true
+  | <span data-count="1121">"</span>let" -&gt; true
+  | <span data-count="232">"</span>rec" -&gt; true
   | <span data-count="1">"</span>in" -&gt; true
-  | <span data-count="964">"</span>if" -&gt; true
+  | <span data-count="265">"</span>if" -&gt; true
   | <span data-count="3">"</span>then" -&gt; true
   | <span data-count="0">"</span>else" -&gt; true
-  | <span data-count="1253">"</span>fun" -&gt; true
+  | <span data-count="1075">"</span>fun" -&gt; true
   | <span data-count="1">"</span>false" -&gt; true
   | <span data-count="1">"</span>true" -&gt; true
   | <span data-count="1">"</span>mod" -&gt; true
   | <span data-count="5">"</span>exception" -&gt; true
-  | <span data-count="298">"</span>try" -&gt; true
+  | <span data-count="161">"</span>try" -&gt; true
   | <span data-count="0">"</span>with" -&gt; true
-  | <span data-count="266">"</span>raise" -&gt; true
-  | <span data-count="12634">_</span> -&gt; false
+  | <span data-count="138">"</span>raise" -&gt; true
+  | <span data-count="6314">_</span> -&gt; false
 ;;
 
 let ws0 = zero_man<span data-count="73">y</span> (cha<span data-count="73">r</span> ' ' &lt;|<span data-count="73">&gt;</span> cha<span data-count="73">r</span> '\t' &lt;|<span data-count="73">&gt;</span> cha<span data-count="73">r</span> '\n')
 let ws1 = one_man<span data-count="73">y</span> (cha<span data-count="73">r</span> ' ' &lt;|<span data-count="73">&gt;</span> cha<span data-count="73">r</span> '\t' &lt;|<span data-count="73">&gt;</span> cha<span data-count="73">r</span> '\n')
-let parens parser = <span data-count="43736">w</span>s0 *<span data-count="43736">&gt;</span> cha<span data-count="43736">r</span> '(' *<span data-count="43736">&gt;</span> parser &lt;<span data-count="43736">*</span> ws0 &lt;* cha<span data-count="43736">r</span> ')'
+let parens parser = <span data-count="29009">w</span>s0 *<span data-count="29009">&gt;</span> cha<span data-count="29009">r</span> '(' *<span data-count="29009">&gt;</span> parser &lt;<span data-count="29009">*</span> ws0 &lt;* cha<span data-count="29009">r</span> ')'
 
 let identifier =
   let wildcard =
     let* _ = cha<span data-count="73">r</span> '_' in
-    <span data-count="969">r</span>eturn Ast.Wildcard
+    <span data-count="1125">r</span>eturn Ast.Wildcard
   in
   let real =
     let* x = alpha in
-    <span data-count="16231">l</span>et* xs = zero_man<span data-count="16231">y</span> (alpha &lt;|<span data-count="16231">&gt;</span> digit &lt;|<span data-count="16231">&gt;</span> cha<span data-count="16231">r</span> '_') in
-    <span data-count="16231">l</span>et name = string_of_chars (x :: xs) in
-    <span data-count="16231">i</span>f reserved name then <span data-count="3898">f</span>ail (SyntaxError name) else <span data-count="12333">r</span>eturn (Ast.Real name)
+    <span data-count="9154">l</span>et* xs = zero_man<span data-count="9154">y</span> (alpha &lt;|<span data-count="9154">&gt;</span> digit &lt;|<span data-count="9154">&gt;</span> cha<span data-count="9154">r</span> '_') in
+    <span data-count="9154">l</span>et name = string_of_chars (x :: xs) in
+    <span data-count="9154">i</span>f reserved name then <span data-count="3004">f</span>ail (SyntaxError name) else <span data-count="6150">r</span>eturn (Ast.Real name)
   in
   wildcard &lt;|<span data-count="73">&gt;</span> real
 ;;
 
 let exception_identifier =
   let* x = capital_alpha in
-  <span data-count="301">l</span>et* xs = zero_man<span data-count="301">y</span> (alpha &lt;|<span data-count="301">&gt;</span> digit &lt;|<span data-count="301">&gt;</span> cha<span data-count="301">r</span> '_') in
-  <span data-count="301">l</span>et name = string_of_chars (x :: xs) in
-  <span data-count="301">i</span>f reserved name then <span data-count="0">f</span>ail (SyntaxError name) else <span data-count="301">r</span>eturn name
+  <span data-count="164">l</span>et* xs = zero_man<span data-count="164">y</span> (alpha &lt;|<span data-count="164">&gt;</span> digit &lt;|<span data-count="164">&gt;</span> cha<span data-count="164">r</span> '_') in
+  <span data-count="164">l</span>et name = string_of_chars (x :: xs) in
+  <span data-count="164">i</span>f reserved name then <span data-count="0">f</span>ail (SyntaxError name) else <span data-count="164">r</span>eturn name
 ;;
 
 let term =
   let integer =
     let* chars = one_man<span data-count="73">y</span> digit in
-    <span data-count="6690">r</span>eturn (Ast.Int (int_of_strin<span data-count="6690">g</span> (string_of_char<span data-count="6690">s</span> chars)))
+    <span data-count="4730">r</span>eturn (Ast.Int (int_of_strin<span data-count="4730">g</span> (string_of_char<span data-count="4730">s</span> chars)))
   in
   let boolean =
-    let parser_true = char<span data-count="73">s</span> "false" &gt;&gt;| fun _ -&gt; <span data-count="2151">A</span>st.Bool false in
-    <span data-count="73">l</span>et parser_false = char<span data-count="73">s</span> "true" &gt;&gt;| fun _ -&gt; <span data-count="2461">A</span>st.Bool true in
+    let parser_true = char<span data-count="73">s</span> "false" &gt;&gt;| fun _ -&gt; <span data-count="2165">A</span>st.Bool false in
+    <span data-count="73">l</span>et parser_false = char<span data-count="73">s</span> "true" &gt;&gt;| fun _ -&gt; <span data-count="1876">A</span>st.Bool true in
     <span data-count="73">p</span>arser_true &lt;|<span data-count="73">&gt;</span> parser_false
   in
   let variable =
     let* name = identifier in
-    <span data-count="11073">r</span>eturn (Ast.Var name)
+    <span data-count="5065">r</span>eturn (Ast.Var name)
   in
   let unit =
     let* _ = char<span data-count="73">s</span> "()" in
-    <span data-count="5165">r</span>eturn Ast.Unit
+    <span data-count="4593">r</span>eturn Ast.Unit
   in
   integer &lt;|<span data-count="73">&gt;</span> boolean &lt;|<span data-count="73">&gt;</span> variable &lt;|<span data-count="73">&gt;</span> unit
 ;;
 
-let arguments parser = <span data-count="12473">o</span>ne_many (ws1 *<span data-count="12473">&gt;</span> parser)
+let arguments parser = <span data-count="8182">o</span>ne_many (ws1 *<span data-count="8182">&gt;</span> parser)
 
 let apply_precedence parser operators =
-  <span data-count="22997">l</span>et length = Array.length operators in
-  <span data-count="22997">l</span>et rec helper level =
-    <span data-count="25917619">i</span>f level &gt;= length
-    then <span data-count="15453984">p</span>arser
-    else <span data-count="10463635">(</span>
+  <span data-count="14802">l</span>et length = Array.length operators in
+  <span data-count="14802">l</span>et rec helper level =
+    <span data-count="16681854">i</span>f level &gt;= length
+    then <span data-count="9946944">p</span>arser
+    else <span data-count="6734910">(</span>
       let xs = operators.(level) in
-      <span data-count="10463635">r</span>etur<span data-count="10463635">n</span> (List.fold_lef<span data-count="10463635">t</span> (fun acc (op, r) -&gt; <span data-count="1962">o</span>p acc r))
-      &lt;*<span data-count="10463635">&gt;</span> helpe<span data-count="10463635">r</span> (level + 1)
-      &lt;*&gt; zero_man<span data-count="10463635">y</span>
-            (choic<span data-count="10463635">e</span>
-               (List.ma<span data-count="10463635">p</span>
+      <span data-count="6734910">r</span>etur<span data-count="6734910">n</span> (List.fold_lef<span data-count="6734910">t</span> (fun acc (op, r) -&gt; <span data-count="2130">o</span>p acc r))
+      &lt;*<span data-count="6734910">&gt;</span> helpe<span data-count="6734910">r</span> (level + 1)
+      &lt;*&gt; zero_man<span data-count="6734910">y</span>
+            (choic<span data-count="6734910">e</span>
+               (List.ma<span data-count="6734910">p</span>
                   (fun (sign, left) -&gt;
-                    <span data-count="15430987">l</span>et* right = ws0 *<span data-count="15430987">&gt;</span> sign *<span data-count="15430987">&gt;</span> ws0 *<span data-count="15430987">&gt;</span> helpe<span data-count="15430987">r</span> (level + 1) in
-                    <span data-count="1962">r</span>eturn (left, right))
+                    <span data-count="9932142">l</span>et* right = ws0 *<span data-count="9932142">&gt;</span> sign *<span data-count="9932142">&gt;</span> ws0 *<span data-count="9932142">&gt;</span> helpe<span data-count="9932142">r</span> (level + 1) in
+                    <span data-count="2130">r</span>eturn (left, right))
                   xs)))
   in
   helper 0
 ;;
 
 let atom =
-  let binary typ left right = <span data-count="1948">A</span>st.BinaryOp (typ, left, right) in
+  let binary typ left right = <span data-count="2116">A</span>st.BinaryOp (typ, left, right) in
   let unary operation typ parser =
-    <span data-count="87472">l</span>et* _ = char<span data-count="87472">s</span> operation in
-    <span data-count="956">l</span>et* expr = parser in
-    <span data-count="956">r</span>eturn (Ast.UnaryOp (typ, expr))
+    <span data-count="58018">l</span>et* _ = char<span data-count="58018">s</span> operation in
+    <span data-count="382">l</span>et* expr = parser in
+    <span data-count="382">r</span>eturn (Ast.UnaryOp (typ, expr))
   in
   let neg = unary "-" Ast.Neg in
   <span data-count="73">l</span>et not = unary "!" Ast.Not in
   <span data-count="73">l</span>et tuple parser =
-    <span data-count="43736">l</span>et* _ = cha<span data-count="43736">r</span> '(' in
-    <span data-count="9960">l</span>et* fst = parser in
-    <span data-count="9957">l</span>et* rest = one_man<span data-count="9957">y</span> (ws0 *<span data-count="9957">&gt;</span> cha<span data-count="9957">r</span> ',' *<span data-count="9957">&gt;</span> ws0 *<span data-count="9957">&gt;</span> parser) in
-    <span data-count="665">l</span>et* _ = cha<span data-count="665">r</span> ')' in
-    <span data-count="663">r</span>eturn (Ast.Tuple (fst, List.h<span data-count="663">d</span> rest, List.t<span data-count="663">l</span> rest))
+    <span data-count="29009">l</span>et* _ = cha<span data-count="29009">r</span> '(' in
+    <span data-count="6278">l</span>et* fst = parser in
+    <span data-count="6275">l</span>et* rest = one_man<span data-count="6275">y</span> (ws0 *<span data-count="6275">&gt;</span> cha<span data-count="6275">r</span> ',' *<span data-count="6275">&gt;</span> ws0 *<span data-count="6275">&gt;</span> parser) in
+    <span data-count="388">l</span>et* _ = cha<span data-count="388">r</span> ')' in
+    <span data-count="386">r</span>eturn (Ast.Tuple (fst, List.h<span data-count="386">d</span> rest, List.t<span data-count="386">l</span> rest))
   in
   let application parser1 parser2 =
-    <span data-count="43736">l</span>et* _ = cha<span data-count="43736">r</span> '(' in
-    <span data-count="11223">l</span>et* name = parser1 in
-    <span data-count="11220">l</span>et* args = argument<span data-count="11220">s</span> parser2 in
-    <span data-count="1264">l</span>et* _ = cha<span data-count="1264">r</span> ')' in
-    <span data-count="1263">r</span>eturn (List.fold_lef<span data-count="1263">t</span> (fun left right -&gt; <span data-count="1274">A</span>st.Application (left, right)) name args)
+    <span data-count="29009">l</span>et* _ = cha<span data-count="29009">r</span> '(' in
+    <span data-count="7110">l</span>et* name = parser1 in
+    <span data-count="7107">l</span>et* args = argument<span data-count="7107">s</span> parser2 in
+    <span data-count="833">l</span>et* _ = cha<span data-count="833">r</span> ')' in
+    <span data-count="832">r</span>eturn (List.fold_lef<span data-count="832">t</span> (fun left right -&gt; <span data-count="843">A</span>st.Application (left, right)) name args)
   in
   let abstraction parser =
-    <span data-count="43736">l</span>et* _ = char<span data-count="43736">s</span> "fun" in
-    <span data-count="1253">l</span>et* args = argument<span data-count="1253">s</span> identifier in
-    <span data-count="1253">l</span>et* _ = ws0 *<span data-count="1253">&gt;</span> char<span data-count="1253">s</span> "-&gt;" in
-    <span data-count="1253">l</span>et* expr = ws0 *<span data-count="1253">&gt;</span> parser in
-    <span data-count="1252">r</span>eturn (List.fold_righ<span data-count="1252">t</span> (fun left right -&gt; <span data-count="1269">A</span>st.Abstraction (left, right)) args expr)
+    <span data-count="29009">l</span>et* _ = char<span data-count="29009">s</span> "fun" in
+    <span data-count="1075">l</span>et* args = argument<span data-count="1075">s</span> identifier in
+    <span data-count="1075">l</span>et* _ = ws0 *<span data-count="1075">&gt;</span> char<span data-count="1075">s</span> "-&gt;" in
+    <span data-count="1075">l</span>et* expr = ws0 *<span data-count="1075">&gt;</span> parser in
+    <span data-count="1074">r</span>eturn (List.fold_righ<span data-count="1074">t</span> (fun left right -&gt; <span data-count="1091">A</span>st.Abstraction (left, right)) args expr)
   in
   let if_expr parser1 parser2 =
-    <span data-count="43736">l</span>et* _ = char<span data-count="43736">s</span> "if" in
-    <span data-count="964">l</span>et* cond = ws1 *<span data-count="964">&gt;</span> parser1 in
-    <span data-count="961">l</span>et* _ = ws1 *<span data-count="961">&gt;</span> char<span data-count="961">s</span> "then" in
-    <span data-count="961">l</span>et* on_true = ws1 *<span data-count="961">&gt;</span> parser2 in
-    <span data-count="961">l</span>et* _ = ws1 *<span data-count="961">&gt;</span> char<span data-count="961">s</span> "else" in
-    <span data-count="960">l</span>et* on_false = ws1 *<span data-count="960">&gt;</span> parser2 in
-    <span data-count="960">r</span>eturn (Ast.IfThenElse (cond, on_true, on_false))
+    <span data-count="29009">l</span>et* _ = char<span data-count="29009">s</span> "if" in
+    <span data-count="265">l</span>et* cond = ws1 *<span data-count="265">&gt;</span> parser1 in
+    <span data-count="262">l</span>et* _ = ws1 *<span data-count="262">&gt;</span> char<span data-count="262">s</span> "then" in
+    <span data-count="262">l</span>et* on_true = ws1 *<span data-count="262">&gt;</span> parser2 in
+    <span data-count="262">l</span>et* _ = ws1 *<span data-count="262">&gt;</span> char<span data-count="262">s</span> "else" in
+    <span data-count="261">l</span>et* on_false = ws1 *<span data-count="261">&gt;</span> parser2 in
+    <span data-count="261">r</span>eturn (Ast.IfThenElse (cond, on_true, on_false))
   in
   let letrec mnemo rec_flag parser1 parser2 =
-    <span data-count="87472">l</span>et* _ = char<span data-count="87472">s</span> mnemo in
-    <span data-count="1105">l</span>et* name = ws1 *<span data-count="1105">&gt;</span> identifier in
-    <span data-count="958">l</span>et* _ = ws0 *<span data-count="958">&gt;</span> cha<span data-count="958">r</span> '=' in
-    <span data-count="958">l</span>et* expr1 = ws0 *<span data-count="958">&gt;</span> parser1 in
-    <span data-count="958">l</span>et* _ = ws1 *<span data-count="958">&gt;</span> char<span data-count="958">s</span> "in" in
-    <span data-count="957">l</span>et* expr2 = ws1 *<span data-count="957">&gt;</span> parser2 in
-    <span data-count="957">r</span>eturn (Ast.LetExpr (rec_flag, name, expr1, expr2))
+    <span data-count="58018">l</span>et* _ = char<span data-count="58018">s</span> mnemo in
+    <span data-count="1353">l</span>et* name = ws1 *<span data-count="1353">&gt;</span> identifier in
+    <span data-count="1117">l</span>et* _ = ws0 *<span data-count="1117">&gt;</span> cha<span data-count="1117">r</span> '=' in
+    <span data-count="1117">l</span>et* expr1 = ws0 *<span data-count="1117">&gt;</span> parser1 in
+    <span data-count="1117">l</span>et* _ = ws1 *<span data-count="1117">&gt;</span> char<span data-count="1117">s</span> "in" in
+    <span data-count="1116">l</span>et* expr2 = ws1 *<span data-count="1116">&gt;</span> parser2 in
+    <span data-count="1116">r</span>eturn (Ast.LetExpr (rec_flag, name, expr1, expr2))
   in
   let let_expr = letrec "let" Ast.Let in
   <span data-count="73">l</span>et let_rec_expr = letrec "let rec" Ast.LetRec in
   <span data-count="73">l</span>et raise_expr parser =
-    <span data-count="43736">l</span>et* _ = char<span data-count="43736">s</span> "raise" in
-    <span data-count="266">l</span>et* expr = ws1 *<span data-count="266">&gt;</span> parser in
-    <span data-count="266">r</span>eturn (Ast.Raise expr)
+    <span data-count="29009">l</span>et* _ = char<span data-count="29009">s</span> "raise" in
+    <span data-count="138">l</span>et* expr = ws1 *<span data-count="138">&gt;</span> parser in
+    <span data-count="138">r</span>eturn (Ast.Raise expr)
   in
   let trywith_expr parser1 parser2 =
-    <span data-count="43736">l</span>et* _ = char<span data-count="43736">s</span> "try" in
-    <span data-count="298">l</span>et* expr1 = ws1 *<span data-count="298">&gt;</span> parser1 in
-    <span data-count="298">l</span>et* _ = ws1 *<span data-count="298">&gt;</span> char<span data-count="298">s</span> "with" in
-    <span data-count="298">l</span>et* name = ws1 *<span data-count="298">&gt;</span> exception_identifier in
-    <span data-count="298">l</span>et* _ = ws0 *<span data-count="298">&gt;</span> char<span data-count="298">s</span> "-&gt;" in
-    <span data-count="298">l</span>et* expr2 = ws0 *<span data-count="298">&gt;</span> parser2 in
-    <span data-count="298">r</span>eturn (Ast.TryWith (expr1, name, expr2))
+    <span data-count="29009">l</span>et* _ = char<span data-count="29009">s</span> "try" in
+    <span data-count="161">l</span>et* expr1 = ws1 *<span data-count="161">&gt;</span> parser1 in
+    <span data-count="161">l</span>et* _ = ws1 *<span data-count="161">&gt;</span> char<span data-count="161">s</span> "with" in
+    <span data-count="161">l</span>et* name = ws1 *<span data-count="161">&gt;</span> exception_identifier in
+    <span data-count="161">l</span>et* _ = ws0 *<span data-count="161">&gt;</span> char<span data-count="161">s</span> "-&gt;" in
+    <span data-count="161">l</span>et* expr2 = ws0 *<span data-count="161">&gt;</span> parser2 in
+    <span data-count="161">r</span>eturn (Ast.TryWith (expr1, name, expr2))
   in
   fi<span data-count="73">x</span> (fun atom -&gt;
-    <span data-count="22997">l</span>et atom_fix =
+    <span data-count="14802">l</span>et atom_fix =
       fix (fun inner -&gt;
-        <span data-count="43736">t</span>erm
-        &lt;|<span data-count="43736">&gt;</span> choic<span data-count="43736">e</span> [ ne<span data-count="43736">g</span> inner; not inner ]
-        &lt;|<span data-count="43736">&gt;</span> applicatio<span data-count="43736">n</span> atom inner
-        &lt;|<span data-count="43736">&gt;</span> abstractio<span data-count="43736">n</span> inner
-        &lt;|<span data-count="43736">&gt;</span> tupl<span data-count="43736">e</span> inner
-        &lt;|<span data-count="43736">&gt;</span> if_exp<span data-count="43736">r</span> atom inner
-        &lt;|<span data-count="43736">&gt;</span> let_exp<span data-count="43736">r</span> atom inner
-        &lt;|<span data-count="43736">&gt;</span> let_rec_exp<span data-count="43736">r</span> atom inner
-        &lt;|<span data-count="43736">&gt;</span> raise_exp<span data-count="43736">r</span> inner
-        &lt;|<span data-count="43736">&gt;</span> trywith_exp<span data-count="43736">r</span> atom inner
-        &lt;|&gt; paren<span data-count="43736">s</span> atom)
+        <span data-count="29009">t</span>erm
+        &lt;|<span data-count="29009">&gt;</span> choic<span data-count="29009">e</span> [ ne<span data-count="29009">g</span> inner; not inner ]
+        &lt;|<span data-count="29009">&gt;</span> applicatio<span data-count="29009">n</span> atom inner
+        &lt;|<span data-count="29009">&gt;</span> abstractio<span data-count="29009">n</span> inner
+        &lt;|<span data-count="29009">&gt;</span> tupl<span data-count="29009">e</span> inner
+        &lt;|<span data-count="29009">&gt;</span> if_exp<span data-count="29009">r</span> atom inner
+        &lt;|<span data-count="29009">&gt;</span> let_exp<span data-count="29009">r</span> atom inner
+        &lt;|<span data-count="29009">&gt;</span> let_rec_exp<span data-count="29009">r</span> atom inner
+        &lt;|<span data-count="29009">&gt;</span> raise_exp<span data-count="29009">r</span> inner
+        &lt;|<span data-count="29009">&gt;</span> trywith_exp<span data-count="29009">r</span> atom inner
+        &lt;|&gt; paren<span data-count="29009">s</span> atom)
     in
-    <span data-count="22997">a</span>pply_precedence
+    <span data-count="14802">a</span>pply_precedence
       atom_fix
-      [| [ char<span data-count="22997">s</span> "&amp;&amp;", binar<span data-count="22997">y</span> Ast.And ]
-       ; [ char<span data-count="22997">s</span> "||", binar<span data-count="22997">y</span> Ast.Or ]
-       ; [ cha<span data-count="22997">r</span> '=', binar<span data-count="22997">y</span> Ast.Equal
-         ; char<span data-count="22997">s</span> "&lt;&gt;", binar<span data-count="22997">y</span> Ast.NotEqual
-         ; cha<span data-count="22997">r</span> '&lt;', binar<span data-count="22997">y</span> Ast.Less
-         ; char<span data-count="22997">s</span> "&lt;=", binar<span data-count="22997">y</span> Ast.LessEqual
-         ; cha<span data-count="22997">r</span> '&gt;', binar<span data-count="22997">y</span> Ast.Greater
-         ; char<span data-count="22997">s</span> "&gt;=", binar<span data-count="22997">y</span> Ast.GreaterEqual
+      [| [ char<span data-count="14802">s</span> "&amp;&amp;", binar<span data-count="14802">y</span> Ast.And ]
+       ; [ char<span data-count="14802">s</span> "||", binar<span data-count="14802">y</span> Ast.Or ]
+       ; [ cha<span data-count="14802">r</span> '=', binar<span data-count="14802">y</span> Ast.Equal
+         ; char<span data-count="14802">s</span> "&lt;&gt;", binar<span data-count="14802">y</span> Ast.NotEqual
+         ; cha<span data-count="14802">r</span> '&lt;', binar<span data-count="14802">y</span> Ast.Less
+         ; char<span data-count="14802">s</span> "&lt;=", binar<span data-count="14802">y</span> Ast.LessEqual
+         ; cha<span data-count="14802">r</span> '&gt;', binar<span data-count="14802">y</span> Ast.Greater
+         ; char<span data-count="14802">s</span> "&gt;=", binar<span data-count="14802">y</span> Ast.GreaterEqual
          ]
-       ; [ cha<span data-count="22997">r</span> '+', binar<span data-count="22997">y</span> Ast.Add; cha<span data-count="22997">r</span> '-', binar<span data-count="22997">y</span> Ast.Sub ]
-       ; [ char<span data-count="22997">s</span> "mod", binar<span data-count="22997">y</span> Ast.Mod
-         ; cha<span data-count="22997">r</span> '*', binar<span data-count="22997">y</span> Ast.Mul
-         ; cha<span data-count="22997">r</span> '/', binar<span data-count="22997">y</span> Ast.Div
+       ; [ cha<span data-count="14802">r</span> '+', binar<span data-count="14802">y</span> Ast.Add; cha<span data-count="14802">r</span> '-', binar<span data-count="14802">y</span> Ast.Sub ]
+       ; [ char<span data-count="14802">s</span> "mod", binar<span data-count="14802">y</span> Ast.Mod
+         ; cha<span data-count="14802">r</span> '*', binar<span data-count="14802">y</span> Ast.Mul
+         ; cha<span data-count="14802">r</span> '/', binar<span data-count="14802">y</span> Ast.Div
          ]
-       ; [ (char<span data-count="22997">s</span> "@@", fun left right -&gt; <span data-count="14">A</span>st.Application (left, right)) ]
+       ; [ (char<span data-count="14802">s</span> "@@", fun left right -&gt; <span data-count="14">A</span>st.Application (left, right)) ]
       |])
 ;;
 

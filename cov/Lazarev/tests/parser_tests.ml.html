@@ -773,12 +773,12 @@ let gen_real_name =
   <span data-count="3">l</span>et alphanum = oneof [ char_rang<span data-count="3">e</span> 'a' 'z'; char_rang<span data-count="3">e</span> 'A' 'Z'; char_numeral ] in
   <span data-count="3">l</span>et ident =
     map
-      (fun chars -&gt; <span data-count="338">c</span>hars |&gt; List.to_seq |&gt; <span data-count="338">S</span>tring.of_seq)
+      (fun chars -&gt; <span data-count="422">c</span>hars |&gt; List.to_seq |&gt; <span data-count="422">S</span>tring.of_seq)
       (let* first = capital_alpha in
-       <span data-count="338">l</span>et* rest = list_siz<span data-count="338">e</span> (int_rang<span data-count="338">e</span> 1 10) alphanum in
-       <span data-count="338">r</span>eturn (first :: rest))
+       <span data-count="422">l</span>et* rest = list_siz<span data-count="422">e</span> (int_rang<span data-count="422">e</span> 1 10) alphanum in
+       <span data-count="422">r</span>eturn (first :: rest))
   in
-  <span data-count="3">m</span>a<span data-count="3">p</span> (fun s -&gt; <span data-count="338">A</span>st.Real s) ident
+  <span data-count="3">m</span>a<span data-count="3">p</span> (fun s -&gt; <span data-count="422">A</span>st.Real s) ident
 ;;
 
 let gen_any_name =
@@ -814,56 +814,56 @@ let gen_rec_flag = Gen.oneof_weighte<span data-count="3">d</span> [ 5, Gen.retur
 let gen_ast_depth =
   let open Gen in
   fi<span data-count="3">x</span> (fun gen size -&gt;
-    <span data-count="1583">i</span>f size &lt;= 0
+    <span data-count="1841">i</span>f size &lt;= 0
     then
-      <span data-count="748">o</span>neof
-        [ retur<span data-count="748">n</span> Ast.Unit
-        ; ma<span data-count="748">p</span> (fun i -&gt; <span data-count="181">A</span>st.Int i) (int_rang<span data-count="748">e</span> 0 100000)
-        ; ma<span data-count="748">p</span> (fun b -&gt; <span data-count="192">A</span>st.Bool b) bool
-        ; ma<span data-count="748">p</span> (fun n -&gt; <span data-count="187">A</span>st.Var n) gen_real_name
+      <span data-count="850">o</span>neof
+        [ retur<span data-count="850">n</span> Ast.Unit
+        ; ma<span data-count="850">p</span> (fun i -&gt; <span data-count="180">A</span>st.Int i) (int_rang<span data-count="850">e</span> 0 100000)
+        ; ma<span data-count="850">p</span> (fun b -&gt; <span data-count="235">A</span>st.Bool b) bool
+        ; ma<span data-count="850">p</span> (fun n -&gt; <span data-count="230">A</span>st.Var n) gen_real_name
         ]
-    else <span data-count="835">(</span>
+    else <span data-count="991">(</span>
       let sub = gen (size / 2) in
-      <span data-count="835">l</span>et sub_small = gen (size / 3) in
-      <span data-count="835">l</span>et sub_tiny = oneof [ ge<span data-count="835">n</span> 1; ge<span data-count="835">n</span> 2 ] in
-      <span data-count="835">o</span>neof_weighted
-        [ 1, ma<span data-count="835">p</span> (fun i -&gt; <span data-count="30">A</span>st.Int i) (int_rang<span data-count="835">e</span> 0 100000)
-        ; 1, ma<span data-count="835">p</span> (fun b -&gt; <span data-count="43">A</span>st.Bool b) bool
-        ; 1, ma<span data-count="835">p</span> (fun n -&gt; <span data-count="22">A</span>st.Var n) gen_real_name
-        ; 2, map<span data-count="835">2</span> (fun op expr -&gt; <span data-count="56">A</span>st.UnaryOp (op, expr)) gen_unary_operation sub
+      <span data-count="991">l</span>et sub_small = gen (size / 3) in
+      <span data-count="991">l</span>et sub_tiny = oneof [ ge<span data-count="991">n</span> 1; ge<span data-count="991">n</span> 2 ] in
+      <span data-count="991">o</span>neof_weighted
+        [ 1, ma<span data-count="991">p</span> (fun i -&gt; <span data-count="32">A</span>st.Int i) (int_rang<span data-count="991">e</span> 0 100000)
+        ; 1, ma<span data-count="991">p</span> (fun b -&gt; <span data-count="39">A</span>st.Bool b) bool
+        ; 1, ma<span data-count="991">p</span> (fun n -&gt; <span data-count="53">A</span>st.Var n) gen_real_name
+        ; 2, map<span data-count="991">2</span> (fun op expr -&gt; <span data-count="71">A</span>st.UnaryOp (op, expr)) gen_unary_operation sub
         ; ( 4
-          , map<span data-count="835">3</span>
-              (fun op left right -&gt; <span data-count="132">A</span>st.BinaryOp (op, left, right))
+          , map<span data-count="991">3</span>
+              (fun op left right -&gt; <span data-count="143">A</span>st.BinaryOp (op, left, right))
               gen_binary_operation
               sub
               sub )
         ; ( 2
-          , Gen.map<span data-count="835">3</span>
-              (fun first second rest -&gt; <span data-count="49">A</span>st.Tuple (first, second, rest))
+          , Gen.map<span data-count="991">3</span>
+              (fun first second rest -&gt; <span data-count="78">A</span>st.Tuple (first, second, rest))
               sub_tiny
               sub_tiny
-              (list_siz<span data-count="835">e</span> (int_rang<span data-count="835">e</span> 0 5) sub_tiny) )
-        ; 4, map<span data-count="835">2</span> (fun arg expr -&gt; <span data-count="136">A</span>st.Abstraction (arg, expr)) gen_any_name sub
-        ; 4, map<span data-count="835">2</span> (fun func arg -&gt; <span data-count="110">A</span>st.Application (func, arg)) sub_small sub
+              (list_siz<span data-count="991">e</span> (int_rang<span data-count="991">e</span> 0 5) sub_tiny) )
+        ; 4, map<span data-count="991">2</span> (fun arg expr -&gt; <span data-count="162">A</span>st.Abstraction (arg, expr)) gen_any_name sub
+        ; 4, map<span data-count="991">2</span> (fun func arg -&gt; <span data-count="146">A</span>st.Application (func, arg)) sub_small sub
         ; ( 2
-          , map<span data-count="835">3</span>
-              (fun cond on_true on_false -&gt; <span data-count="60">A</span>st.IfThenElse (cond, on_true, on_false))
+          , map<span data-count="991">3</span>
+              (fun cond on_true on_false -&gt; <span data-count="44">A</span>st.IfThenElse (cond, on_true, on_false))
               sub_small
               sub
               sub )
         ; ( 4
-          , map<span data-count="835">4</span>
-              (fun rf name expr1 expr2 -&gt; <span data-count="131">A</span>st.LetExpr (rf, name, expr1, expr2))
+          , map<span data-count="991">4</span>
+              (fun rf name expr1 expr2 -&gt; <span data-count="161">A</span>st.LetExpr (rf, name, expr1, expr2))
               gen_rec_flag
               gen_any_name
               sub_small
               sub )
         ; ( 1
-          , map<span data-count="835">2</span>
-              (fun expr1 expr2 -&gt; <span data-count="32">A</span>st.TryWith (expr1, "Exception", expr2))
+          , map<span data-count="991">2</span>
+              (fun expr1 expr2 -&gt; <span data-count="27">A</span>st.TryWith (expr1, "Exception", expr2))
               sub
               sub_small )
-        ; 1, ma<span data-count="835">p</span> (fun expr -&gt; <span data-count="34">A</span>st.Raise expr) sub
+        ; 1, ma<span data-count="991">p</span> (fun expr -&gt; <span data-count="35">A</span>st.Raise expr) sub
         ]))
 ;;
 
