@@ -92,3 +92,28 @@ let%test "Applications & abstractions" =
     "App(App(Abs(_, Abs(a, 12)), x1), x2)"
     "((((fun _ -> fun a -> 12) (x1))) (x2))"
 ;;
+
+let declare_excepttion name = Ast.Exception name
+let try_with left name right = Ast.TryWith (left, name, right)
+let raise expr = Ast.Raise expr
+
+let%test "Exceptions 1" =
+  expect
+    (try_with
+       (app (var "print_int") (const 4242))
+       "VeryBadCase"
+       (app (var "print_bool") (bool false)))
+    "TryWith(App(print_int, 4242), VeryBadCase, App(print_bool, false))"
+    "try (((print_int) (4242))) with VeryBadCase -> (((print_bool) (false)))"
+;;
+
+let%test "Exceptions 2" =
+  expect (raise (abs (name "x") (bool true))) "Raise(Abs(x, true))" "raise fun x -> true"
+;;
+
+let%test "Exceptions 3" =
+  expect
+    (declare_excepttion "DivisionByZero")
+    "Exception(DivisionByZero)"
+    "exception DivisionByZero"
+;;

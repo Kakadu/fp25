@@ -50,6 +50,9 @@ type t =
   | LetExpr of let_mnemonic * name * t * t (** Let expression [let x = ... in ...] *)
   | Abstraction of name * t (** Lambda abstraction [fun x -> ...] *)
   | Application of t * t (** Application [(f x)] *)
+  | Exception of string (** Exception declaration [exception Division_by_zero] *)
+  | TryWith of t * string * t (** Try with statement [try (...) with ... -> (...)] *)
+  | Raise of t (** Fail with statement [raise ...] *)
 
 (** Shows AST in verbose format *)
 val show_ast_verbose : t -> string

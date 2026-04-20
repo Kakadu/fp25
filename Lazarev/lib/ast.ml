@@ -48,6 +48,9 @@ type t =
   | LetExpr of let_mnemonic * name * t * t
   | Abstraction of name * t
   | Application of t * t
+  | Exception of string
+  | TryWith of t * string * t
+  | Raise of t
 
 let show_name = function
   | Wildcard -> "_"
@@ -88,6 +91,14 @@ let rec show_ast_verbose = function
     Format.sprintf "Abs(%s, %s)" (show_name name) (show_ast_verbose expr)
   | Application (lhs, rhs) ->
     Format.sprintf "App(%s, %s)" (show_ast_verbose lhs) (show_ast_verbose rhs)
+  | Exception name -> Format.sprintf "Exception(%s)" name
+  | TryWith (lhs, name, rhs) ->
+    Format.sprintf
+      "TryWith(%s, %s, %s)"
+      (show_ast_verbose lhs)
+      name
+      (show_ast_verbose rhs)
+  | Raise name -> Format.sprintf "Raise(%s)" (show_ast_verbose name)
 ;;
 
 let show_pretty_unary_operation = function
@@ -149,4 +160,8 @@ let rec show_ast = function
   | Abstraction (var, expr) ->
     Format.sprintf "fun %s -> %s" (show_name var) (show_ast expr)
   | Application (lhs, rhs) -> Format.sprintf "((%s) (%s))" (show_ast lhs) (show_ast rhs)
+  | Exception name -> Format.sprintf "exception %s" name
+  | TryWith (lhs, name, rhs) ->
+    Format.sprintf "try (%s) with %s -> (%s)" (show_ast lhs) name (show_ast rhs)
+  | Raise name -> Format.sprintf "raise %s" (show_ast name)
 ;;
