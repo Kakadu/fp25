@@ -49,16 +49,22 @@ let%expect_test "Correct parsing" =
   "fun a -> -(if a then 1 else 2)" |> parse_and_print;
   [%expect "Abs(a, Neg(IfThenElse(a, 1, 2)))"];
   "let a = 1 in let b = 2 in let c = 3 in (a + b + c)" |> parse_and_print;
-  [%expect "Let(a, 1, Let(b, 2, Let(c, 3, Add(Add(a, b), c))))"]
+  [%expect "Let(a, 1, Let(b, 2, Let(c, 3, Add(Add(a, b), c))))"];
+  "exception DivisionByZero" |> parse_and_print;
+  [%expect "Exception(DivisionByZero)"];
+  "raise 0" |> parse_and_print;
+  [%expect "Raise(0)"];
+  "raise (if a = 0 then true else false)" |> parse_and_print;
+  [%expect "Raise(IfThenElse(Equal(a, 0), true, false))"]
 ;;
 
 (* Test if invalid expressions are not parsed *)
 
 let%expect_test "Invalid expressions" =
   "( )" |> parse_and_print;
-  [%expect {|Syntax error: ")"|}];
+  [%expect {|Syntax error: "( )"|}];
   "(1 $ 2" |> parse_and_print;
-  [%expect {|Syntax error: "$ 2"|}];
+  [%expect {|Syntax error: "(1 $ 2"|}];
   "var & mask)" |> parse_and_print;
   [%expect {|Unparsed symbols: "& mask)"|}];
   "var += 1" |> parse_and_print;
@@ -66,11 +72,11 @@ let%expect_test "Invalid expressions" =
   "(567 / 3) + (567 % 3" |> parse_and_print;
   [%expect {|Unparsed symbols: "+ (567 % 3"|}];
   "(call 1invalid2identifier)" |> parse_and_print;
-  [%expect {|Syntax error: "1invalid2identifier)"|}];
+  [%expect {|Syntax error: "(call 1invalid2identifier)"|}];
   "+ 1 2 3" |> parse_and_print;
   [%expect {|Syntax error: "+ 1 2 3"|}];
   "(1, 2, 3 helloWorld)" |> parse_and_print;
-  [%expect {|Syntax error: ", 2, 3 helloWorld)"|}];
+  [%expect {|Syntax error: "(1, 2, 3 helloWorld)"|}];
   "fun x y ->" |> parse_and_print;
   [%expect {|Syntax error: "fun x y ->"|}];
   "if a <> 0 then 1" |> parse_and_print;
@@ -84,11 +90,15 @@ let%expect_test "Invalid expressions" =
   "let true = 1 in false" |> parse_and_print;
   [%expect {|Syntax error: "let true = 1 in false"|}];
   "(1, 2, (if, then))" |> parse_and_print;
-  [%expect {|Syntax error: ", 2, (if, then))"|}];
+  [%expect {|Syntax error: "(1, 2, (if, then))"|}];
   "(then, 3)" |> parse_and_print;
-  [%expect {|Syntax error: "then, 3)"|}];
+  [%expect {|Syntax error: "(then, 3)"|}];
   "let var = 1" |> parse_and_print;
-  [%expect {|Syntax error: "let var = 1"|}]
+  [%expect {|Syntax error: "let var = 1"|}];
+  "exception" |> parse_and_print;
+  [%expect {|Unexpected end of input|}];
+  "exception if" |> parse_and_print;
+  [%expect {|Syntax error: "if"|}]
 ;;
 
 let same lhs rhs =
@@ -217,6 +227,12 @@ let gen_ast_depth =
               gen_any_name
               sub_small
               sub )
+        ; ( 1
+          , map2
+              (fun expr1 expr2 -> Ast.TryWith (expr1, "Exception", expr2))
+              sub
+              sub_small )
+        ; 1, map (fun expr -> Ast.Raise expr) sub
         ]))
 ;;
 

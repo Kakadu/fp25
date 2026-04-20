@@ -82,6 +82,12 @@ let one_many parser =
   return (x :: xs)
 ;;
 
+let capital_alpha =
+  satisfy (function
+    | 'A' .. 'Z' -> true
+    | _ -> false)
+;;
+
 let alpha =
   satisfy (function
     | 'a' .. 'z' -> true
@@ -112,6 +118,10 @@ let reserved = function
   | "false" -> true
   | "true" -> true
   | "mod" -> true
+  | "exception" -> true
+  | "try" -> true
+  | "with" -> true
+  | "raise" -> true
   | _ -> false
 ;;
 
@@ -131,6 +141,13 @@ let identifier =
     if reserved name then fail (SyntaxError name) else return (Ast.Real name)
   in
   wildcard <|> real
+;;
+
+let exception_identifier =
+  let* x = capital_alpha in
+  let* xs = zero_many (alpha <|> digit <|> char '_') in
+  let name = string_of_chars (x :: xs) in
+  if reserved name then fail (SyntaxError name) else return name
 ;;
 
 let term =
@@ -226,6 +243,20 @@ let atom =
   in
   let let_expr = letrec "let" Ast.Let in
   let let_rec_expr = letrec "let rec" Ast.LetRec in
+  let raise_expr parser =
+    let* _ = chars "raise" in
+    let* expr = ws1 *> parser in
+    return (Ast.Raise expr)
+  in
+  let trywith_expr parser1 parser2 =
+    let* _ = chars "try" in
+    let* expr1 = ws1 *> parser1 in
+    let* _ = ws1 *> chars "with" in
+    let* name = ws1 *> exception_identifier in
+    let* _ = ws0 *> chars "->" in
+    let* expr2 = ws0 *> parser2 in
+    return (Ast.TryWith (expr1, name, expr2))
+  in
   fix (fun atom ->
     let atom_fix =
       fix (fun inner ->
@@ -237,6 +268,8 @@ let atom =
         <|> if_expr atom inner
         <|> let_expr atom inner
         <|> let_rec_expr atom inner
+        <|> raise_expr inner
+        <|> trywith_expr atom inner
         <|> parens atom)
     in
     apply_precedence
@@ -259,6 +292,12 @@ let atom =
       |])
 ;;
 
+let exception_decl =
+  let* _ = ws0 *> chars "exception" in
+  let* name = ws1 *> exception_identifier <* ws0 in
+  return (Ast.Exception name)
+;;
+
 let wrap_result = function
   | Parsed (a, rest) when rest = [] -> Parsed (a, rest)
   | Parsed (_, rest) -> ParseError (UnexpectedRest (string_of_chars rest))
@@ -267,7 +306,7 @@ let wrap_result = function
 
 let parse_line line =
   let expr = ws0 *> atom <* ws0 in
-  chars_of_string line |> expr |> wrap_result
+  chars_of_string line |> (expr <|> exception_decl) |> wrap_result
 ;;
 
 let show_error = function
