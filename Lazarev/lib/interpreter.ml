@@ -7,8 +7,6 @@
 [@@@ocaml.text "/*"]
 
 type error =
-  | LimitError
-  | ZeroDivision
   | InvalidApplication
   | InvalidLet
   | UnboundVariable of Ast.name
@@ -17,6 +15,7 @@ type error =
 
 type 'a result =
   | Eval of 'a
+  | EvalRaise of string
   | EvalError of error
 
 type step_limit =
@@ -30,10 +29,11 @@ and value =
   | Int of int
   | Bool of bool
   | Tuple of value * value * value list
+  | Exception of string
   | Closure of Ast.t * env
   | BuiltinAbstraction of (value -> value result)
 
-module InterpreterState : Utils.STATE_MONAD = struct
+module State : Utils.STATE_MONAD = struct
   type ('s, 'a) t = 's -> 's * 'a
 
   let return x st = st, x
@@ -53,13 +53,15 @@ let rec show_value_type = function
   | Int _ -> "int"
   | Bool _ -> "bool"
   | Tuple (t1, t2, ts) -> String.concat " * " (List.map show_value_type (t1 :: t2 :: ts))
+  | Exception _ -> "exception"
   | Closure _ -> "<closure>"
   | BuiltinAbstraction _ -> "<built-in>"
 ;;
 
-module Interpreter (ST : Utils.STATE_MONAD) = struct
+module Result (ST : Utils.STATE_MONAD) = struct
   let return x = ST.return (Eval x)
   let fail e = ST.return (EvalError e)
+  let raise e = ST.return (EvalRaise e)
 
   (* Two different bind operators here *)
   (* '>>=' is used for State *)
@@ -70,6 +72,7 @@ module Interpreter (ST : Utils.STATE_MONAD) = struct
   let ( let* ) x transform =
     ST.bind x (function
       | Eval x -> transform x
+      | EvalRaise e -> raise e
       | EvalError e -> fail e)
   ;;
 
@@ -81,6 +84,7 @@ module Interpreter (ST : Utils.STATE_MONAD) = struct
   ;;
 
   let set_vars vars = ST.bind ST.read (fun env -> ST.write (vars, snd env))
+  let set_limit limit = ST.bind ST.read (fun env -> ST.write (fst env, limit))
 
   let update_limit =
     ST.bind ST.read (function
@@ -102,9 +106,9 @@ module Interpreter (ST : Utils.STATE_MONAD) = struct
     | Ast.Add, Int l, Int r -> return (Int (l + r))
     | Ast.Sub, Int l, Int r -> return (Int (l - r))
     | Ast.Mul, Int l, Int r -> return (Int (l * r))
-    | Ast.Div, Int _, Int r when r = 0 -> fail ZeroDivision
+    | Ast.Div, Int _, Int r when r = 0 -> raise "DivisionByZero"
     | Ast.Div, Int l, Int r -> return (Int (l / r))
-    | Ast.Mod, Int _, Int r when r = 0 -> fail ZeroDivision
+    | Ast.Mod, Int _, Int r when r = 0 -> raise "DivisionByZero"
     | Ast.Mod, Int l, Int r -> return (Int (l mod r))
     | Ast.And, Bool l, Bool r -> return (Bool (l && r))
     | Ast.Or, Bool l, Bool r -> return (Bool (l || r))
@@ -133,7 +137,7 @@ module Interpreter (ST : Utils.STATE_MONAD) = struct
     let* _ =
       get_limit
       >>= function
-      | Limited 0 -> fail LimitError
+      | Limited 0 -> raise "StepsOverflow"
       | _ -> return ()
     in
     let* _ = update_limit >>= fun _ -> return () in
@@ -195,9 +199,9 @@ module Interpreter (ST : Utils.STATE_MONAD) = struct
     | Ast.Abstraction _ as abs ->
       get_limit
       >>= fun limit -> get_vars >>= fun vars -> return (Closure (abs, (vars, limit)))
-    | Ast.Application (expr1, expr2) ->
-      let* v1 = eval expr1 in
-      let* v2 = eval expr2 in
+    | Ast.Application (e1, e2) ->
+      let* v1 = eval e1 in
+      let* v2 = eval e2 in
       (match v1 with
        | Closure (Ast.Abstraction (arg, expr), env) ->
          get_vars
@@ -209,8 +213,35 @@ module Interpreter (ST : Utils.STATE_MONAD) = struct
        | BuiltinAbstraction f ->
          (match f v2 with
           | Eval v -> return v
+          | EvalRaise e -> raise e
           | EvalError e -> fail e)
        | _ -> fail InvalidApplication)
+    | Ast.Exception name ->
+      let v = Exception name in
+      update_vars (Ast.Real name) v >>= fun _ -> return v
+    | Ast.Raise expr ->
+      get_vars
+      >>= fun vars ->
+      let* v = eval expr in
+      (match v with
+       | Exception name as e when lookup (Ast.Real name) vars = Some e -> raise name
+       | _ -> fail (TypesMismatch ("exception", show_value_type v)))
+    | Ast.TryWith (e1, name, e2) ->
+      get_limit
+      >>= fun saved_limit ->
+      get_vars
+      >>= fun saved_vars ->
+      ST.bind (eval e1) (function
+        | Eval x -> return x
+        | EvalRaise name' when String.equal name' name ->
+          set_limit saved_limit
+          >>= fun _ ->
+          set_vars saved_vars
+          >>= fun _ ->
+          let* v2 = eval e2 in
+          return v2
+        | EvalRaise name -> raise name
+        | EvalError error -> fail error)
   ;;
 end
 
@@ -255,13 +286,11 @@ let new_env = get_builtins, Unlimited
 let new_env_limited limit = get_builtins, Limited limit
 
 let show_error = function
-  | LimitError -> "Steps limit exceeded"
-  | ZeroDivision -> "Division by zero"
   | InvalidApplication -> "Invalid application"
   | InvalidLet -> "Invalid let-statement"
-  | UnboundVariable name -> Format.sprintf "Unbound variable '%s'" (Ast.show_name name)
-  | TypeMismatch typ -> Format.sprintf "Type mismatch: '%s'" typ
-  | TypesMismatch (typ1, typ2) -> Format.sprintf "Types mismatch: '%s' and '%s'" typ1 typ2
+  | UnboundVariable name -> Format.sprintf "Unbound variable %S" (Ast.show_name name)
+  | TypeMismatch typ -> Format.sprintf "Type mismatch: %S" typ
+  | TypesMismatch (typ1, typ2) -> Format.sprintf "Types mismatch: %S and %S" typ1 typ2
 ;;
 
 let show_result result =
@@ -270,14 +299,16 @@ let show_result result =
     | Int int -> string_of_int int
     | Bool bool -> string_of_bool bool
     | Tuple (v1, v2, vs) -> String.concat ", " (List.map show_eval (v1 :: v2 :: vs))
+    | Exception name -> name
     | Closure _ | BuiltinAbstraction _ -> "?"
   in
   match result with
   | Eval value -> Format.sprintf "%s: %s" (show_value_type value) (show_eval value)
+  | EvalRaise exception_name -> Format.sprintf "Raised: %S" exception_name
   | EvalError error -> Format.sprintf "Error: %s" (show_error error)
 ;;
 
 let run env expr =
-  let module I = Interpreter (InterpreterState) in
-  InterpreterState.run (I.eval expr) env
+  let module R = Result (State) in
+  State.run (R.eval expr) env
 ;;

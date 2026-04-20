@@ -8,8 +8,6 @@
 
 (** Type for interpreter's error *)
 type error =
-  | LimitError (** When step limit is reached *)
-  | ZeroDivision (** When divider has been evaluated to zero *)
   | InvalidApplication (** When application is not valid *)
   | InvalidLet (** When recursive let statement is used wrongly *)
   | UnboundVariable of Ast.name (** When provided name is not a variable *)
@@ -19,6 +17,7 @@ type error =
 (** Type for evaluation result *)
 type 'a result =
   | Eval of 'a
+  | EvalRaise of string
   | EvalError of error
 
 (** Type for step limit *)
@@ -32,6 +31,7 @@ type value =
   | Int of int
   | Bool of bool
   | Tuple of value * value * value list
+  | Exception of string
   | Closure of Ast.t * env
   | BuiltinAbstraction of (value -> value result)
 

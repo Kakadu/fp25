@@ -56,19 +56,19 @@ Test arithmetic operations
 
   $ ../bin/REPL.exe <<EOF
   > 11 / (2 + 2 - (8 / 2)) + 1
-  Error: Division by zero
+  Raised: "DivisionByZero"
 
   $ ../bin/REPL.exe <<EOF
   > (42) mod (0)
-  Error: Division by zero
+  Raised: "DivisionByZero"
 
   $ ../bin/REPL.exe --steps 3 <<EOF
   > 1 + 2 + 3 + 4 + 5
-  Error: Steps limit exceeded
+  Raised: "StepsOverflow"
 
   $ ../bin/REPL.exe <<EOF
   > ((1) / (true))
-  Error: Types mismatch: 'int' and 'bool'
+  Error: Types mismatch: "int" and "bool"
 
 Test logical & compare operations
 
@@ -82,7 +82,7 @@ Test logical & compare operations
 
   $ ../bin/REPL.exe <<EOF
   > !42
-  Error: Type mismatch: 'int'
+  Error: Type mismatch: "int"
 
   $ ../bin/REPL.exe <<EOF
   > 2 > 1 <> false
@@ -106,17 +106,17 @@ Test logical & compare operations
 
   $ ../bin/REPL.exe --steps 3 <<EOF
   > !(true || false && false && true)
-  Error: Steps limit exceeded
+  Raised: "StepsOverflow"
 
   $ ../bin/REPL.exe <<EOF
   > !(false || -true)
-  Error: Type mismatch: 'bool'
+  Error: Type mismatch: "bool"
 
 Test variables
 
   $ ../bin/REPL.exe <<EOF
   > a + b
-  Error: Unbound variable 'a'
+  Error: Unbound variable "a"
 
 Test abstraction & application
 
@@ -138,7 +138,7 @@ Test abstraction & application
 
   $ ../bin/REPL.exe <<EOF
   > ((fun x -> x) _)
-  Error: Unbound variable '_'
+  Error: Unbound variable "_"
 
   $ ../bin/REPL.exe --multiline <<EOF
   > (print_int 100)
@@ -163,7 +163,7 @@ Test abstraction & application
   $ ../bin/REPL.exe --multiline <<EOF
   > (print_hoho 100)
   > ((1 + 1) 100)
-  Error: Unbound variable 'print_hoho'
+  Error: Unbound variable "print_hoho"
   Error: Invalid application
 
 Test tuples of different types
@@ -186,7 +186,7 @@ Test tuples of different types
 
   $ ../bin/REPL.exe <<EOF
   > ((5 mod 2), false) * (1, 2)
-  Error: Types mismatch: 'int * bool' and 'int * int'
+  Error: Types mismatch: "int * bool" and "int * int"
 
 Test if-then-else statement
 
@@ -200,11 +200,11 @@ Test if-then-else statement
 
   $ ../bin/REPL.exe <<EOF
   > if (1 + 2) then (print_int 1) else 42
-  Error: Type mismatch: 'int'
+  Error: Type mismatch: "int"
 
   $ ../bin/REPL.exe <<EOF
   > if () then true else false
-  Error: Type mismatch: 'unit'
+  Error: Type mismatch: "unit"
 
 Test non-recursive let statement & built-in abstraction
 
@@ -249,7 +249,7 @@ Test non-recursive let statement & built-in abstraction
 
   $ ../bin/REPL.exe <<EOF
   > let a = 1 in a + b
-  Error: Unbound variable 'b'
+  Error: Unbound variable "b"
 
   $ ../bin/REPL.exe <<EOF
   > let rec a = 1 in let rec b = 2 in (a = b)
@@ -267,7 +267,7 @@ Test recursive let statement
 
   $ ../bin/REPL.exe --steps 10 <<EOF
   > let rec fact = fun n -> (if n = 0 then 1 else (n * (fact (n - 1)))) in (fact 6)
-  Error: Steps limit exceeded
+  Raised: "StepsOverflow"
 
   $ ../bin/REPL.exe --steps 100 <<EOF
   > let rec fact = fun n -> (if n = 0 then 1 else (n * (fact (n - 1)))) in (fact 7)
@@ -285,20 +285,50 @@ Test recursive let statement
   > let rec fib = fun n -> if n <= 2 then 1 else ((fib (n - 1)) + (fib (n - 2))) in (fib 20)
   int: 6765
 
-Test some infinite recursions
+Test exceptions
+
+  $ ../bin/REPL.exe --multiline <<EOF
+  > exception DivisionByZero
+  > raise DivisionByZero
+  exception: DivisionByZero
+  Raised: "DivisionByZero"
+
+  $ ../bin/REPL.exe --multiline <<EOF
+  > raise Undefined
+  Error: Unbound variable "Undefined"
+
+  $ ../bin/REPL.exe --multiline <<EOF
+  > raise 42
+  Error: Types mismatch: "exception" and "int"
+
+  $ ../bin/REPL.exe --multiline <<EOF
+  > exception E1
+  > try (raise E1) with E1 -> 42
+  exception: E1
+  int: 42
+
+Test some infinite recursions and exceptions
 
   $ ../bin/REPL.exe --steps 1000 <<EOF
   > let rec hehe = (fun _ -> (1 + (hehe 1))) in (hehe 1)
-  Error: Steps limit exceeded
+  Raised: "StepsOverflow"
 
   $ ../bin/REPL.exe --steps 100 <<EOF
   > let omega = ((fun x -> (x x)) (fun x -> (x x))) in omega
-  Error: Steps limit exceeded
+  Raised: "StepsOverflow"
 
   $ ../bin/REPL.exe --steps 1000 <<EOF
   > let omega = ((fun x -> (x x)) (fun x -> (x x))) in omega
-  Error: Steps limit exceeded
+  Raised: "StepsOverflow"
 
-  $ ../bin/REPL.exe --steps 100000 <<EOF
+  $ ../bin/REPL.exe --steps 10000 <<EOF
   > let omega = ((fun x -> (x x)) (fun x -> (x x))) in omega
-  Error: Steps limit exceeded
+  Raised: "StepsOverflow"
+
+  $ ../bin/REPL.exe --steps 100 <<EOF
+  > try (let omega = ((fun x -> (x x)) (fun x -> (x x))) in omega) with StepsOverflow -> 0
+  int: 0
+
+  $ ../bin/REPL.exe --steps 100 <<EOF
+  > try (let omega = ((fun x -> (x x)) (fun x -> (x x))) in omega) with StepsOverflow -> try (let omega = ((fun x -> (x x)) (fun x -> (x x))) in omega) with StepsOverflow -> 1
+  int: 1
