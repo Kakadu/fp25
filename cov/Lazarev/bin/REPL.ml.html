@@ -122,15 +122,15 @@ module Parser = Mini_ml_lib.Parser
 type opts = { mutable env : Interpreter.env }
 
 let run env =
-  <span data-count="65">w</span>hile true do
-    <span data-count="135">t</span>ry
+  <span data-count="66">w</span>hile true do
+    <span data-count="137">t</span>ry
       let line = read_line () in
-      <span data-count="70">m</span>atch Parser.parse_line line with
+      <span data-count="71">m</span>atch Parser.parse_line line with
       | <span data-count="0">P</span>arser.ParseError error -&gt; Parser.show_error error |&gt; <span data-count="0">p</span>rint_endlin<span data-count="0">e</span>
-      | <span data-count="70">P</span>arser.Parsed (ast, _) -&gt;
-        Interpreter.run env ast |&gt; <span data-count="70">s</span>nd |&gt; <span data-count="70">I</span>nterpreter.show_result |&gt; <span data-count="70">p</span>rint_endlin<span data-count="70">e</span>
+      | <span data-count="71">P</span>arser.Parsed (ast, _) -&gt;
+        Interpreter.run env ast |&gt; <span data-count="71">s</span>nd |&gt; <span data-count="71">I</span>nterpreter.show_result |&gt; <span data-count="71">p</span>rint_endlin<span data-count="71">e</span>
     with
-    | <span data-count="65">E</span>nd_of_file -&gt; exi<span data-count="0">t</span> 0
+    | <span data-count="66">E</span>nd_of_file -&gt; exi<span data-count="0">t</span> 0
   done
 ;;
 
@@ -143,7 +143,7 @@ let () =
     ]
   in
   Arg.parse args (fun _ -&gt; <span data-count="0">(</span>)) "An interpreter for ML-like language";
-  <span data-count="65">r</span>u<span data-count="0">n</span> options.env
+  <span data-count="66">r</span>u<span data-count="0">n</span> options.env
 ;;
 </code></pre>
       </div>

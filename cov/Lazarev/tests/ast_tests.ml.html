@@ -119,28 +119,20 @@
 <a id="L95"></a><span > </span>
 <a id="L96"></a><span class="visited"> </span>
 <a id="L97"></a><span class="visited"> </span>
-<a id="L98"></a><span class="visited"> </span>
+<a id="L98"></a><span > </span>
 <a id="L99"></a><span > </span>
-<a id="L100"></a><span > </span>
+<a id="L100"></a><span class="visited"> </span>
 <a id="L101"></a><span class="visited"> </span>
 <a id="L102"></a><span class="visited"> </span>
-<a id="L103"></a><span class="visited"> </span>
-<a id="L104"></a><span > </span>
-<a id="L105"></a><span class="visited"> </span>
+<a id="L103"></a><span > </span>
+<a id="L104"></a><span class="visited"> </span>
+<a id="L105"></a><span > </span>
 <a id="L106"></a><span > </span>
 <a id="L107"></a><span > </span>
 <a id="L108"></a><span > </span>
 <a id="L109"></a><span > </span>
-<a id="L110"></a><span > </span>
-<a id="L111"></a><span class="visited"> </span>
-<a id="L112"></a><span > </span>
-<a id="L113"></a><span > </span>
-<a id="L114"></a><span > </span>
-<a id="L115"></a><span class="visited"> </span>
-<a id="L116"></a><span class="visited"> </span>
-<a id="L117"></a><span > </span>
-<a id="L118"></a><span > </span>
-<a id="L119"></a><span > </span>
+<a id="L110"></a><span class="visited"> </span>
+<a id="L111"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -256,14 +248,6 @@
 <a href="#L109">109</a>
 <a href="#L110">110</a>
 <a href="#L111">111</a>
-<a href="#L112">112</a>
-<a href="#L113">113</a>
-<a href="#L114">114</a>
-<a href="#L115">115</a>
-<a href="#L116">116</a>
-<a href="#L117">117</a>
-<a href="#L118">118</a>
-<a href="#L119">119</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -289,7 +273,7 @@ let div lhs rhs = <span data-count="1">A</span>st.BinaryOp (Ast.Div, lhs, rhs)
 let rem lhs rhs = <span data-count="1">A</span>st.BinaryOp (Ast.Mod, lhs, rhs)
 
 let expect ast verbose pretty =
-  <span data-count="13">A</span>st.show_ast_verbos<span data-count="13">e</span> ast = verbose &amp;&amp; <span data-count="13">A</span>st.show_as<span data-count="13">t</span> ast = pretty
+  <span data-count="12">A</span>st.show_ast_verbos<span data-count="12">e</span> ast = verbose &amp;&amp; <span data-count="12">A</span>st.show_as<span data-count="12">t</span> ast = pretty
 ;;
 
 let%test "Unit" = <span data-count="1">e</span>xpect Ast.Unit "unit" "()"
@@ -360,7 +344,6 @@ let%test "Applications &amp; abstractions" =
     "((((fun _ -&gt; fun a -&gt; 12) (x1))) (x2))"
 ;;
 
-let declare_excepttion name = <span data-count="1">A</span>st.Exception name
 let try_with left name right = <span data-count="1">A</span>st.TryWith (left, name, right)
 let raise expr = <span data-count="1">A</span>st.Raise expr
 
@@ -376,13 +359,6 @@ let%test "Exceptions 1" =
 
 let%test "Exceptions 2" =
   <span data-count="1">e</span>xpect (raise (ab<span data-count="1">s</span> (nam<span data-count="1">e</span> "x") (boo<span data-count="1">l</span> true))) "Raise(Abs(x, true))" "raise fun x -&gt; true"
-;;
-
-let%test "Exceptions 3" =
-  <span data-count="1">e</span>xpect
-    (declare_excepttio<span data-count="1">n</span> "DivisionByZero")
-    "Exception(DivisionByZero)"
-    "exception DivisionByZero"
 ;;
 </code></pre>
       </div>

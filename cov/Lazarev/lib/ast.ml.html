@@ -117,21 +117,21 @@
 <a id="L93"></a><span class="visited"> </span>
 <a id="L94"></a><span class="visited"> </span>
 <a id="L95"></a><span class="visited"> </span>
-<a id="L96"></a><span > </span>
+<a id="L96"></a><span class="visited"> </span>
 <a id="L97"></a><span > </span>
-<a id="L98"></a><span class="visited"> </span>
-<a id="L99"></a><span > </span>
-<a id="L100"></a><span class="visited"> </span>
+<a id="L98"></a><span > </span>
+<a id="L99"></a><span class="visited"> </span>
+<a id="L100"></a><span > </span>
 <a id="L101"></a><span class="visited"> </span>
-<a id="L102"></a><span > </span>
+<a id="L102"></a><span class="visited"> </span>
 <a id="L103"></a><span > </span>
 <a id="L104"></a><span > </span>
-<a id="L105"></a><span class="visited"> </span>
+<a id="L105"></a><span > </span>
 <a id="L106"></a><span class="visited"> </span>
-<a id="L107"></a><span > </span>
+<a id="L107"></a><span class="visited"> </span>
 <a id="L108"></a><span > </span>
 <a id="L109"></a><span > </span>
-<a id="L110"></a><span class="visited"> </span>
+<a id="L110"></a><span > </span>
 <a id="L111"></a><span class="visited"> </span>
 <a id="L112"></a><span class="visited"> </span>
 <a id="L113"></a><span class="visited"> </span>
@@ -144,40 +144,40 @@
 <a id="L120"></a><span class="visited"> </span>
 <a id="L121"></a><span class="visited"> </span>
 <a id="L122"></a><span class="visited"> </span>
-<a id="L123"></a><span > </span>
+<a id="L123"></a><span class="visited"> </span>
 <a id="L124"></a><span > </span>
 <a id="L125"></a><span > </span>
-<a id="L126"></a><span class="visited"> </span>
+<a id="L126"></a><span > </span>
 <a id="L127"></a><span class="visited"> </span>
-<a id="L128"></a><span > </span>
+<a id="L128"></a><span class="visited"> </span>
 <a id="L129"></a><span > </span>
 <a id="L130"></a><span > </span>
-<a id="L131"></a><span class="visited"> </span>
+<a id="L131"></a><span > </span>
 <a id="L132"></a><span class="visited"> </span>
 <a id="L133"></a><span class="visited"> </span>
 <a id="L134"></a><span class="visited"> </span>
 <a id="L135"></a><span class="visited"> </span>
-<a id="L136"></a><span > </span>
+<a id="L136"></a><span class="visited"> </span>
 <a id="L137"></a><span > </span>
-<a id="L138"></a><span class="visited"> </span>
+<a id="L138"></a><span > </span>
 <a id="L139"></a><span class="visited"> </span>
 <a id="L140"></a><span class="visited"> </span>
 <a id="L141"></a><span class="visited"> </span>
-<a id="L142"></a><span > </span>
+<a id="L142"></a><span class="visited"> </span>
 <a id="L143"></a><span > </span>
-<a id="L144"></a><span class="visited"> </span>
+<a id="L144"></a><span > </span>
 <a id="L145"></a><span class="visited"> </span>
 <a id="L146"></a><span class="visited"> </span>
 <a id="L147"></a><span class="visited"> </span>
-<a id="L148"></a><span > </span>
+<a id="L148"></a><span class="visited"> </span>
 <a id="L149"></a><span > </span>
-<a id="L150"></a><span class="visited"> </span>
+<a id="L150"></a><span > </span>
 <a id="L151"></a><span class="visited"> </span>
 <a id="L152"></a><span class="visited"> </span>
 <a id="L153"></a><span class="visited"> </span>
-<a id="L154"></a><span > </span>
+<a id="L154"></a><span class="visited"> </span>
 <a id="L155"></a><span > </span>
-<a id="L156"></a><span class="visited"> </span>
+<a id="L156"></a><span > </span>
 <a id="L157"></a><span class="visited"> </span>
 <a id="L158"></a><span class="visited"> </span>
 <a id="L159"></a><span class="visited"> </span>
@@ -188,7 +188,8 @@
 <a id="L164"></a><span class="visited"> </span>
 <a id="L165"></a><span class="visited"> </span>
 <a id="L166"></a><span class="visited"> </span>
-<a id="L167"></a><span > </span>
+<a id="L167"></a><span class="visited"> </span>
+<a id="L168"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -360,6 +361,7 @@
 <a href="#L165">165</a>
 <a href="#L166">166</a>
 <a href="#L167">167</a>
+<a href="#L168">168</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "/*"]
 
@@ -378,7 +380,7 @@ type name =
   | Not
 [@@deriving show { with_path = false }]
 
-<span data-count="45">t</span>ype binary_operation =
+<span data-count="46">t</span>ype binary_operation =
   | Add
   | Sub
   | Mul
@@ -411,18 +413,18 @@ type t =
   | LetExpr of let_mnemonic * name * t * t
   | Abstraction of name * t
   | Application of t * t
-  | Exception of string
+  | Exception of string * t
   | TryWith of t * string * t
   | Raise of t
 
 let show_name = function
-  | <span data-count="130">W</span>ildcard -&gt; "_"
-  | <span data-count="498">R</span>eal name -&gt; name
+  | <span data-count="105">W</span>ildcard -&gt; "_"
+  | <span data-count="425">R</span>eal name -&gt; name
 ;;
 
 let rec show_ast_verbose = function
   | <span data-count="1">U</span>nit -&gt; "unit"
-  | <span data-count="48">I</span>nt value -&gt; string_of_int value
+  | <span data-count="50">I</span>nt value -&gt; string_of_int value
   | <span data-count="13">B</span>ool value -&gt; string_of_bool value
   | <span data-count="41">V</span>ar name -&gt; show_name name
   | <span data-count="3">T</span>uple (first, second, rest) -&gt;
@@ -431,12 +433,12 @@ let rec show_ast_verbose = function
       (String.conca<span data-count="3">t</span> ", " (List.ma<span data-count="3">p</span> show_ast_verbose (first :: second :: rest)))
   | <span data-count="4">U</span>naryOp (op, expr) -&gt;
     Format.sprintf "%s(%s)" (show_unary_operatio<span data-count="4">n</span> op) (show_ast_verbos<span data-count="4">e</span> expr)
-  | <span data-count="45">B</span>inaryOp (op, left, right) -&gt;
+  | <span data-count="46">B</span>inaryOp (op, left, right) -&gt;
     Format.sprintf
       "%s(%s, %s)"
-      (show_binary_operatio<span data-count="45">n</span> op)
-      (show_ast_verbos<span data-count="45">e</span> left)
-      (show_ast_verbos<span data-count="45">e</span> right)
+      (show_binary_operatio<span data-count="46">n</span> op)
+      (show_ast_verbos<span data-count="46">e</span> left)
+      (show_ast_verbos<span data-count="46">e</span> right)
   | <span data-count="8">I</span>fThenElse (cond, then_expr, else_expr) -&gt;
     Format.sprintf
       "IfThenElse(%s, %s, %s)"
@@ -454,7 +456,8 @@ let rec show_ast_verbose = function
     Format.sprintf "Abs(%s, %s)" (show_nam<span data-count="9">e</span> name) (show_ast_verbos<span data-count="9">e</span> expr)
   | <span data-count="4">A</span>pplication (lhs, rhs) -&gt;
     Format.sprintf "App(%s, %s)" (show_ast_verbos<span data-count="4">e</span> lhs) (show_ast_verbos<span data-count="4">e</span> rhs)
-  | <span data-count="2">E</span>xception name -&gt; Format.sprintf "Exception(%s)" name
+  | <span data-count="1">E</span>xception (name, expr) -&gt;
+    Format.sprintf "Exception(%s, %s)" name (show_ast_verbos<span data-count="1">e</span> expr)
   | <span data-count="1">T</span>ryWith (lhs, name, rhs) -&gt;
     Format.sprintf
       "TryWith(%s, %s, %s)"
@@ -465,68 +468,68 @@ let rec show_ast_verbose = function
 ;;
 
 let show_pretty_unary_operation = function
-  | <span data-count="31">N</span>eg -&gt; "-"
-  | <span data-count="29">N</span>ot -&gt; "!"
+  | <span data-count="28">N</span>eg -&gt; "-"
+  | <span data-count="35">N</span>ot -&gt; "!"
 ;;
 
 let show_pretty_binary_operation = function
-  | <span data-count="15">A</span>dd -&gt; "+"
-  | <span data-count="21">S</span>ub -&gt; "-"
-  | <span data-count="9">M</span>ul -&gt; "*"
-  | <span data-count="11">D</span>iv -&gt; "/"
-  | <span data-count="8">M</span>od -&gt; "mod"
-  | <span data-count="16">A</span>nd -&gt; "&amp;&amp;"
-  | <span data-count="13">O</span>r -&gt; "||"
-  | <span data-count="16">E</span>qual -&gt; "="
-  | <span data-count="12">N</span>otEqual -&gt; "&lt;&gt;"
+  | <span data-count="17">A</span>dd -&gt; "+"
+  | <span data-count="10">S</span>ub -&gt; "-"
+  | <span data-count="8">M</span>ul -&gt; "*"
+  | <span data-count="7">D</span>iv -&gt; "/"
+  | <span data-count="9">M</span>od -&gt; "mod"
+  | <span data-count="7">A</span>nd -&gt; "&amp;&amp;"
+  | <span data-count="14">O</span>r -&gt; "||"
+  | <span data-count="12">E</span>qual -&gt; "="
+  | <span data-count="9">N</span>otEqual -&gt; "&lt;&gt;"
   | <span data-count="11">L</span>ess -&gt; "&lt;"
-  | <span data-count="7">L</span>essEqual -&gt; "&lt;="
-  | <span data-count="16">G</span>reater -&gt; "&gt;"
-  | <span data-count="13">G</span>reaterEqual -&gt; "&gt;="
+  | <span data-count="10">L</span>essEqual -&gt; "&lt;="
+  | <span data-count="8">G</span>reater -&gt; "&gt;"
+  | <span data-count="12">G</span>reaterEqual -&gt; "&gt;="
 ;;
 
 let show_pretty_rec_flag = function
-  | <span data-count="107">L</span>et -&gt; "let"
-  | <span data-count="29">L</span>etRec -&gt; "let rec"
+  | <span data-count="88">L</span>et -&gt; "let"
+  | <span data-count="20">L</span>etRec -&gt; "let rec"
 ;;
 
 let rec show_ast = function
-  | <span data-count="205">U</span>nit -&gt; "()"
-  | <span data-count="232">I</span>nt value -&gt; string_of_int value
-  | <span data-count="250">B</span>ool value -&gt; string_of_bool value
-  | <span data-count="292">V</span>ar name -&gt; show_name name
-  | <span data-count="60">T</span>uple (first, second, rest) -&gt;
+  | <span data-count="186">U</span>nit -&gt; "()"
+  | <span data-count="228">I</span>nt value -&gt; string_of_int value
+  | <span data-count="199">B</span>ool value -&gt; string_of_bool value
+  | <span data-count="246">V</span>ar name -&gt; show_name name
+  | <span data-count="67">T</span>uple (first, second, rest) -&gt;
     Format.sprintf
       "(%s)"
-      (String.conca<span data-count="60">t</span> ", " (List.ma<span data-count="60">p</span> show_ast (first :: second :: rest)))
-  | <span data-count="60">U</span>naryOp (op, expr) -&gt;
-    Format.sprintf "%s(%s)" (show_pretty_unary_operatio<span data-count="60">n</span> op) (show_as<span data-count="60">t</span> expr)
-  | <span data-count="168">B</span>inaryOp (op, left, right) -&gt;
+      (String.conca<span data-count="67">t</span> ", " (List.ma<span data-count="67">p</span> show_ast (first :: second :: rest)))
+  | <span data-count="63">U</span>naryOp (op, expr) -&gt;
+    Format.sprintf "%s(%s)" (show_pretty_unary_operatio<span data-count="63">n</span> op) (show_as<span data-count="63">t</span> expr)
+  | <span data-count="134">B</span>inaryOp (op, left, right) -&gt;
     Format.sprintf
       "(%s %s %s)"
-      (show_as<span data-count="168">t</span> left)
-      (show_pretty_binary_operatio<span data-count="168">n</span> op)
-      (show_as<span data-count="168">t</span> right)
-  | <span data-count="78">I</span>fThenElse (cond, then_expr, else_expr) -&gt;
+      (show_as<span data-count="134">t</span> left)
+      (show_pretty_binary_operatio<span data-count="134">n</span> op)
+      (show_as<span data-count="134">t</span> right)
+  | <span data-count="62">I</span>fThenElse (cond, then_expr, else_expr) -&gt;
     Format.sprintf
       "if (%s) then (%s) else (%s)"
-      (show_as<span data-count="78">t</span> cond)
-      (show_as<span data-count="78">t</span> then_expr)
-      (show_as<span data-count="78">t</span> else_expr)
-  | <span data-count="136">L</span>etExpr (rf, name, lhs, rhs) -&gt;
+      (show_as<span data-count="62">t</span> cond)
+      (show_as<span data-count="62">t</span> then_expr)
+      (show_as<span data-count="62">t</span> else_expr)
+  | <span data-count="108">L</span>etExpr (rf, name, lhs, rhs) -&gt;
     Format.sprintf
       "%s %s = (%s) in (%s)"
-      (show_pretty_rec_fla<span data-count="136">g</span> rf)
-      (show_nam<span data-count="136">e</span> name)
-      (show_as<span data-count="136">t</span> lhs)
-      (show_as<span data-count="136">t</span> rhs)
-  | <span data-count="142">A</span>bstraction (var, expr) -&gt;
-    Format.sprintf "fun %s -&gt; %s" (show_nam<span data-count="142">e</span> var) (show_as<span data-count="142">t</span> expr)
-  | <span data-count="138">A</span>pplication (lhs, rhs) -&gt; Format.sprintf "((%s) (%s))" (show_as<span data-count="138">t</span> lhs) (show_as<span data-count="138">t</span> rhs)
-  | <span data-count="1">E</span>xception name -&gt; Format.sprintf "exception %s" name
-  | <span data-count="37">T</span>ryWith (lhs, name, rhs) -&gt;
-    Format.sprintf "try (%s) with %s -&gt; (%s)" (show_as<span data-count="37">t</span> lhs) name (show_as<span data-count="37">t</span> rhs)
-  | <span data-count="39">R</span>aise name -&gt; Format.sprintf "raise %s" (show_as<span data-count="39">t</span> name)
+      (show_pretty_rec_fla<span data-count="108">g</span> rf)
+      (show_nam<span data-count="108">e</span> name)
+      (show_as<span data-count="108">t</span> lhs)
+      (show_as<span data-count="108">t</span> rhs)
+  | <span data-count="118">A</span>bstraction (var, expr) -&gt;
+    Format.sprintf "fun %s -&gt; %s" (show_nam<span data-count="118">e</span> var) (show_as<span data-count="118">t</span> expr)
+  | <span data-count="128">A</span>pplication (lhs, rhs) -&gt; Format.sprintf "((%s) (%s))" (show_as<span data-count="128">t</span> lhs) (show_as<span data-count="128">t</span> rhs)
+  | <span data-count="25">E</span>xception (name, expr) -&gt; Format.sprintf "let exception %s in %s" name (show_as<span data-count="25">t</span> expr)
+  | <span data-count="24">T</span>ryWith (lhs, name, rhs) -&gt;
+    Format.sprintf "try (%s) with %s -&gt; (%s)" (show_as<span data-count="24">t</span> lhs) name (show_as<span data-count="24">t</span> rhs)
+  | <span data-count="35">R</span>aise name -&gt; Format.sprintf "raise %s" (show_as<span data-count="35">t</span> name)
 ;;
 </code></pre>
       </div>

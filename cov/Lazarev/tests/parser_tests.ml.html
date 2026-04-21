@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>parser_tests.ml &mdash; Coverage report</title>
-    <meta name="description" content="98.10% coverage in tests/parser_tests.ml">
+    <meta name="description" content="98.53% coverage in tests/parser_tests.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,13 +15,12 @@
           <span class="dirname">tests/</span>parser_tests.ml
         </a>
       </h1>
-      <h2>98.10%</h2>
+      <h2>98.53%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="top:38.83%"></span>
-      <span class="unvisited" style="top:39.93%"></span>
-      <span class="unvisited" style="bottom:8.06%"></span>
-      <span class="unvisited" style="bottom:4.03%"></span>
+      <span class="unvisited" style="top:41.25%"></span>
+      <span class="unvisited" style="top:42.41%"></span>
+      <span class="unvisited" style="bottom:2.33%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -261,10 +260,10 @@
 <a id="L233"></a><span > </span>
 <a id="L234"></a><span > </span>
 <a id="L235"></a><span class="visited"> </span>
-<a id="L236"></a><span > </span>
+<a id="L236"></a><span class="visited"> </span>
 <a id="L237"></a><span > </span>
 <a id="L238"></a><span > </span>
-<a id="L239"></a><span class="visited"> </span>
+<a id="L239"></a><span > </span>
 <a id="L240"></a><span class="visited"> </span>
 <a id="L241"></a><span > </span>
 <a id="L242"></a><span > </span>
@@ -281,24 +280,8 @@
 <a id="L253"></a><span > </span>
 <a id="L254"></a><span > </span>
 <a id="L255"></a><span class="visited"> </span>
-<a id="L256"></a><span > </span>
+<a id="L256"></a><span class="visited"> </span>
 <a id="L257"></a><span > </span>
-<a id="L258"></a><span class="visited"> </span>
-<a id="L259"></a><span > </span>
-<a id="L260"></a><span class="visited"> </span>
-<a id="L261"></a><span class="visited"> </span>
-<a id="L262"></a><span class="unvisited"> </span>
-<a id="L263"></a><span > </span>
-<a id="L264"></a><span > </span>
-<a id="L265"></a><span > </span>
-<a id="L266"></a><span class="visited"> </span>
-<a id="L267"></a><span > </span>
-<a id="L268"></a><span > </span>
-<a id="L269"></a><span > </span>
-<a id="L270"></a><span > </span>
-<a id="L271"></a><span > </span>
-<a id="L272"></a><span class="visited"> </span>
-<a id="L273"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -560,22 +543,6 @@
 <a href="#L255">255</a>
 <a href="#L256">256</a>
 <a href="#L257">257</a>
-<a href="#L258">258</a>
-<a href="#L259">259</a>
-<a href="#L260">260</a>
-<a href="#L261">261</a>
-<a href="#L262">262</a>
-<a href="#L263">263</a>
-<a href="#L264">264</a>
-<a href="#L265">265</a>
-<a href="#L266">266</a>
-<a href="#L267">267</a>
-<a href="#L268">268</a>
-<a href="#L269">269</a>
-<a href="#L270">270</a>
-<a href="#L271">271</a>
-<a href="#L272">272</a>
-<a href="#L273">273</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "*/*"]
 
@@ -629,8 +596,8 @@ let%expect_test "Correct parsing" =
   <span data-count="1">[</span>%expect "Abs(a, Neg(IfThenElse(a, 1, 2)))"<span data-count="7">]</span>;
   <span data-count="1">"</span>let a = 1 in let b = 2 in let c = 3 in (a + b + c)" |&gt; parse_and_print;
   <span data-count="1">[</span>%expect "Let(a, 1, Let(b, 2, Let(c, 3, Add(Add(a, b), c))))"<span data-count="7">]</span>;
-  <span data-count="1">"</span>exception DivisionByZero" |&gt; parse_and_print;
-  <span data-count="1">[</span>%expect "Exception(DivisionByZero)"<span data-count="7">]</span>;
+  <span data-count="1">"</span>let exception DivisionByZero in (1 + 2)" |&gt; parse_and_print;
+  <span data-count="1">[</span>%expect "Exception(DivisionByZero, Add(1, 2))"<span data-count="7">]</span>;
   <span data-count="1">"</span>raise 0" |&gt; parse_and_print;
   <span data-count="1">[</span>%expect "Raise(0)"<span data-count="7">]</span>;
   <span data-count="1">"</span>raise (if a = 0 then true else false)" |&gt; parse_and_print;
@@ -641,9 +608,9 @@ let%expect_test "Correct parsing" =
 
 let%expect_test "Invalid expressions" =
   <span data-count="1">"</span>( )" |&gt; parse_and_print;
-  <span data-count="1">[</span>%expect {|Syntax error: "( )"|}<span data-count="7">]</span>;
+  <span data-count="1">[</span>%expect {|Syntax error: ")"|}<span data-count="7">]</span>;
   <span data-count="1">"</span>(1 $ 2" |&gt; parse_and_print;
-  <span data-count="1">[</span>%expect {|Syntax error: "(1 $ 2"|}<span data-count="7">]</span>;
+  <span data-count="1">[</span>%expect {|Syntax error: "$ 2"|}<span data-count="7">]</span>;
   <span data-count="1">"</span>var &amp; mask)" |&gt; parse_and_print;
   <span data-count="1">[</span>%expect {|Unparsed symbols: "&amp; mask)"|}<span data-count="7">]</span>;
   <span data-count="1">"</span>var += 1" |&gt; parse_and_print;
@@ -651,11 +618,11 @@ let%expect_test "Invalid expressions" =
   <span data-count="1">"</span>(567 / 3) + (567 % 3" |&gt; parse_and_print;
   <span data-count="1">[</span>%expect {|Unparsed symbols: "+ (567 % 3"|}<span data-count="7">]</span>;
   <span data-count="1">"</span>(call 1invalid2identifier)" |&gt; parse_and_print;
-  <span data-count="1">[</span>%expect {|Syntax error: "(call 1invalid2identifier)"|}<span data-count="7">]</span>;
+  <span data-count="1">[</span>%expect {|Syntax error: "1invalid2identifier)"|}<span data-count="7">]</span>;
   <span data-count="1">"</span>+ 1 2 3" |&gt; parse_and_print;
   <span data-count="1">[</span>%expect {|Syntax error: "+ 1 2 3"|}<span data-count="7">]</span>;
   <span data-count="1">"</span>(1, 2, 3 helloWorld)" |&gt; parse_and_print;
-  <span data-count="1">[</span>%expect {|Syntax error: "(1, 2, 3 helloWorld)"|}<span data-count="7">]</span>;
+  <span data-count="1">[</span>%expect {|Syntax error: ", 2, 3 helloWorld)"|}<span data-count="7">]</span>;
   <span data-count="1">"</span>fun x y -&gt;" |&gt; parse_and_print;
   <span data-count="1">[</span>%expect {|Syntax error: "fun x y -&gt;"|}<span data-count="7">]</span>;
   <span data-count="1">"</span>if a &lt;&gt; 0 then 1" |&gt; parse_and_print;
@@ -669,15 +636,15 @@ let%expect_test "Invalid expressions" =
   <span data-count="1">"</span>let true = 1 in false" |&gt; parse_and_print;
   <span data-count="1">[</span>%expect {|Syntax error: "let true = 1 in false"|}<span data-count="7">]</span>;
   <span data-count="1">"</span>(1, 2, (if, then))" |&gt; parse_and_print;
-  <span data-count="1">[</span>%expect {|Syntax error: "(1, 2, (if, then))"|}<span data-count="7">]</span>;
+  <span data-count="1">[</span>%expect {|Syntax error: ", 2, (if, then))"|}<span data-count="7">]</span>;
   <span data-count="1">"</span>(then, 3)" |&gt; parse_and_print;
-  <span data-count="1">[</span>%expect {|Syntax error: "(then, 3)"|}<span data-count="7">]</span>;
+  <span data-count="1">[</span>%expect {|Syntax error: "then, 3)"|}<span data-count="7">]</span>;
   <span data-count="1">"</span>let var = 1" |&gt; parse_and_print;
   <span data-count="1">[</span>%expect {|Syntax error: "let var = 1"|}<span data-count="7">]</span>;
   <span data-count="1">"</span>exception" |&gt; parse_and_print;
-  <span data-count="1">[</span>%expect {|Unexpected end of input|}<span data-count="7">]</span>;
+  <span data-count="1">[</span>%expect {|Syntax error: "exception"|}<span data-count="7">]</span>;
   <span data-count="1">"</span>exception if" |&gt; parse_and_print;
-  <span data-count="1">[</span>%expect {|Syntax error: "if"|}<span data-count="7">]</span>
+  <span data-count="1">[</span>%expect {|Syntax error: "exception if"|}<span data-count="7">]</span>
 ;;
 
 let same lhs rhs =
@@ -721,12 +688,12 @@ let gen_real_name =
   <span data-count="3">l</span>et alphanum = oneof [ char_rang<span data-count="3">e</span> 'a' 'z'; char_rang<span data-count="3">e</span> 'A' 'Z'; char_numeral ] in
   <span data-count="3">l</span>et ident =
     map
-      (fun chars -&gt; <span data-count="294">c</span>hars |&gt; List.to_seq |&gt; <span data-count="294">S</span>tring.of_seq)
+      (fun chars -&gt; <span data-count="352">c</span>hars |&gt; List.to_seq |&gt; <span data-count="352">S</span>tring.of_seq)
       (let* first = capital_alpha in
-       <span data-count="294">l</span>et* rest = list_siz<span data-count="294">e</span> (int_rang<span data-count="294">e</span> 1 10) alphanum in
-       <span data-count="294">r</span>eturn (first :: rest))
+       <span data-count="352">l</span>et* rest = list_siz<span data-count="352">e</span> (int_rang<span data-count="352">e</span> 1 10) alphanum in
+       <span data-count="352">r</span>eturn (first :: rest))
   in
-  <span data-count="3">m</span>a<span data-count="3">p</span> (fun s -&gt; <span data-count="294">A</span>st.Real s) ident
+  <span data-count="3">m</span>a<span data-count="3">p</span> (fun s -&gt; <span data-count="352">A</span>st.Real s) ident
 ;;
 
 let gen_any_name =
@@ -762,92 +729,76 @@ let gen_rec_flag = Gen.oneof_weighte<span data-count="3">d</span> [ 5, Gen.retur
 let gen_ast_depth =
   let open Gen in
   fi<span data-count="3">x</span> (fun gen size -&gt;
-    <span data-count="1223">i</span>f size &lt;= 0
+    <span data-count="1565">i</span>f size &lt;= 0
     then
-      <span data-count="571">o</span>neof
-        [ retur<span data-count="571">n</span> Ast.Unit
-        ; ma<span data-count="571">p</span> (fun i -&gt; <span data-count="124">A</span>st.Int i) (int_rang<span data-count="571">e</span> 0 100000)
-        ; ma<span data-count="571">p</span> (fun b -&gt; <span data-count="142">A</span>st.Bool b) bool
-        ; ma<span data-count="571">p</span> (fun n -&gt; <span data-count="168">A</span>st.Var n) gen_real_name
+      <span data-count="729">o</span>neof
+        [ retur<span data-count="729">n</span> Ast.Unit
+        ; ma<span data-count="729">p</span> (fun i -&gt; <span data-count="185">A</span>st.Int i) (int_rang<span data-count="729">e</span> 0 100000)
+        ; ma<span data-count="729">p</span> (fun b -&gt; <span data-count="169">A</span>st.Bool b) bool
+        ; ma<span data-count="729">p</span> (fun n -&gt; <span data-count="190">A</span>st.Var n) gen_real_name
         ]
-    else <span data-count="652">(</span>
+    else <span data-count="836">(</span>
       let sub = gen (size / 2) in
-      <span data-count="652">l</span>et sub_small = gen (size / 3) in
-      <span data-count="652">l</span>et sub_tiny = oneof [ ge<span data-count="652">n</span> 1; ge<span data-count="652">n</span> 2 ] in
-      <span data-count="652">o</span>neof_weighted
-        [ 1, ma<span data-count="652">p</span> (fun i -&gt; <span data-count="27">A</span>st.Int i) (int_rang<span data-count="652">e</span> 0 100000)
-        ; 1, ma<span data-count="652">p</span> (fun b -&gt; <span data-count="28">A</span>st.Bool b) bool
-        ; 1, ma<span data-count="652">p</span> (fun n -&gt; <span data-count="25">A</span>st.Var n) gen_real_name
-        ; 2, map<span data-count="652">2</span> (fun op expr -&gt; <span data-count="41">A</span>st.UnaryOp (op, expr)) gen_unary_operation sub
+      <span data-count="836">l</span>et sub_small = gen (size / 3) in
+      <span data-count="836">l</span>et sub_tiny = oneof [ ge<span data-count="836">n</span> 1; ge<span data-count="836">n</span> 2 ] in
+      <span data-count="836">o</span>neof_weighted
+        [ 1, ma<span data-count="836">p</span> (fun i -&gt; <span data-count="32">A</span>st.Int i) (int_rang<span data-count="836">e</span> 0 100000)
+        ; 1, ma<span data-count="836">p</span> (fun b -&gt; <span data-count="25">A</span>st.Bool b) bool
+        ; 1, ma<span data-count="836">p</span> (fun n -&gt; <span data-count="41">A</span>st.Var n) gen_real_name
+        ; 2, map<span data-count="836">2</span> (fun op expr -&gt; <span data-count="61">A</span>st.UnaryOp (op, expr)) gen_unary_operation sub
         ; ( 4
-          , map<span data-count="652">3</span>
-              (fun op left right -&gt; <span data-count="100">A</span>st.BinaryOp (op, left, right))
+          , map<span data-count="836">3</span>
+              (fun op left right -&gt; <span data-count="119">A</span>st.BinaryOp (op, left, right))
               gen_binary_operation
               sub
               sub )
         ; ( 2
-          , Gen.map<span data-count="652">3</span>
-              (fun first second rest -&gt; <span data-count="42">A</span>st.Tuple (first, second, rest))
+          , Gen.map<span data-count="836">3</span>
+              (fun first second rest -&gt; <span data-count="67">A</span>st.Tuple (first, second, rest))
               sub_tiny
               sub_tiny
-              (list_siz<span data-count="652">e</span> (int_rang<span data-count="652">e</span> 0 5) sub_tiny) )
-        ; 4, map<span data-count="652">2</span> (fun arg expr -&gt; <span data-count="94">A</span>st.Abstraction (arg, expr)) gen_any_name sub
-        ; 4, map<span data-count="652">2</span> (fun func arg -&gt; <span data-count="97">A</span>st.Application (func, arg)) sub_small sub
+              (list_siz<span data-count="836">e</span> (int_rang<span data-count="836">e</span> 0 5) sub_tiny) )
+        ; 4, map<span data-count="836">2</span> (fun arg expr -&gt; <span data-count="115">A</span>st.Abstraction (arg, expr)) gen_any_name sub
+        ; 4, map<span data-count="836">2</span> (fun func arg -&gt; <span data-count="124">A</span>st.Application (func, arg)) sub_small sub
         ; ( 2
-          , map<span data-count="652">3</span>
-              (fun cond on_true on_false -&gt; <span data-count="52">A</span>st.IfThenElse (cond, on_true, on_false))
+          , map<span data-count="836">3</span>
+              (fun cond on_true on_false -&gt; <span data-count="62">A</span>st.IfThenElse (cond, on_true, on_false))
               sub_small
               sub
               sub )
         ; ( 4
-          , map<span data-count="652">4</span>
-              (fun rf name expr1 expr2 -&gt; <span data-count="96">A</span>st.LetExpr (rf, name, expr1, expr2))
+          , map<span data-count="836">4</span>
+              (fun rf name expr1 expr2 -&gt; <span data-count="108">A</span>st.LetExpr (rf, name, expr1, expr2))
               gen_rec_flag
               gen_any_name
               sub_small
               sub )
         ; ( 1
-          , map<span data-count="652">2</span>
-              (fun expr1 expr2 -&gt; <span data-count="25">A</span>st.TryWith (expr1, "Exception", expr2))
+          , map<span data-count="836">2</span>
+              (fun expr1 expr2 -&gt; <span data-count="23">A</span>st.TryWith (expr1, "Exception", expr2))
               sub
               sub_small )
-        ; 1, ma<span data-count="652">p</span> (fun expr -&gt; <span data-count="25">A</span>st.Raise expr) sub
+        ; 1, ma<span data-count="836">p</span> (fun expr -&gt; <span data-count="34">A</span>st.Raise expr) sub
+        ; 1, ma<span data-count="836">p</span> (fun expr -&gt; <span data-count="25">A</span>st.Exception ("Exception", expr)) sub
         ]))
 ;;
 
-let gen_ast limit = <span data-count="6">G</span>en.sized (fun size -&gt; <span data-count="100">g</span>en_ast_depth (mi<span data-count="100">n</span> size limit))
-let gen_expr = Gen.ma<span data-count="3">p</span> Ast.show_ast (gen_as<span data-count="3">t</span> 5)
+let gen_ast limit = <span data-count="3">G</span>en.sized (fun size -&gt; <span data-count="100">g</span>en_ast_depth (mi<span data-count="100">n</span> size limit))
 
-let roundtrip_test_1 =
+let roundtrip_test =
   Test.mak<span data-count="3">e</span>
     ~name:"Parser round-trip 1"
-    ~count:50
-    (mak<span data-count="3">e</span> ~print:Ast.show_ast (gen_as<span data-count="3">t</span> 7))
+    ~count:100
+    (mak<span data-count="3">e</span> ~print:Ast.show_ast (gen_as<span data-count="3">t</span> 8))
     (fun ast -&gt;
-      <span data-count="50">l</span>et string = Ast.show_ast ast in
-      <span data-count="50">m</span>atch Parser.parse_line string with
-      | <span data-count="50">P</span>arsed (a, _) -&gt; ast = a
+      <span data-count="100">l</span>et string = Ast.show_ast ast in
+      <span data-count="100">m</span>atch Parser.parse_line string with
+      | <span data-count="100">P</span>arsed (a, _) -&gt; ast = a
       | <span data-count="0">P</span>arseError _ -&gt; false)
 ;;
 
-let roundtrip_test_2 =
-  Test.mak<span data-count="3">e</span>
-    ~name:"Parser round-trip 2"
-    ~count:50
-    (mak<span data-count="3">e</span> ~print:Fun.id gen_expr)
-    (fun expr -&gt;
-       <span data-count="50">m</span>atch Parser.parse_line expr with
-       | <span data-count="50">P</span>arsed (a, _) -&gt; expr = Ast.show_as<span data-count="50">t</span> a
-       | <span data-count="0">P</span>arseError _ -&gt; false)
-;;
-
 let%test "QCheck test" =
-  <span data-count="1">l</span>et res =
-    QCheck_runner.run_tests
-      ~long:true
-      ~verbose:true
-      [ roundtrip_test_1; roundtrip_test_2 ]
-  in
+  <span data-count="1">l</span>et res = QCheck_runner.run_tests ~long:true ~verbose:true [ roundtrip_test ] in
   <span data-count="1">r</span>es = 0
 ;;
 </code></pre>
