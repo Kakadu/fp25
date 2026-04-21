@@ -50,8 +50,8 @@ let%expect_test "Correct parsing" =
   [%expect "Abs(a, Neg(IfThenElse(a, 1, 2)))"];
   "let a = 1 in let b = 2 in let c = 3 in (a + b + c)" |> parse_and_print;
   [%expect "Let(a, 1, Let(b, 2, Let(c, 3, Add(Add(a, b), c))))"];
-  "exception DivisionByZero" |> parse_and_print;
-  [%expect "Exception(DivisionByZero)"];
+  "let exception DivisionByZero in (1 + 2)" |> parse_and_print;
+  [%expect "Exception(DivisionByZero, Add(1, 2))"];
   "raise 0" |> parse_and_print;
   [%expect "Raise(0)"];
   "raise (if a = 0 then true else false)" |> parse_and_print;
@@ -62,9 +62,9 @@ let%expect_test "Correct parsing" =
 
 let%expect_test "Invalid expressions" =
   "( )" |> parse_and_print;
-  [%expect {|Syntax error: "( )"|}];
+  [%expect {|Syntax error: ")"|}];
   "(1 $ 2" |> parse_and_print;
-  [%expect {|Syntax error: "(1 $ 2"|}];
+  [%expect {|Syntax error: "$ 2"|}];
   "var & mask)" |> parse_and_print;
   [%expect {|Unparsed symbols: "& mask)"|}];
   "var += 1" |> parse_and_print;
@@ -72,11 +72,11 @@ let%expect_test "Invalid expressions" =
   "(567 / 3) + (567 % 3" |> parse_and_print;
   [%expect {|Unparsed symbols: "+ (567 % 3"|}];
   "(call 1invalid2identifier)" |> parse_and_print;
-  [%expect {|Syntax error: "(call 1invalid2identifier)"|}];
+  [%expect {|Syntax error: "1invalid2identifier)"|}];
   "+ 1 2 3" |> parse_and_print;
   [%expect {|Syntax error: "+ 1 2 3"|}];
   "(1, 2, 3 helloWorld)" |> parse_and_print;
-  [%expect {|Syntax error: "(1, 2, 3 helloWorld)"|}];
+  [%expect {|Syntax error: ", 2, 3 helloWorld)"|}];
   "fun x y ->" |> parse_and_print;
   [%expect {|Syntax error: "fun x y ->"|}];
   "if a <> 0 then 1" |> parse_and_print;
@@ -90,15 +90,15 @@ let%expect_test "Invalid expressions" =
   "let true = 1 in false" |> parse_and_print;
   [%expect {|Syntax error: "let true = 1 in false"|}];
   "(1, 2, (if, then))" |> parse_and_print;
-  [%expect {|Syntax error: "(1, 2, (if, then))"|}];
+  [%expect {|Syntax error: ", 2, (if, then))"|}];
   "(then, 3)" |> parse_and_print;
-  [%expect {|Syntax error: "(then, 3)"|}];
+  [%expect {|Syntax error: "then, 3)"|}];
   "let var = 1" |> parse_and_print;
   [%expect {|Syntax error: "let var = 1"|}];
   "exception" |> parse_and_print;
-  [%expect {|Unexpected end of input|}];
+  [%expect {|Syntax error: "exception"|}];
   "exception if" |> parse_and_print;
-  [%expect {|Syntax error: "if"|}]
+  [%expect {|Syntax error: "exception if"|}]
 ;;
 
 let same lhs rhs =
@@ -233,17 +233,17 @@ let gen_ast_depth =
               sub
               sub_small )
         ; 1, map (fun expr -> Ast.Raise expr) sub
+        ; 1, map (fun expr -> Ast.Exception ("Exception", expr)) sub
         ]))
 ;;
 
 let gen_ast limit = Gen.sized (fun size -> gen_ast_depth (min size limit))
-let gen_expr = Gen.map Ast.show_ast (gen_ast 5)
 
-let roundtrip_test_1 =
+let roundtrip_test =
   Test.make
     ~name:"Parser round-trip 1"
-    ~count:50
-    (make ~print:Ast.show_ast (gen_ast 7))
+    ~count:100
+    (make ~print:Ast.show_ast (gen_ast 8))
     (fun ast ->
       let string = Ast.show_ast ast in
       match Parser.parse_line string with
@@ -251,23 +251,7 @@ let roundtrip_test_1 =
       | ParseError _ -> false)
 ;;
 
-let roundtrip_test_2 =
-  Test.make
-    ~name:"Parser round-trip 2"
-    ~count:50
-    (make ~print:Fun.id gen_expr)
-    (fun expr ->
-       match Parser.parse_line expr with
-       | Parsed (a, _) -> expr = Ast.show_ast a
-       | ParseError _ -> false)
-;;
-
 let%test "QCheck test" =
-  let res =
-    QCheck_runner.run_tests
-      ~long:true
-      ~verbose:true
-      [ roundtrip_test_1; roundtrip_test_2 ]
-  in
+  let res = QCheck_runner.run_tests ~long:true ~verbose:true [ roundtrip_test ] in
   res = 0
 ;;

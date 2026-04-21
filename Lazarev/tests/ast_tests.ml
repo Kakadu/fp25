@@ -93,7 +93,6 @@ let%test "Applications & abstractions" =
     "((((fun _ -> fun a -> 12) (x1))) (x2))"
 ;;
 
-let declare_excepttion name = Ast.Exception name
 let try_with left name right = Ast.TryWith (left, name, right)
 let raise expr = Ast.Raise expr
 
@@ -109,11 +108,4 @@ let%test "Exceptions 1" =
 
 let%test "Exceptions 2" =
   expect (raise (abs (name "x") (bool true))) "Raise(Abs(x, true))" "raise fun x -> true"
-;;
-
-let%test "Exceptions 3" =
-  expect
-    (declare_excepttion "DivisionByZero")
-    "Exception(DivisionByZero)"
-    "exception DivisionByZero"
 ;;

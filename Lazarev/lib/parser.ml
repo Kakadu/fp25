@@ -243,6 +243,13 @@ let atom =
   in
   let let_expr = letrec "let" Ast.Let in
   let let_rec_expr = letrec "let rec" Ast.LetRec in
+  let let_exception parser =
+    let* _ = ws0 *> chars "let exception" in
+    let* name = ws1 *> exception_identifier in
+    let* _ = ws1 *> chars "in" in
+    let* expr = ws1 *> parser in
+    return (Ast.Exception (name, expr))
+  in
   let raise_expr parser =
     let* _ = chars "raise" in
     let* expr = ws1 *> parser in
@@ -268,6 +275,7 @@ let atom =
         <|> if_expr atom inner
         <|> let_expr atom inner
         <|> let_rec_expr atom inner
+        <|> let_exception inner
         <|> raise_expr inner
         <|> trywith_expr atom inner
         <|> parens atom)
@@ -292,12 +300,6 @@ let atom =
       |])
 ;;
 
-let exception_decl =
-  let* _ = ws0 *> chars "exception" in
-  let* name = ws1 *> exception_identifier <* ws0 in
-  return (Ast.Exception name)
-;;
-
 let wrap_result = function
   | Parsed (a, rest) when rest = [] -> Parsed (a, rest)
   | Parsed (_, rest) -> ParseError (UnexpectedRest (string_of_chars rest))
@@ -306,7 +308,7 @@ let wrap_result = function
 
 let parse_line line =
   let expr = ws0 *> atom <* ws0 in
-  chars_of_string line |> (expr <|> exception_decl) |> wrap_result
+  chars_of_string line |> expr |> wrap_result
 ;;
 
 let show_error = function

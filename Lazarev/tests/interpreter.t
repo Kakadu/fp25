@@ -291,6 +291,10 @@ Test exceptions
   Error: Unbound variable "Undefined"
 
   $ ../bin/REPL.exe <<EOF
+  > let exception E1 in 12
+  int: 12
+
+  $ ../bin/REPL.exe <<EOF
   > raise 42
   Error: Types mismatch: "exception" and "int"
 
@@ -313,8 +317,8 @@ Test some infinite recursions and exceptions
   Raised: "StepsOverflow"
 
   $ ../bin/REPL.exe --steps 100 <<EOF
-  > try (let omega = ((fun x -> (x x)) (fun x -> (x x))) in omega) with StepsOverflow -> 0
-  int: 0
+  > let exception HeHe in try (let omega = ((fun x -> (x x)) (fun x -> (x x))) in omega) with StepsOverflow -> raise HeHe
+  Raised: "HeHe"
 
   $ ../bin/REPL.exe --steps 100 <<EOF
   > try (let omega = ((fun x -> (x x)) (fun x -> (x x))) in omega) with StepsOverflow -> try (let omega = ((fun x -> (x x)) (fun x -> (x x))) in omega) with StepsOverflow -> 1

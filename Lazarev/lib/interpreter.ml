@@ -216,9 +216,12 @@ module Result (S : Utils.STATE_MONAD) = struct
           | EvalRaise e -> raise e
           | EvalError e -> fail e)
        | _ -> fail InvalidApplication)
-    | Ast.Exception name ->
+    | Ast.Exception (name, expr) ->
       let v = Exception name in
-      update_vars (Ast.Real name) v >>= fun _ -> return v
+      update_vars (Ast.Real name) v
+      >>= fun _ ->
+      let* v = eval expr in
+      return v
     | Ast.Raise expr ->
       get_vars
       >>= fun vars ->
