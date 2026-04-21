@@ -156,8 +156,8 @@ let term =
     return (Ast.Int (int_of_string (string_of_chars chars)))
   in
   let boolean =
-    let parser_true = chars "false" >>| fun _ -> Ast.Bool false in
-    let parser_false = chars "true" >>| fun _ -> Ast.Bool true in
+    let parser_true = chars "true" >>| fun _ -> Ast.Bool true in
+    let parser_false = chars "false" >>| fun _ -> Ast.Bool false in
     parser_true <|> parser_false
   in
   let variable =

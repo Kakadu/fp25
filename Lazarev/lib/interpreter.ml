@@ -58,39 +58,39 @@ let rec show_value_type = function
   | BuiltinAbstraction _ -> "<built-in>"
 ;;
 
-module Result (ST : Utils.STATE_MONAD) = struct
-  let return x = ST.return (Eval x)
-  let fail e = ST.return (EvalError e)
-  let raise e = ST.return (EvalRaise e)
+module Result (S : Utils.STATE_MONAD) = struct
+  let return x = S.return (Eval x)
+  let fail e = S.return (EvalError e)
+  let raise e = S.return (EvalRaise e)
 
   (* Two different bind operators here *)
   (* '>>=' is used for State *)
   (* 'let*' is used for Eval *)
 
-  let ( >>= ) = ST.bind
+  let ( >>= ) = S.bind
 
   let ( let* ) x transform =
-    ST.bind x (function
+    S.bind x (function
       | Eval x -> transform x
       | EvalRaise e -> raise e
       | EvalError e -> fail e)
   ;;
 
-  let get_vars = ST.bind ST.read (fun env -> ST.return (fst env))
-  let get_limit = ST.bind ST.read (fun env -> ST.return (snd env))
+  let get_vars = S.bind S.read (fun env -> S.return (fst env))
+  let get_limit = S.bind S.read (fun env -> S.return (snd env))
 
   let update_vars var value =
-    ST.bind ST.read (fun (vars, limit) -> ST.write ((var, value) :: vars, limit))
+    S.bind S.read (fun (vars, limit) -> S.write ((var, value) :: vars, limit))
   ;;
 
-  let set_vars vars = ST.bind ST.read (fun env -> ST.write (vars, snd env))
-  let set_limit limit = ST.bind ST.read (fun env -> ST.write (fst env, limit))
+  let set_vars vars = S.bind S.read (fun env -> S.write (vars, snd env))
+  let set_limit limit = S.bind S.read (fun env -> S.write (fst env, limit))
 
   let update_limit =
-    ST.bind ST.read (function
-      | _, Unlimited -> ST.return ()
-      | env, Limited n when n > 0 -> ST.write (env, Limited (n - 1))
-      | _, Limited _ -> ST.return ())
+    S.bind S.read (function
+      | _, Unlimited -> S.return ()
+      | env, Limited n when n > 0 -> S.write (env, Limited (n - 1))
+      | _, Limited _ -> S.return ())
   ;;
 
   let eval_unop operator expr =
@@ -231,7 +231,7 @@ module Result (ST : Utils.STATE_MONAD) = struct
       >>= fun saved_limit ->
       get_vars
       >>= fun saved_vars ->
-      ST.bind (eval e1) (function
+      S.bind (eval e1) (function
         | Eval x -> return x
         | EvalRaise name' when String.equal name' name ->
           set_limit saved_limit
