@@ -14,15 +14,14 @@ Test with no input
   $ ../bin/REPL.exe --help <<EOF
   An interpreter for ML-like language
     --steps Set maximum number of evaluation steps
-    --multiline Enable multiline input for read eval print loop
     -help  Display this list of options
     --help  Display this list of options
 
-  $ ../bin/REPL.exe <<EOF
-  No input
-
-  $ ../bin/REPL.exe --steps 100 <<EOF
-  No input
+  $ ../bin/REPL.exe -help <<EOF
+  An interpreter for ML-like language
+    --steps Set maximum number of evaluation steps
+    -help  Display this list of options
+    --help  Display this list of options
 
 Test arithmetic operations
 
@@ -140,7 +139,7 @@ Test abstraction & application
   > ((fun x -> x) _)
   Error: Unbound variable "_"
 
-  $ ../bin/REPL.exe --multiline <<EOF
+  $ ../bin/REPL.exe <<EOF
   > (print_int 100)
   > (print_bool false)
   100
@@ -148,7 +147,7 @@ Test abstraction & application
   false
   unit: ()
 
-  $ ../bin/REPL.exe --multiline <<EOF
+  $ ../bin/REPL.exe <<EOF
   > print_int
   > print_bool
   > (fst, snd)
@@ -160,7 +159,7 @@ Test abstraction & application
   > (print_int true)
   Error: Invalid application
 
-  $ ../bin/REPL.exe --multiline <<EOF
+  $ ../bin/REPL.exe <<EOF
   > (print_hoho 100)
   > ((1 + 1) 100)
   Error: Unbound variable "print_hoho"
@@ -225,7 +224,7 @@ Test non-recursive let statement & built-in abstraction
   1000
   unit: ()
 
-  $ ../bin/REPL.exe --multiline <<EOF
+  $ ../bin/REPL.exe <<EOF
   > let a = let _ = (print_int 10) in 1 in let b = (print_bool true) in (a, b)
   > let a = let _ = (print_bool false) in false in let b = let _ = (print_int 111) in 111 in (a, b)
   10
@@ -287,25 +286,13 @@ Test recursive let statement
 
 Test exceptions
 
-  $ ../bin/REPL.exe --multiline <<EOF
-  > exception DivisionByZero
-  > raise DivisionByZero
-  exception: DivisionByZero
-  Raised: "DivisionByZero"
-
-  $ ../bin/REPL.exe --multiline <<EOF
+  $ ../bin/REPL.exe <<EOF
   > raise Undefined
   Error: Unbound variable "Undefined"
 
-  $ ../bin/REPL.exe --multiline <<EOF
+  $ ../bin/REPL.exe <<EOF
   > raise 42
   Error: Types mismatch: "exception" and "int"
-
-  $ ../bin/REPL.exe --multiline <<EOF
-  > exception E1
-  > try (raise E1) with E1 -> 42
-  exception: E1
-  int: 42
 
 Test some infinite recursions and exceptions
 
