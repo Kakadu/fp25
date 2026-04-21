@@ -416,8 +416,8 @@ type t =
   | Raise of t
 
 let show_name = function
-  | <span data-count="296">W</span>ildcard -&gt; "_"
-  | <span data-count="726">R</span>eal name -&gt; name
+  | <span data-count="130">W</span>ildcard -&gt; "_"
+  | <span data-count="498">R</span>eal name -&gt; name
 ;;
 
 let rec show_ast_verbose = function
@@ -465,68 +465,68 @@ let rec show_ast_verbose = function
 ;;
 
 let show_pretty_unary_operation = function
-  | <span data-count="50">N</span>eg -&gt; "-"
-  | <span data-count="63">N</span>ot -&gt; "!"
+  | <span data-count="31">N</span>eg -&gt; "-"
+  | <span data-count="29">N</span>ot -&gt; "!"
 ;;
 
 let show_pretty_binary_operation = function
-  | <span data-count="32">A</span>dd -&gt; "+"
+  | <span data-count="15">A</span>dd -&gt; "+"
   | <span data-count="21">S</span>ub -&gt; "-"
-  | <span data-count="13">M</span>ul -&gt; "*"
-  | <span data-count="9">D</span>iv -&gt; "/"
-  | <span data-count="20">M</span>od -&gt; "mod"
-  | <span data-count="10">A</span>nd -&gt; "&amp;&amp;"
-  | <span data-count="15">O</span>r -&gt; "||"
-  | <span data-count="18">E</span>qual -&gt; "="
-  | <span data-count="29">N</span>otEqual -&gt; "&lt;&gt;"
-  | <span data-count="19">L</span>ess -&gt; "&lt;"
-  | <span data-count="19">L</span>essEqual -&gt; "&lt;="
-  | <span data-count="15">G</span>reater -&gt; "&gt;"
-  | <span data-count="24">G</span>reaterEqual -&gt; "&gt;="
+  | <span data-count="9">M</span>ul -&gt; "*"
+  | <span data-count="11">D</span>iv -&gt; "/"
+  | <span data-count="8">M</span>od -&gt; "mod"
+  | <span data-count="16">A</span>nd -&gt; "&amp;&amp;"
+  | <span data-count="13">O</span>r -&gt; "||"
+  | <span data-count="16">E</span>qual -&gt; "="
+  | <span data-count="12">N</span>otEqual -&gt; "&lt;&gt;"
+  | <span data-count="11">L</span>ess -&gt; "&lt;"
+  | <span data-count="7">L</span>essEqual -&gt; "&lt;="
+  | <span data-count="16">G</span>reater -&gt; "&gt;"
+  | <span data-count="13">G</span>reaterEqual -&gt; "&gt;="
 ;;
 
 let show_pretty_rec_flag = function
-  | <span data-count="190">L</span>et -&gt; "let"
-  | <span data-count="62">L</span>etRec -&gt; "let rec"
+  | <span data-count="107">L</span>et -&gt; "let"
+  | <span data-count="29">L</span>etRec -&gt; "let rec"
 ;;
 
 let rec show_ast = function
-  | <span data-count="328">U</span>nit -&gt; "()"
-  | <span data-count="343">I</span>nt value -&gt; string_of_int value
-  | <span data-count="433">B</span>ool value -&gt; string_of_bool value
-  | <span data-count="451">V</span>ar name -&gt; show_name name
-  | <span data-count="126">T</span>uple (first, second, rest) -&gt;
+  | <span data-count="205">U</span>nit -&gt; "()"
+  | <span data-count="232">I</span>nt value -&gt; string_of_int value
+  | <span data-count="250">B</span>ool value -&gt; string_of_bool value
+  | <span data-count="292">V</span>ar name -&gt; show_name name
+  | <span data-count="60">T</span>uple (first, second, rest) -&gt;
     Format.sprintf
       "(%s)"
-      (String.conca<span data-count="126">t</span> ", " (List.ma<span data-count="126">p</span> show_ast (first :: second :: rest)))
-  | <span data-count="113">U</span>naryOp (op, expr) -&gt;
-    Format.sprintf "%s(%s)" (show_pretty_unary_operatio<span data-count="113">n</span> op) (show_as<span data-count="113">t</span> expr)
-  | <span data-count="244">B</span>inaryOp (op, left, right) -&gt;
+      (String.conca<span data-count="60">t</span> ", " (List.ma<span data-count="60">p</span> show_ast (first :: second :: rest)))
+  | <span data-count="60">U</span>naryOp (op, expr) -&gt;
+    Format.sprintf "%s(%s)" (show_pretty_unary_operatio<span data-count="60">n</span> op) (show_as<span data-count="60">t</span> expr)
+  | <span data-count="168">B</span>inaryOp (op, left, right) -&gt;
     Format.sprintf
       "(%s %s %s)"
-      (show_as<span data-count="244">t</span> left)
-      (show_pretty_binary_operatio<span data-count="244">n</span> op)
-      (show_as<span data-count="244">t</span> right)
-  | <span data-count="62">I</span>fThenElse (cond, then_expr, else_expr) -&gt;
+      (show_as<span data-count="168">t</span> left)
+      (show_pretty_binary_operatio<span data-count="168">n</span> op)
+      (show_as<span data-count="168">t</span> right)
+  | <span data-count="78">I</span>fThenElse (cond, then_expr, else_expr) -&gt;
     Format.sprintf
       "if (%s) then (%s) else (%s)"
-      (show_as<span data-count="62">t</span> cond)
-      (show_as<span data-count="62">t</span> then_expr)
-      (show_as<span data-count="62">t</span> else_expr)
-  | <span data-count="252">L</span>etExpr (rf, name, lhs, rhs) -&gt;
+      (show_as<span data-count="78">t</span> cond)
+      (show_as<span data-count="78">t</span> then_expr)
+      (show_as<span data-count="78">t</span> else_expr)
+  | <span data-count="136">L</span>etExpr (rf, name, lhs, rhs) -&gt;
     Format.sprintf
       "%s %s = (%s) in (%s)"
-      (show_pretty_rec_fla<span data-count="252">g</span> rf)
-      (show_nam<span data-count="252">e</span> name)
-      (show_as<span data-count="252">t</span> lhs)
-      (show_as<span data-count="252">t</span> rhs)
-  | <span data-count="261">A</span>bstraction (var, expr) -&gt;
-    Format.sprintf "fun %s -&gt; %s" (show_nam<span data-count="261">e</span> var) (show_as<span data-count="261">t</span> expr)
-  | <span data-count="234">A</span>pplication (lhs, rhs) -&gt; Format.sprintf "((%s) (%s))" (show_as<span data-count="234">t</span> lhs) (show_as<span data-count="234">t</span> rhs)
+      (show_pretty_rec_fla<span data-count="136">g</span> rf)
+      (show_nam<span data-count="136">e</span> name)
+      (show_as<span data-count="136">t</span> lhs)
+      (show_as<span data-count="136">t</span> rhs)
+  | <span data-count="142">A</span>bstraction (var, expr) -&gt;
+    Format.sprintf "fun %s -&gt; %s" (show_nam<span data-count="142">e</span> var) (show_as<span data-count="142">t</span> expr)
+  | <span data-count="138">A</span>pplication (lhs, rhs) -&gt; Format.sprintf "((%s) (%s))" (show_as<span data-count="138">t</span> lhs) (show_as<span data-count="138">t</span> rhs)
   | <span data-count="1">E</span>xception name -&gt; Format.sprintf "exception %s" name
-  | <span data-count="43">T</span>ryWith (lhs, name, rhs) -&gt;
-    Format.sprintf "try (%s) with %s -&gt; (%s)" (show_as<span data-count="43">t</span> lhs) name (show_as<span data-count="43">t</span> rhs)
-  | <span data-count="57">R</span>aise name -&gt; Format.sprintf "raise %s" (show_as<span data-count="57">t</span> name)
+  | <span data-count="37">T</span>ryWith (lhs, name, rhs) -&gt;
+    Format.sprintf "try (%s) with %s -&gt; (%s)" (show_as<span data-count="37">t</span> lhs) name (show_as<span data-count="37">t</span> rhs)
+  | <span data-count="39">R</span>aise name -&gt; Format.sprintf "raise %s" (show_as<span data-count="39">t</span> name)
 ;;
 </code></pre>
       </div>

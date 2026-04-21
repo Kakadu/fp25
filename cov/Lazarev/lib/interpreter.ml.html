@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>interpreter.ml &mdash; Coverage report</title>
-    <meta name="description" content="95.30% coverage in lib/interpreter.ml">
+    <meta name="description" content="91.88% coverage in lib/interpreter.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,13 +15,17 @@
           <span class="dirname">lib/</span>interpreter.ml
         </a>
       </h1>
-      <h2>95.30%</h2>
+      <h2>91.88%</h2>
     </div>
     <div id="navbar">
+      <span class="unvisited" style="top:17.83%"></span>
       <span class="unvisited" style="top:29.62%"></span>
       <span class="unvisited" style="top:37.26%"></span>
       <span class="unvisited" style="top:37.90%"></span>
       <span class="unvisited" style="bottom:31.21%"></span>
+      <span class="unvisited" style="bottom:30.25%"></span>
+      <span class="unvisited" style="bottom:29.62%"></span>
+      <span class="unvisited" style="bottom:27.71%"></span>
       <span class="unvisited" style="bottom:25.16%"></span>
       <span class="unvisited" style="bottom:22.61%"></span>
       <span class="unvisited" style="bottom:22.29%"></span>
@@ -29,6 +33,7 @@
       <span class="unvisited" style="bottom:14.33%"></span>
       <span class="unvisited" style="bottom:12.42%"></span>
       <span class="unvisited" style="bottom:12.10%"></span>
+      <span class="unvisited" style="bottom:3.82%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -88,7 +93,7 @@
 <a id="L53"></a><span class="visited"> </span>
 <a id="L54"></a><span class="visited"> </span>
 <a id="L55"></a><span class="visited"> </span>
-<a id="L56"></a><span class="visited"> </span>
+<a id="L56"></a><span class="unvisited"> </span>
 <a id="L57"></a><span class="visited"> </span>
 <a id="L58"></a><span class="visited"> </span>
 <a id="L59"></a><span > </span>
@@ -251,15 +256,15 @@
 <a id="L216"></a><span class="unvisited"> </span>
 <a id="L217"></a><span class="visited"> </span>
 <a id="L218"></a><span class="visited"> </span>
-<a id="L219"></a><span class="visited"> </span>
+<a id="L219"></a><span class="unvisited"> </span>
 <a id="L220"></a><span > </span>
-<a id="L221"></a><span class="visited"> </span>
+<a id="L221"></a><span class="unvisited"> </span>
 <a id="L222"></a><span class="visited"> </span>
 <a id="L223"></a><span > </span>
 <a id="L224"></a><span > </span>
 <a id="L225"></a><span class="visited"> </span>
 <a id="L226"></a><span class="visited"> </span>
-<a id="L227"></a><span class="visited"> </span>
+<a id="L227"></a><span class="unvisited"> </span>
 <a id="L228"></a><span class="visited"> </span>
 <a id="L229"></a><span class="visited"> </span>
 <a id="L230"></a><span > </span>
@@ -334,7 +339,7 @@
 <a id="L299"></a><span class="visited"> </span>
 <a id="L300"></a><span class="visited"> </span>
 <a id="L301"></a><span class="visited"> </span>
-<a id="L302"></a><span class="visited"> </span>
+<a id="L302"></a><span class="unvisited"> </span>
 <a id="L303"></a><span class="visited"> </span>
 <a id="L304"></a><span > </span>
 <a id="L305"></a><span > </span>
@@ -704,61 +709,61 @@ and value =
 module State : Utils.STATE_MONAD = struct
   type ('s, 'a) t = 's -&gt; 's * 'a
 
-  let return x st = <span data-count="790146">s</span>t, x
+  let return x st = <span data-count="790100">s</span>t, x
 
   let bind x transform state =
-    <span data-count="1232337">l</span>et st, x = x state in
-    <span data-count="1232337">t</span>ransform x st
+    <span data-count="1232265">l</span>et st, x = x state in
+    <span data-count="1232265">t</span>ransform x st
   ;;
 
-  let read : ('st, 'st) t = fun state -&gt; <span data-count="398226">s</span>tate, state
-  let write : 'st -&gt; ('st, unit) t = fun s _ -&gt; <span data-count="44039">s</span>, ()
-  let run func = <span data-count="74">f</span>unc
+  let read : ('st, 'st) t = fun state -&gt; <span data-count="398200">s</span>tate, state
+  let write : 'st -&gt; ('st, unit) t = fun s _ -&gt; <span data-count="44035">s</span>, ()
+  let run func = <span data-count="70">f</span>unc
 end
 
 let rec show_value_type = function
   | <span data-count="5">U</span>nit -&gt; "unit"
-  | <span data-count="51">I</span>nt _ -&gt; "int"
+  | <span data-count="50">I</span>nt _ -&gt; "int"
   | <span data-count="14">B</span>ool _ -&gt; "bool"
   | <span data-count="15">T</span>uple (t1, t2, ts) -&gt; String.concat " * " (List.ma<span data-count="15">p</span> show_value_type (t1 :: t2 :: ts))
-  | <span data-count="2">E</span>xception _ -&gt; "exception"
+  | <span data-count="0">E</span>xception _ -&gt; "exception"
   | <span data-count="2">C</span>losure _ -&gt; "&lt;closure&gt;"
   | <span data-count="4">B</span>uiltinAbstraction _ -&gt; "&lt;built-in&gt;"
 ;;
 
-module Result (ST : Utils.STATE_MONAD) = struct
-  let return x = <span data-count="431698">S</span>T.return (Eval x)
-  let fail e = <span data-count="22">S</span>T.return (EvalError e)
-  let raise e = <span data-count="4239">S</span>T.return (EvalRaise e)
+module Result (S : Utils.STATE_MONAD) = struct
+  let return x = <span data-count="431676">S</span>.return (Eval x)
+  let fail e = <span data-count="22">S</span>.return (EvalError e)
+  let raise e = <span data-count="4237">S</span>.return (EvalRaise e)
 
   (* Two different bind operators here *)
   (* '&gt;&gt;=' is used for State *)
   (* 'let*' is used for Eval *)
 
-  let ( &gt;&gt;= ) = ST.bind
+  let ( &gt;&gt;= ) = S.bind
 
   let ( let* ) x transform =
-    <span data-count="435881">S</span>T.bind x (function
-      | <span data-count="431649">E</span>val x -&gt; transform x
+    <span data-count="435862">S</span>.bind x (function
+      | <span data-count="431630">E</span>val x -&gt; transform x
       | <span data-count="4225">E</span>valRaise e -&gt; raise e
       | <span data-count="7">E</span>valError e -&gt; fail e)
   ;;
 
-  let get_vars = ST.bin<span data-count="74">d</span> ST.read (fun env -&gt; <span data-count="66890">S</span>T.return (fs<span data-count="66890">t</span> env))
-  let get_limit = ST.bin<span data-count="74">d</span> ST.read (fun env -&gt; <span data-count="149940">S</span>T.return (sn<span data-count="149940">d</span> env))
+  let get_vars = S.bin<span data-count="70">d</span> S.read (fun env -&gt; <span data-count="66885">S</span>.return (fs<span data-count="66885">t</span> env))
+  let get_limit = S.bin<span data-count="70">d</span> S.read (fun env -&gt; <span data-count="149931">S</span>.return (sn<span data-count="149931">d</span> env))
 
   let update_vars var value =
-    <span data-count="32">S</span>T.bind ST.read (fun (vars, limit) -&gt; <span data-count="32">S</span>T.write ((var, value) :: vars, limit))
+    <span data-count="30">S</span>.bind S.read (fun (vars, limit) -&gt; <span data-count="30">S</span>.write ((var, value) :: vars, limit))
   ;;
 
-  let set_vars vars = <span data-count="31486">S</span>T.bind ST.read (fun env -&gt; <span data-count="31486">S</span>T.write (vars, sn<span data-count="31486">d</span> env))
-  let set_limit limit = <span data-count="4">S</span>T.bind ST.read (fun env -&gt; <span data-count="4">S</span>T.write (fs<span data-count="4">t</span> env, limit))
+  let set_vars vars = <span data-count="31485">S</span>.bind S.read (fun env -&gt; <span data-count="31485">S</span>.write (vars, sn<span data-count="31485">d</span> env))
+  let set_limit limit = <span data-count="3">S</span>.bind S.read (fun env -&gt; <span data-count="3">S</span>.write (fs<span data-count="3">t</span> env, limit))
 
   let update_limit =
-    ST.bin<span data-count="74">d</span> ST.read (function
-      | <span data-count="137357">_</span>, Unlimited -&gt; ST.return ()
-      | <span data-count="12517">e</span>nv, Limited n when n &gt; 0 -&gt; <span data-count="12517">S</span>T.write (env, Limited (n - 1))
-      | <span data-count="0">_</span>, Limited _ -&gt; ST.return ())
+    S.bin<span data-count="70">d</span> S.read (function
+      | <span data-count="137349">_</span>, Unlimited -&gt; S.return ()
+      | <span data-count="12517">e</span>nv, Limited n when n &gt; 0 -&gt; <span data-count="12517">S</span>.write (env, Limited (n - 1))
+      | <span data-count="0">_</span>, Limited _ -&gt; S.return ())
   ;;
 
   let eval_unop operator expr =
@@ -792,33 +797,33 @@ module Result (ST : Utils.STATE_MONAD) = struct
   ;;
 
   let rec lookup name vars =
-    <span data-count="63025">m</span>atch name with
+    <span data-count="63021">m</span>atch name with
     | <span data-count="1">A</span>st.Wildcard -&gt; None
-    | <span data-count="63024">A</span>st.Real name' -&gt;
+    | <span data-count="63020">A</span>st.Real name' -&gt;
       (match vars with
        | <span data-count="4">[</span>] -&gt; None
-       | <span data-count="62821">(</span>Ast.Real str, value) :: _ when String.equa<span data-count="62821">l</span> str name' -&gt; <span data-count="49058">S</span>ome value
+       | <span data-count="62817">(</span>Ast.Real str, value) :: _ when String.equa<span data-count="62817">l</span> str name' -&gt; <span data-count="49054">S</span>ome value
        | <span data-count="13962">_</span> :: tl -&gt; lookup name tl)
   ;;
 
   let rec eval expr =
-    <span data-count="149884">l</span>et* _ =
+    <span data-count="149876">l</span>et* _ =
       get_limit
-      &gt;&gt;<span data-count="149884">=</span> function
+      &gt;&gt;<span data-count="149876">=</span> function
       | <span data-count="10">L</span>imited 0 -&gt; raise "StepsOverflow"
-      | <span data-count="149874">_</span> -&gt; return ()
+      | <span data-count="149866">_</span> -&gt; return ()
     in
-    <span data-count="149874">l</span>et* _ = update_limit &gt;&gt;<span data-count="149874">=</span> fun _ -&gt; <span data-count="149874">r</span>eturn () in
-    <span data-count="149874">m</span>atch expr with
+    <span data-count="149866">l</span>et* _ = update_limit &gt;&gt;<span data-count="149866">=</span> fun _ -&gt; <span data-count="149866">r</span>eturn () in
+    <span data-count="149866">m</span>atch expr with
     | <span data-count="1">A</span>st.Unit -&gt; return Unit
-    | <span data-count="34677">A</span>st.Int int -&gt; return (Int int)
+    | <span data-count="34676">A</span>st.Int int -&gt; return (Int int)
     | <span data-count="27">A</span>st.Bool bool -&gt; return (Bool bool)
-    | <span data-count="49061">A</span>st.Var name -&gt;
+    | <span data-count="49059">A</span>st.Var name -&gt;
       get_vars
       &gt;&gt;= fun vars -&gt;
-      <span data-count="49061">(</span>match lookup name vars with
+      <span data-count="49059">(</span>match lookup name vars with
        | <span data-count="5">N</span>one -&gt; fail (UnboundVariable name)
-       | <span data-count="49056">S</span>ome v -&gt; return v)
+       | <span data-count="49054">S</span>ome v -&gt; return v)
     | <span data-count="15">A</span>st.Tuple (v1, v2, vs) -&gt;
       let* v1 = eva<span data-count="15">l</span> v1 in
       <span data-count="15">l</span>et* v2 = eva<span data-count="15">l</span> v2 in
@@ -884,30 +889,30 @@ module Result (ST : Utils.STATE_MONAD) = struct
           | <span data-count="0">E</span>valRaise e -&gt; raise e
           | <span data-count="1">E</span>valError e -&gt; fail e)
        | <span data-count="1">_</span> -&gt; fail InvalidApplication)
-    | <span data-count="2">A</span>st.Exception name -&gt;
+    | <span data-count="0">A</span>st.Exception name -&gt;
       let v = Exception name in
-      update_var<span data-count="2">s</span> (Ast.Real name) v &gt;&gt;= fun _ -&gt; <span data-count="2">r</span>eturn v
-    | <span data-count="4">A</span>st.Raise expr -&gt;
+      update_var<span data-count="0">s</span> (Ast.Real name) v &gt;&gt;= fun _ -&gt; <span data-count="0">r</span>eturn v
+    | <span data-count="2">A</span>st.Raise expr -&gt;
       get_vars
       &gt;&gt;= fun vars -&gt;
-      <span data-count="4">l</span>et* v = eva<span data-count="4">l</span> expr in
-      <span data-count="3">(</span>match v with
-       | <span data-count="2">E</span>xception name as e when looku<span data-count="2">p</span> (Ast.Real name) vars = Some e -&gt; <span data-count="2">r</span>aise name
+      <span data-count="2">l</span>et* v = eva<span data-count="2">l</span> expr in
+      <span data-count="1">(</span>match v with
+       | <span data-count="0">E</span>xception name as e when looku<span data-count="0">p</span> (Ast.Real name) vars = Some e -&gt; <span data-count="0">r</span>aise name
        | <span data-count="1">_</span> -&gt; fail (TypesMismatch ("exception", show_value_typ<span data-count="1">e</span> v)))
-    | <span data-count="4">A</span>st.TryWith (e1, name, e2) -&gt;
+    | <span data-count="3">A</span>st.TryWith (e1, name, e2) -&gt;
       get_limit
       &gt;&gt;= fun saved_limit -&gt;
-      <span data-count="4">g</span>et_vars
+      <span data-count="3">g</span>et_vars
       &gt;&gt;= fun saved_vars -&gt;
-      <span data-count="4">S</span>T.bind (eva<span data-count="4">l</span> e1) (function
+      <span data-count="3">S</span>.bind (eva<span data-count="3">l</span> e1) (function
         | <span data-count="0">E</span>val x -&gt; return x
-        | <span data-count="4">E</span>valRaise name' when String.equa<span data-count="4">l</span> name' name -&gt;
-          <span data-count="4">s</span>et_limi<span data-count="4">t</span> saved_limit
+        | <span data-count="3">E</span>valRaise name' when String.equa<span data-count="3">l</span> name' name -&gt;
+          <span data-count="3">s</span>et_limi<span data-count="3">t</span> saved_limit
           &gt;&gt;= fun _ -&gt;
-          <span data-count="4">s</span>et_var<span data-count="4">s</span> saved_vars
+          <span data-count="3">s</span>et_var<span data-count="3">s</span> saved_vars
           &gt;&gt;= fun _ -&gt;
-          <span data-count="4">l</span>et* v2 = eva<span data-count="4">l</span> e2 in
-          <span data-count="4">r</span>eturn v2
+          <span data-count="3">l</span>et* v2 = eva<span data-count="3">l</span> e2 in
+          <span data-count="3">r</span>eturn v2
         | <span data-count="0">E</span>valRaise name -&gt; raise name
         | <span data-count="0">E</span>valError error -&gt; fail error)
   ;;
@@ -951,7 +956,7 @@ let get_builtins =
 ;;
 
 let new_env = get_builtins, Unlimited
-let new_env_limited limit = <span data-count="13">g</span>et_builtins, Limited limit
+let new_env_limited limit = <span data-count="12">g</span>et_builtins, Limited limit
 
 let show_error = function
   | <span data-count="2">I</span>nvalidApplication -&gt; "Invalid application"
@@ -962,23 +967,23 @@ let show_error = function
 ;;
 
 let show_result result =
-  <span data-count="74">l</span>et rec show_eval = function
+  <span data-count="70">l</span>et rec show_eval = function
     | <span data-count="4">U</span>nit -&gt; "()"
-    | <span data-count="44">I</span>nt int -&gt; string_of_int int
+    | <span data-count="43">I</span>nt int -&gt; string_of_int int
     | <span data-count="11">B</span>ool bool -&gt; string_of_bool bool
     | <span data-count="13">T</span>uple (v1, v2, vs) -&gt; String.concat ", " (List.ma<span data-count="13">p</span> show_eval (v1 :: v2 :: vs))
-    | <span data-count="2">E</span>xception name -&gt; name
+    | <span data-count="0">E</span>xception name -&gt; name
     | <span data-count="2">C</span>losure _ | <span data-count="4">B</span>uiltinAbstraction _ -&gt; "?"
   in
   match result with
-  | <span data-count="49">E</span>val value -&gt; Format.sprintf "%s: %s" (show_value_typ<span data-count="49">e</span> value) (show_eva<span data-count="49">l</span> value)
-  | <span data-count="10">E</span>valRaise exception_name -&gt; Format.sprintf "Raised: %S" exception_name
+  | <span data-count="46">E</span>val value -&gt; Format.sprintf "%s: %s" (show_value_typ<span data-count="46">e</span> value) (show_eva<span data-count="46">l</span> value)
+  | <span data-count="9">E</span>valRaise exception_name -&gt; Format.sprintf "Raised: %S" exception_name
   | <span data-count="15">E</span>valError error -&gt; Format.sprintf "Error: %s" (show_erro<span data-count="15">r</span> error)
 ;;
 
 let run env expr =
-  <span data-count="74">l</span>et module R = Result (State) in
-  State.run (R.eva<span data-count="74">l</span> expr) env
+  <span data-count="70">l</span>et module R = Result (State) in
+  State.run (R.eva<span data-count="70">l</span> expr) env
 ;;
 </code></pre>
       </div>

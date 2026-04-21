@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <title>parser_tests.ml &mdash; Coverage report</title>
-    <meta name="description" content="98.19% coverage in tests/parser_tests.ml">
+    <meta name="description" content="98.10% coverage in tests/parser_tests.ml">
     <link rel="stylesheet" href="../coverage.css"/>
     <script src="../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
@@ -15,13 +15,13 @@
           <span class="dirname">tests/</span>parser_tests.ml
         </a>
       </h1>
-      <h2>98.19%</h2>
+      <h2>98.10%</h2>
     </div>
     <div id="navbar">
-      <span class="unvisited" style="top:35.45%"></span>
-      <span class="unvisited" style="top:36.45%"></span>
-      <span class="unvisited" style="bottom:16.05%"></span>
-      <span class="unvisited" style="bottom:12.37%"></span>
+      <span class="unvisited" style="top:38.83%"></span>
+      <span class="unvisited" style="top:39.93%"></span>
+      <span class="unvisited" style="bottom:8.06%"></span>
+      <span class="unvisited" style="bottom:4.03%"></span>
     </div>
     <div id="report">
       <div id="lines-layer">
@@ -294,37 +294,11 @@
 <a id="L266"></a><span class="visited"> </span>
 <a id="L267"></a><span > </span>
 <a id="L268"></a><span > </span>
-<a id="L269"></a><span class="visited"> </span>
+<a id="L269"></a><span > </span>
 <a id="L270"></a><span > </span>
-<a id="L271"></a><span class="visited"> </span>
+<a id="L271"></a><span > </span>
 <a id="L272"></a><span class="visited"> </span>
-<a id="L273"></a><span class="visited"> </span>
-<a id="L274"></a><span > </span>
-<a id="L275"></a><span > </span>
-<a id="L276"></a><span > </span>
-<a id="L277"></a><span class="visited"> </span>
-<a id="L278"></a><span > </span>
-<a id="L279"></a><span > </span>
-<a id="L280"></a><span class="visited"> </span>
-<a id="L281"></a><span > </span>
-<a id="L282"></a><span class="visited"> </span>
-<a id="L283"></a><span class="visited"> </span>
-<a id="L284"></a><span class="visited"> </span>
-<a id="L285"></a><span > </span>
-<a id="L286"></a><span > </span>
-<a id="L287"></a><span > </span>
-<a id="L288"></a><span class="visited"> </span>
-<a id="L289"></a><span > </span>
-<a id="L290"></a><span > </span>
-<a id="L291"></a><span > </span>
-<a id="L292"></a><span > </span>
-<a id="L293"></a><span > </span>
-<a id="L294"></a><span > </span>
-<a id="L295"></a><span > </span>
-<a id="L296"></a><span > </span>
-<a id="L297"></a><span > </span>
-<a id="L298"></a><span class="visited"> </span>
-<a id="L299"></a><span > </span>
+<a id="L273"></a><span > </span>
 </pre>
       </div>
       <div id="text-layer">
@@ -602,32 +576,6 @@
 <a href="#L271">271</a>
 <a href="#L272">272</a>
 <a href="#L273">273</a>
-<a href="#L274">274</a>
-<a href="#L275">275</a>
-<a href="#L276">276</a>
-<a href="#L277">277</a>
-<a href="#L278">278</a>
-<a href="#L279">279</a>
-<a href="#L280">280</a>
-<a href="#L281">281</a>
-<a href="#L282">282</a>
-<a href="#L283">283</a>
-<a href="#L284">284</a>
-<a href="#L285">285</a>
-<a href="#L286">286</a>
-<a href="#L287">287</a>
-<a href="#L288">288</a>
-<a href="#L289">289</a>
-<a href="#L290">290</a>
-<a href="#L291">291</a>
-<a href="#L292">292</a>
-<a href="#L293">293</a>
-<a href="#L294">294</a>
-<a href="#L295">295</a>
-<a href="#L296">296</a>
-<a href="#L297">297</a>
-<a href="#L298">298</a>
-<a href="#L299">299</a>
 </pre>
 <pre><code class="ocaml">[@@@ocaml.text "*/*"]
 
@@ -773,12 +721,12 @@ let gen_real_name =
   <span data-count="3">l</span>et alphanum = oneof [ char_rang<span data-count="3">e</span> 'a' 'z'; char_rang<span data-count="3">e</span> 'A' 'Z'; char_numeral ] in
   <span data-count="3">l</span>et ident =
     map
-      (fun chars -&gt; <span data-count="422">c</span>hars |&gt; List.to_seq |&gt; <span data-count="422">S</span>tring.of_seq)
+      (fun chars -&gt; <span data-count="294">c</span>hars |&gt; List.to_seq |&gt; <span data-count="294">S</span>tring.of_seq)
       (let* first = capital_alpha in
-       <span data-count="422">l</span>et* rest = list_siz<span data-count="422">e</span> (int_rang<span data-count="422">e</span> 1 10) alphanum in
-       <span data-count="422">r</span>eturn (first :: rest))
+       <span data-count="294">l</span>et* rest = list_siz<span data-count="294">e</span> (int_rang<span data-count="294">e</span> 1 10) alphanum in
+       <span data-count="294">r</span>eturn (first :: rest))
   in
-  <span data-count="3">m</span>a<span data-count="3">p</span> (fun s -&gt; <span data-count="422">A</span>st.Real s) ident
+  <span data-count="3">m</span>a<span data-count="3">p</span> (fun s -&gt; <span data-count="294">A</span>st.Real s) ident
 ;;
 
 let gen_any_name =
@@ -814,60 +762,60 @@ let gen_rec_flag = Gen.oneof_weighte<span data-count="3">d</span> [ 5, Gen.retur
 let gen_ast_depth =
   let open Gen in
   fi<span data-count="3">x</span> (fun gen size -&gt;
-    <span data-count="1841">i</span>f size &lt;= 0
+    <span data-count="1223">i</span>f size &lt;= 0
     then
-      <span data-count="850">o</span>neof
-        [ retur<span data-count="850">n</span> Ast.Unit
-        ; ma<span data-count="850">p</span> (fun i -&gt; <span data-count="180">A</span>st.Int i) (int_rang<span data-count="850">e</span> 0 100000)
-        ; ma<span data-count="850">p</span> (fun b -&gt; <span data-count="235">A</span>st.Bool b) bool
-        ; ma<span data-count="850">p</span> (fun n -&gt; <span data-count="230">A</span>st.Var n) gen_real_name
+      <span data-count="571">o</span>neof
+        [ retur<span data-count="571">n</span> Ast.Unit
+        ; ma<span data-count="571">p</span> (fun i -&gt; <span data-count="124">A</span>st.Int i) (int_rang<span data-count="571">e</span> 0 100000)
+        ; ma<span data-count="571">p</span> (fun b -&gt; <span data-count="142">A</span>st.Bool b) bool
+        ; ma<span data-count="571">p</span> (fun n -&gt; <span data-count="168">A</span>st.Var n) gen_real_name
         ]
-    else <span data-count="991">(</span>
+    else <span data-count="652">(</span>
       let sub = gen (size / 2) in
-      <span data-count="991">l</span>et sub_small = gen (size / 3) in
-      <span data-count="991">l</span>et sub_tiny = oneof [ ge<span data-count="991">n</span> 1; ge<span data-count="991">n</span> 2 ] in
-      <span data-count="991">o</span>neof_weighted
-        [ 1, ma<span data-count="991">p</span> (fun i -&gt; <span data-count="32">A</span>st.Int i) (int_rang<span data-count="991">e</span> 0 100000)
-        ; 1, ma<span data-count="991">p</span> (fun b -&gt; <span data-count="39">A</span>st.Bool b) bool
-        ; 1, ma<span data-count="991">p</span> (fun n -&gt; <span data-count="53">A</span>st.Var n) gen_real_name
-        ; 2, map<span data-count="991">2</span> (fun op expr -&gt; <span data-count="71">A</span>st.UnaryOp (op, expr)) gen_unary_operation sub
+      <span data-count="652">l</span>et sub_small = gen (size / 3) in
+      <span data-count="652">l</span>et sub_tiny = oneof [ ge<span data-count="652">n</span> 1; ge<span data-count="652">n</span> 2 ] in
+      <span data-count="652">o</span>neof_weighted
+        [ 1, ma<span data-count="652">p</span> (fun i -&gt; <span data-count="27">A</span>st.Int i) (int_rang<span data-count="652">e</span> 0 100000)
+        ; 1, ma<span data-count="652">p</span> (fun b -&gt; <span data-count="28">A</span>st.Bool b) bool
+        ; 1, ma<span data-count="652">p</span> (fun n -&gt; <span data-count="25">A</span>st.Var n) gen_real_name
+        ; 2, map<span data-count="652">2</span> (fun op expr -&gt; <span data-count="41">A</span>st.UnaryOp (op, expr)) gen_unary_operation sub
         ; ( 4
-          , map<span data-count="991">3</span>
-              (fun op left right -&gt; <span data-count="143">A</span>st.BinaryOp (op, left, right))
+          , map<span data-count="652">3</span>
+              (fun op left right -&gt; <span data-count="100">A</span>st.BinaryOp (op, left, right))
               gen_binary_operation
               sub
               sub )
         ; ( 2
-          , Gen.map<span data-count="991">3</span>
-              (fun first second rest -&gt; <span data-count="78">A</span>st.Tuple (first, second, rest))
+          , Gen.map<span data-count="652">3</span>
+              (fun first second rest -&gt; <span data-count="42">A</span>st.Tuple (first, second, rest))
               sub_tiny
               sub_tiny
-              (list_siz<span data-count="991">e</span> (int_rang<span data-count="991">e</span> 0 5) sub_tiny) )
-        ; 4, map<span data-count="991">2</span> (fun arg expr -&gt; <span data-count="162">A</span>st.Abstraction (arg, expr)) gen_any_name sub
-        ; 4, map<span data-count="991">2</span> (fun func arg -&gt; <span data-count="146">A</span>st.Application (func, arg)) sub_small sub
+              (list_siz<span data-count="652">e</span> (int_rang<span data-count="652">e</span> 0 5) sub_tiny) )
+        ; 4, map<span data-count="652">2</span> (fun arg expr -&gt; <span data-count="94">A</span>st.Abstraction (arg, expr)) gen_any_name sub
+        ; 4, map<span data-count="652">2</span> (fun func arg -&gt; <span data-count="97">A</span>st.Application (func, arg)) sub_small sub
         ; ( 2
-          , map<span data-count="991">3</span>
-              (fun cond on_true on_false -&gt; <span data-count="44">A</span>st.IfThenElse (cond, on_true, on_false))
+          , map<span data-count="652">3</span>
+              (fun cond on_true on_false -&gt; <span data-count="52">A</span>st.IfThenElse (cond, on_true, on_false))
               sub_small
               sub
               sub )
         ; ( 4
-          , map<span data-count="991">4</span>
-              (fun rf name expr1 expr2 -&gt; <span data-count="161">A</span>st.LetExpr (rf, name, expr1, expr2))
+          , map<span data-count="652">4</span>
+              (fun rf name expr1 expr2 -&gt; <span data-count="96">A</span>st.LetExpr (rf, name, expr1, expr2))
               gen_rec_flag
               gen_any_name
               sub_small
               sub )
         ; ( 1
-          , map<span data-count="991">2</span>
-              (fun expr1 expr2 -&gt; <span data-count="27">A</span>st.TryWith (expr1, "Exception", expr2))
+          , map<span data-count="652">2</span>
+              (fun expr1 expr2 -&gt; <span data-count="25">A</span>st.TryWith (expr1, "Exception", expr2))
               sub
               sub_small )
-        ; 1, ma<span data-count="991">p</span> (fun expr -&gt; <span data-count="35">A</span>st.Raise expr) sub
+        ; 1, ma<span data-count="652">p</span> (fun expr -&gt; <span data-count="25">A</span>st.Raise expr) sub
         ]))
 ;;
 
-let gen_ast limit = <span data-count="9">G</span>en.sized (fun size -&gt; <span data-count="140">g</span>en_ast_depth (mi<span data-count="140">n</span> size limit))
+let gen_ast limit = <span data-count="6">G</span>en.sized (fun size -&gt; <span data-count="100">g</span>en_ast_depth (mi<span data-count="100">n</span> size limit))
 let gen_expr = Gen.ma<span data-count="3">p</span> Ast.show_ast (gen_as<span data-count="3">t</span> 5)
 
 let roundtrip_test_1 =
@@ -893,38 +841,12 @@ let roundtrip_test_2 =
        | <span data-count="0">P</span>arseError _ -&gt; false)
 ;;
 
-let parser_idempotent_test =
-  Test.mak<span data-count="3">e</span>
-    ~name:"Parser idempotence"
-    ~count:20
-    (mak<span data-count="3">e</span> ~print:Fun.id gen_expr)
-    (fun expr -&gt;
-       <span data-count="20">l</span>et ast1 = Parser.parse_line expr in
-       <span data-count="20">l</span>et ast2 = Parser.parse_line expr in
-       <span data-count="20">a</span>st1 = ast2)
-;;
-
-let printer_idempotent_test =
-  Test.mak<span data-count="3">e</span>
-    ~name:"Printer idempotence"
-    ~count:20
-    (mak<span data-count="3">e</span> ~print:Ast.show_ast (gen_as<span data-count="3">t</span> 10))
-    (fun ast -&gt;
-      <span data-count="20">l</span>et string1 = Ast.show_ast ast in
-      <span data-count="20">l</span>et string2 = Ast.show_ast ast in
-      <span data-count="20">s</span>tring1 = string2)
-;;
-
 let%test "QCheck test" =
   <span data-count="1">l</span>et res =
     QCheck_runner.run_tests
       ~long:true
       ~verbose:true
-      [ roundtrip_test_1
-      ; roundtrip_test_2
-      ; parser_idempotent_test
-      ; printer_idempotent_test
-      ]
+      [ roundtrip_test_1; roundtrip_test_2 ]
   in
   <span data-count="1">r</span>es = 0
 ;;
