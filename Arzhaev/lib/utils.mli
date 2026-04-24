@@ -14,4 +14,10 @@ val charlst_to_str : char list -> string
 val str_to_charlst : string -> char list
 val get_next_letter : char -> char
 
-module StrSet : Set.S with type elt = string
+module type SET_WITH_TO_LIST = sig
+  include Set.S
+
+  val to_list : t -> elt list
+end
+
+module SetWithToList : functor (S : Set.S) -> SET_WITH_TO_LIST with type elt = S.elt

@@ -3,60 +3,72 @@ open Utils
 
 type input = char list [@@deriving show]
 
-type 'a parse_result = Failed of string | Parsed of 'a * input
+type 'a parse_result =
+  | Failed of string
+  | Parsed of 'a * input
 [@@deriving show]
 
 type 'a parser = input -> 'a parse_result
 
-let keywords =
-  [ "let"; "in"; "if"; "then"; "else"; "fun"; "rec"; "true"; "false" ]
+let keywords = [ "let"; "in"; "if"; "then"; "else"; "fun"; "rec"; "true"; "false" ]
+let return x str = Parsed (x, str)
 
-let return x = fun str -> Parsed (x, str)
-
-let ( >>= ) =
- fun parser f ->
-  fun str ->
-   match parser str with Failed s -> Failed s | Parsed (x, str') -> f x str'
+let ( >>= ) parser f str =
+  match parser str with
+  | Failed s -> Failed s
+  | Parsed (x, str') -> f x str'
+;;
 
 let ( <|> ) p1 p2 str =
-  match p1 str with Failed _ -> p2 str | Parsed _ as ok -> ok
+  match p1 str with
+  | Failed _ -> p2 str
+  | Parsed _ as ok -> ok
+;;
 
 let ( *> ) p1 p2 = p1 >>= fun _ -> p2
-
-let ( <* ) p1 p2 =
-  p1 >>= fun h ->
-  p2 >>= fun _ -> return h
-
+let ( <* ) p1 p2 = p1 >>= fun h -> p2 >>= fun _ -> return h
 let ( let* ) = ( >>= )
-let fail str = fun _ -> Failed str
+let fail str _ = Failed str
 
 let choice = function
   | [] -> fail "choice failed"
   | h :: tl -> List.fold_left ( <|> ) h tl
+;;
 
 let rec many : 'a parser -> 'a list parser =
- fun p s ->
+  fun p s ->
   match p s with
   | Failed _ -> return [] s
   | Parsed (x, rest) -> (many p >>= fun tl -> return (x :: tl)) rest
+;;
+
+let many1 p = p >>= fun x -> many p >>= fun xs -> return (x :: xs)
 
 let satisfy cond = function
   | c :: str when cond c -> return c str
   | _ -> Failed "doesn't satisfy"
+;;
 
 let p_char c = satisfy (Char.equal c)
 
 let p_string str =
   String.fold_left
     (fun acc value ->
-      acc >>= fun h ->
+      acc
+      >>= fun h ->
       let* c = p_char value in
       return (h ^ String.make 1 c))
-    (return "") str
+    (return "")
+    str
+;;
 
 let p_digit =
-  let is_digit = function '0' .. '9' -> true | _ -> false in
+  let is_digit = function
+    | '0' .. '9' -> true
+    | _ -> false
+  in
   satisfy is_digit
+;;
 
 let p_letter =
   let is_letter = function
@@ -65,21 +77,24 @@ let p_letter =
     | _ -> false
   in
   satisfy is_letter
+;;
 
 let p_int =
-  many p_digit >>= fun digits ->
-  if List.length digits > 0 then
-    return (EConst (IConst (int_of_string (charlst_to_str digits))))
+  many p_digit
+  >>= fun digits ->
+  if List.length digits > 0
+  then return (EConst (IConst (int_of_string (charlst_to_str digits))))
   else fail "expected integer"
+;;
 
 let p_float =
   let* l = many p_digit in
   let* _ = p_char '.' in
   let* r = many p_digit in
-  if List.length l > 0 || List.length r > 0 then
-    return
-      (EConst (FConst (float_of_string (charlst_to_str (l @ [ '.' ] @ r)))))
+  if List.length l > 0 || List.length r > 0
+  then return (EConst (FConst (float_of_string (charlst_to_str (l @ [ '.' ] @ r)))))
   else fail "expected float"
+;;
 
 let is_keyword word = List.exists (fun kwd -> word = kwd) keywords
 
@@ -88,6 +103,7 @@ let p_id =
   let* rest = many (p_letter <|> p_digit) in
   let id = charlst_to_str (first :: rest) in
   if is_keyword id then fail "expected id" else return id
+;;
 
 let p_ws = many (p_char ' ' <|> p_char '\t' <|> p_char '\n')
 let token p = p <* p_ws
@@ -111,52 +127,62 @@ let parens p = token (p_char '(') *> token p <* token (p_char ')')
 
 let p_word word =
   token
-    ( many p_letter >>= fun lst ->
-      if charlst_to_str lst = word then return (Word word)
-      else fail "failed to parse word" )
+    (many p_letter
+     >>= fun lst ->
+     if charlst_to_str lst = word then return (Word word) else fail "failed to parse word"
+    )
+;;
 
 let p_bool =
   p_word "true" *> return (EConst (BConst true))
   <|> p_word "false" *> return (EConst (BConst false))
+;;
 
 let p_const = token (p_float <|> p_int <|> p_bool)
 
-let binop_chain binop_lst next_parser =
+let binop_chain binop_lst next_parser left =
   let rec loop left input =
-    ((let* op = token (choice binop_lst) in
-      let* right = token next_parser in
-      loop (EBinOp (op, left, right)))
-    <|> return left)
-      input
+    match token (choice binop_lst) input with
+    | Parsed (op, rest1) ->
+      (match token next_parser rest1 with
+       | Parsed (right, rest2) -> loop (EBinOp (op, left, right)) rest2
+       | Failed _ -> Failed "expected right operand")
+    | Failed _ -> Parsed (left, input)
   in
-  loop
+  loop left
+;;
+
+let rec_label input =
+  match p_word "rec" input with
+  | Parsed (_, input') -> Parsed (Recursive, input')
+  | Failed _ -> Parsed (Nonrecursive, input)
+;;
 
 let p_expr =
   let rec expr input = (token binop_expr_bool1) input
   and binop_expr_bool1 input =
     (let* left = token binop_expr_bool2 in
-     token (binop_chain [ p_or ] binop_expr_bool2 left) <|> return left)
+     token (binop_chain [ p_or ] binop_expr_bool2 left))
       input
   and binop_expr_bool2 input =
     (let* left = token binop_expr_bool3 in
-     token (binop_chain [ p_and ] binop_expr_bool3 left) <|> return left)
+     token (binop_chain [ p_and ] binop_expr_bool3 left))
       input
   and binop_expr_bool3 input =
     (let* left = token binop_expr_bool4 in
-     token (binop_chain [ p_eq; p_neq ] binop_expr_bool4 left) <|> return left)
+     token (binop_chain [ p_eq; p_neq ] binop_expr_bool4 left))
       input
   and binop_expr_bool4 input =
     (let* left = token binop_expr in
-     token (binop_chain [ p_lt; p_gt; p_leq; p_geq ] binop_expr left)
-     <|> return left)
+     token (binop_chain [ p_lt; p_gt; p_leq; p_geq ] binop_expr left))
       input
   and binop_expr input =
     (let* left = token term in
-     token (binop_chain [ p_add; p_sub ] term left) <|> return left)
+     token (binop_chain [ p_add; p_sub ] term left))
       input
   and term input =
     (let* left = token factor in
-     token (binop_chain [ p_mul; p_div ] factor left) <|> return left)
+     token (binop_chain [ p_mul; p_div ] factor left))
       input
   and factor input = func_apply input
   and func_apply input =
@@ -167,8 +193,7 @@ let p_expr =
      | _ -> return (List.fold_left (fun acc arg -> EApp (acc, arg)) left right))
       input
   and atomic input =
-    (token (choice [ parens expr; var; p_const; func; let_expr; if_expr ]))
-      input
+    (token (choice [ parens expr; var; p_const; func; let_expr; if_expr ])) input
   and var input =
     (let* id = token p_id in
      return (EVar id))
@@ -181,10 +206,6 @@ let p_expr =
      let* right = token expr in
      return (ELet (label, left, right)))
       input
-  and rec_label input =
-    match p_word "rec" input with
-    | Parsed (_, input') -> Parsed (Recursive, input')
-    | Failed _ -> Parsed (Nonrecursive, input)
   and let_bind input =
     (let* left = token var <* token (p_char '=') in
      let* right = token expr in
@@ -205,10 +226,25 @@ let p_expr =
      (*TODO: replace with many+*)
      let* _ = token (p_string "->") in
      let* right = token expr in
-     return
-       (List.fold_left (fun acc arg -> EFun (arg, acc)) right (List.rev args)))
+     return (List.fold_left (fun acc arg -> EFun (arg, acc)) right (List.rev args)))
       input
   in
   expr
+;;
 
-let parser str = p_expr (str_to_charlst str)
+let p_toplevel_let =
+  let* _ = token (p_word "let") in
+  let* label = rec_label in
+  let* name = token p_id in
+  let* _ = token (p_char '=') in
+  let* body = token p_expr in
+  return (TopLet (label, Bind (EVar name, body)))
+;;
+
+let p_toplevel_expr =
+  let* e = p_expr in
+  return (TopExpr e)
+;;
+
+let p_toplevel = token (choice [ p_toplevel_let; p_toplevel_expr ])
+let parser str = p_toplevel (str_to_charlst str)

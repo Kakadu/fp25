@@ -1,5 +1,5 @@
 (library
- (name parserlib)
+ (name interpeterlib)
  (preprocess (pps ppx_show))
- (modules Ast Parseexpr Typeinfer Utils Lambdared) 
+ (modules Ast Parser TypeInference Utils Interpreter) 
  (libraries ppx_show.runtime))
