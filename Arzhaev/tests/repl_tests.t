@@ -1,83 +1,104 @@
+Basic arithmetic
+
   $ ../bin/REPL.exe <<EOF
   > 1 + 2
+  > EOF
   - : int
   - : 3
-  EOF
+
+
+Let binding
 
   $ ../bin/REPL.exe <<EOF
   > let x = 10
+  > x + 5
+  > EOF
   val x : int
   val x = 10
-  > x + 5
   - : int
   - : 15
-  EOF
+
+
+Functions
 
   $ ../bin/REPL.exe <<EOF
   > let f = fun x -> x + 1
+  > f 5
+  > EOF
   val f : int -> int
   val f = <fun>
-  > f 5
   - : int
   - : 6
-  EOF
+
+
+Recursion
 
   $ ../bin/REPL.exe <<EOF
-  > let rec fact = fun n ->
-  >   if n = 0 then 1 else n * fact (n - 1)
+  > let rec fact = fun n -> if n = 0 then 1 else n * fact (n - 1)
+  > fact 5
+  > EOF
   val fact : int -> int
   val fact = <fun>
-  > fact 5
   - : int
   - : 120
-  EOF
+
+
+Boolean expressions
 
   $ ../bin/REPL.exe <<EOF
   > true && false
+  > EOF
   - : bool
   - : false
-  EOF
+
+
+If expression
 
   $ ../bin/REPL.exe <<EOF
   > if true then 1 else 2
+  > EOF
   - : int
   - : 1
-  EOF
+
 
 Type errors
 
   $ ../bin/REPL.exe <<EOF
   > 1 + true
+  > EOF
   Type error: Ground type mismatch
-  EOF
+
 
   $ ../bin/REPL.exe <<EOF
   > let x = 1 in x true
-  Type error: TODO
-  EOF
+  > EOF
+  Type error: Unbound value: x
+
 
 Parse errors
 
   $ ../bin/REPL.exe <<EOF
   > let = 10
-  Parse error: 
-  EOF
+  > EOF
+  Parse error: expected id
+
 
 Step limit
 
   $ ../bin/REPL.exe -steps 1 <<EOF
   > let f = fun x -> x + 1
+  > f 10
+  > EOF
   val f : int -> int
   val f = <fun>
-  > f 10
   Error: step limit exceeded
-  EOF
+
 
 Parsetree dump
 
   $ ../bin/REPL.exe -dparsetree <<EOF
   > 1 + 2
-  AST: (EBinOp (Add, (EConst (IConst 1)), (EConst (IConst 2))))
+  > EOF
+  AST: (1 + 2)
   - : int
   - : 3
-  EOF

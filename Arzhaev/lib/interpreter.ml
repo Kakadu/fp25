@@ -33,7 +33,7 @@ type toplevel_value =
   | VLet of string * value
   | VExpr of value
 
-let rec pp_value fmt = function
+let pp_value fmt = function
   | VInt x -> Format.fprintf fmt "%d" x
   | VFloat x -> Format.fprintf fmt "%f" x
   | VBool x -> Format.fprintf fmt "%b" x

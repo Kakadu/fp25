@@ -129,8 +129,7 @@ let p_word word =
   token
     (many p_letter
      >>= fun lst ->
-     if charlst_to_str lst = word then return (Word word) else fail "failed to parse word"
-    )
+     if charlst_to_str lst = word then return word else fail "failed to parse word")
 ;;
 
 let p_bool =
@@ -222,8 +221,7 @@ let p_expr =
       input
   and func input =
     (let* _ = token (p_word "fun") in
-     let* args = many var in
-     (*TODO: replace with many+*)
+     let* args = many1 var in
      let* _ = token (p_string "->") in
      let* right = token expr in
      return (List.fold_left (fun acc arg -> EFun (arg, acc)) right (List.rev args)))

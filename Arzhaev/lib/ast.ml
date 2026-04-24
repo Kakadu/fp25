@@ -23,11 +23,6 @@ type binop =
   | DivF
 [@@deriving show]
 
-type wordtoken =
-  | Keyword of string
-  | Word of string
-[@@deriving show]
-
 type reclabel =
   | Recursive
   | Nonrecursive
@@ -54,6 +49,7 @@ let pp_const fmt = function
   | BConst b -> Format.fprintf fmt "%b" b
 ;;
 
+(* pp_binop *)
 let pp_binop fmt = function
   | Add -> Format.fprintf fmt "+"
   | Sub -> Format.fprintf fmt "-"

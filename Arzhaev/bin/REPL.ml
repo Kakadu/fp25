@@ -1,8 +1,8 @@
-open Interpeterlib.Ast
 open Interpeterlib.Parser
 open Interpeterlib.Interpreter
 open Interpeterlib.TypeInference
 open Interpeterlib.Utils
+open Interpeterlib.Ast
 
 type opts =
   { mutable dump_parsetree : bool
@@ -15,7 +15,7 @@ let run_line opts (env_val, env_ty) line =
     Format.printf "Parse error: %s\n%!" msg;
     env_val, env_ty
   | Parsed (tl, _) ->
-    if opts.dump_parsetree then Format.printf "AST parsed\n%!";
+    if opts.dump_parsetree then Format.printf "AST: %a\n%!" pp_toplevel tl;
     (* type inference *)
     (match run_infer tl env_ty with
      | Failed msg ->
@@ -35,12 +35,14 @@ let run_line opts (env_val, env_ty) line =
 
 let repl opts =
   let rec loop env_val env_ty =
-    Format.printf ">>> %!";
     match read_line () with
     | exception End_of_file -> ()
     | line ->
-      let env_val', env_ty' = run_line opts (env_val, env_ty) line in
-      loop env_val' env_ty'
+      if String.trim line = ""
+      then ()
+      else (
+        let env_val', env_ty' = run_line opts (env_val, env_ty) line in
+        loop env_val' env_ty')
   in
   loop Table.empty Table.empty
 ;;
