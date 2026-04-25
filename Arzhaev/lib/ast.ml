@@ -2,7 +2,6 @@ type const =
   | IConst of int
   | FConst of float
   | BConst of bool
-[@@deriving show]
 
 type binop =
   | Add
@@ -21,12 +20,10 @@ type binop =
   | SubF
   | MulF
   | DivF
-[@@deriving show]
 
 type reclabel =
   | Recursive
   | Nonrecursive
-[@@deriving show]
 
 type expr =
   | EConst of const
@@ -37,7 +34,7 @@ type expr =
   | EFun of expr * expr
   | EApp of expr * expr
 
-and letbind = Bind of expr * expr [@@deriving show]
+and letbind = Bind of expr * expr
 
 type toplevel =
   | TopLet of reclabel * letbind
