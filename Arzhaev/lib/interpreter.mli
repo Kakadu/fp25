@@ -13,6 +13,11 @@ open Ast
     used to prevent non-termination. *)
 type state = int
 
+(** Indicates whether a closure is recursive. *)
+type ereclabel =
+  | ENonrec (** Non-recursive function *)
+  | ERec of string (** Recursive function with its name *)
+
 (** Runtime values produced by the interpreter. *)
 type value =
   | VInt of int (** Integer value *)
@@ -26,14 +31,8 @@ and closure =
   { param : string (** Function parameter name *)
   ; body : expr (** Function body expression *)
   ; env : value Utils.Table.t (** Environment captured at definition time *)
-  ; label : reclabel (** Recursion label *)
+  ; label : ereclabel (** Recursion label *)
   }
-
-(** Indicates whether a closure is recursive. *)
-and reclabel =
-  | Nonrec (** Non-recursive function *)
-  | Rec of string (** Recursive function with its name *)
-[@@deriving show]
 
 (** Runtime errors that may occur during evaluation. *)
 type runtime_error =

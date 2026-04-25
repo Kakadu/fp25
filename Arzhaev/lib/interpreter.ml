@@ -11,6 +11,11 @@ open Utils
 
 type state = int [@@deriving show]
 
+type ereclabel =
+  | ENonrec
+  | ERec of string
+[@@deriving show]
+
 type value =
   | VInt of int
   | VFloat of float
@@ -22,12 +27,8 @@ and closure =
   { param : string
   ; body : expr
   ; env : value Table.t
-  ; label : reclabel
+  ; label : ereclabel
   }
-
-and reclabel =
-  | Nonrec
-  | Rec of string
 [@@deriving show]
 
 type toplevel_value =
@@ -110,7 +111,7 @@ let rec eval env exp =
     return v
   | EBinOp (op, l, r) -> eval_binop env op l r
   | EIf (cond, e1, e2) -> eval_if env cond e1 e2
-  | EFun (EVar x, e) -> return (make_closure env x e Nonrec)
+  | EFun (EVar x, e) -> return (make_closure env x e ENonrec)
   | ELet (Nonrecursive, Bind (EVar x, e1), e2) ->
     let* v1 = eval env e1 in
     let env' = Table.extend x v1 env in
@@ -120,7 +121,7 @@ let rec eval env exp =
     let* v1 = eval (Table.extend x VUnit env) e1 in
     let v1' =
       match v1 with
-      | VClosure { param; body; env; _ } -> VClosure { param; body; env; label = Rec x }
+      | VClosure { param; body; env; _ } -> VClosure { param; body; env; label = ERec x }
       | v -> v
     in
     let env' = Table.extend x v1' env in
@@ -171,10 +172,10 @@ and eval_if env cond e1 e2 =
 and apply_closure vfun varg =
   let* () = step in
   match vfun with
-  | VClosure { param; body; env; label = Nonrec } ->
+  | VClosure { param; body; env; label = ENonrec } ->
     let defenv' = Table.extend param varg env in
     eval defenv' body
-  | VClosure { param; body; env; label = Rec x } ->
+  | VClosure { param; body; env; label = ERec x } ->
     let defenv' = Table.extend param varg (Table.extend x vfun env) in
     eval defenv' body
   | _ -> fail (RNotAFunction vfun)
@@ -194,7 +195,7 @@ let eval_toplevel env tl =
     let* v = eval env' e in
     let v' =
       match v with
-      | VClosure c -> VClosure { c with label = Rec x }
+      | VClosure c -> VClosure { c with label = ERec x }
       | _ -> v
     in
     let env'' = Table.extend x v' env in
