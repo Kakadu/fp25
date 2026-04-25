@@ -2,8 +2,7 @@
 opam-version: "2.0"
 version: "0.1"
 synopsis: "An interpreter for miniML"
-description:
-  "FIXME. A longer description, for example, which are the most interesing features being supported, etc."
+description: "miniML interpreter with type inference"
 maintainer: ["Dmitry Arzhaev <arzhaev.dmitry@yandex.ru>"]
 authors: ["Dmitry Arzhaev <arzhaev.dmitry@yandex.ru>"]
 license: "LGPL-3.0-or-later WITH OCaml-LGPL-linking-exception"

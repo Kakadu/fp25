@@ -1,7 +1,7 @@
-(* [@@@ocaml.text "/*"]
+[@@@ocaml.text "/*"]
 
-(** Copyright 2021-2024, Kakadu and contributors *)
+(** Copyright 2026, Dmitry Arzhaev *)
 
 (** SPDX-License-Identifier: LGPL-3.0-or-later *)
 
-[@@@ocaml.text "/*"] *)
+[@@@ocaml.text "/*"]
