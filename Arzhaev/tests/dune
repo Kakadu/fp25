@@ -1,4 +1,3 @@
 (cram
  (applies_to repl_tests)
- (deps
-  ../bin/REPL.exe))
+ (deps ../bin/REPL.exe))
