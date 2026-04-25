@@ -25,7 +25,7 @@ let pp_parse_error fmt = function
 type input = char list [@@deriving show]
 
 type 'a parse_result =
-  | Failed of parse_error
+  | PFailed of parse_error
   | Parsed of 'a * input
 [@@deriving show]
 
@@ -36,20 +36,20 @@ let return x str = Parsed (x, str)
 
 let ( >>= ) parser f str =
   match parser str with
-  | Failed s -> Failed s
+  | PFailed s -> PFailed s
   | Parsed (x, str') -> f x str'
 ;;
 
 let ( <|> ) p1 p2 str =
   match p1 str with
-  | Failed _ -> p2 str
+  | PFailed _ -> p2 str
   | Parsed _ as ok -> ok
 ;;
 
 let ( *> ) p1 p2 = p1 >>= fun _ -> p2
 let ( <* ) p1 p2 = p1 >>= fun h -> p2 >>= fun _ -> return h
 let ( let* ) = ( >>= )
-let fail err _ = Failed err
+let fail err _ = PFailed err
 
 let choice = function
   | [] -> fail PSyntaxError
@@ -59,7 +59,7 @@ let choice = function
 let rec many : 'a parser -> 'a list parser =
   fun p s ->
   match p s with
-  | Failed _ -> return [] s
+  | PFailed _ -> return [] s
   | Parsed (x, rest) -> (many p >>= fun tl -> return (x :: tl)) rest
 ;;
 
@@ -67,7 +67,7 @@ let many1 p = p >>= fun x -> many p >>= fun xs -> return (x :: xs)
 
 let satisfy cond = function
   | c :: str when cond c -> return c str
-  | _ -> Failed PSyntaxError
+  | _ -> PFailed PSyntaxError
 ;;
 
 let p_char c = satisfy (Char.equal c)
@@ -161,8 +161,8 @@ let binop_chain binop_lst next_parser left =
     | Parsed (op, rest1) ->
       (match token next_parser rest1 with
        | Parsed (right, rest2) -> loop (EBinOp (op, left, right)) rest2
-       | Failed e -> Failed e)
-    | Failed _ -> Parsed (left, input)
+       | PFailed e -> PFailed e)
+    | PFailed _ -> Parsed (left, input)
   in
   loop left
 ;;
@@ -170,7 +170,7 @@ let binop_chain binop_lst next_parser left =
 let rec_label input =
   match p_word "rec" input with
   | Parsed (_, input') -> Parsed (Recursive, input')
-  | Failed _ -> Parsed (Nonrecursive, input)
+  | PFailed _ -> Parsed (Nonrecursive, input)
 ;;
 
 let p_expr =
@@ -261,7 +261,7 @@ let p_toplevel = token (p_toplevel_expr <|> p_toplevel_let)
 let p_final input =
   let res = p_toplevel input in
   match res with
-  | Parsed (_, lst) when lst <> [] -> Failed PSyntaxError
+  | Parsed (_, lst) when lst <> [] -> PFailed PSyntaxError
   | _ -> res
 ;;
 

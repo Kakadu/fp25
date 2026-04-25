@@ -25,7 +25,7 @@ type input = char list
     Either a failure with a [parse_error], or a successfully parsed value
     together with the remaining unconsumed input. *)
 type 'a parse_result =
-  | Failed of parse_error
+  | PFailed of parse_error
   | Parsed of 'a * input
 
 (** A parser consumes input and produces a parse result. *)

@@ -49,8 +49,8 @@ type runtime_error =
 (** Result of evaluation:
     either a runtime failure or a successful value with updated state. *)
 type 'a evalres =
-  | Failed of runtime_error
-  | Ok of state * 'a
+  | EFailed of runtime_error
+  | EOk of state * 'a
 
 (** Result of evaluating a toplevel phrase. *)
 type toplevel_value =

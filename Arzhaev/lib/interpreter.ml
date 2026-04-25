@@ -56,11 +56,9 @@ let pp_runtime_error fmt = function
 ;;
 
 type 'a evalres =
-  | Failed of runtime_error
-  | Ok of state * 'a
+  | EFailed of runtime_error
+  | EOk of state * 'a
 [@@deriving show]
-
-type 'a interp = state -> 'a evalres
 
 let pp_value fmt = function
   | VInt x -> Format.fprintf fmt "%d" x
@@ -77,15 +75,15 @@ let pp_toplevel_value fmt = function
 
 let ( >>= ) m f st =
   match m st with
-  | Failed s -> Failed s
-  | Ok (st', x) -> f x st'
+  | EFailed s -> EFailed s
+  | EOk (st', x) -> f x st'
 ;;
 
 let ( let* ) = ( >>= )
-let return x st = Ok (st, x)
-let read st = Ok (st, st)
-let write st (_ : state) = Ok (st, ())
-let fail s _ = Failed s
+let return x st = EOk (st, x)
+let read st = EOk (st, st)
+let write st (_ : state) = EOk (st, ())
+let fail s _ = EFailed s
 let run f st = f st
 
 let step =
@@ -99,7 +97,6 @@ let lookup env x =
   | None -> fail (RUnboundValue x)
 ;;
 
-let initial_state = 10000
 let make_closure env param body label = VClosure { param; body; env; label }
 
 let rec eval env exp =

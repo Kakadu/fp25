@@ -68,10 +68,8 @@ let pp_infer_error fmt = function
 ;;
 
 type 'a infresult =
-  | Failed of infer_error
-  | Ok of state * 'a
-
-type 'a inf = state -> 'a infresult
+  | IFailed of infer_error
+  | IOk of state * 'a
 
 let pp_scheme fmt { vars; ty } =
   match vars with
@@ -82,11 +80,6 @@ let pp_scheme fmt { vars; ty } =
     Format.fprintf fmt ". %a" pp_typ ty
 ;;
 
-let pp_infer_result pp_val fmt = function
-  | Failed err -> Format.fprintf fmt "Error: %a" pp_infer_error err
-  | Ok (_, v) -> Format.fprintf fmt "%a" pp_val v
-;;
-
 let pp_toplevel_result fmt = function
   | RExpr ty -> Format.fprintf fmt "- : %a" pp_typ ty
   | RLet (x, sch) -> Format.fprintf fmt "val %s : %a" x pp_scheme sch
@@ -94,15 +87,15 @@ let pp_toplevel_result fmt = function
 
 let ( >>= ) m f st =
   match m st with
-  | Failed s -> Failed s
-  | Ok (st', x) -> f x st'
+  | IFailed s -> IFailed s
+  | IOk (st', x) -> f x st'
 ;;
 
 let ( let* ) = ( >>= )
-let return x st = Ok (st, x)
-let read st = Ok (st, st)
-let write st (_ : state) = Ok (st, ())
-let fail err _ = Failed err
+let return x st = IOk (st, x)
+let read st = IOk (st, st)
+let write st (_ : state) = IOk (st, ())
+let fail err _ = IFailed err
 let run f st = f st
 let initial_state = { sub = Table.empty; fresh = TVar "'a" }
 

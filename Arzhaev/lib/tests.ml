@@ -12,7 +12,7 @@ open Interpeterlib.Ast
 let parse_optimistically str =
   match parser str with
   | Parsed (x, _) -> x
-  | Failed _ -> failwith "parse error"
+  | PFailed _ -> failwith "parse error"
 ;;
 
 let pp = pp_toplevel
@@ -104,14 +104,14 @@ let%expect_test "complex expression" =
 
 let%expect_test "parse error - syntax" =
   (match parser "let = 10" with
-   | Failed e -> Format.printf "%a" pp_parse_error e
+   | PFailed e -> Format.printf "%a" pp_parse_error e
    | _ -> ());
   [%expect {| syntax error |}]
 ;;
 
 let%expect_test "parse error - operand" =
   (match parser "1 +" with
-   | Failed e -> Format.printf "%a" pp_parse_error e
+   | PFailed e -> Format.printf "%a" pp_parse_error e
    | _ -> ());
   [%expect {| syntax error |}]
 ;;

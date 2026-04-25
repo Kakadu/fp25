@@ -30,14 +30,14 @@ let pp_error fmt = function
 
 let run_line opts (env_val, env_ty) line =
   match parser line with
-  | Failed err -> Error (Parse err)
+  | PFailed err -> Error (Parse err)
   | Parsed (tl, _) ->
     (match run_infer tl env_ty with
-     | Failed err -> Error (Type err)
-     | Ok (_, (env_ty', ty_res)) ->
+     | IFailed err -> Error (Type err)
+     | IOk (_, (env_ty', ty_res)) ->
        (match run_eval tl env_val opts.initial_steps with
-        | Failed err -> Error (Runtime err)
-        | Ok (_, (env_val', v_res)) -> Ok (env_val', env_ty', tl, ty_res, v_res)))
+        | EFailed err -> Error (Runtime err)
+        | EOk (_, (env_val', v_res)) -> Ok (env_val', env_ty', tl, ty_res, v_res)))
 ;;
 
 let repl opts =

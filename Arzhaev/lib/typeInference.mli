@@ -49,8 +49,8 @@ val pp_infer_error : Format.formatter -> infer_error -> unit
 (** Result of type inference:
     either a failure or a successful result with updated state. *)
 type 'a infresult =
-  | Failed of infer_error
-  | Ok of state * 'a
+  | IFailed of infer_error
+  | IOk of state * 'a
 
 (** Result of type-checking a toplevel phrase. *)
 type toplevel_result =
