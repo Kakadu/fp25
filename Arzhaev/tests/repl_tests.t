@@ -18,11 +18,8 @@ Fixpoint factorial
 Direct factorial
 
   $ ../bin/REPL.exe <<EOF
-  > let rec fact = fun n -> if n < 2 then 1 else n * fact (n - 1)
-  > fact 6
+  > let rec fact = fun n -> if n < 2 then 1 else n * fact (n - 1) in fact 6
   > EOF
-  val fact : int -> int
-  val fact = <fun>
   - : int
   - : 720
 
@@ -260,3 +257,95 @@ Recursion + HOF
   val inc = <fun>
   - : int
   - : 11
+
+Edge cases
+
+  $ ../bin/REPL.exe <<EOF
+  > true = false
+  > EOF
+  - : bool
+  - : false
+
+  $ ../bin/REPL.exe <<EOF
+  > (1 < 2) && (3 > 4)
+  > EOF
+  - : bool
+  - : false
+
+  $ ../bin/REPL.exe <<EOF
+  > 1.0 = 1.0
+  > EOF
+  - : bool
+  - : true
+
+Edge cases
+
+  $ ../bin/REPL.exe <<EOF
+  > true = false
+  > EOF
+  - : bool
+  - : false
+
+  $ ../bin/REPL.exe <<EOF
+  > (1 < 2) && (3 > 4)
+  > EOF
+  - : bool
+  - : false
+
+  $ ../bin/REPL.exe <<EOF
+  > 1.0 = 1.0
+  > EOF
+  - : bool
+  - : true
+
+Float arithmetic
+
+  $ ../bin/REPL.exe <<EOF
+  > 1.5 +. 2.5
+  > EOF
+  - : float
+  - : 4.000000
+
+  $ ../bin/REPL.exe <<EOF
+  > 5.0 -. 2.0
+  > EOF
+  - : float
+  - : 3.000000
+
+  $ ../bin/REPL.exe <<EOF
+  > 2.0 *. 3.5
+  > EOF
+  - : float
+  - : 7.000000
+
+  $ ../bin/REPL.exe <<EOF
+  > 10.0 /. 4.0
+  > EOF
+  - : float
+  - : 2.500000
+
+Boolean operators
+
+  $ ../bin/REPL.exe <<EOF
+  > true && true
+  > EOF
+  - : bool
+  - : true
+
+  $ ../bin/REPL.exe <<EOF
+  > true && false
+  > EOF
+  - : bool
+  - : false
+
+  $ ../bin/REPL.exe <<EOF
+  > false || true
+  > EOF
+  - : bool
+  - : true
+
+  $ ../bin/REPL.exe <<EOF
+  > false || false
+  > EOF
+  - : bool
+  - : false

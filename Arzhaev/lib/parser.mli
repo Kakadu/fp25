@@ -13,7 +13,6 @@ type parse_error =
   | PExpectedInt (** Expected an integer literal. *)
   | PExpectedFloat (** Expected a floating-point literal. *)
   | PExpectedId (** Expected an identifier. *)
-  | PExpectedRightOperand (** Expected a right-hand operand after an operator. *)
   | PSyntaxError (** Generic syntax error. *)
 
 (** Pretty-printer for parse errors. *)

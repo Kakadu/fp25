@@ -13,14 +13,12 @@ type parse_error =
   | PExpectedInt
   | PExpectedFloat
   | PExpectedId
-  | PExpectedRightOperand
   | PSyntaxError
 
 let pp_parse_error fmt = function
   | PExpectedInt -> Format.fprintf fmt "expected integer"
   | PExpectedFloat -> Format.fprintf fmt "expected float"
   | PExpectedId -> Format.fprintf fmt "expected identifier"
-  | PExpectedRightOperand -> Format.fprintf fmt "expected right operand"
   | PSyntaxError -> Format.fprintf fmt "syntax error"
 ;;
 

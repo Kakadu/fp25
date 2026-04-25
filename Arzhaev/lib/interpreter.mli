@@ -75,8 +75,5 @@ val run_eval
   -> state
   -> (value Utils.Table.t * toplevel_value) evalres
 
-(** Print evaluation result to stdout. *)
-val print_result : value evalres -> unit
-
 (** Pretty-printer for runtime errors. *)
 val pp_runtime_error : Format.formatter -> runtime_error -> unit

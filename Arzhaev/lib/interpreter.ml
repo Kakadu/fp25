@@ -206,8 +206,3 @@ let eval_toplevel env tl =
 ;;
 
 let run_eval tl env steps = run (eval_toplevel env tl) steps
-
-let print_result = function
-  | Ok (_, v) -> Format.printf "Value: %a\n%!" pp_value v
-  | Failed err -> Format.printf "Error: %a\n%!" pp_runtime_error err
-;;
