@@ -75,15 +75,15 @@ let rec pp_expr fmt = function
   | EConst c -> pp_const fmt c
   | EVar v -> Format.fprintf fmt "%s" v
   | EBinOp (op, l, r) ->
-    Format.fprintf fmt "@[<hov 2>(%a %a %a)@]" pp_expr l pp_binop op pp_expr r
+    Format.fprintf fmt "@[(%a %a %a)@]" pp_expr l pp_binop op pp_expr r
   | EIf (c, t, e) ->
-    Format.fprintf fmt "@[<v 2>if %a then@ %a@ else@ %a@]" pp_expr c pp_expr t pp_expr e
-  | EFun (EVar x, body) -> Format.fprintf fmt "@[<hov 2>fun %s -> %a@]" x pp_expr body
-  | EApp (f, arg) -> Format.fprintf fmt "@[<hov 2>(%a %a)@]" pp_expr f pp_expr arg
+    Format.fprintf fmt "@[if %a then@ %a@ else@ %a@]" pp_expr c pp_expr t pp_expr e
+  | EFun (EVar x, body) -> Format.fprintf fmt "@[fun %s -> %a@]" x pp_expr body
+  | EApp (f, arg) -> Format.fprintf fmt "@[(%a %a)@]" pp_expr f pp_expr arg
   | ELet (label, Bind (EVar x, e1), e2) ->
     Format.fprintf
       fmt
-      "@[<v 2>let %a%s = %a in@ %a@]"
+      "@[let %a%s = %a in@ %a@]"
       pp_reclabel
       label
       x

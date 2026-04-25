@@ -65,6 +65,6 @@ let () =
     ; "-steps", Int (fun n -> opts.initial_steps <- n), "initial step budget"
     ]
     (fun _ -> ())
-    "Mini language REPL";
+    "miniML REPL";
   repl opts
 ;;

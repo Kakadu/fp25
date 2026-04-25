@@ -155,7 +155,7 @@ let binop_chain binop_lst next_parser left =
     | Parsed (op, rest1) ->
       (match token next_parser rest1 with
        | Parsed (right, rest2) -> loop (EBinOp (op, left, right)) rest2
-       | Failed _ -> Failed PExpectedRightOperand)
+       | Failed e -> Failed e)
     | Failed _ -> Parsed (left, input)
   in
   loop left
@@ -178,20 +178,16 @@ let p_expr =
      token (binop_chain [ p_and ] binop_expr_bool3 left))
       input
   and binop_expr_bool3 input =
-    (let* left = token binop_expr_bool4 in
-     token (binop_chain [ p_eq; p_neq ] binop_expr_bool4 left))
-      input
-  and binop_expr_bool4 input =
     (let* left = token binop_expr in
-     token (binop_chain [ p_lt; p_gt; p_leq; p_geq ] binop_expr left))
+     token (binop_chain [ p_eq; p_neq; p_leq; p_geq; p_lt; p_gt ] binop_expr left))
       input
   and binop_expr input =
     (let* left = token term in
-     token (binop_chain [ p_add; p_sub ] term left))
+     token (binop_chain [ p_fadd; p_fsub; p_add; p_sub ] term left))
       input
   and term input =
     (let* left = token factor in
-     token (binop_chain [ p_mul; p_div ] factor left))
+     token (binop_chain [ p_fmul; p_fdiv; p_mul; p_div ] factor left))
       input
   and factor input = func_apply input
   and func_apply input =

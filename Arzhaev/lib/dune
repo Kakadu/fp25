@@ -1,5 +1,17 @@
 (library
  (name interpeterlib)
- (preprocess (pps ppx_show))
  (modules Ast Parser TypeInference Utils Interpreter) 
- (libraries ppx_show.runtime))
+ (libraries ppx_show.runtime)
+ (preprocess (pps ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx)))
+
+ (library
+ (name tests)
+ (modules tests)
+ (libraries interpeterlib)
+ (preprocess
+  (pps ppx_expect ppx_deriving.show))
+ (instrumentation
+  (backend bisect_ppx))
+ (inline_tests))
