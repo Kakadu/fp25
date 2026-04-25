@@ -1,10 +1,25 @@
 open Ast
 open Utils
 
+type parse_error =
+  | PExpectedInt
+  | PExpectedFloat
+  | PExpectedId
+  | PExpectedRightOperand
+  | PSyntaxError
+
+let pp_parse_error fmt = function
+  | PExpectedInt -> Format.fprintf fmt "expected integer"
+  | PExpectedFloat -> Format.fprintf fmt "expected float"
+  | PExpectedId -> Format.fprintf fmt "expected identifier"
+  | PExpectedRightOperand -> Format.fprintf fmt "expected right operand"
+  | PSyntaxError -> Format.fprintf fmt "syntax error"
+;;
+
 type input = char list [@@deriving show]
 
 type 'a parse_result =
-  | Failed of string
+  | Failed of parse_error
   | Parsed of 'a * input
 [@@deriving show]
 
@@ -28,10 +43,10 @@ let ( <|> ) p1 p2 str =
 let ( *> ) p1 p2 = p1 >>= fun _ -> p2
 let ( <* ) p1 p2 = p1 >>= fun h -> p2 >>= fun _ -> return h
 let ( let* ) = ( >>= )
-let fail str _ = Failed str
+let fail err _ = Failed err
 
 let choice = function
-  | [] -> fail "choice failed"
+  | [] -> fail PSyntaxError
   | h :: tl -> List.fold_left ( <|> ) h tl
 ;;
 
@@ -46,7 +61,7 @@ let many1 p = p >>= fun x -> many p >>= fun xs -> return (x :: xs)
 
 let satisfy cond = function
   | c :: str when cond c -> return c str
-  | _ -> Failed "doesn't satisfy"
+  | _ -> Failed PSyntaxError
 ;;
 
 let p_char c = satisfy (Char.equal c)
@@ -80,20 +95,16 @@ let p_letter =
 ;;
 
 let p_int =
-  many p_digit
-  >>= fun digits ->
-  if List.length digits > 0
-  then return (EConst (IConst (int_of_string (charlst_to_str digits))))
-  else fail "expected integer"
+  let* digits = many1 p_digit in
+  return (EConst (IConst (int_of_string (charlst_to_str digits)))) <|> fail PExpectedInt
 ;;
 
 let p_float =
-  let* l = many p_digit in
+  let* l = many1 p_digit in
   let* _ = p_char '.' in
   let* r = many p_digit in
-  if List.length l > 0 || List.length r > 0
-  then return (EConst (FConst (float_of_string (charlst_to_str (l @ [ '.' ] @ r)))))
-  else fail "expected float"
+  return (EConst (FConst (float_of_string (charlst_to_str (l @ [ '.' ] @ r)))))
+  <|> fail PExpectedFloat
 ;;
 
 let is_keyword word = List.exists (fun kwd -> word = kwd) keywords
@@ -102,7 +113,7 @@ let p_id =
   let* first = p_letter in
   let* rest = many (p_letter <|> p_digit) in
   let id = charlst_to_str (first :: rest) in
-  if is_keyword id then fail "expected id" else return id
+  if is_keyword id then fail PExpectedId else return id
 ;;
 
 let p_ws = many (p_char ' ' <|> p_char '\t' <|> p_char '\n')
@@ -128,8 +139,7 @@ let parens p = token (p_char '(') *> token p <* token (p_char ')')
 let p_word word =
   token
     (many p_letter
-     >>= fun lst ->
-     if charlst_to_str lst = word then return word else fail "failed to parse word")
+     >>= fun lst -> if charlst_to_str lst = word then return word else fail PSyntaxError)
 ;;
 
 let p_bool =
@@ -145,7 +155,7 @@ let binop_chain binop_lst next_parser left =
     | Parsed (op, rest1) ->
       (match token next_parser rest1 with
        | Parsed (right, rest2) -> loop (EBinOp (op, left, right)) rest2
-       | Failed _ -> Failed "expected right operand")
+       | Failed _ -> Failed PExpectedRightOperand)
     | Failed _ -> Parsed (left, input)
   in
   loop left
@@ -244,5 +254,13 @@ let p_toplevel_expr =
   return (TopExpr e)
 ;;
 
-let p_toplevel = token (choice [ p_toplevel_let; p_toplevel_expr ])
-let parser str = p_toplevel (str_to_charlst str)
+let p_toplevel = token (p_toplevel_expr <|> p_toplevel_let)
+
+let p_final input =
+  let res = p_toplevel input in
+  match res with
+  | Parsed (_, lst) when lst <> [] -> Failed PSyntaxError
+  | _ -> res
+;;
+
+let parser str = p_final (str_to_charlst str)

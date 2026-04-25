@@ -23,8 +23,16 @@ type state =
   ; fresh : typ
   }
 
+type infer_error =
+  | IUnboundValue of string
+  | IOccursCheck of string * typ
+  | ITypeMismatch of typ * typ
+  | ITypeError
+
+val pp_infer_error : Format.formatter -> infer_error -> unit
+
 type 'a infresult =
-  | Failed of string
+  | Failed of infer_error
   | Ok of state * 'a
 
 type toplevel_result =

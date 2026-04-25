@@ -3,13 +3,6 @@ open Utils
 
 type state = int [@@deriving show]
 
-type 'a evalres =
-  | Failed of string
-  | Ok of state * 'a
-[@@deriving show]
-
-type 'a interp = state -> 'a evalres
-
 type value =
   | VInt of int
   | VFloat of float
@@ -32,6 +25,34 @@ and reclabel =
 type toplevel_value =
   | VLet of string * value
   | VExpr of value
+
+type runtime_error =
+  | RUnboundValue of string
+  | RNotAFunction of value
+  | RDivisionByZero
+  | RTypeMismatch
+  | RInvalidOperand
+  | RIfCondNotBool
+  | RStepLimitExceeded
+  | REvalError
+
+let pp_runtime_error fmt = function
+  | RUnboundValue x -> Format.fprintf fmt "Unbound value: %s" x
+  | RNotAFunction v -> Format.fprintf fmt "This is not a function: %s" (show_value v)
+  | RDivisionByZero -> Format.fprintf fmt "division by zero"
+  | RTypeMismatch -> Format.fprintf fmt "type mismatch"
+  | RInvalidOperand -> Format.fprintf fmt "operand type mismatch"
+  | RIfCondNotBool -> Format.fprintf fmt "condition must be bool"
+  | RStepLimitExceeded -> Format.fprintf fmt "step limit exceeded"
+  | REvalError -> Format.fprintf fmt "evaluation error"
+;;
+
+type 'a evalres =
+  | Failed of runtime_error
+  | Ok of state * 'a
+[@@deriving show]
+
+type 'a interp = state -> 'a evalres
 
 let pp_value fmt = function
   | VInt x -> Format.fprintf fmt "%d" x
@@ -61,16 +82,16 @@ let run f st = f st
 
 let step =
   let* remaining_steps = read in
-  if remaining_steps <= 0 then fail "step limit exceeded" else write (remaining_steps - 1)
+  if remaining_steps <= 0 then fail RStepLimitExceeded else write (remaining_steps - 1)
 ;;
 
 let lookup env x =
   match Table.lookup x env with
   | Some res -> return res
-  | None -> fail (Printf.sprintf "Unbound value: %s" x)
+  | None -> fail (RUnboundValue x)
 ;;
 
-let initial_state = 100
+let initial_state = 10000
 let make_closure env param body label = VClosure { param; body; env; label }
 
 let rec eval env exp =
@@ -104,7 +125,7 @@ let rec eval env exp =
     let* v1 = eval env e1 in
     let* v2 = eval env e2 in
     apply_closure v1 v2
-  | _ -> fail "Not implemented"
+  | _ -> fail REvalError
 
 and eval_binop env op e1 e2 =
   let* v1 = eval env e1 in
@@ -118,13 +139,12 @@ and eval_binop env op e1 e2 =
   | Add, VInt l, VInt r -> return (VInt (l + r))
   | Sub, VInt l, VInt r -> return (VInt (l - r))
   | Mul, VInt l, VInt r -> return (VInt (l * r))
-  | Div, VInt l, VInt r ->
-    if r = 0 then fail "division by zero" else return (VInt (l / r))
+  | Div, VInt l, VInt r -> if r = 0 then fail RDivisionByZero else return (VInt (l / r))
   | AddF, VFloat l, VFloat r -> return (VFloat (l +. r))
   | SubF, VFloat l, VFloat r -> return (VFloat (l -. r))
   | MulF, VFloat l, VFloat r -> return (VFloat (l *. r))
   | DivF, VFloat l, VFloat r ->
-    if r = 0. then fail "division by zero" else return (VFloat (l /. r))
+    if r = 0. then fail RDivisionByZero else return (VFloat (l /. r))
   | Eq, l, r when have_same_val_type l r -> return (VBool (l = r))
   | Neq, l, r when have_same_val_type l r -> return (VBool (l <> r))
   | Lt, l, r when have_same_val_type l r -> return (VBool (l < r))
@@ -133,7 +153,7 @@ and eval_binop env op e1 e2 =
   | Geq, l, r when have_same_val_type l r -> return (VBool (l >= r))
   | And, VBool l, VBool r -> return (VBool (l && r))
   | Or, VBool l, VBool r -> return (VBool (l || r))
-  | _ -> fail "operand type mismatch"
+  | _ -> fail RInvalidOperand
 
 and eval_if env cond e1 e2 =
   let* () = step in
@@ -141,7 +161,7 @@ and eval_if env cond e1 e2 =
   match cond' with
   | VBool true -> eval env e1
   | VBool false -> eval env e2
-  | _ -> fail "cond is expected to have bool type"
+  | _ -> fail RIfCondNotBool
 
 and apply_closure vfun varg =
   let* () = step in
@@ -152,11 +172,7 @@ and apply_closure vfun varg =
   | VClosure { param; body; env; label = Rec x } ->
     let defenv' = Table.extend param varg (Table.extend x vfun env) in
     eval defenv' body
-  | _ ->
-    fail
-      (Printf.sprintf
-         "This is not a function: %s. It cannot be applied."
-         (show_value vfun))
+  | _ -> fail (RNotAFunction vfun)
 ;;
 
 let eval_toplevel env tl =
@@ -178,12 +194,12 @@ let eval_toplevel env tl =
     in
     let env'' = Table.extend x v' env in
     return (env'', VLet (x, v'))
-  | _ -> fail "unsupported toplevel"
+  | _ -> fail REvalError
 ;;
 
 let run_eval tl env steps = run (eval_toplevel env tl) steps
 
 let print_result = function
   | Ok (_, v) -> Format.printf "Value: %a\n%!" pp_value v
-  | Failed msg -> Format.printf "Error: %s\n%!" msg
+  | Failed err -> Format.printf "Error: %a\n%!" pp_runtime_error err
 ;;

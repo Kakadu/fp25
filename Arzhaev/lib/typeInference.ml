@@ -6,38 +6,33 @@ type ground =
   | GInt
   | GBool
   | GFloat
-[@@deriving show]
 
 type typ =
   | TGround of ground
   | TVar of string
   | TArrow of typ * typ
-[@@deriving show]
 
 type scheme =
   { vars : string list
   ; ty : typ
   }
-[@@deriving show]
 
 type toplevel_result =
   | RLet of string * scheme
   | RExpr of typ
 
-type subst = typ Table.t [@@deriving show]
+type subst = typ Table.t
 
 type state =
   { sub : subst
   ; fresh : typ
   }
-[@@deriving show]
 
-type 'a infresult =
-  | Failed of string
-  | Ok of state * 'a
-[@@deriving show]
-
-type 'a inf = state -> 'a infresult
+type infer_error =
+  | IUnboundValue of string
+  | IOccursCheck of string * typ
+  | ITypeMismatch of typ * typ
+  | ITypeError
 
 let pp_ground fmt = function
   | GInt -> Format.fprintf fmt "int"
@@ -56,6 +51,20 @@ let rec pp_typ fmt = function
     Format.fprintf fmt " -> %a" pp_typ r
 ;;
 
+let pp_infer_error fmt = function
+  | IUnboundValue x -> Format.fprintf fmt "unbound value: %s" x
+  | IOccursCheck (x, ty) -> Format.fprintf fmt "occurs check failed: %s in %a" x pp_typ ty
+  | ITypeMismatch (t1, t2) ->
+    Format.fprintf fmt "Type mismatch: %a vs %a" pp_typ t1 pp_typ t2
+  | ITypeError -> Format.fprintf fmt "type error"
+;;
+
+type 'a infresult =
+  | Failed of infer_error
+  | Ok of state * 'a
+
+type 'a inf = state -> 'a infresult
+
 let pp_scheme fmt { vars; ty } =
   match vars with
   | [] -> Format.fprintf fmt "%a" pp_typ ty
@@ -66,7 +75,7 @@ let pp_scheme fmt { vars; ty } =
 ;;
 
 let pp_infer_result pp_val fmt = function
-  | Failed msg -> Format.fprintf fmt "Error: %s" msg
+  | Failed err -> Format.fprintf fmt "Error: %a" pp_infer_error err
   | Ok (_, v) -> Format.fprintf fmt "%a" pp_val v
 ;;
 
@@ -85,7 +94,7 @@ let ( let* ) = ( >>= )
 let return x st = Ok (st, x)
 let read st = Ok (st, st)
 let write st (_ : state) = Ok (st, ())
-let fail s _ = Failed s
+let fail err _ = Failed err
 let run f st = f st
 let initial_state = { sub = Table.empty; fresh = TVar "'a" }
 
@@ -171,7 +180,7 @@ let rec unify l r =
   | TVar x, TVar y when x = y -> return ()
   | (TVar x as tv), _ ->
     if check_occur x r
-    then fail "Occurrence check failed"
+    then fail (IOccursCheck (x, r))
     else
       let* look = sub_walk tv in
       (match look with
@@ -181,7 +190,7 @@ let rec unify l r =
        | sigma_x -> unify sigma_x r)
   | _, (TVar x as tv) ->
     if check_occur x l
-    then fail "Occurrence check failed"
+    then fail (IOccursCheck (x, l))
     else
       let* look = sub_walk tv in
       (match look with
@@ -192,8 +201,9 @@ let rec unify l r =
   | TArrow (x1, y1), TArrow (x2, y2) ->
     let* () = unify x1 x2 in
     unify y1 y2
-  | TGround x, TGround y -> if x = y then return () else fail "Ground type mismatch"
-  | _ -> fail "TODO"
+  | TGround x, TGround y ->
+    if x = y then return () else fail (ITypeMismatch (TGround x, TGround y))
+  | _ -> fail (ITypeMismatch (l, r))
 ;;
 
 let generalize env ty =
@@ -218,7 +228,7 @@ let rec infer env exp =
      | BConst _ -> return (TGround GBool))
   | EVar e ->
     (match Table.lookup e env with
-     | None -> fail "Unbound value"
+     | None -> fail (IUnboundValue e)
      | Some x ->
        let* inst = instantiate x in
        return inst)
@@ -274,7 +284,7 @@ let rec infer env exp =
     let sch = generalize env' tv in
     let* e2' = infer (Table.extend x sch env') e2 in
     sub_walk e2'
-  | _ -> fail "not implemented yet"
+  | _ -> fail ITypeError
 ;;
 
 let infer_toplevel env tl =
@@ -298,7 +308,7 @@ let infer_toplevel env tl =
     let sch = generalize env ty' in
     let env'' = Table.extend x sch env in
     return (env'', RLet (x, sch))
-  | _ -> fail "unsupported toplevel"
+  | _ -> fail ITypeError
 ;;
 
 let run_infer exp env = run (infer_toplevel env exp) initial_state
